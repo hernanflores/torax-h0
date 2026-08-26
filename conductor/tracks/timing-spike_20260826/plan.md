@@ -29,7 +29,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 - [x] Task: Scheduler look-ahead (0d5f7dc)
   - [x] Tests (Red): dada una ventana y un instante, produce el conjunto correcto de eventos
   - [x] Tests (Red): sin duplicar ni omitir eventos en el solape entre ventanas
-  - [x] Implementación (Green): cálculo de ventana con buffers preasignados
+  - [x] Implementación (Green): cálculo de ventana sin asignaciones — devuelve `Range<Int>`, con lo que el buffer preasignado que preveía el plan resulta innecesario
   - [x] Marcar las funciones de tiempo real con `/// Realtime:`
   - [x] Refactor y verificar cobertura
 - [ ] Task: Cliente CoreMIDI de salida
