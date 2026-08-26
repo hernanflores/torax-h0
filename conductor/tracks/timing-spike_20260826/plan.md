@@ -20,7 +20,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 2: Reloj y salida MIDI
 
-- [ ] Task: Modelo de tiempo musical
+- [~] Task: Modelo de tiempo musical
   - [ ] Tests (Red): conversión tempo→intervalo de step a 60/120/174 BPM
   - [ ] Tests (Red): división 1/16
   - [ ] Tests (Red): acumulación sin deriva sobre 1000 steps
