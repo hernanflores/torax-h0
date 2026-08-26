@@ -18,7 +18,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Sustituir los comandos indicativos por los reales del proyecto ya creado
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (e05c019)
 
-## Phase 2: Reloj y salida MIDI
+## Phase 2: Reloj y salida MIDI [checkpoint: 2d75d89]
 
 - [x] Task: Modelo de tiempo musical (4aac307)
   - [x] Tests (Red): conversión tempo→intervalo de step a 60/120/174 BPM
@@ -40,7 +40,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Implementación: hilo dedicado de alta prioridad
   - [x] Implementación: lectura de snapshot inmutable, sin locks
   - [x] Revisión explícita: sin asignaciones, locks, `await`, logging ni SwiftUI en el camino
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (2d75d89)
 
 ## Phase 3: Instrumentación de medición
 
