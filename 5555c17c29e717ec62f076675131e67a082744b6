@@ -1,0 +1,38 @@
+Task: Imponer la frontera de dependencias de Engine
+Track: timing-spike_20260826 — Phase 1
+
+Summary
+-------
+Test guardian que escanea el codigo fuente de Engine y falla si el paquete
+importa cualquier modulo fuera de la stdlib, o si su Package.swift declara
+dependencias externas.
+
+Files created
+-------------
+- Packages/Engine/Tests/EngineTests/DependencyBoundaryTests.swift
+
+Why
+---
+tech-stack.md exige que Engine sea puro: es lo que permite testear el motor sin
+simulador y lo que impide que la logica musical se enrede con CoreMIDI o
+SwiftUI. Confiar en la disciplina no basta — el paquete crecera y la regla es
+facil de romper sin darse cuenta. El test convierte la regla en un fallo de CI.
+
+Modulos prohibidos: AppKit, AVFoundation, CoreAudio, CoreGraphics, CoreMIDI,
+Combine, Foundation, SwiftUI, UIKit.
+
+Foundation esta incluido a proposito: la regla escrita es *stdlib*, no "stdlib y
+un poco de Foundation". El motor es determinista y no necesita fechas, locales
+ni formateadores. Si en el futuro se necesita UUID o similar, la decision debe
+ser explicita y quedar documentada en tech-stack.md, no colarse por omision.
+
+TDD
+---
+Red: se inyecto temporalmente 'import Foundation' en Engine.swift y se confirmo
+     el fallo con mensaje preciso:
+     "Engine.swift:1 importa 'Foundation'."
+Green: restaurado el fichero, 3 tests pasan sin fallos.
+
+Verification
+------------
+swift test --package-path Packages/Engine : Executed 3 tests, 0 failures
