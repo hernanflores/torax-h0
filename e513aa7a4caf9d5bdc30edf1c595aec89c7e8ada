@@ -1,0 +1,30 @@
+Task: Actualizar comandos de desarrollo en workflow.md
+Track: timing-spike_20260826 — Phase 1
+
+Summary
+-------
+La seccion Development Commands de workflow.md se escribio antes de que el
+proyecto existiera y contenia comandos indicativos. Ahora contiene los comandos
+reales, todos ejecutados y verificados en esta maquina.
+
+Files modified
+--------------
+- conductor/workflow.md (seccion Development Commands)
+
+Verified commands
+-----------------
+- swift test --package-path Packages/Engine      (host, sin simulador)
+- swift test --package-path Packages/MIDI        (host, sin simulador)
+- xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+- swift format --version -> 6.2.3 (disponible en la toolchain)
+- swift test --enable-code-coverage (flag confirmado en --help)
+
+Environment caveats documented
+------------------------------
+1. No hay runtimes de simulador instalados. No bloquea: los tests corren en host
+   y la medicion de jitter debe correr en dispositivo real.
+2. DEVELOPMENT_TEAM no esta fijado; instalar en un iPad real lo exigira.
+3. El SDK instalado (iOS 26.2) es muy posterior al deployment target (17.0):
+   compilar sin avisos NO garantiza compatibilidad con iPadOS 17, porque las
+   APIs mas recientes compilan igualmente. Se documenta para que no se confunda
+   "compila" con "funciona en el dispositivo objetivo".
