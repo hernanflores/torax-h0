@@ -1,0 +1,80 @@
+Task: Hilo del scheduler y publicacion de snapshot
+Track: timing-spike_20260826 — Phase 2
+
+Summary
+-------
+Hilo dedicado de alta prioridad que ejecuta el LookAheadScheduler, mas los
+atomicos sin lock que lo comunican con el hilo de control.
+
+Files created
+-------------
+- Packages/MIDI/Sources/CToraxAtomics/include/CToraxAtomics.h
+- Packages/MIDI/Sources/CToraxAtomics/CToraxAtomics.c
+- Packages/MIDI/Sources/MIDI/Atomics.swift
+- Packages/MIDI/Sources/MIDI/SchedulerThread.swift
+- Packages/MIDI/Tests/MIDITests/SchedulerThreadTests.swift
+- Packages/MIDI/Package.swift (nuevo target CToraxAtomics)
+
+Por que un target C propio
+--------------------------
+La regla es "sin locks en el camino de timing", pero el hilo necesita saber
+cuando parar. Opciones en iPadOS 17 sin dependencias:
+  - Synchronization.Atomic de Swift 6  -> exige iOS 18. Descartado.
+  - swift-atomics                      -> dependencia de terceros. Prohibida por
+                                          tech-stack.md.
+  - un lock                            -> viola la regla.
+  - target C propio con <stdatomic.h>  -> ELEGIDO.
+
+Es codigo del proyecto, no una dependencia externa. Se verifica con test que los
+atomicos son REALMENTE lock-free (tx_atomics_is_lock_free): en algunas
+plataformas _Atomic se emula con un lock interno, lo que anularia el diseno en
+silencio.
+
+BUG ENCONTRADO Y CORREGIDO: target C solo-cabecera
+---------------------------------------------------
+Con todas las funciones como 'static inline' en la cabecera, el target no
+generaba codigo objeto. Los tests en host pasaban, pero el build de iOS fallaba:
+  "Build input file cannot be found: ... CToraxAtomics.o"
+Se anadio CToraxAtomics.c con una unidad de traduccion real. El fallo solo
+aparecia al compilar para iOS, no en swift test — argumento a favor de compilar
+para el target real en cada tarea, no solo al cerrar la fase.
+
+Snapshot inmutable, sin locks
+-----------------------------
+SchedulerConfiguration es un valor Sendable que el hilo captura al arrancar. El
+bucle no vuelve a leer estado compartido: no hay lock que tomar porque no hay
+nada mutable que proteger. Lo unico compartido es la bandera atomica de parada.
+
+Limitacion consciente: cambiar parametros en caliente —girar un knob mientras
+suena— exigira publicar un snapshot nuevo de forma atomica. Eso pertenece al
+producto, no al spike, y esta documentado en el codigo.
+
+Diseno del bucle
+----------------
+Duerme media ventana de look-ahead. Despertar mas a menudo NO mejora la
+precision —esa la da el timestamp, no el momento del envio— y solo gasta CPU;
+despertar menos arriesga perder el borde de la ventana.
+Prioridad .userInteractive y threadPriority 1.0: el hilo compite con la interfaz
+y un retraso aqui se traduce en eventos perdidos.
+
+TDD
+---
+Red: 'cannot find AtomicFlag/AtomicCounter/SchedulerThread/SchedulerConfiguration'.
+Green: 45 tests pasan, 1 skipped.
+Incluye tests de acceso concurrente desde 8 hilos (80.000 incrementos sin
+perdidas) y un test de que el hilo emite Steps en orden y sin repetir.
+
+Coverage
+--------
+Atomics.swift          : 100.00% regiones
+SchedulerThread.swift  :  93.33% regiones, 100% lineas
+MIDIMessage.swift      : 100.00%
+HostClock.swift        : 100.00%
+LookAheadScheduler.swift: 92.31%
+CoreMIDIOutput.swift   :  70.97% (lo no cubierto exige hardware)
+Umbral MIDI >=80% a nivel de modulo: CUMPLE.
+
+Build
+-----
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+** BUILD SUCCEEDED **
