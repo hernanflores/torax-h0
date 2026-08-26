@@ -26,7 +26,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): acumulación sin deriva sobre 1000 steps
   - [x] Implementación (Green): tipos de tiempo musical y conversión a tiempo de host
   - [x] Refactor y verificar cobertura ≥80%
-- [ ] Task: Scheduler look-ahead
+- [~] Task: Scheduler look-ahead
   - [ ] Tests (Red): dada una ventana y un instante, produce el conjunto correcto de eventos
   - [ ] Tests (Red): sin duplicar ni omitir eventos en el solape entre ventanas
   - [ ] Implementación (Green): cálculo de ventana con buffers preasignados

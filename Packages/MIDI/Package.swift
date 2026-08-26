@@ -16,8 +16,11 @@ let package = Package(
     products: [
         .library(name: "MIDI", targets: ["MIDI"]),
     ],
+    dependencies: [
+        .package(path: "../Engine"),
+    ],
     targets: [
-        .target(name: "MIDI"),
+        .target(name: "MIDI", dependencies: ["Engine"]),
         .testTarget(name: "MIDITests", dependencies: ["MIDI"]),
     ]
 )
