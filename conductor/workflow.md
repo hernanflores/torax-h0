@@ -128,31 +128,47 @@ Before marking any task complete:
 ### Setup
 
 ```bash
-# Xcode 15+ with iPadOS 17 SDK. Swift packages resolve on first build.
-xcodebuild -resolvePackageDependencies
+# Xcode 26.3 con la plataforma iOS instalada.
+# Si xcodebuild falla al cargar plugins:  sudo xcodebuild -runFirstLaunch
+# Si falta la plataforma iOS:             xcodebuild -downloadPlatform iOS
+xcode-select -p   # debe apuntar a /Applications/Xcode.app/Contents/Developer
 ```
 
 ### Daily Development
 
 ```bash
-# Fast engine tests — no simulator required
+# Tests de paquete — corren en host (macOS), sin simulador ni dispositivo
 swift test --package-path Packages/Engine
+swift test --package-path Packages/MIDI
 
-# Full test suite on simulator
-xcodebuild test -scheme ToraxH0 -destination 'platform=iOS Simulator,name=iPad Pro (11-inch)'
+# Compilar la app para iPadOS
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
 
-# Formatting
-swift format --in-place --recursive Sources Tests
+# Formateo
+swift format --in-place --recursive App Packages
 ```
 
 ### Before Committing
 
 ```bash
-swift test --package-path Packages/Engine
-xcodebuild test -scheme ToraxH0 -destination 'platform=iOS Simulator,name=iPad Pro (11-inch)' -enableCodeCoverage YES
+swift test --package-path Packages/Engine --enable-code-coverage
+swift test --package-path Packages/MIDI --enable-code-coverage
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
 ```
 
-> Commands are indicative until the project scaffold exists. Update this section once the Xcode project and package layout are in place.
+### Notas del entorno
+
+- **No hay runtimes de simulador instalados.** No es bloqueante: los tests de
+  paquete corren en host y la medición de jitter debe correr en dispositivo real
+  (`workflow.md` → Timing Verification). Si en algún momento se necesita
+  simulador: `xcodebuild -downloadPlatform iOS` y añadir `-destination
+  'platform=iOS Simulator,name=<dispositivo>'`.
+- **`DEVELOPMENT_TEAM` no está fijado** en el proyecto. Instalar en un iPad real
+  exige configurarlo (Signing & Capabilities en Xcode), o pasar
+  `DEVELOPMENT_TEAM=<TEAMID>` a `xcodebuild`.
+- El SDK instalado (iOS 26.2) es muy posterior al deployment target (17.0):
+  **compilar sin avisos no garantiza compatibilidad con iPadOS 17**, porque las
+  APIs más recientes compilan igualmente. Verificar en dispositivo.
 
 ## Testing Requirements
 
