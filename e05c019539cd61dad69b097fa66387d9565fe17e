@@ -1,0 +1,47 @@
+PHASE VERIFICATION REPORT — Phase 1: Scaffold y fronteras
+Track: timing-spike_20260826
+
+Automated tests
+---------------
+Commands announced and executed:
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI --enable-code-coverage
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Results:
+  Engine : Executed 3 tests, 0 failures (host, sin simulador)
+  MIDI   : Executed 1 test,  0 failures (host, sin simulador)
+  Build  : ** BUILD SUCCEEDED ** (arm64-apple-ios17.0, con firma real)
+
+Coverage
+--------
+Los umbrales (Engine >=90%, MIDI >=80%) NO son evaluables en esta fase.
+llvm-cov no emite regiones para Sources/Engine/Engine.swift ni
+Sources/MIDI/MIDIPackage.swift porque solo contienen constantes estaticas: no
+hay funciones ni ramas que cubrir. Los umbrales empiezan a aplicar en la Fase 2,
+con el modelo de tiempo musical.
+
+Test coverage gap (consciente)
+------------------------------
+App/ToraxH0App.swift y App/ContentView.swift no tienen tests. Decision
+deliberada: ambos son placeholders sin logica (@main de cuatro lineas y dos
+etiquetas de texto) que la Fase 4 sustituira por completo. Crear un target de UI
+tests para eso contradice la regla de workflow.md: "No se escriben UI tests de
+bajo valor solo para subir el numero."
+
+Manual verification steps
+-------------------------
+1. open ToraxH0.xcodeproj -> abre sin errores, carpeta App visible
+2. Package Dependencies -> Engine y MIDI resueltos como paquetes locales
+3. Target General -> Minimum Deployments iPadOS 17.0, destino solo iPad
+4. Compilar con Cmd+B contra "Any iOS Device" -> exito
+5. (Opcional) Signing & Capabilities -> seleccionar Team, ejecutar en iPad
+
+User confirmation
+-----------------
+"si, verificado"
+
+El usuario completo tambien el paso 5: Xcode escribio DEVELOPMENT_TEAM,
+SUPPORTED_PLATFORMS y SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD en el pbxproj. Eso
+resuelve por adelantado el caveat de firma que bloqueaba la Fase 4 (medir jitter
+exige instalar en dispositivo real). Build reverificada con firma activa.
