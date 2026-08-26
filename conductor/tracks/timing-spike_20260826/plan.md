@@ -32,10 +32,10 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Implementación (Green): cálculo de ventana sin asignaciones — devuelve `Range<Int>`, con lo que el buffer preasignado que preveía el plan resulta innecesario
   - [x] Marcar las funciones de tiempo real con `/// Realtime:`
   - [x] Refactor y verificar cobertura
-- [~] Task: Cliente CoreMIDI de salida
-  - [ ] Tests (Red): construcción de paquetes note-on/note-off y asignación de timestamps
-  - [ ] Implementación (Green): cliente, enumeración de destinos, envío con `MIDISendEventList`
-  - [ ] Manejar la desconexión de dispositivo como estado esperado, no como error
+- [x] Task: Cliente CoreMIDI de salida (d24f8e5)
+  - [x] Tests (Red): construcción de paquetes note-on/note-off y asignación de timestamps
+  - [x] Implementación (Green): cliente, enumeración de destinos, envío con `MIDISendEventList`
+  - [x] Manejar la desconexión de dispositivo como estado esperado, no como error — vía `onSetupChanged`; el resultado del envío no la detecta (CoreMIDI acepta endpoints inválidos con `noErr`)
 - [ ] Task: Hilo del scheduler y publicación de snapshot
   - [ ] Implementación: hilo dedicado de alta prioridad
   - [ ] Implementación: lectura de snapshot inmutable, sin locks
