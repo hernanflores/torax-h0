@@ -11,9 +11,9 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Paquete SPM `Engine` (solo stdlib) y paquete `MIDI`
   - [x] Targets de test para ambos paquetes
   - [x] Verificar que `swift test --package-path Packages/Engine` corre sin simulador
-- [ ] Task: Imponer la frontera de dependencias de `Engine`
-  - [ ] Escribir un test que falle si `Engine` gana dependencias de plataforma
-  - [ ] Confirmar que el test pasa con el `Package.swift` actual
+- [x] Task: Imponer la frontera de dependencias de `Engine` (5555c17)
+  - [x] Escribir un test que falle si `Engine` gana dependencias de plataforma
+  - [x] Confirmar que el test pasa con el `Package.swift` actual
 - [ ] Task: Actualizar comandos de desarrollo en `workflow.md`
   - [ ] Sustituir los comandos indicativos por los reales del proyecto ya creado
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
