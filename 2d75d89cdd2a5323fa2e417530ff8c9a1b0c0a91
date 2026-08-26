@@ -1,0 +1,62 @@
+PHASE VERIFICATION REPORT — Phase 2: Reloj y salida MIDI
+Track: timing-spike_20260826
+
+Automated tests
+---------------
+Commands announced and executed:
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI --enable-code-coverage
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Results:
+  Engine : Executed 16 tests, 0 failures
+  MIDI   : Executed 45 tests, 1 skipped, 0 failures
+  Build  : ** BUILD SUCCEEDED **
+
+Test coverage for phase changes
+-------------------------------
+Todos los ficheros de codigo de la fase tienen test correspondiente, incluido el
+target C (cubierto por testAtomicsAreActuallyLockFree). Sin huecos.
+
+Coverage
+--------
+Engine  MusicalTime.swift      : 100.00%  (umbral >=90%: CUMPLE)
+MIDI    agregado 6 ficheros    :  88.17%  (82/93 regiones; umbral >=80%: CUMPLE)
+          Atomics.swift            100.00%
+          HostClock.swift          100.00%
+          MIDIMessage.swift        100.00%
+          SchedulerThread.swift     93.33%
+          LookAheadScheduler.swift  92.31%
+          CoreMIDIOutput.swift      70.97%  (lo restante exige hardware)
+
+GAP CORREGIDO DURANTE LA VERIFICACION
+--------------------------------------
+El usuario reporto: "No veo como ejecutar los tests". Cierto y culpa del
+scaffold: el esquema ToraxH0 no tiene accion de test y los esquemas
+autogenerados Engine/MIDI del proyecto tampoco.
+
+Causa raiz: el proyecto es iOS-only (SDKROOT=iphoneos, TARGETED_DEVICE_FAMILY=2),
+asi que Xcode acota los tests de los paquetes a iOS — y no hay runtime de
+simulador instalado.
+
+Se intento crear un esquema AllTests en el proyecto; fallo con "Supported
+platforms for the buildables in the current scheme is empty" incluso tras anadir
+BuildActionEntries. Se descarto en vez de dejar un esquema roto.
+
+Solucion verificada: abrir el paquete directamente (open Packages/MIDI/Package.swift),
+destino My Mac, Cmd+U. Comprobado por linea de comandos:
+  cd Packages/MIDI && xcodebuild test -scheme MIDI -destination 'platform=macOS'
+  -> Executed 45 tests, 1 skipped, 0 failures. ** TEST SUCCEEDED **
+Documentado en workflow.md (commit 2d75d89).
+
+Manual verification steps
+-------------------------
+1. open Packages/MIDI/Package.swift -> destino My Mac -> Cmd+U -> 45 tests, 1 skipped
+2. testAtomicsAreActuallyLockFree pasa (el target C cumple su funcion)
+3. (Opcional) con dispositivo MIDI conectado, testSendingToARealDestinationIsAccepted
+   deja de estar skipped
+4. ToraxH0.xcodeproj -> Cmd+B contra "Any iOS Device" -> exito (el target C enlaza)
+
+User confirmation
+-----------------
+"si, verificado"
