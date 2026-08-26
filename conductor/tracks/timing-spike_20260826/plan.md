@@ -6,7 +6,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 1: Scaffold y fronteras
 
-- [ ] Task: Crear el proyecto Xcode y los paquetes SPM
+- [~] Task: Crear el proyecto Xcode y los paquetes SPM
   - [ ] Proyecto Xcode con target `App`, iPadOS 17+ mínimo
   - [ ] Paquete SPM `Engine` (solo stdlib) y paquete `MIDI`
   - [ ] Targets de test para ambos paquetes
