@@ -1,0 +1,62 @@
+Task: Scheduler look-ahead
+Track: timing-spike_20260826 — Phase 2
+
+Summary
+-------
+LookAheadScheduler: dado un horizonte temporal, devuelve los Steps que caen
+dentro de la ventana y aun no se han entregado.
+
+Files created / modified
+------------------------
+- Packages/MIDI/Sources/MIDI/LookAheadScheduler.swift (nuevo)
+- Packages/MIDI/Tests/MIDITests/LookAheadSchedulerTests.swift (nuevo)
+- Packages/MIDI/Package.swift (MIDI pasa a depender de Engine)
+
+Key design: devuelve Range<Int>, no eventos
+-------------------------------------------
+advance(toHorizon:) devuelve un Range<Int> de indices de Step: dos enteros. No
+hay array que construir ni buffer que preasignar, asi que la regla "sin
+asignaciones en el hilo del scheduler" se cumple POR CONSTRUCCION y no por
+vigilancia. Es la decision mas importante del fichero.
+
+Key design: coste constante
+---------------------------
+El limite superior se estima dividiendo horizonte/duracion y se corrige con un
+ajuste acotado, no recorriendo Steps uno a uno: un salto de horizonte muy lejano
+cuesta lo mismo que uno corto.
+
+Verificado empiricamente: sobre todo el rango de tempo valido (20-300 BPM), 4
+divisiones y hasta 200.000 Steps, el ajuste hace COMO MAXIMO 1 iteracion. La
+afirmacion de O(1) en el hilo de tiempo real no se queda en promesa.
+
+Invariante
+----------
+Sobre llamadas sucesivas cada Step se emite exactamente una vez. Duplicar un
+Step seria una nota repetida; omitirlo, una nota perdida. Ambos fallos tienen
+test propio, incluido uno con 200 ventanas de tamano irregular que verifica que
+lo emitido es exactamente 0,1,2,... sin huecos ni duplicados.
+
+El limite superior de la ventana es exclusivo: un Step que caiga exactamente en
+el horizonte se entrega en la ventana siguiente. Es lo que impide la doble
+emision en el solape.
+
+Test oracle corregido antes de implementar
+------------------------------------------
+testStepCountIsCorrectAtAwkwardTempo calculaba el conteo esperado con aritmetica
+real exacta (10e9/stepDur + 1). El contrato del scheduler esta definido sobre
+offsets REDONDEADOS a nanosegundos enteros, que son los que acaban en el
+timestamp de CoreMIDI. Las dos definiciones difieren en un Step en los limites
+exactos: a 174 BPM el Step 116 cae en 9,999999999997 s, que redondea a 10 s
+clavados. Se sustituyo por un oraculo que cuenta iterando sobre
+nanosecondOffset(forStep:) — independiente de la implementacion, pero coherente
+con el contrato.
+
+TDD
+---
+Red: 'cannot find type LookAheadScheduler in scope'. Confirmado.
+Green: 12 tests pasan.
+
+Coverage
+--------
+Sources/MIDI/LookAheadScheduler.swift: 92.31% regiones, 100% funciones,
+96.88% lineas. Umbral MIDI: >=80%. CUMPLE.
