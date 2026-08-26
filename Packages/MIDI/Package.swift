@@ -20,7 +20,10 @@ let package = Package(
         .package(path: "../Engine"),
     ],
     targets: [
-        .target(name: "MIDI", dependencies: ["Engine"]),
+        // Atómicos sin lock. Target C propio, no una dependencia externa:
+        // iPadOS 17 no ofrece alternativa sin recurrir a terceros.
+        .target(name: "CToraxAtomics"),
+        .target(name: "MIDI", dependencies: ["Engine", "CToraxAtomics"]),
         .testTarget(name: "MIDITests", dependencies: ["MIDI"]),
     ]
 )

@@ -36,7 +36,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): construcción de paquetes note-on/note-off y asignación de timestamps
   - [x] Implementación (Green): cliente, enumeración de destinos, envío con `MIDISendEventList`
   - [x] Manejar la desconexión de dispositivo como estado esperado, no como error — vía `onSetupChanged`; el resultado del envío no la detecta (CoreMIDI acepta endpoints inválidos con `noErr`)
-- [ ] Task: Hilo del scheduler y publicación de snapshot
+- [~] Task: Hilo del scheduler y publicación de snapshot
   - [ ] Implementación: hilo dedicado de alta prioridad
   - [ ] Implementación: lectura de snapshot inmutable, sin locks
   - [ ] Revisión explícita: sin asignaciones, locks, `await`, logging ni SwiftUI en el camino
