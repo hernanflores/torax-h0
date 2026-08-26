@@ -4,7 +4,7 @@
 
 Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fallando primero (Red), implementación mínima (Green), refactor, verificación de cobertura y checkpoint de fase.
 
-## Phase 1: Scaffold y fronteras
+## Phase 1: Scaffold y fronteras [checkpoint: e05c019]
 
 - [x] Task: Crear el proyecto Xcode y los paquetes SPM (df1ad4c)
   - [x] Proyecto Xcode con target `App`, iPadOS 17+ mínimo
@@ -16,7 +16,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Confirmar que el test pasa con el `Package.swift` actual
 - [x] Task: Actualizar comandos de desarrollo en `workflow.md` (e513aa7)
   - [x] Sustituir los comandos indicativos por los reales del proyecto ya creado
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (e05c019)
 
 ## Phase 2: Reloj y salida MIDI
 
