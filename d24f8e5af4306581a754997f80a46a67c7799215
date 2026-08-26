@@ -1,0 +1,92 @@
+Task: Cliente CoreMIDI de salida
+Track: timing-spike_20260826 — Phase 2
+
+Summary
+-------
+Tipos de mensaje MIDI con empaquetado UMP, conversion de tiempo de host, y el
+cliente CoreMIDI que envia con timestamp de entrega futuro.
+
+Files created
+-------------
+- Packages/MIDI/Sources/MIDI/MIDIMessage.swift
+- Packages/MIDI/Sources/MIDI/HostClock.swift
+- Packages/MIDI/Sources/MIDI/CoreMIDIOutput.swift
+- Packages/MIDI/Tests/MIDITests/MIDIMessageTests.swift
+- Packages/MIDI/Tests/MIDITests/HostClockTests.swift
+- Packages/MIDI/Tests/MIDITests/MIDISendResultTests.swift
+- Packages/MIDI/Tests/MIDITests/CoreMIDIOutputTests.swift
+
+HALLAZGO: el resultado del envio NO detecta desconexiones
+----------------------------------------------------------
+Medido en macOS: enviar a un endpoint inexistente (MIDIEndpointRef(0)) devuelve
+noErr. CoreMIDI acepta el mensaje y lo descarta en silencio, sin validar el
+destino de forma sincrona.
+
+Esto contradecia el diseno inicial, que asumia poder clasificar la desconexion a
+partir del OSStatus del envio. Correccion aplicada:
+  - El cliente registra ahora el bloque de notificaciones de
+    MIDIClientCreateWithBlock (antes se pasaba nil) y expone onSetupChanged.
+    Ese es el unico mecanismo fiable para enterarse de que un destino
+    desaparecio.
+  - MIDISendResult.classify se conserva —sigue siendo correcta para los codigos
+    que CoreMIDI si devuelve— pero se documenta que no puede ser el mecanismo
+    principal.
+  - El test que asumia lo contrario se reescribio para DOCUMENTAR el
+    comportamiento real (testSendingToAnInvalidEndpointIsSilentlyAccepted). Si
+    algun dia CoreMIDI cambia de criterio, nos enteraremos por un fallo de test
+    y no por un bug en escenario.
+
+Key design: HostClock
+---------------------
+CoreMIDI sella eventos con tiempo de host (mach_absolute_time), cuya unidad NO
+es el nanosegundo en todas las maquinas: en Apple Silicon la relacion es 1:1,
+en Intel no. Dar por hecha la equivalencia produce tempo correcto en unos
+dispositivos y erroneo en otros — un fallo que no se ve en la maquina de
+desarrollo. La conversion es explicita y tiene tests de ida y vuelta.
+El timebase se consulta una sola vez: el hilo del scheduler no puede permitirse
+una llamada al kernel por evento.
+
+Key design: envio sin asignaciones
+-----------------------------------
+El MIDIEventList se construye en la pila y se rellena por puntero
+(MIDIEventListInit / MIDIEventListAdd). No hay array intermedio. send() esta
+marcada '/// Realtime:'.
+
+Empaquetado UMP
+---------------
+MIDISendEventList trabaja con Universal MIDI Packets, no con bytes sueltos de
+MIDI 1.0. Layout verificado por test:
+  31..28 = 0x2 (tipo), 27..24 = group, 23..16 = status, 15..8 = data1, 7..0 = data2
+Incluye un test con todos los campos al maximo para comprobar que ningun byte
+desborda a los vecinos.
+
+Concurrencia
+------------
+El bloque de notificaciones llega desde el hilo de CoreMIDI. El callback vive en
+una caja con NSLock marcada @unchecked Sendable. El lock es aceptable aqui: las
+notificaciones de conexion son esporadicas y NO ocurren en el camino del
+scheduler, asi que no viola la regla de tiempo real de swift.md.
+
+TDD
+---
+Red: 'cannot find MIDIChannel/MIDINote/MIDIVelocity/MIDIMessage/HostClock in
+     scope'. Confirmado.
+Green: 35 tests pasan, 1 skipped.
+
+Coverage
+--------
+MIDIMessage.swift       : 100.00% regiones
+HostClock.swift         : 100.00% regiones
+LookAheadScheduler.swift:  92.31% regiones
+CoreMIDIOutput.swift    :  70.97% regiones (subio desde 30% al anadir tests que
+                           si corren en host: CoreMIDI existe tambien en macOS)
+Umbral MIDI: >=80% a nivel de modulo. CUMPLE.
+
+Lo no cubierto exige hardware: el cuerpo del bloque de notificacion necesita un
+cambio real de dispositivos, y testSendingToARealDestinationIsAccepted quedo
+SKIPPED porque esta maquina no tiene ningun destino MIDI conectado.
+
+Build
+-----
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+** BUILD SUCCEEDED **
