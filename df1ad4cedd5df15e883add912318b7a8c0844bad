@@ -1,0 +1,47 @@
+Task: Crear el proyecto Xcode y los paquetes SPM
+Track: timing-spike_20260826 — Phase 1
+
+Summary
+-------
+Scaffold inicial del proyecto: dos paquetes SPM y un target de app iPadOS.
+
+Files created
+-------------
+- Packages/Engine/Package.swift, Sources/Engine/Engine.swift, Tests/EngineTests/EngineTests.swift
+- Packages/MIDI/Package.swift, Sources/MIDI/MIDIPackage.swift, Tests/MIDITests/MIDIPackageTests.swift
+- App/ToraxH0App.swift, App/ContentView.swift
+- ToraxH0.xcodeproj/project.pbxproj
+- ToraxH0.xcodeproj/xcshareddata/xcschemes/ToraxH0.xcscheme
+
+Why
+---
+Engine y MIDI se separan como paquetes SPM desde el primer commit para que el
+compilador — no la disciplina — garantice que el motor generativo es puro. Ver
+conductor/tech-stack.md.
+
+El .xcodeproj se escribe a mano usando PBXFileSystemSynchronizedRootGroup
+(Xcode 16+), que incluye ficheros por carpeta en vez de enumerarlos. Evita una
+dependencia de herramienta de build (XcodeGen/Tuist), coherente con la regla de
+cero dependencias de tech-stack.md, y mantiene el pbxproj pequeno.
+
+Verification
+------------
+- swift test --package-path Packages/Engine : 1 test, 0 failures (host, sin simulador)
+- swift test --package-path Packages/MIDI   : 1 test, 0 failures (host, sin simulador)
+- xcodebuild -list                          : target ToraxH0, paquetes locales resueltos
+- xcodebuild build -destination generic/platform=iOS : BUILD SUCCEEDED
+  target triple arm64-apple-ios17.0 (deployment target 17.0 confirmado)
+
+Environment notes
+-----------------
+Requirio instalar la plataforma iOS de Xcode 26.3 y ejecutar
+'sudo xcodebuild -runFirstLaunch'. No hay runtimes de simulador instalados; no
+es bloqueante porque la medicion de jitter debe correr en dispositivo real.
+
+Setting choices
+---------------
+- SWIFT_VERSION = 6.0 (modo de lenguaje Swift 6, concurrencia estricta)
+- TARGETED_DEVICE_FAMILY = 2 (solo iPad)
+- IPHONEOS_DEPLOYMENT_TARGET = 17.0
+- PRODUCT_BUNDLE_IDENTIFIER = com.toraxh0.ToraxH0 (provisional)
+- DEVELOPMENT_TEAM sin fijar: requerira configurarse para instalar en dispositivo
