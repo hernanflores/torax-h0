@@ -1,0 +1,65 @@
+Task: Modelo de tiempo musical
+Track: timing-spike_20260826 — Phase 2
+
+Summary
+-------
+Tipos Tempo, Division y MusicalTimeline: traducen indices de Step a offsets en
+nanosegundos, sin deriva.
+
+Files created
+-------------
+- Packages/Engine/Sources/Engine/MusicalTime.swift
+- Packages/Engine/Tests/EngineTests/MusicalTimeTests.swift
+
+Architectural decision: por que viven en Engine y no en MIDI
+------------------------------------------------------------
+Division es un parametro de Shape segun la Pre Spec: es vocabulario del dominio
+musical, no de la capa de transporte. Engine se queda con el tiempo musical
+(puro, sin plataforma) y MIDI con lo que si es suyo: traducir ese tiempo al
+tiempo de host de Apple. Consecuencia: MIDI pasara a depender de Engine en la
+siguiente tarea.
+
+Key design: ausencia de deriva
+------------------------------
+nanosecondOffset(forStep:) multiplica el indice por la duracion de Step; NO
+acumula (t += paso). La diferencia no es de magnitud sino de forma: el error de
+la acumulacion crece linealmente y sin techo, el de la multiplicacion queda
+acotado a un unico redondeo.
+
+Medido a 174 BPM sobre 1000 Steps:
+  acumulativa    : 448.28 ns de error maximo
+  multiplicativa :   0.48 ns de error maximo
+
+Nota de honestidad: a esa escala la acumulacion todavia NO es audible (~19 us
+por hora). La razon para descartarla no es que suene mal hoy, sino que su error
+no tiene techo y no hay nada que ganar a cambio. Una version previa del
+comentario del codigo afirmaba que la deriva era "audible tras unos minutos";
+se corrigio al medirla, porque los datos no lo sostenian.
+
+TDD
+---
+Red: los 3 tipos no existian -> 'cannot find Tempo/Division/MusicalTimeline in
+     scope'. Confirmado antes de implementar.
+Green: 16 tests pasan.
+Verificacion extra: se comprobo que el test anti-deriva DISCRIMINA, ejecutando
+     ambas implementaciones sobre 1000 steps. La acumulativa lo falla
+     (448 ns > 1 ns de accuracy). El test no es decorativo.
+
+Refactor
+--------
+Division validaba con precondition mientras Tempo usaba init? — dos estilos de
+validacion para dos tipos del mismo dominio. Unificado en init?, con un init
+privado 'unchecked' para las constantes de literal conocido (quarter, eighth,
+sixteenth) que evita el force unwrap prohibido por swift.md.
+Efecto colateral: las dos ramas de precondition eran regiones intrapables por
+XCTest; al hacerlas testeables la cobertura subio de 83.33% a 100%.
+
+Coverage
+--------
+Sources/Engine/MusicalTime.swift: 100% regiones, 100% funciones, 100% lineas.
+Umbral Engine: >=90%. CUMPLE.
+
+Realtime
+--------
+nanosecondOffset(forStep:) marcada con '/// Realtime:'. Aritmetica pura, sin
+asignaciones, sin locks, sin await.
