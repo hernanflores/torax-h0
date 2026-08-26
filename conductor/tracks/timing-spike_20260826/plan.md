@@ -6,11 +6,11 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 1: Scaffold y fronteras
 
-- [~] Task: Crear el proyecto Xcode y los paquetes SPM
-  - [ ] Proyecto Xcode con target `App`, iPadOS 17+ mínimo
-  - [ ] Paquete SPM `Engine` (solo stdlib) y paquete `MIDI`
-  - [ ] Targets de test para ambos paquetes
-  - [ ] Verificar que `swift test --package-path Packages/Engine` corre sin simulador
+- [x] Task: Crear el proyecto Xcode y los paquetes SPM (df1ad4c)
+  - [x] Proyecto Xcode con target `App`, iPadOS 17+ mínimo
+  - [x] Paquete SPM `Engine` (solo stdlib) y paquete `MIDI`
+  - [x] Targets de test para ambos paquetes
+  - [x] Verificar que `swift test --package-path Packages/Engine` corre sin simulador
 - [ ] Task: Imponer la frontera de dependencias de `Engine`
   - [ ] Escribir un test que falle si `Engine` gana dependencias de plataforma
   - [ ] Confirmar que el test pasa con el `Package.swift` actual
