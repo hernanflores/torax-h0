@@ -156,6 +156,28 @@ swift test --package-path Packages/MIDI --enable-code-coverage
 xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
 ```
 
+### Ejecutar los tests desde Xcode
+
+**No funciona desde el proyecto `ToraxH0.xcodeproj`.** El proyecto es iOS-only
+(`SDKROOT = iphoneos`, `TARGETED_DEVICE_FAMILY = 2`), asi que Xcode acota los
+tests de los paquetes a iOS — y no hay runtime de simulador instalado para
+ejecutarlos. El esquema `ToraxH0` no tiene accion de test, y los esquemas
+autogenerados `Engine` y `MIDI` del proyecto tampoco.
+
+**Abre el paquete directamente:**
+
+```bash
+open Packages/MIDI/Package.swift     # o Packages/Engine/Package.swift
+```
+
+Xcode lo abre como proyecto propio. Elige **My Mac** como destino y pulsa Cmd+U.
+
+Equivalente por linea de comandos:
+
+```bash
+cd Packages/MIDI && xcodebuild test -scheme MIDI -destination 'platform=macOS'
+```
+
 ### Notas del entorno
 
 - **No hay runtimes de simulador instalados.** No es bloqueante: los tests de
