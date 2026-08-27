@@ -54,10 +54,10 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): la lista refleja los destinos del sistema; sin destinos es un estado válido
   - [x] Implementación (Green): enumeración y selección
   - [x] El endpoint de medición no aparece como destino elegible
-- [~] Task: Desconexión como estado esperado
-  - [ ] Tests (Red): `onSetupChanged` provoca reconsulta de destinos
-  - [ ] Implementación (Green): estado `No MIDI device`, sin lenguaje de error ni disculpa
-- [ ] Task: Transporte
+- [x] Task: Desconexión como estado esperado — `760fe8c`
+  - [x] Tests (Red): `onSetupChanged` provoca reconsulta de destinos
+  - [x] Implementación (Green): estado `No MIDI device`, sin lenguaje de error ni disculpa
+- [~] Task: Transporte
   - [ ] Tests (Red): play arranca el reloj, stop lo detiene y no quedan notas colgadas
   - [ ] Implementación (Green): play/stop con reloj interno
   - [ ] Al parar, enviar note-off de cualquier nota en curso
