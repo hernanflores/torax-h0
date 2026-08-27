@@ -203,9 +203,9 @@ cd Packages/MIDI && xcodebuild test -scheme MIDI -destination 'platform=macOS'
   (`workflow.md` → Timing Verification). Si en algún momento se necesita
   simulador: `xcodebuild -downloadPlatform iOS` y añadir `-destination
   'platform=iOS Simulator,name=<dispositivo>'`.
-- **`DEVELOPMENT_TEAM` no está fijado** en el proyecto. Instalar en un iPad real
-  exige configurarlo (Signing & Capabilities en Xcode), o pasar
-  `DEVELOPMENT_TEAM=<TEAMID>` a `xcodebuild`.
+- **`DEVELOPMENT_TEAM` sí está fijado** (`QRPT98J2U2`), en Debug y en Release.
+  Instalar en un iPad real no exige configurar nada más. *(Corregido el
+  2026-08-27: esta nota decía lo contrario y era falsa.)*
 - El SDK instalado (iOS 26.2) es muy posterior al deployment target (17.0):
   **compilar sin avisos no garantiza compatibilidad con iPadOS 17**, porque las
   APIs más recientes compilan igualmente. Verificar en dispositivo.
