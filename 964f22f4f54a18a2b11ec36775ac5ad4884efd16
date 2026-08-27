@@ -1,0 +1,60 @@
+Task: stop() espera al hilo (Fase 3 — Cerrar la carrera)
+
+LA CARRERA QUEDA CERRADA. LA SUITE NO QUEDA VERDE.
+Ver "Se choca con el muro" más abajo.
+
+El arreglo
+----------
+Se añade una bandera `finished`: baja al arrancar y sube cuando el bucle sale.
+`stop()` baja `running` y espera a ver subir `finished`, con cota superior de
+1 segundo.
+
+`running` sola no basta porque es una PETICIÓN de parada: entre bajarla y que el
+hilo la lea pasa hasta media ventana, porque está dormido. Sin señal de salida,
+un `start()` dentro de esa ventana vuelve a subir `running` y el hilo viejo
+nunca llega a leer el `false`.
+
+`stop()` devuelve `SchedulerStopResult`. Agotar la cota se reporta como
+`.timedOut`; no se cuelga a quien pide parar (NFR2). La espera corre en el hilo
+de control: llamarla desde dentro del bucle sería un error de programación.
+
+Verificación de la carrera
+--------------------------
+  con la guarda      6 de 6 tests pasan
+  sin la guarda      3 de 3 tests de carrera FALLAN
+
+Comprobado desactivando el bucle de espera y volviéndolo a activar, que es el
+criterio de aceptación explícito del track ("no basta con que pase").
+
+El test principal informaba antes: "Se emitieron 1950 Steps/s cuando un solo
+scheduler emite 320" — seis bucles vivos tras cinco ciclos de stop()/start().
+Ahora la tasa es la de un solo bucle.
+
+SE CHOCA CON EL MURO QUE EL PLAN ANTICIPÓ
+------------------------------------------
+El plan avisaba: "La Fase 2 es la que decide el track. Si el cierre explícito no
+estabiliza el desmontaje, la Fase 3 vuelve a chocar con el mismo muro y hay que
+PARAR Y REPORTAR CON DATOS, no probar variantes a ciegas."
+
+El cierre explícito NO lo estabilizó. Bisección por commits, contando
+ocurrencias de -50 y saltando los tests nuevos de cada commit:
+
+  main                                          0 de 18 pasadas
+  cc251ec  test de regresión                    0
+  c8c8ed0  + close() de CoreMIDIOutput          0
+  cd70b95  + close() de VirtualLoopback         0
+  9bfb02a  + desmontaje en orden del arnés      3   ← aparece aquí
+  este commit (+ join)                          3   ← también solo, sin el anterior
+
+Las dos piezas rompen la suite POR SEPARADO: con el arnés revertido y solo el
+join, siguen saliendo 3. Encaja con los dos intentos que la spec ya daba por
+descartados (intento 1, "join sin más, rompe la suite 4/4"; intento 2, "drenar
+la ventana, inestable") y confirma que el cierre explícito de la Fase 2 no era
+la pieza que faltaba.
+
+Los que fallan son siempre los tests que CREAN ENDPOINTS VIRTUALES.
+
+Control repetido tres veces a lo largo de la sesión —tras 12, ~40 y ~70 pasadas
+acumuladas— para descartar deriva del entorno: main siempre 0.
+
+Se para aquí y se reporta, según instruye el plan.
