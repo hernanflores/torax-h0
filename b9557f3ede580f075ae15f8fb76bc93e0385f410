@@ -1,0 +1,62 @@
+Mitigación parcial de una inestabilidad que introdujo TransportTests.
+
+El hallazgo
+-----------
+La suite de MIDI empezó a fallar de forma intermitente al añadir TransportTests.
+Los fallos son siempre `clientCreationFailed(-50)` y afectan A LA VEZ a las tres
+clases que crean clientes de CoreMIDI —CoreMIDIOutputTests, JitterHarnessTests y
+VirtualLoopbackTests—, unos 13 casos de golpe. El patrón es el de "la creación
+de clientes deja de funcionar para el resto del proceso".
+
+Medido (no inferido)
+--------------------
+  main                                        0 de 18 pasadas con fallos
+  rama, TransportTests con 9 reproducciones   2 de 8
+  rama, sin TransportTests                    0 de 8
+  rama, sin SchedulerThreadSnapshotTests      1 de 6
+  un solo test con hilo + clases CoreMIDI     0 de 8
+  rama, TransportTests consolidado (4)        2 de 12
+
+Se descartaron dos hipótesis con datos:
+- Deriva del entorno: `main` se volvió a medir DESPUÉS de ~40 pasadas y seguía
+  0 de 6. No es la máquina.
+- Envenenamiento entre procesos: correr TransportTests y después
+  VirtualLoopbackTests en procesos separados da 0 fallos en 4 ciclos. Es dentro
+  del mismo proceso.
+
+También se probó esperar a que el hilo saliera del bucle tras `stop()`
+(usleep 40 ms): EMPEORÓ el resultado, 5 de 10. Se descartó y se revirtió.
+
+Qué hace este commit
+--------------------
+Consolida las nueve reproducciones de TransportTests en cuatro, agrupando
+aserciones relacionadas en el mismo ciclo de play/stop. Ninguna aserción se
+pierde: los 12 tests originales se reorganizan en 6.
+
+Baja la tasa de ~25% a ~17%, así que MITIGA PERO NO ARREGLA. Seguir recortando
+tests sería combatir el síntoma, y la tasa volvería a subir en cuanto la suite
+crezca.
+
+La causa de fondo
+-----------------
+El ciclo de vida de `stop()`/`start()` del scheduler, que es exactamente el
+track `scheduler-lifecycle_20260826`. El plan de este track lo anticipó: "La
+Fase 3 introduce transporte, que es justo el gesto que la dispara. Si [...] es
+señal de subir la prioridad de aquel track — no de parchearlo aquí."
+
+Esto es esa señal, con números.
+
+IMPACTO EN LA CI
+----------------
+`.github/workflows/swift.yml` corre `swift test --package-path Packages/MIDI` en
+un runner macOS real, con CoreMIDI. A una tasa de ~1 de cada 6, el check del PR
+fallará sin culpa del cambio bajo revisión — que es justo lo que el gate de
+Pull Requests se acababa de reparar para evitar.
+
+Se plantea al usuario en el checkpoint de la Fase 3.
+
+Verificación
+------------
+swift test --package-path Packages/MIDI --filter TransportTests → 6 tests, 0 fallos
+swift test --package-path Packages/Engine → 66 tests, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
