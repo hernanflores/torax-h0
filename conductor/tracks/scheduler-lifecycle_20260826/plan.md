@@ -8,19 +8,24 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 1: Caracterizar la carrera
 
-- [ ] Task: Test de regresión que falle de verdad
-  - [ ] Tests (Red): ciclos rápidos de `stop()`/`start()` detectando Steps duplicados o fuera de orden
-  - [ ] Línea de tiempo rápida frente a la ventana (p. ej. 300 BPM en 1/256 ≈ 3,1 ms por Step contra una ventana de 20 ms) — con los 125 ms por Step del resto de los tests no hay solape posible
-  - [ ] **Verificar que el test falla sin la guarda**, no solo que pasa con ella
-  - [ ] Distinguir el defecto real de «el hilo viejo emite unos ms tras `stop()`», que es esperado mientras `stop()` no espere
-- [ ] Task: Medir la tasa base de `-50` en `main`
-  - [ ] 12+ pasadas de `swift test --package-path Packages/MIDI`, registrar el número de fallos
-  - [ ] Es la referencia contra la que se comprobará que el arreglo no empeora nada
+- [x] Task: Test de regresión que falle de verdad — `cc251ec`
+  - [x] Tests (Red): ciclos rápidos de `stop()`/`start()` detectando Steps duplicados o fuera de orden
+  - [x] Línea de tiempo rápida frente a la ventana (p. ej. 300 BPM en 1/256 ≈ 3,1 ms por Step contra una ventana de 20 ms) — con los 125 ms por Step del resto de los tests no hay solape posible
+  - [x] **Verificar que el test falla sin la guarda**, no solo que pasa con ella
+  - [x] Distinguir el defecto real de «el hilo viejo emite unos ms tras `stop()`», que es esperado mientras `stop()` no espere
+- [x] Task: Medir la tasa base de `-50` en `main` — **0 de 18 pasadas**
+  - [x] 12+ pasadas de `swift test --package-path Packages/MIDI`, registrar el número de fallos
+  - [x] Es la referencia contra la que se comprobará que el arreglo no empeora nada
+
+  Medido el 2026-08-27 en dos tandas (12 + 6) sobre `main` limpio, la segunda
+  después de ~40 pasadas de sesión para descartar deriva del entorno: **0 fallos
+  en 18 pasadas**. La rama del MVP, en cambio, daba ~1 de cada 6 — ver la git
+  note de `a6e49fb`.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Cierre explícito del arnés
 
-- [ ] Task: Cierre ordenado de `CoreMIDIOutput`
+- [~] Task: Cierre ordenado de `CoreMIDIOutput`
   - [ ] Tests (Red): cerrar es idempotente; enviar tras cerrar es un estado esperado, no un error
   - [ ] Implementación (Green): `close()` explícito — puerto y luego cliente
   - [ ] `deinit` pasa a ser red de seguridad idempotente, no el mecanismo principal
