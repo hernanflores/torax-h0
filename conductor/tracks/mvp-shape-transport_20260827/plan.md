@@ -86,30 +86,36 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Estado del track
 
-**Fases 1, 2 y 3 completas y verificadas.** Falta la Fase 4, que exige iPad y
-sintetizador conectado.
+**COMPLETO — 2026-08-27.** Las cuatro fases cerradas con checkpoint. Torax H-0
+suena por primera vez en hardware.
 
-### La pausa por `scheduler-lifecycle` se levantó el 2026-08-27
+Criterio principal de aceptación, cumplido y verificado en iPad: pulsar Play
+produce los pulsos euclidianos de Shape 16/5 audibles en el sintetizador, y
+Stop detiene la emisión.
 
-El transporte de la Fase 3 destapó la carrera de `stop()`/`start()`, tal como
-las notas de riesgo de abajo anticipaban, y se subió la prioridad de
-[`scheduler-lifecycle_20260826`](../scheduler-lifecycle_20260826/index.md) para
-arreglarla antes de seguir.
+### Lo que queda abierto, a conciencia
 
-**La carrera se cerró, pero el arreglo no se integra.** Cerrarla empeora la tasa
-de `clientCreationFailed(-50)` de 0 a 3 ocurrencias por pasada, y la hipótesis
-sobre la que se construyó aquel plan resultó falsa. El trabajo queda en la rama
-`fix/scheduler-lifecycle` como registro; el bloqueante real pasa a ser
-`midi-test-flake_20260826`.
+1. **El check de CI puede fallar** ~1 de cada 6 pasadas con
+   `clientCreationFailed(-50)`. Relanzar. Alcance de
+   [`midi-test-flake_20260826`](../midi-test-flake_20260826/index.md), que pasó
+   a ser el bloqueante de la cadena de defectos.
+2. **La carrera de `stop()`/`start()` sigue sin arreglar**, pero se acotó su
+   alcance real: `Transport.play()` construye un `SchedulerThread` nuevo en cada
+   arranque, así que el camino de producto es por construcción inmune. En el
+   iPad, Play/Stop rápido no duplicó notas. El defecto vive en la API de
+   `SchedulerThread` y en la suite de tests, no en el transporte.
+   Investigación completa en la rama `fix/scheduler-lifecycle`, sin integrar.
+3. **Division no cambia en caliente.** Steps, Pulses y Rotate sí. Llega con el
+   track de entrada de control, que es quien la puede provocar.
+4. **La medición de jitter es indicativa, no el veredicto.** Falta el anillo.
+   La σ subió de 8-9 µs a 12-15 µs y sube con el tempo: son 4-7 µs, inaudibles,
+   pero conviene volver a mirarlo en el track de UI.
 
-### Lo que eso implica para este track
+### Lo que este track deja listo para el siguiente
 
-Se sigue con la Fase 4 asumiendo dos cosas conscientemente:
-
-1. **El check de CI puede fallar** ~1 de cada 6 pasadas por el `-50`. Relanzar.
-2. **Parar y arrancar deprisa puede duplicar notas en el iPad.** Es el defecto
-   conocido, sin arreglar. Si al probar resulta molesto, es información para
-   priorizar `midi-test-flake` y luego `scheduler-lifecycle`.
+`Engine` tiene Shape completo y puro. `MIDI` tiene el relevo de snapshot en
+caliente ya probado, que es lo que la entrada de control necesitaba encontrar
+hecho: girar un knob será publicar un `Track` nuevo, y el camino ya existe.
 
 ## Notas de riesgo
 

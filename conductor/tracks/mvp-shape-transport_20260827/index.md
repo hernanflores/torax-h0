@@ -1,6 +1,6 @@
 # Track: MVP rebanada 1 — Shape, transporte y primer sonido
 
-**ID:** `mvp-shape-transport_20260827` · **Type:** Feature (MVP) · **Status:** new
+**ID:** `mvp-shape-transport_20260827` · **Type:** Feature (MVP) · **Status:** complete
 
 La primera vez que Torax H-0 suena. Rebanada vertical: solo Shape en anchura, pero de punta a punta — del motor euclidiano al sintetizador conectado.
 

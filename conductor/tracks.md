@@ -6,7 +6,7 @@ La prioridad del proyecto. Sin app no hay nada que arreglar.
 
 ---
 
-- [~] **Track: MVP rebanada 1 — Shape, transporte y primer sonido**
+- [x] **Track: MVP rebanada 1 — Shape, transporte y primer sonido** — *suena en hardware; jitter con carga máx 0,127 ms · σ 0,015 ms*
   *Link: [conductor/tracks/mvp-shape-transport_20260827/index.md](./tracks/mvp-shape-transport_20260827/index.md)*
 
 ## Defectos conocidos
