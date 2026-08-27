@@ -1,0 +1,59 @@
+Task: Reparto euclidiano (Fase 1 — Shape en Engine)
+
+Resumen
+-------
+`EuclideanRhythm` reparte Pulses sobre un anillo de Steps con el algoritmo de
+Bjorklund. TDD: los tests fallaron por tipo inexistente antes de implementar.
+
+Decisión: de dónde salen los patrones literales
+-----------------------------------------------
+`workflow.md` exige que 16/4, 16/5 y 12/7 sean "casos de test literales de la
+Pre Spec". Al buscarlos se vio que la Pre Spec NO escribe los patrones: da el
+criterio ("reparte los Pulses lo más uniformemente posible entre los Steps",
+sección 4) y describe los tres casos solo cualitativamente — 16/4 "muy
+regular", 16/5 "equilibrio con asimetría", 12/7 "más denso".
+
+No es entonces una elección entre dos lecturas del documento sino un hueco.
+Se rellena con Bjorklund, que es el algoritmo que esa frase nombra y el
+significado estándar de "reparto euclidiano". Antes de fijarlo se validó la
+implementación contra siete patrones publicados —E(3,8), E(5,8), E(2,5),
+E(4,9), E(5,12), E(7,16), E(9,16)— y coincide en los siete.
+
+Los patrones que quedan como canon del proyecto:
+  16/4 → x...x...x...x...   pulsos en 0, 4, 8, 12
+  16/5 → x..x..x..x..x...   pulsos en 0, 3, 6, 9, 12
+  12/7 → x.xx.x.xx.x.       pulsos en 0, 2, 3, 5, 7, 8, 10
+
+La alternativa descartada era floor(i·Steps/Pulses), que coincide en 16/4 y
+16/5 pero da otra fase en 12/7 (0,1,3,5,6,8,10). También es máximamente
+uniforme; simplemente no es el algoritmo euclidiano canónico.
+
+Decisión: máscara de bits, no array
+-----------------------------------
+El patrón se calcula una vez en `init` y se guarda en un `UInt16`. Consultarlo
+es un desplazamiento y una comparación, así que `triggers(atStep:)` cumple la
+regla de "sin asignaciones en el hilo del scheduler" por construcción y no por
+vigilancia. Que quepa en 16 bits es la misma decisión que acotar Steps a 1–16;
+si Steps creciera a los 64 de la Pre Spec, pasa a UInt64 y nada más cambia.
+
+`init` sí asigna y está documentado como NO realtime: se construye en el hilo
+principal al publicar un snapshot.
+
+El índice de Step envuelve sobre el anillo, incluidos los negativos. El
+scheduler cuenta Steps hacia arriba sin volver a cero, y `MusicalTimeline` ya
+admite índices negativos para Delay.
+
+Ficheros
+--------
+Nuevo: Packages/Engine/Sources/Engine/EuclideanRhythm.swift
+Nuevo: Packages/Engine/Tests/EngineTests/EuclideanRhythmTests.swift
+
+Verificación
+------------
+swift test --package-path Packages/Engine  → 39 tests, 0 fallos
+Cobertura Sources/Engine/  → 100% en los tres ficheros (umbral: ≥90%)
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+
+Entre los tests hay dos invariantes exhaustivas sobre las 136 combinaciones
+válidas de (Steps, Pulses): el reparto conserva el número de Pulses, y el
+primer Step siempre dispara.
