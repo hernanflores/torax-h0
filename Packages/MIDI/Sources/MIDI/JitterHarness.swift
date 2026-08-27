@@ -94,7 +94,9 @@ public enum JitterHarness {
         // Nota fija: la señal de prueba es un pulso constante, no música. Lo que
         // se mide es *cuándo* llega cada evento, no qué suena.
         let message = MIDIMessage.noteOn(
-            channel: MIDIChannel(1)!, note: MIDINote(60)!, velocity: MIDIVelocity(100)!
+            channel: MIDIChannel(unchecked: 1),
+            note: MIDINote(unchecked: 60),
+            velocity: MIDIVelocity(unchecked: 100)
         )
 
         let thread = SchedulerThread(configuration: schedulerConfiguration) { _, hostTime in

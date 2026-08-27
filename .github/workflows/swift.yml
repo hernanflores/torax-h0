@@ -1,6 +1,9 @@
-# This workflow will build a Swift project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
-
+# Build y tests de los paquetes SPM del proyecto.
+#
+# No hay `Package.swift` en la raíz: el repositorio es un proyecto Xcode con
+# los paquetes bajo `Packages/`, así que cada uno se invoca por su ruta.
+# `swift test` ya compila lo que necesita, de ahí que no haya paso de build
+# aparte.
 name: Swift
 
 on:
@@ -16,7 +19,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build
-      run: swift build -v
-    - name: Run tests
-      run: swift test -v
+    - name: Test Engine
+      run: swift test --package-path Packages/Engine
+    - name: Test MIDI
+      run: swift test --package-path Packages/MIDI
