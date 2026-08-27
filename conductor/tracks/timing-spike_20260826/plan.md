@@ -67,10 +67,10 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Registrar máximo, media y desviación típica de cada tempo
 - [x] Task: Pasada larga de confirmación (5813017)
   - [x] Repetir con ~1000 eventos por tempo para cubrir la limitación de muestra corta
-- [~] Task: Veredicto sobre el criterio de aceptación
-  - [ ] Contrastar contra el umbral: máx < 2 ms, desviación típica < 0.5 ms
-  - [ ] Registrar los números en la git note del commit
-  - [ ] Si no se cumple: parar y reportar con datos. No iterar arquitecturas dentro de este track
+- [x] Task: Veredicto sobre el criterio de aceptación (b7c4597)
+  - [x] Contrastar contra el umbral: máx < 2 ms, desviación típica < 0.5 ms
+  - [x] Registrar los números en la git note del commit
+  - [x] Si no se cumple: parar y reportar con datos. No iterar arquitecturas dentro de este track
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Notas de riesgo
