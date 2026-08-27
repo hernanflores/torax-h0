@@ -7,7 +7,8 @@
 3.  **Test-Driven Development:** Write unit tests before implementing functionality.
 4.  **Differentiated Coverage:** Engine ≥90%, UI/App ≥80%. See *Coverage Requirements*.
 5.  **Timing is a Feature:** Any change touching the scheduler path must be validated with the jitter harness, not by ear alone.
-6.  **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` and `xcodebuild` flags that avoid watch/interactive modes.
+6.  **Integration is by Pull Request:** No direct pushes to `main`. See *Branching and Pull Requests*.
+7.  **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` and `xcodebuild` flags that avoid watch/interactive modes.
 
 ## Coverage Requirements
 
@@ -44,7 +45,7 @@ All tasks follow a strict lifecycle:
     - Update the relevant document with a dated note explaining the change.
     - Resume implementation.
 
-9.  **Commit Code Changes:** One commit per task. Stage all changes, propose a clear message (see *Commit Guidelines*), commit.
+9.  **Commit Code Changes:** One commit per task, **on a branch — never on `main`** (see *Branching and Pull Requests*). Stage all changes, propose a clear message (see *Commit Guidelines*), commit.
 
 10. **Attach Task Summary with Git Notes:**
     - Get the commit hash: `git log -1 --format="%H"`.
@@ -224,6 +225,39 @@ cd Packages/MIDI && xcodebuild test -scheme MIDI -destination 'platform=macOS'
 4.  **Realtime Safety** — no allocations, locks, `await`, logging, or UI calls on the scheduler path; realtime functions carry the `/// Realtime:` marker.
 5.  **Model Fidelity** — no fixed note-per-step representation; pool semantics preserved; random is seeded and repeatable.
 6.  **iPad Experience** — touch targets adequate; readable without zoom; no modals blocking while transport runs.
+
+## Branching and Pull Requests
+
+**Nada entra en `main` sin pasar por un Pull Request.** Desde el 2026-08-26.
+
+La razón es la CI. El workflow de GitHub Actions falló en los tres primeros
+pushes a `main` —ejecutaba `swift build` desde la raíz, donde no hay
+`Package.swift`— y acabó desactivado manualmente, así que el track
+`timing-spike_20260826` se desarrolló entero sin comprobación automática.
+Con el workflow arreglado, el PR es lo que hace que los checks corran *antes*
+de que el código entre en `main`. Pushear directo desperdicia exactamente lo
+que se acaba de reparar.
+
+### Procedimiento
+
+```bash
+git checkout -b <tipo>/<descripcion-corta>    # fix/…, feat/…, chore/…, docs/…
+# … trabajo, uno o más commits siguiendo el Task Workflow …
+git push -u origin <rama>
+gh pr create --base main --title "<titulo>" --body "<cuerpo>"
+```
+
+Aplica también a los commits que genera Conductor —`conductor(plan): …`,
+fixes de revisión, archivado de tracks—: van en la misma rama y el mismo PR,
+no sueltos sobre `main`.
+
+### El check puede fallar sin culpa del cambio
+
+`MIDITests` arrastra un flake conocido: `clientCreationFailed(-50)` al crear
+clientes CoreMIDI, medido ~1 de cada 12 pasadas sobre `main` limpio. Antes de
+atribuir un fallo `-50` al cambio bajo revisión, correr la suite 3–4 veces y
+comparar contra `main` con el mismo número de pasadas — una sola pasada no
+distingue nada.
 
 ## Commit Guidelines
 
