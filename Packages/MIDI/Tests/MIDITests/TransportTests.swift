@@ -54,49 +54,48 @@ final class TransportTests: XCTestCase {
         XCTAssertFalse(makeTransport(Recorder()).isPlaying)
     }
 
-    func testPlayStartsTheClock() {
-        let transport = makeTransport(Recorder())
-        defer { transport.stop() }
-        transport.play()
-        XCTAssertTrue(transport.isPlaying)
-    }
-
-    func testStopStopsTheClock() {
-        let transport = makeTransport(Recorder())
-        transport.play()
-        transport.stop()
-        XCTAssertFalse(transport.isPlaying)
-    }
-
-    func testPlayingTwiceIsHarmless() {
-        let transport = makeTransport(Recorder())
-        defer { transport.stop() }
-        transport.play()
-        transport.play()
-        XCTAssertTrue(transport.isPlaying)
-    }
-
-    func testStoppingWithoutPlayingIsHarmless() {
-        let transport = makeTransport(Recorder())
-        transport.stop()
-        XCTAssertFalse(transport.isPlaying)
-    }
-
-    // MARK: - Play produce sonido
-
-    func testPlayEmitsNotes() {
+    func testStoppingWithoutHavingPlayedIsHarmlessAndSilent() {
         let recorder = Recorder()
         let transport = makeTransport(recorder)
-        defer { transport.stop() }
 
-        transport.play()
-        waitUntil { recorder.noteOnCount >= 3 }
+        transport.stop()
+        transport.stop()
 
-        XCTAssertGreaterThanOrEqual(recorder.noteOnCount, 3, "el transporte no emitió notas")
+        XCTAssertFalse(transport.isPlaying)
+        XCTAssertTrue(recorder.all.isEmpty, "paró sin haber tocado y aun así emitió")
     }
 
-    /// Cada pulso emite el par: nunca puede haber más note-on que note-off.
-    func testEveryNoteOnIsMatchedByANoteOff() {
+    /// Ciclo completo del reloj en una sola reproducción.
+    ///
+    /// Play, play repetido, stop y stop repetido van juntos en un test —y no en
+    /// cuatro— a propósito: cada reproducción arranca un hilo de prioridad
+    /// máxima, y acumular ciclos de arranque y parada en un mismo proceso hace
+    /// fallar la creación de clientes de CoreMIDI en las clases que sí la usan.
+    /// Medido: nueve reproducciones en la suite dan 2 fallos de cada 8 pasadas;
+    /// una sola, 0 de 8.
+    ///
+    /// La causa de fondo es el ciclo de vida de `stop()`/`start()`, que es el
+    /// track `scheduler-lifecycle_20260826`. Este track no lo arregla, así que
+    /// aquí solo se evita provocarlo.
+    func testPlayAndStopDriveTheClock() {
+        let transport = makeTransport(Recorder())
+
+        transport.play()
+        XCTAssertTrue(transport.isPlaying)
+
+        transport.play()
+        XCTAssertTrue(transport.isPlaying, "el segundo play no debería alterar nada")
+
+        transport.stop()
+        XCTAssertFalse(transport.isPlaying)
+
+        transport.stop()
+        XCTAssertFalse(transport.isPlaying, "el segundo stop no debería alterar nada")
+    }
+
+    // MARK: - Play produce sonido, y ninguna nota queda colgada
+
+    func testPlayingEmitsMatchedNotePairs() {
         let recorder = Recorder()
         let transport = makeTransport(recorder)
 
@@ -104,6 +103,7 @@ final class TransportTests: XCTestCase {
         waitUntil { recorder.noteOnCount >= 4 }
         transport.stop()
 
+        XCTAssertGreaterThanOrEqual(recorder.noteOnCount, 4, "el transporte no emitió notas")
         XCTAssertGreaterThanOrEqual(
             recorder.noteOffCount,
             recorder.noteOnCount,
@@ -115,56 +115,28 @@ final class TransportTests: XCTestCase {
 
     /// Al parar se manda un note-off inmediato, además de los que ya iban
     /// sellados: si el usuario para justo entre el note-on y su note-off, la
-    /// nota se queda sonando en el sintetizador hasta que alguien la apague.
-    func testStopSendsAnImmediateNoteOff() {
+    /// nota se queda sonando en el sintetizador hasta que alguien la apague, y
+    /// el hilo que lo habría hecho es el que se acaba de detener.
+    func testStoppingSilencesTheVoiceAndEmitsNothingMore() {
         let recorder = Recorder()
         let transport = makeTransport(recorder)
 
         transport.play()
         waitUntil { recorder.noteOnCount >= 1 }
+
         let before = recorder.all.count
         transport.stop()
-
         XCTAssertGreaterThan(recorder.all.count, before, "parar no mandó nada")
-        guard case .noteOff = recorder.all.last else {
-            return XCTFail("el último mensaje al parar debería ser note-off")
-        }
-    }
-
-    /// El note-off de parada apaga la misma altura y el mismo canal que se
-    /// estaba tocando.
-    func testStopNoteOffMatchesTheVoiceBeingPlayed() {
-        let recorder = Recorder()
-        let transport = makeTransport(recorder)
-        transport.play()
-        waitUntil { recorder.noteOnCount >= 1 }
-        transport.stop()
 
         guard case let .noteOff(channel, note, _) = recorder.all.last else {
-            return XCTFail("no se mandó note-off al parar")
+            return XCTFail("el último mensaje al parar debería ser note-off")
         }
-        XCTAssertEqual(channel, MIDIChannel(1)!)
-        XCTAssertEqual(note, MIDINote(48)!)
-    }
-
-    /// Parado no se emite nada más.
-    func testNothingIsEmittedAfterStopping() {
-        let recorder = Recorder()
-        let transport = makeTransport(recorder)
-
-        transport.play()
-        waitUntil { recorder.noteOnCount >= 2 }
-        transport.stop()
+        XCTAssertEqual(channel, MIDIChannel(1)!, "apagó otro canal")
+        XCTAssertEqual(note, MIDINote(48)!, "apagó otra altura")
 
         let settled = recorder.all.count
         usleep(300_000)
         XCTAssertEqual(recorder.all.count, settled, "siguió emitiendo después de parar")
-    }
-
-    func testStoppingWithoutHavingPlayedEmitsNothing() {
-        let recorder = Recorder()
-        makeTransport(recorder).stop()
-        XCTAssertTrue(recorder.all.isEmpty)
     }
 
     // MARK: - Publicar mientras suena
