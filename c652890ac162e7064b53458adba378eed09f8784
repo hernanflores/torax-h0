@@ -78,3 +78,58 @@ Build
 -----
 xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
 ** BUILD SUCCEEDED **
+
+================================================================
+PHASE VERIFICATION REPORT — Phase 3: Instrumentacion de medicion
+================================================================
+
+Automated tests
+---------------
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI --enable-code-coverage
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+  Engine : Executed 16 tests, 0 failures
+  MIDI   : Executed 64 tests, 1 skipped, 0 failures (24 s; las mediciones reales
+           son la mayor parte del tiempo)
+  Build  : ** BUILD SUCCEEDED **
+
+Test coverage for phase changes
+-------------------------------
+Todos los ficheros nuevos tienen test. CoreMIDIOutput.swift solo cambio para
+anadir @unchecked Sendable y ya estaba cubierto. Sin huecos.
+
+MEDICIONES (macOS — NO es el veredicto del track)
+--------------------------------------------------
+Umbral: max < 2 ms, sigma < 0.5 ms. n=32 por tempo, loopback virtual.
+
+Primera tirada:
+   60 BPM : max=0.117 ms  media=+0.061 ms  sigma=0.014 ms  -> CUMPLE
+  120 BPM : max=0.080 ms  media=+0.057 ms  sigma=0.011 ms  -> CUMPLE
+  174 BPM : max=0.122 ms  media=+0.059 ms  sigma=0.016 ms  -> CUMPLE
+
+Segunda tirada (verificacion de fase):
+   60 BPM : max=0.075 ms  media=+0.056 ms  sigma=0.009 ms  -> CUMPLE
+  120 BPM : max=0.077 ms  media=+0.056 ms  sigma=0.009 ms  -> CUMPLE
+  174 BPM : max=0.103 ms  media=+0.051 ms  sigma=0.016 ms  -> CUMPLE
+
+La reproducibilidad entre tiradas es en si misma una senal: los numeros son del
+mismo orden, asi que la medicion es fiable y no producto de una tirada
+afortunada.
+
+ADVERTENCIA REGISTRADA
+----------------------
+Estos numeros son de macOS. Un Mac tiene refrigeracion activa, sin gestion
+termica agresiva ni limites de energia. El iPad puede comportarse peor, y ese es
+el escenario que decide el track. La Fase 3 NO aprueba la arquitectura.
+
+Manual verification steps
+-------------------------
+1. open Packages/MIDI/Package.swift -> My Mac -> Cmd+U -> 64 tests, 1 skipped
+2. Lineas [jitter macOS ...] en consola: cuatro con "CUMPLE"
+3. Dos ejecuciones seguidas dan numeros del mismo orden
+4. conductor/tech-stack.md, seccion MIDI: enmienda del 2026-08-26 presente
+
+User confirmation
+-----------------
+"si, verificado"
