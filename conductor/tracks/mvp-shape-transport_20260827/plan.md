@@ -122,3 +122,32 @@ hecho: girar un knob será publicar un `Track` nuevo, y el camino ya existe.
 - **La Fase 2 concentra el riesgo.** Publicar un snapshot sin locks, en una plataforma donde la stdlib no da atómicos, es lo menos resuelto del track. Si aparece un lock en el camino del scheduler, el diseño está mal: revisarlo, no optimizarlo.
 - **La carrera de `stop()`/`start()` está abierta** (`scheduler-lifecycle_20260826`). La Fase 3 introduce transporte, que es justo el gesto que la dispara. Si parar y arrancar duplica notas de forma audible, es señal de subir la prioridad de aquel track — no de parchearlo aquí.
 - **La medición de la Fase 4 es indicativa.** Un resultado holgado no cierra la pregunta del timing bajo carga: falta el anillo. Un resultado malo, en cambio, sí es información dura y para el track.
+
+## Phase: Review Fixes
+
+Revisión del camino de tiempo real (`conductor-review`, 2026-08-27). Se revisaron
+`TrackHandoff`, `TrackScheduler`, `SchedulerThread`, `NoteEmitter` y `Transport`
+contra `swift.md`, `general.md` y `product-guidelines.md`.
+
+- [x] Task: Apply review suggestions — `9ad42d6`
+  - [x] **Medium** — el note-off de parada iba sellado en `0` («ahora»), así que
+        CoreMIDI lo emitía *antes* que cualquier note-on ya programado con
+        timestamp futuro: no podía apagar la nota que existía para apagar. Se
+        sella una ventana de look-ahead por delante. Verificado revirtiendo el
+        arreglo: el test falla sin él.
+  - [x] **Medium** — `Track?` significaba dos cosas incompatibles: `nil` era
+        «emite todos los Steps» en `TrackScheduler` y «descarta esta lectura» en
+        `TrackHandoff.load()`. Enchufados en `Transport.play()`, un descarte
+        habría sonado como una ráfaga a densidad máxima. Se separan con el enum
+        `SchedulerMaterial` (`.track` / `.everyStep`).
+
+### No arreglados, por decisión
+
+- **Low** — `Transport` se declara `@unchecked Sendable` con `var scheduler`
+  mutable sin sincronizar y sin contrato de hilo documentado, a diferencia de
+  `TrackHandoff`, que sí documenta su regla de un solo escritor. En la práctica
+  la app solo lo usa desde el hilo principal.
+- **Low, preexistente de `main`** — `SchedulerThread.swift:122`,
+  `UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))` **atrapa** si el
+  look-ahead supera ~8,6 s. No lo introduce este track. Se arregla con
+  `UInt32(clamping:)`.
