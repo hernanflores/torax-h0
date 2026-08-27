@@ -19,11 +19,11 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): determinismo — mismo estado, misma salida
   - [x] Implementación (Green): distribución euclidiana pura
   - [x] Refactor y verificar cobertura de `Engine` ≥90%
-- [ ] Task: Rotate
-  - [ ] Tests (Red): Rotate 0 es la identidad; Rotate = Steps vuelve al patrón original
-  - [ ] Tests (Red): Rotate negativo; Rotate mayor que Steps envuelve
-  - [ ] Tests (Red): rotar no cambia el número de Pulses
-  - [ ] Implementación (Green)
+- [x] Task: Rotate — `d00e08f`
+  - [x] Tests (Red): Rotate 0 es la identidad; Rotate = Steps vuelve al patrón original
+  - [x] Tests (Red): Rotate negativo; Rotate mayor que Steps envuelve
+  - [x] Tests (Red): rotar no cambia el número de Pulses
+  - [x] Implementación (Green)
 - [ ] Task: Estado del Track
   - [ ] Tests (Red): un Track resuelve qué Steps disparan, combinando Shape y Rotate
   - [ ] Implementación (Green): valor inmutable y `Sendable`, con su `Division`
@@ -39,7 +39,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [ ] Tests (Red): el scheduler recoge un snapshot publicado a media reproducción, en la ventana siguiente
   - [ ] Tests (Red): al cambiar de snapshot no se duplica ni se omite ningún Step
   - [ ] Tests (Red): publicar desde otro hilo mientras el scheduler lee no corrompe el estado
-  - [ ] Implementación (Green)
+  - [x] Implementación (Green)
   - [ ] Revisión explícita: sin asignaciones, locks, `await`, logging ni SwiftUI en el camino del scheduler
   - [ ] Marcar las funciones nuevas del camino con `/// Realtime:`
 - [ ] Task: Emisión de note-on y note-off
