@@ -61,11 +61,11 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): play arranca el reloj, stop lo detiene y no quedan notas colgadas
   - [x] Implementación (Green): play/stop con reloj interno
   - [x] Al parar, enviar note-off de cualquier nota en curso
-- [ ] Task: Pantalla mínima de estado
-  - [ ] Transporte, selección de destino y valores de Shape **en solo lectura**
-  - [ ] Sin lenguaje visual del producto: ni anillo, ni overlay de valor, ni acentos por familia
-  - [ ] Nada en pantalla debe sugerir una nota fija por paso — contradice el modelo de pool
-  - [ ] Verificar cobertura de `App` ≥80%
+- [x] Task: Pantalla mínima de estado — `a6e49fb`
+  - [x] Transporte, selección de destino y valores de Shape **en solo lectura**
+  - [x] Sin lenguaje visual del producto: ni anillo, ni overlay de valor, ni acentos por familia
+  - [x] Nada en pantalla debe sugerir una nota fija por paso — contradice el modelo de pool
+  - [~] Verificar cobertura de `App` ≥80% — **bloqueado: el proyecto no tiene target de test y no hay runtime de simulador**
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Primer sonido y lectura de jitter
