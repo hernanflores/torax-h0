@@ -34,14 +34,14 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > La pieza que el spike dejó pendiente y el mayor riesgo técnico que queda en pie.
 
-- [ ] Task: Publicación atómica del snapshot
-  - [ ] Decidir el mecanismo sin locks: doble búfer con índice atómico, o ampliar `CToraxAtomics` con un puntero atómico. Documentar el porqué de la elección
-  - [ ] Tests (Red): el scheduler recoge un snapshot publicado a media reproducción, en la ventana siguiente
-  - [ ] Tests (Red): al cambiar de snapshot no se duplica ni se omite ningún Step
-  - [ ] Tests (Red): publicar desde otro hilo mientras el scheduler lee no corrompe el estado
+- [x] Task: Publicación atómica del snapshot — `cc3266e`
+  - [x] Decidir el mecanismo sin locks: doble búfer con índice atómico, o ampliar `CToraxAtomics` con un puntero atómico. Documentar el porqué de la elección
+  - [x] Tests (Red): el scheduler recoge un snapshot publicado a media reproducción, en la ventana siguiente
+  - [x] Tests (Red): al cambiar de snapshot no se duplica ni se omite ningún Step
+  - [x] Tests (Red): publicar desde otro hilo mientras el scheduler lee no corrompe el estado
   - [x] Implementación (Green)
-  - [ ] Revisión explícita: sin asignaciones, locks, `await`, logging ni SwiftUI en el camino del scheduler
-  - [ ] Marcar las funciones nuevas del camino con `/// Realtime:`
+  - [x] Revisión explícita: sin asignaciones, locks, `await`, logging ni SwiftUI en el camino del scheduler
+  - [x] Marcar las funciones nuevas del camino con `/// Realtime:`
 - [ ] Task: Emisión de note-on y note-off
   - [ ] Tests (Red): cada pulso produce el par, con el note-off en su propio timestamp futuro
   - [ ] Implementación (Green): gate de duración fija, declarado provisional en el código
