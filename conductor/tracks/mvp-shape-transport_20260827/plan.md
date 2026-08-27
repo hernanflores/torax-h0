@@ -6,7 +6,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 **Orden:** el motor puro primero (Fase 1), porque se testea sin simulador y sin hardware y es donde vive la corrección musical. Solo después se conecta hacia abajo (Fase 2) y hacia fuera (Fases 3 y 4).
 
-## Phase 1: Shape en `Engine`
+## Phase 1: Shape en `Engine` [checkpoint: cff338e]
 
 - [x] Task: Tipos de Shape — `71d8bb8`
   - [x] Tests (Red): `Steps` acepta 1–16 y rechaza fuera de rango; `Pulses` acepta 1..Steps
@@ -28,7 +28,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): un Track resuelve qué Steps disparan, combinando Shape y Rotate
   - [x] Implementación (Green): valor inmutable y `Sendable`, con su `Division`
   - [x] Sin `Int.random()` ni `.randomElement()` — no hay aleatorio en esta rebanada
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Snapshot en caliente
 
