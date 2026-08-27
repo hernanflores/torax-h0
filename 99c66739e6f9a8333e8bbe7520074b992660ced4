@@ -47,3 +47,79 @@ swift test --package-path Packages/MIDI  → 94 tests, 1 omitido, 0 fallos
 Cobertura MIDI → 91,90% regiones / 96,33% líneas (umbral ≥80%)
   NoteEmitter.swift 100%
 xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+
+═══════════════════════════════════════════════════════════════════
+INFORME DE VERIFICACIÓN — Phase 2: Snapshot en caliente
+═══════════════════════════════════════════════════════════════════
+
+Tests automáticos
+-----------------
+swift test --package-path Packages/Engine --enable-code-coverage
+  → 59 tests, 0 fallos
+
+swift test --package-path Packages/MIDI --enable-code-coverage  (×3 pasadas)
+  → 94 tests, 1 omitido, 0 fallos en las tres
+
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  → BUILD SUCCEEDED
+
+Cobertura de MIDI: 91,90% regiones / 96,33% líneas (umbral ≥80%)
+  TrackHandoff.swift    100%
+  TrackScheduler.swift  100%
+  NoteEmitter.swift     100%
+
+Los cuatro ficheros de código de la fase tienen test correspondiente.
+
+Lo que queda demostrado
+-----------------------
+Era el mayor riesgo técnico en pie tras el spike, y se cierra con números:
+
+- Publicar a media reproducción se recoge en la VENTANA SIGUIENTE. Verificado
+  de forma determinista dándole el horizonte a mano, no cronometrando.
+- Cambiar de snapshot no duplica ni omite Steps: sobre 120 y 180 ventanas con
+  publicación en cada una, la secuencia emitida es exactamente los enteros
+  consecutivos desde cero.
+- 449.486 lecturas concurrentes contra un escritor publicando en bucle cerrado
+  desde otro hilo → 0 lecturas mezcladas, 0 descartes.
+- Sin locks en el camino: revisado por grep sobre TrackHandoff, TrackScheduler
+  y SchedulerThread (sin await, NSLock, pthread, os_unfair, DispatchQueue,
+  print, SwiftUI, Array, String). Las tres funciones nuevas llevan `/// Realtime:`.
+
+DEUDA ASUMIDA: verificación de timing
+-------------------------------------
+`workflow.md` paso 7 exige pasar el arnés de jitter ante cualquier cambio que
+toque el camino del scheduler, y esta fase lo toca. NO SE HIZO.
+
+La razón no es descuido: el propio workflow.md manda correr la medición en
+dispositivo y nunca solo en host ("simulator timing is not representative"), y
+el plan la sitúa en la Fase 4 con la carga completa. Los tests del arnés pasan
+en host, pero eso es el arnés funcionando, no una medición.
+
+Decisión del usuario, consultada explícitamente: dejarlo para la Fase 4. Se
+descartó medir ahora en el iPad porque la carga todavía no incluye transporte
+ni pantalla, así que habría que repetirla igualmente; y se descartó una lectura
+en host porque no sustituye a nada según el propio workflow.
+
+CONSECUENCIA A RECORDAR: si la lectura de jitter de la Fase 4 sale fuera de
+umbral, este cambio —meter TrackHandoff.load() y Track.triggers() en el bucle
+del scheduler— es el primer sospechoso.
+
+Límites conocidos que la fase deja abiertos
+-------------------------------------------
+1. Division no cambia en caliente. La rejilla la fija la MusicalTimeline con la
+   que arranca el transporte y no se relee; cambiarla exige rebasar la línea de
+   tiempo en un límite de Step. Steps, Pulses y Rotate sí, con tests. No se
+   puede provocar en esta rebanada porque no hay entrada de control.
+2. Track debe seguir siendo un tipo trivial: se copia en el hilo del scheduler
+   y un Array metería retain/release ahí. Cuando llegue Tonal, el pool de
+   pitches tiene que ser almacenamiento inline. Test `_isPOD` lo vigila.
+
+Verificación manual
+-------------------
+Fase sin superficie de usuario: el transporte llega en la Fase 3 y el sonido en
+la Fase 4, así que no hay nada que tocar ni escuchar en el iPad todavía.
+
+Confirmación del usuario
+------------------------
+Se le presentó el informe, la deuda de jitter y los dos límites.
+Respondió: "Sí, cierra la fase".
