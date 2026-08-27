@@ -18,12 +18,16 @@ Abiertos y despriorizados por debajo del MVP.
 - [ ] **Track: Ciclo de vida del scheduler y desmontaje de CoreMIDI**
   *Link: [conductor/tracks/scheduler-lifecycle_20260826/index.md](./tracks/scheduler-lifecycle_20260826/index.md)*
 
-  La carrera es de producto: parar y arrancar el transporte puede duplicar notas. La rebanada 1 del MVP introduce transporte, así que será la primera en poder observarla.
+  **Investigado el 2026-08-27; parado en su Fase 3.** La carrera es real y está resuelta en la rama `fix/scheduler-lifecycle`, que no se integra: cerrarla empeora la tasa de `clientCreationFailed(-50)` de 0 a 3 ocurrencias por pasada. La hipótesis sobre la que se construyó su plan —que un cierre explícito y ordenado de CoreMIDI estabilizaría el desmontaje— resultó falsa: el join y el desmontaje del arnés rompen la suite **por separado**. Lo que ambos tienen en común es retrasar el desmontaje, lo que apunta a diagnóstico de CoreMIDI: alcance de [`midi-test-flake_20260826`](./tracks/midi-test-flake_20260826/index.md), que pasa a ser el bloqueante.
+
+  Datos completos en `plan.md` del track y en las git notes de la rama.
 
 ---
 
-- [ ] **Track: Flake `clientCreationFailed(-50)` en MIDITests** — *bloqueado por el track anterior*
+- [ ] **Track: Flake `clientCreationFailed(-50)` en MIDITests** — *ya no está bloqueado: es al revés*
   *Link: [conductor/tracks/midi-test-flake_20260826/index.md](./tracks/midi-test-flake_20260826/index.md)*
+
+  La investigación del 2026-08-27 invirtió la dependencia. El ciclo de vida del scheduler no se puede cerrar sin entender antes por qué retrasar el desmontaje inutiliza la creación de endpoints virtuales de CoreMIDI.
 
 ## Archivados
 
