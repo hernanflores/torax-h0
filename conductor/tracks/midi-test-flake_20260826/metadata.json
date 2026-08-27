@@ -1,0 +1,26 @@
+{
+  "id": "midi-test-flake_20260826",
+  "title": "Flake clientCreationFailed(-50) en MIDITests",
+  "type": "bug",
+  "status": "blocked",
+  "blocked_by": "scheduler-lifecycle_20260826",
+  "created_at": "2026-08-26",
+  "updated_at": "2026-08-26",
+  "phases": 3,
+  "origin": {
+    "found_in": "conductor-review",
+    "reviewed_track": "timing-spike_20260826"
+  },
+  "defect": {
+    "summary": "MIDIClientCreateWithBlock devuelve paramErr (-50) de forma intermitente; tras el primer fallo, todas las creaciones posteriores del proceso fallan",
+    "baseline_rate": "~1 de cada 12 pasadas sobre main limpio, 2026-08-26",
+    "ruled_out": [
+      "Límite de clientes CoreMIDI por proceso — una sonda crea 200 sin fallar",
+      "Introducido por el track timing-spike — main limpio lo reproduce",
+      "Thread.isFinished — sustituirlo por una bandera atómica no cambió nada"
+    ]
+  },
+  "acceptance_criteria": {
+    "consecutive_clean_runs": 20
+  }
+}
