@@ -1,0 +1,107 @@
+Task: Publicación atómica del snapshot (Fase 2 — Snapshot en caliente)
+
+Es la pieza que el spike dejó pendiente y el mayor riesgo técnico del track.
+
+Decisión: anillo de ranuras preasignadas, no doble búfer ni puntero atómico
+---------------------------------------------------------------------------
+El plan ofrecía dos caminos y se evaluó un tercero antes de elegir.
+
+(c) DESCARTADO — empaquetar el Track en un UInt64 y publicarlo con un único
+    store atómico. Cabía hoy con holgura (~33 bits: máscara 16, steps 4,
+    pulses 4, rotate 4, division ~5) pero NO sobrevive al modelo: el pool
+    tonal son 8 pitches × 7 bits = 56 bits él solo, y con Scale, Root y Groove
+    el total ronda los 147 bits — más del doble de un UInt64, y por encima
+    incluso de un atómico de 128 bits. No es que apretara al llegar Tonal: es
+    que Tonal no cabe ni empezando de cero. Habría que tirar el mecanismo y
+    escribir otro, dejando en pie justo el riesgo que esta fase existe para
+    retirar.
+
+(b) DESCARTADO — puntero atómico en CToraxAtomics. Es el patrón canónico, pero
+    obliga a decidir cuándo es seguro liberar el snapshot viejo mientras el
+    hilo del scheduler puede estar leyéndolo: el problema que resuelven RCU y
+    los hazard pointers. Más código C y más superficie de error. Y si se
+    resuelve preasignando un pool, converge con (a) con más piezas.
+
+(a) ELEGIDO — anillo de 4 Tracks preasignados más un contador de generación
+    atómico. Reutiliza `AtomicCounter` tal cual: su store es release y su load
+    es acquire, que es exactamente el emparejamiento que hace falta.
+
+Cómo se evita la lectura rota
+-----------------------------
+No por atomicidad de la copia —copiar un Track son varias palabras y no hay
+atómico de ese tamaño— sino por DISCIPLINA DE RANURA: el escritor nunca escribe
+la ranura publicada. Rellena la siguiente del anillo y solo entonces avanza el
+contador. El lector late el contador, copia esa ranura y vuelve a mirar el
+contador para comprobar que el escritor no le dio alcance.
+
+Cuatro ranuras y no dos: con dos, el escritor alterna, así que un lector que se
+duerma UNA publicación despierta leyendo la ranura que el escritor está
+reescribiendo. Con cuatro hacen falta tres publicaciones para volver a pisarla,
+y esa distancia es la que el lector verifica (`readIsSafe`).
+
+`load()` devuelve `Track?`. El `nil` NO es error: significa "descarta esta
+lectura", y quien llama conserva el Track que ya tenía hasta la ventana
+siguiente. Se prefiere eso a reintentar porque un bucle de reintento en el hilo
+del scheduler no tiene cota superior, y perder una actualización durante una
+ventana (~10 ms) es inaudible. Medido: 449.486 lecturas bajo un escritor
+publicando en bucle cerrado desde otro hilo → 0 descartes, 0 lecturas rotas.
+
+Y no hay nada que liberar: las ranuras se reservan al construir y viven lo que
+viva el objeto.
+
+Decisión: TrackScheduler existe para que el relevo sea testeable
+---------------------------------------------------------------
+`LookAheadScheduler` sabe qué Steps caen en la ventana; el Track sabe cuáles
+disparan. Juntarlo en un valor al que se le da el horizonte a mano convierte
+"el snapshot se recoge en la ventana siguiente" en un test determinista en vez
+de una carrera contra el reloj. El hilo se limita a calcular el horizonte.
+
+El snapshot se recoge UNA VEZ POR VENTANA, antes de recorrerla, nunca a mitad:
+un cambio a media ventana partiría el patrón dentro del mismo horizonte.
+
+LÍMITE CONOCIDO: Division no cambia en caliente
+-----------------------------------------------
+La rejilla temporal la fija la MusicalTimeline con la que se construye el
+TrackScheduler y no se vuelve a leer. Cambiar la Division de un Track publicado
+altera la duración del Step, así que reubicaría todos los Steps futuros
+respecto a un origen ya pasado: hace falta REBASAR la línea de tiempo en un
+límite de Step, no solo leer un valor nuevo. Steps, Pulses y Rotate sí cambian
+en caliente y están cubiertos por tests.
+
+No se puede provocar en esta rebanada —no hay entrada de control y ningún
+parámetro es editable— así que llega con el track de entrada de control. Está
+documentado en el propio tipo para que no se descubra tarde.
+
+RESTRICCIÓN A PRESERVAR: el Track tiene que seguir siendo un tipo trivial. Se
+copia en el hilo del scheduler, y un `Array` metería retain/release ahí. Cuando
+llegue Tonal, el pool de pitches tiene que ser almacenamiento inline. Hay un
+test (`_isPOD`) que lo vigila y falla si se rompe.
+
+Revisión de tiempo real
+-----------------------
+Camino: SchedulerThread.run → TrackScheduler.advance → { TrackHandoff.load →
+readIsSafe, LookAheadScheduler.advance, Track.triggers, nanosecondOffset }.
+Verificado por grep sobre los tres ficheros: sin await, sin NSLock/pthread/
+os_unfair, sin DispatchQueue, sin print, sin SwiftUI, sin Array/String. Las
+tres funciones nuevas del camino llevan el marcador `/// Realtime:`.
+`publish` e `init` están documentados como NO realtime.
+
+Ficheros
+--------
+Nuevo:      Packages/MIDI/Sources/MIDI/TrackHandoff.swift
+Nuevo:      Packages/MIDI/Sources/MIDI/TrackScheduler.swift
+Modificado: Packages/MIDI/Sources/MIDI/SchedulerThread.swift
+Nuevo:      Packages/MIDI/Tests/MIDITests/TrackHandoffTests.swift
+Nuevo:      Packages/MIDI/Tests/MIDITests/TrackSchedulerTests.swift
+
+`SchedulerThread` acepta ahora Track y TrackHandoff opcionales. Sin Track emite
+todos los Steps, que es lo que quiere el arnés de medición: mide la rejilla, no
+material musical, y un reparto euclidiano solo le quitaría muestras.
+
+Verificación
+------------
+swift test --package-path Packages/MIDI  → 87 tests, 1 omitido, 0 fallos
+swift test --package-path Packages/Engine → 59 tests, 0 fallos
+Cobertura MIDI → 91,55% regiones / 96,16% líneas (umbral ≥80%)
+  TrackHandoff.swift 100%, TrackScheduler.swift 100%
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
