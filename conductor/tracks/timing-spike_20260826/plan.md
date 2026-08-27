@@ -65,9 +65,9 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 - [x] Task: Ejecutar la medición en el iPad objetivo (69119f8)
   - [x] Barrido a 60, 120 y 174 BPM, 200 eventos por tempo
   - [x] Registrar máximo, media y desviación típica de cada tempo
-- [~] Task: Pasada larga de confirmación
-  - [ ] Repetir con ~1000 eventos por tempo para cubrir la limitación de muestra corta
-- [ ] Task: Veredicto sobre el criterio de aceptación
+- [x] Task: Pasada larga de confirmación (5813017)
+  - [x] Repetir con ~1000 eventos por tempo para cubrir la limitación de muestra corta
+- [~] Task: Veredicto sobre el criterio de aceptación
   - [ ] Contrastar contra el umbral: máx < 2 ms, desviación típica < 0.5 ms
   - [ ] Registrar los números en la git note del commit
   - [ ] Si no se cumple: parar y reportar con datos. No iterar arquitecturas dentro de este track
