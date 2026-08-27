@@ -276,6 +276,20 @@ atribuir un fallo `-50` al cambio bajo revisión, correr la suite 3–4 veces y
 comparar contra `main` con el mismo número de pasadas — una sola pasada no
 distingue nada.
 
+> **Ampliación del 2026-08-27.** El fallo no es solo un flake de frecuencia: la
+> creación de endpoints de CoreMIDI se rompe cuando la suite ha arrancado
+> suficientes hilos de scheduler a prioridad máxima. Con el transporte del track
+> `mvp-shape-transport_20260827` la suite pasó de 2 a 7 hilos, y en el runner de
+> CI el fallo dejó de ser intermitente: **determinista**, con
+> `clientCreationFailed(-2)` en las cuatro pruebas de `VirtualLoopbackTests`.
+> Comprobado que no es el entorno: `main` relanzado en el mismo runner pasa.
+>
+> Mitigación en `.github/workflows/swift.yml`: los tests que tocan CoreMIDI
+> corren **primero y en su propio proceso**, antes de que exista ningún hilo. No
+> se pierde ni un test — 14 + 111 = los mismos 125. Es una mitigación, no un
+> arreglo; la causa pertenece a `midi-test-flake_20260826`, que bloquea a
+> `scheduler-lifecycle_20260826`.
+
 ## Commit Guidelines
 
 ### Message Format
