@@ -57,7 +57,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tamaño de muestra configurable, 200 eventos por defecto
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (c652890)
 
-## Phase 4: UI mínima y veredicto
+## Phase 4: UI mínima y veredicto [checkpoint: b7c4597]
 
 - [x] Task: UI mínima de control (520de2d)
   - [x] Play/stop, selección de tempo, presentación de resultados por tempo
@@ -71,7 +71,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Contrastar contra el umbral: máx < 2 ms, desviación típica < 0.5 ms
   - [x] Registrar los números en la git note del commit
   - [x] Si no se cumple: parar y reportar con datos. No iterar arquitecturas dentro de este track
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (b7c4597)
 
 ## Notas de riesgo
 

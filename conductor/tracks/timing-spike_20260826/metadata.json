@@ -2,14 +2,28 @@
   "id": "timing-spike_20260826",
   "title": "Timing Spike: validación del reloj MIDI",
   "type": "spike",
-  "status": "new",
+  "status": "complete",
   "created_at": "2026-08-26",
   "updated_at": "2026-08-26",
   "phases": 4,
   "acceptance_criteria": {
     "jitter_max_ms": 2.0,
     "jitter_stddev_ms": 0.5,
-    "tempos_bpm": [60, 120, 174],
+    "tempos_bpm": [
+      60,
+      120,
+      174
+    ],
     "samples_per_tempo": 200
+  },
+  "verdict": {
+    "result": "CUMPLE",
+    "device": "iPad Air (4th generation), iPadOS 26.5",
+    "samples_per_tempo": [
+      200,
+      1000
+    ],
+    "worst_maximum_ms": 0.149,
+    "worst_stddev_ms": 0.009
   }
 }
