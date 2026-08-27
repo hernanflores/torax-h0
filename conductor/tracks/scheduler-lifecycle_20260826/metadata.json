@@ -1,0 +1,23 @@
+{
+  "id": "scheduler-lifecycle_20260826",
+  "title": "Ciclo de vida del scheduler y desmontaje de CoreMIDI",
+  "type": "bug",
+  "status": "new",
+  "created_at": "2026-08-26",
+  "updated_at": "2026-08-26",
+  "phases": 3,
+  "origin": {
+    "found_in": "conductor-review",
+    "reviewed_track": "timing-spike_20260826",
+    "severity": "medium"
+  },
+  "defect": {
+    "summary": "stop() no espera al hilo; un start() inmediato deja dos bucles emitiendo cada Step dos veces",
+    "blocked_by": "El join en stop() retrasa el desmontaje ~10 ms y destruye los endpoints virtuales con entregas de CoreMIDI en vuelo",
+    "rejected_approaches": [
+      "Join en stop() sin cierre explícito — suite en rojo 4 de 4",
+      "Drenaje con usleep + withExtendedLifetime — inestable",
+      "Espera movida a start() — no resuelve el fondo"
+    ]
+  }
+}
