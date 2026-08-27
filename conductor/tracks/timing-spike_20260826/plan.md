@@ -44,7 +44,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 3: Instrumentación de medición
 
-- [ ] Task: Documentar la desviación de `tech-stack.md` (antes de implementar FR4)
+- [~] Task: Documentar la desviación de `tech-stack.md` (antes de implementar FR4)
   - [ ] Añadir nota fechada: endpoints virtuales admitidos como instrumentación, no como producto
   - [ ] Commit separado con scope `docs`
 - [ ] Task: Endpoints virtuales de loopback

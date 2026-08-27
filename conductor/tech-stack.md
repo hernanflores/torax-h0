@@ -64,7 +64,23 @@ El aleatorio es **pseudoaleatorio con semilla**: la Pre Spec exige que sea repet
 
 **Salida: solo a hardware externo en v1.** CoreMIDI a dispositivos físicos (USB / Camera Kit). Coherente con el MVP y con medir timing contra hardware real, que es lo que se quiere validar.
 
-Fuera de v1: puertos virtuales para otras apps del iPad, y Bluetooth MIDI (que introduce latencia y jitter propios, justo sobre lo que se quiere medir).
+Fuera de v1: puertos virtuales como **funcionalidad de producto** (para que otras apps del iPad reciban de Torax H-0), y Bluetooth MIDI (que introduce latencia y jitter propios, justo sobre lo que se quiere medir).
+
+### Enmienda — 2026-08-26: endpoints virtuales como instrumentación
+
+**Qué cambia.** Se admiten endpoints virtuales de CoreMIDI (fuente y destino) **como instrumentación de medición**, no como funcionalidad de producto.
+
+**Por qué.** El track `timing-spike_20260826` mide el jitter por loopback: la app se envía a sí misma y compara el timestamp de recepción contra el programado. Sin endpoints virtuales no hay loopback, y sin loopback no hay forma automática y repetible de medir el criterio de éxito del proyecto.
+
+**Alcance de la excepción.** Los endpoints virtuales:
+
+- Existen para medir, y solo se crean cuando el arnés de medición está activo.
+- **No** aparecen como destino elegible para el usuario ni como puerto publicado del producto.
+- No cambian la decisión de v1: la salida de producto sigue siendo solo a hardware externo.
+
+**Limitación que introduce.** Un loopback virtual no cruza el cable USB: valida el scheduler y CoreMIDI, no la cadena completa hasta el sintetizador. La latencia y el jitter del interfaz USB-MIDI quedan sin medir. Está registrado como limitación conocida en `conductor/tracks/timing-spike_20260826/spec.md`.
+
+**Cuándo revisar esto.** Si en algún momento se decide publicar un puerto virtual como funcionalidad real (para sintes en el propio iPad), esta enmienda deja de ser una excepción y pasa a ser una decisión de producto que hay que tomar en `product.md`.
 
 **Entrada de control:** CoreMIDI de entrada, encoders en **modo relativo**. Preset para Arturia BeatStep Pro + MIDI Learn para reasignar a otro hardware.
 
