@@ -62,6 +62,10 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 
 **Criterio principal: timing MIDI estable en iPad.** Jitter bajo y consistente contra hardware real; swing (Timing) y Delay que se sientan musicales. Es el mayor riesgo técnico de la plataforma y lo que decide si el proyecto es viable — por eso v1 se reduce a un Track: validar el motor de punta a punta antes de escalar.
 
+> **Estado (2026-08-26): validado.** Medido en iPad Air 4ª generación: σ ≈ 9 µs y máximo 0,149 ms, frente a un umbral de 0,5 ms / 2 ms. La arquitectura de look-ahead scheduling aguanta.
+>
+> Pendiente: medir **con carga real** —motor generativo y UI encima—, que es el siguiente riesgo. La medición se hizo con el scheduler solo en la máquina. Ver [`verdict.md`](./tracks/timing-spike_20260826/verdict.md).
+
 Secundarios:
 
 - Los knobs responden sin saltos de valor ni latencia perceptible.

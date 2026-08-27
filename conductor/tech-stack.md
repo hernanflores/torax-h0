@@ -24,6 +24,10 @@ iPadOS 17 como mínimo: cubre iPads desde ~2018 y da acceso a SwiftUI maduro (`O
 
 ## Arquitectura de timing — el núcleo del proyecto
 
+> **Validado empíricamente el 2026-08-26** (track `timing-spike_20260826`), en iPad Air 4ª generación / iPadOS 26.5, con 1000 eventos por tempo a 60, 120 y 174 BPM: máximo **0,149 ms** y σ **0,009 ms** en el peor caso, frente a un umbral de 2 ms / 0,5 ms.
+>
+> Ver [`verdict.md`](./tracks/timing-spike_20260826/verdict.md), **incluida su sección "Qué NO queda validado"**: la medición se hizo por loopback virtual (sin cruzar el cable USB) y sin carga — sin UI redibujando, sin motor generativo y sin 16 Tracks.
+
 El criterio de éxito es *timing MIDI estable*, así que la arquitectura se organiza alrededor de él.
 
 **Look-ahead scheduling con timestamps.** Un scheduler calcula los eventos de una ventana futura (del orden de decenas de ms) y los entrega a CoreMIDI vía `MIDISendEventList` **ya sellados con un timestamp de entrega futuro** (`mach_absolute_time` + offset). CoreMIDI se encarga de emitirlos en ese instante exacto.
@@ -72,6 +76,12 @@ Fuera de v1: puertos virtuales como **funcionalidad de producto** (para que otra
 **Entrada de control:** CoreMIDI de entrada, encoders en **modo relativo**. Preset para Arturia BeatStep Pro + MIDI Learn para reasignar a otro hardware.
 
 **Controlador virtual de desarrollo:** inyector de eventos MIDI relativos para probar el motor sin hardware conectado. Herramienta de test, excluida del build de producción.
+
+**Restricción de iOS — endpoints virtuales y modo de fondo.** Crear endpoints MIDI virtuales en iOS exige declarar el modo de fondo `audio`; sin él, `MIDIDestinationCreateWithProtocol` devuelve `kMIDINotPermitted (-10844)`. En macOS no hace falta, así que el fallo no aparece en los tests de host: solo en el dispositivo.
+
+Se declara **solo en Debug** (`Config/Info-Debug.plist` vía `INFOPLIST_FILE`), para que el binario de producción no arrastre un modo de fondo que únicamente necesita la instrumentación. Verificado: el `Info.plist` de Release no contiene `UIBackgroundModes`.
+
+Nota de implementación: `INFOPLIST_KEY_UIBackgroundModes` **no funciona** — Xcode solo reconoce una lista cerrada de claves `INFOPLIST_KEY_*`. Hace falta un `Info.plist` explícito, y tras cambiarlo hay que ejecutar `xcodebuild clean` porque el plist generado queda cacheado.
 
 ### Enmienda — 2026-08-26: endpoints virtuales como instrumentación
 
