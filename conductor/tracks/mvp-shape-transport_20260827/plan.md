@@ -8,11 +8,11 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 1: Shape en `Engine`
 
-- [ ] Task: Tipos de Shape
-  - [ ] Tests (Red): `Steps` acepta 1–16 y rechaza fuera de rango; `Pulses` acepta 1..Steps
-  - [ ] Tests (Red): `Rotate` admite valores negativos y mayores que Steps
-  - [ ] Implementación (Green): validación en el inicializador, no en cada sitio de uso
-  - [ ] Vocabulario de la Pre Spec, sin sinónimos (`steps`, `pulses`, `rotate`)
+- [x] Task: Tipos de Shape — `71d8bb8`
+  - [x] Tests (Red): `Steps` acepta 1–16 y rechaza fuera de rango; `Pulses` acepta 1..Steps
+  - [x] Tests (Red): `Rotate` admite valores negativos y mayores que Steps
+  - [x] Implementación (Green): validación en el inicializador, no en cada sitio de uso
+  - [x] Vocabulario de la Pre Spec, sin sinónimos (`steps`, `pulses`, `rotate`)
 - [ ] Task: Reparto euclidiano
   - [ ] Tests (Red): **16/4, 16/5 y 12/7 de la Pre Spec**, como casos literales
   - [ ] Tests (Red): bordes — Pulses = 1, Pulses = Steps, Steps = 1
