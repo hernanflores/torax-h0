@@ -21,19 +21,30 @@ public struct EuclideanRhythm: Equatable, Sendable {
 
     public let steps: Steps
     public let pulses: Pulses
+    public let rotate: Rotate
 
     /// Un bit por Step: el bit *i* está a uno si el Step *i* dispara.
+    ///
+    /// Guarda el patrón **ya girado**. Rotate es una permutación del anillo, no
+    /// una consulta distinta: aplicarlo una vez aquí deja `triggers(atStep:)`
+    /// como un único desplazamiento de bits, que es lo que el camino del
+    /// scheduler necesita.
     private let pattern: UInt16
 
-    /// Reparte los Pulses sobre el anillo.
+    /// Reparte los Pulses sobre el anillo y lo gira.
     ///
     /// **No es código de tiempo real:** el reparto asigna memoria. Se construye
     /// en el hilo principal, al publicar un snapshot, nunca dentro del bucle del
     /// scheduler.
-    public init(steps: Steps, pulses: Pulses) {
+    public init(steps: Steps, pulses: Pulses, rotate: Rotate = .none) {
         self.steps = steps
         self.pulses = pulses
-        self.pattern = Self.distribute(pulses: pulses.count, over: steps.count)
+        self.rotate = rotate
+        self.pattern = Self.rotate(
+            Self.distribute(pulses: pulses.count, over: steps.count),
+            by: rotate.amount,
+            over: steps.count
+        )
     }
 
     /// Indica si el Step dado dispara.
@@ -75,5 +86,24 @@ public struct EuclideanRhythm: Equatable, Sendable {
             .reduce(into: UInt16(0)) { mask, entry in
                 if entry.element { mask |= 1 << UInt16(entry.offset) }
             }
+    }
+
+    /// Gira la máscara sobre el anillo.
+    ///
+    /// Es una rotación circular de bits acotada al ancho del anillo, no al de
+    /// `UInt16`: los bits por encima de `steps` no forman parte del anillo y no
+    /// pueden recibir el desbordamiento. Por eso se enmascara al final.
+    ///
+    /// El giro se normaliza antes: un Rotate mayor que Steps da la vuelta, y uno
+    /// negativo gira en sentido contrario. Ambos son musicalmente
+    /// significativos, así que `Rotate` no los rechaza y es aquí —donde se
+    /// conoce el tamaño del anillo— donde se envuelven.
+    private static func rotate(_ pattern: UInt16, by amount: Int, over steps: Int) -> UInt16 {
+        let remainder = amount % steps
+        let shift = UInt16(remainder < 0 ? remainder + steps : remainder)
+        guard shift > 0 else { return pattern }
+
+        let ringMask: UInt16 = steps >= 16 ? .max : (1 << UInt16(steps)) - 1
+        return ((pattern << shift) | (pattern >> (UInt16(steps) - shift))) & ringMask
     }
 }
