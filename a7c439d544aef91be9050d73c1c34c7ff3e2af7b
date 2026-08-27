@@ -80,3 +80,42 @@ Eso REFINA la prioridad de aquel track: el defecto es real en la API de
 `SchedulerThread` y rompe la suite de tests, pero hoy no puede producir notas
 duplicadas a través de `Transport`. Lo que sigue doliendo es el `-50` en CI, que
 es alcance de `midi-test-flake_20260826`.
+
+═══════════════════════════════════════════════════════════════════
+INFORME DE VERIFICACIÓN — Phase 4: Primer sonido y lectura de jitter
+═══════════════════════════════════════════════════════════════════
+
+Tests automáticos
+-----------------
+swift test --package-path Packages/Engine  → 66 tests, 0 fallos
+swift test --package-path Packages/MIDI    → 122 tests, 1 omitido, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+
+Verificación en dispositivo (iPad + sintetizador)
+--------------------------------------------------
+1. Play produce los pulsos euclidianos de Shape 16/5 audibles en el hardware.
+2. Stop detiene la emisión sin dejar notas colgadas.
+3. Desenchufar a media reproducción se refleja como `No MIDI device`, sin caída
+   ni error, y se recupera solo al volver a enchufar.
+4. Play/Stop rápido repetido no produjo notas duplicadas audibles.
+
+Lectura de jitter con carga (n=200, motor e interfaz corriendo)
+----------------------------------------------------------------
+  60 BPM   máx=0.104 ms  media=+0.069 ms  σ=0.012 ms  CUMPLE
+ 120 BPM   máx=0.127 ms  media=+0.069 ms  σ=0.013 ms  CUMPLE
+ 174 BPM   máx=0.126 ms  media=+0.067 ms  σ=0.015 ms  CUMPLE
+
+Máximos 16x por debajo del umbral; σ 33x por debajo. Sin degradación grosera al
+meter el motor en el camino del scheduler, que es lo que FR6 pedía detectar.
+
+La σ sí sube de forma consistente respecto al spike (8-9 µs → 12-15 µs) y sube
+con el tempo. Son 4-7 µs absolutos, inaudibles, pero es una tendencia medida.
+Se vuelve a mirar en el track de UI, cuando exista la carga del anillo.
+
+Detalle completo y comparación por tempo en
+`conductor/tracks/mvp-shape-transport_20260827/measurement-200.txt`.
+
+Confirmación del usuario
+------------------------
+Aportó los tres barridos de jitter y confirmó: "Sí, sonó y Stop calla",
+"Desconexión: se comportó bien", "Play/Stop rápido: sin notas duplicadas".
