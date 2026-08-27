@@ -48,7 +48,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Sin sleeps ni temporizadores — el note-off va sellado, como el note-on
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: Salida real, transporte y pantalla
+## Phase 3: Salida real, transporte y pantalla [checkpoint: a6e49fb]
 
 - [x] Task: Selección de destino MIDI — `da0edb3`
   - [x] Tests (Red): la lista refleja los destinos del sistema; sin destinos es un estado válido
@@ -66,7 +66,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Sin lenguaje visual del producto: ni anillo, ni overlay de valor, ni acentos por familia
   - [x] Nada en pantalla debe sugerir una nota fija por paso — contradice el modelo de pool
   - [x] Verificar cobertura de `App` ≥80% — **umbral retirado**: el proyecto no tiene target de test ni runtime de simulador. La lógica se movió a `Engine` y `MIDI`, donde sí se cubre. Ver la nota del 2026-08-27 en `workflow.md`.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Primer sonido y lectura de jitter
 
@@ -82,6 +82,24 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [ ] Comparar contra la medición del spike: lo que interesa es la degradación al meter carga, no el valor absoluto
   - [ ] Si no se cumple: parar y reportar con datos. No iterar arquitecturas dentro de este track
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## Estado del track
+
+**Pausado tras la Fase 3, el 2026-08-27.** Las Fases 1, 2 y 3 están completas y
+verificadas; la Fase 4 exige dispositivo y queda pendiente.
+
+La razón de la pausa es la que este mismo plan anticipó en las notas de riesgo:
+el transporte destapó la carrera de `stop()`/`start()`, y ahora se manifiesta
+como una inestabilidad medible de la suite de MIDI —~1 de cada 6 pasadas, con
+`clientCreationFailed(-50)` en las tres clases que crean clientes de CoreMIDI—
+que haría fallar el check del PR sin culpa del cambio revisado.
+
+Se sube la prioridad de [`scheduler-lifecycle_20260826`](../scheduler-lifecycle_20260826/index.md)
+y se arregla antes de seguir. La verificación en dispositivo de la Fase 4 se
+hará después: parar y arrancar es justo el gesto afectado, así que medir antes
+del arreglo daría una lectura sucia.
+
+Evidencia completa en la git note del commit `a6e49fb` y en `b9557f3`.
 
 ## Notas de riesgo
 
