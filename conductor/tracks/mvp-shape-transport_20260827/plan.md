@@ -30,7 +30,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Sin `Int.random()` ni `.randomElement()` — no hay aleatorio en esta rebanada
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: Snapshot en caliente
+## Phase 2: Snapshot en caliente [checkpoint: 99c6673]
 
 > La pieza que el spike dejó pendiente y el mayor riesgo técnico que queda en pie.
 
@@ -46,7 +46,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): cada pulso produce el par, con el note-off en su propio timestamp futuro
   - [x] Implementación (Green): gate de duración fija, declarado provisional en el código
   - [x] Sin sleeps ni temporizadores — el note-off va sellado, como el note-on
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Salida real, transporte y pantalla
 
