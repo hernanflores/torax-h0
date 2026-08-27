@@ -57,10 +57,10 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 - [x] Task: Desconexión como estado esperado — `760fe8c`
   - [x] Tests (Red): `onSetupChanged` provoca reconsulta de destinos
   - [x] Implementación (Green): estado `No MIDI device`, sin lenguaje de error ni disculpa
-- [~] Task: Transporte
-  - [ ] Tests (Red): play arranca el reloj, stop lo detiene y no quedan notas colgadas
-  - [ ] Implementación (Green): play/stop con reloj interno
-  - [ ] Al parar, enviar note-off de cualquier nota en curso
+- [x] Task: Transporte — `b5dc634`
+  - [x] Tests (Red): play arranca el reloj, stop lo detiene y no quedan notas colgadas
+  - [x] Implementación (Green): play/stop con reloj interno
+  - [x] Al parar, enviar note-off de cualquier nota en curso
 - [ ] Task: Pantalla mínima de estado
   - [ ] Transporte, selección de destino y valores de Shape **en solo lectura**
   - [ ] Sin lenguaje visual del producto: ni anillo, ni overlay de valor, ni acentos por familia
