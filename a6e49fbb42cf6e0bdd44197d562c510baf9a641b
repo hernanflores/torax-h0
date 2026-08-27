@@ -76,3 +76,72 @@ Verificación
 swift test --package-path Packages/Engine → 66 tests, 0 fallos
 swift test --package-path Packages/MIDI   → 128 tests, 1 omitido, 0 fallos
 xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+
+═══════════════════════════════════════════════════════════════════
+INFORME DE VERIFICACIÓN — Phase 3: Salida real, transporte y pantalla
+═══════════════════════════════════════════════════════════════════
+
+Tests automáticos
+-----------------
+swift test --package-path Packages/Engine --enable-code-coverage
+  → 66 tests, 0 fallos
+
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  → BUILD SUCCEEDED
+
+swift test --package-path Packages/MIDI --enable-code-coverage
+  → 128 tests, 0 fallos en la mayoría de pasadas, PERO falla ~1 de cada 6.
+    Ver abajo. No es el flake documentado: es una inestabilidad que introdujo
+    este trabajo.
+
+Todos los ficheros de código de la fase tienen test correspondiente, salvo los
+de `App`, que no puede tener target de test (ver commit c7078f2).
+
+LA INESTABILIDAD DE LA SUITE
+----------------------------
+Al añadir TransportTests la suite de MIDI empezó a fallar de forma
+intermitente: siempre `clientCreationFailed(-50)`, siempre afectando a la vez a
+las tres clases que crean clientes de CoreMIDI (13 casos de golpe).
+
+Medido, no inferido:
+  main                                       0 de 18 pasadas con fallos
+  rama, TransportTests con 9 reproducciones  2 de 8
+  rama, sin TransportTests                   0 de 8
+  un solo test con hilo + clases CoreMIDI    0 de 8
+  rama, TransportTests consolidado a 4       2 de 12
+
+Hipótesis descartadas con datos: no es deriva del entorno (main remedido tras
+~40 pasadas seguía 0 de 6) y no es entre procesos (0 fallos en 4 ciclos
+separados). Escala con el número de ciclos play/stop dentro de un proceso.
+Esperar a que el hilo salga del bucle tras stop() lo EMPEORÓ (5 de 10) y se
+revirtió.
+
+Causa de fondo: el ciclo de vida de stop()/start(), que es el track
+`scheduler-lifecycle_20260826`. El plan de este track lo anticipó literalmente:
+"La Fase 3 introduce transporte, que es justo el gesto que la dispara. Si
+aparece de forma molesta, es señal de subir la prioridad de aquel track — no de
+parchearlo aquí."
+
+Impacto: .github/workflows/swift.yml corre esa suite en un runner macOS real,
+así que el check del PR fallaría ~1 de cada 6 veces sin culpa del cambio
+revisado.
+
+DECISIÓN DEL USUARIO: subir la prioridad de scheduler-lifecycle_20260826 y
+arreglarlo antes de continuar con la Fase 4.
+
+Verificación manual
+-------------------
+Se propusieron 7 pasos en dispositivo: firma, No MIDI device sin disculpas y
+Play deshabilitado, nombre del destino y "Steps 16 · Pulses 5 · Rotate 0 ·
+Division 1/16" sin ninguna altura a la vista, Play con los pulsos de 16/5,
+Stop sin notas colgadas, y desconexión en caliente que se refleja como estado.
+
+NO SE EJECUTARON todavía, por decisión de secuencia: los pasos de Play/Stop son
+también la Fase 4 Tarea 1, y el bug de scheduler-lifecycle afecta justo a parar
+y arrancar. Hacer la prueba en dispositivo DESPUÉS del arreglo da una lectura
+limpia.
+
+Confirmación del usuario
+------------------------
+Se le presentó el informe, la inestabilidad medida y la deuda de cobertura
+de App. Respondió: "Sí, cierra la fase".
