@@ -12,7 +12,9 @@ import Foundation
 /// **Qué mide y qué no.** Valida el scheduler y la entrega de CoreMIDI. **No**
 /// cruza el cable USB, así que la latencia y el jitter del interfaz MIDI quedan
 /// fuera de la medición.
-public final class VirtualLoopback {
+/// `@unchecked Sendable`: tras `init` el endpoint es de solo lectura y no hay
+/// estado mutable compartido.
+public final class VirtualLoopback: @unchecked Sendable {
 
     /// Se invoca por cada paquete recibido, con el instante que se programó y
     /// el instante real de recepción, ambos en ticks de host.

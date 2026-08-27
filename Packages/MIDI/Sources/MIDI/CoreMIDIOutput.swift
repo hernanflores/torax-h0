@@ -53,7 +53,10 @@ public struct MIDIDestination: Equatable, Sendable {
 /// se encarga de emitir el evento en ese instante exacto. Esa es la pieza que
 /// hace que el jitter deje de depender de cuándo despierta el hilo del
 /// scheduler (`conductor/tech-stack.md`).
-public final class CoreMIDIOutput {
+/// `@unchecked Sendable`: tras `init` los dos handles de CoreMIDI son de solo
+/// lectura, `MIDISendEventList` es seguro entre hilos, y el único estado mutable
+/// —el callback de notificaciones— vive tras un lock.
+public final class CoreMIDIOutput: @unchecked Sendable {
 
     /// Contenedor del callback de notificaciones.
     ///

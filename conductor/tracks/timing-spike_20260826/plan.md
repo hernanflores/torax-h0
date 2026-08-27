@@ -51,7 +51,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Implementación: fuente y destino virtuales
   - [x] Implementación: recepción con timestamp de CoreMIDI
   - [x] Excluidos del build de producción
-- [ ] Task: Arnés de medición de jitter
+- [~] Task: Arnés de medición de jitter
   - [ ] Tests (Red): cálculo de máximo, media y desviación típica sobre series conocidas
   - [ ] Implementación (Green): captura de desviaciones y agregación por tempo
   - [ ] Tamaño de muestra configurable, 200 eventos por defecto
