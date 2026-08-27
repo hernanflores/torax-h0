@@ -1,0 +1,59 @@
+Task: UI minima de control
+Track: timing-spike_20260826 — Phase 4
+
+Summary
+-------
+Pantalla para lanzar el barrido de tempos desde el iPad y leer los resultados.
+
+Files created / modified
+------------------------
+- App/JitterMeasurementModel.swift (nuevo)
+- App/ContentView.swift (sustituye el placeholder)
+- Packages/MIDI/Sources/MIDI/JitterHarness.swift (init publico en JitterMeasurement)
+
+Alcance deliberado
+------------------
+Es INSTRUMENTACION, no producto. No lleva el lenguaje visual de
+product-guidelines.md —ni anillo circular, ni pool tonal, ni acentos de color por
+familia— porque no representa material musical: representa un experimento. La
+interfaz del producto llega en tracks posteriores.
+
+Decision clave: la medicion NO corre en el hilo principal
+----------------------------------------------------------
+JitterHarness.measure bloquea su hilo mientras espera los eventos. Si lo hiciera
+en el hilo de la interfaz, la propia UI competiria con el scheduler por la CPU y
+falsearia justo lo que se esta midiendo. Corre en Task.detached con prioridad
+userInitiated, y el metodo estatico se marca 'nonisolated' para poder salir del
+aislamiento @MainActor del modelo.
+
+Presentacion de resultados
+--------------------------
+- Umbral visible en pantalla: max < 2 ms, sigma < 0.5 ms.
+- Cada tempo se colorea segun cumpla o no, individualmente.
+- El veredicto global solo aparece con los tres tempos medidos, y solo dice
+  CUMPLE si lo cumplen todos.
+- Nota al pie que recuerda las dos cosas que mas facil es malinterpretar: la
+  media con signo es sesgo constante y no jitter, y el loopback es virtual y no
+  cruza el cable USB.
+
+Selector de muestra
+-------------------
+200 (medicion normal) y 1000 (pasada larga que cubre la limitacion de muestra
+corta registrada en la spec). Deshabilitado mientras mide.
+
+Errores
+-------
+El timeout se presenta con cuantas muestras se llegaron a reunir, no como fallo
+opaco: si la medicion no completa, ese dato es diagnostico.
+
+Build
+-----
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+** BUILD SUCCEEDED **
+
+Nota sobre cobertura
+--------------------
+App no tiene target de tests. La logica testeable del modelo es minima
+(orquestacion y formato); toda la aritmetica que importa vive en
+JitterStatistics, cubierta al 90.48% en el paquete MIDI. Coherente con la regla
+de workflow.md: no se escriben UI tests de bajo valor solo para subir el numero.
