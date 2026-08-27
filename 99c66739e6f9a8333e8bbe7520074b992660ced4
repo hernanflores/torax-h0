@@ -1,0 +1,49 @@
+Task: Emisión de note-on y note-off (Fase 2 — Snapshot en caliente)
+
+Resumen
+-------
+`NoteEmitter` convierte un pulso en los dos mensajes que lo hacen sonar. TDD:
+los tests fallaron por tipo inexistente antes de implementar.
+
+Un pulso no es una nota: es una posición del anillo que dispara. Entregar solo
+el disparo deja la nota colgada en el sintetizador.
+
+Decisión: el note-off va sellado, no programado
+-----------------------------------------------
+Se entrega en la MISMA llamada que el note-on, con su propio instante futuro, y
+viaja por el mismo camino. La alternativa —un temporizador o un sleep que lo
+envíe más tarde— reintroduciría exactamente el jitter que la arquitectura de
+look-ahead evita: la precisión la da el timestamp, no el momento del envío.
+
+Verificado por grep: los únicos usleep del paquete son el pulso de despertar
+del bucle del scheduler y el del arnés de medición. Ninguno participa en la
+entrega del note-off.
+
+Decisión: de dónde sale el valor del gate
+-----------------------------------------
+25 ms, y el número sale de una restricción, no de un criterio estético.
+
+El gate tiene que caber dentro del Step más corto que el producto puede
+producir, o el note-off de un pulso llegaría después del note-on del siguiente
+y ambos se solaparían en la misma altura. El Step más corto es el del tempo
+máximo con la Division más fina: 300 BPM y 1/16 dan 50 ms. 25 ms deja la mitad
+de margen, y hay un test que compara el gate contra esa timeline para que la
+relación no se rompa en silencio si cambian los límites.
+
+Es una constante PROVISIONAL, no un valor musical, y está declarado así en el
+código. Sustain es un parámetro de Groove y está fuera de esta rebanada; cuando
+llegue lo sustituye, con default de una Division completa (Pre Spec).
+
+El note-off lleva velocity 0, que es la convención de MIDI 1.0 para el apagado.
+
+Ficheros
+--------
+Nuevo: Packages/MIDI/Sources/MIDI/NoteEmitter.swift
+Nuevo: Packages/MIDI/Tests/MIDITests/NoteEmitterTests.swift
+
+Verificación
+------------
+swift test --package-path Packages/MIDI  → 94 tests, 1 omitido, 0 fallos
+Cobertura MIDI → 91,90% regiones / 96,33% líneas (umbral ≥80%)
+  NoteEmitter.swift 100%
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
