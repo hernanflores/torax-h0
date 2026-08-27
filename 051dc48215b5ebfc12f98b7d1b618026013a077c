@@ -1,0 +1,39 @@
+Dos piezas de higiene del repo, ambas surgidas al implementar la Fase 1.
+
+1. Pre Spec Torax H-0.md
+-----------------------
+`product.md:76` cita este documento como el origen del diseño, pero no estaba
+en el repo. Su ausencia bloqueó la tarea "Reparto euclidiano": workflow.md
+exige que 16/4, 16/5 y 12/7 sean casos literales "de la Pre Spec", y no había
+forma de comprobar qué decía. Versionarlo evita que la próxima duda del mismo
+tipo vuelva a parar el trabajo.
+
+(Al leerlo se confirmó que tampoco escribe los patrones: da el criterio y los
+describe en palabras. Ver la git note de b5a10fe.)
+
+2. .swift-format
+----------------
+`workflow.md` manda `swift format --in-place --recursive App Packages`, pero
+sin configuración swift-format usa 2 espacios y el repo está escrito a 4: el
+comando reformateaba los 30 ficheros del proyecto. La configuración fija
+indentación a 4, lineLength a 100 y desactiva OrderedImports, que separaba
+`import X` de `@testable import X` con una línea en blanco.
+
+LO QUE ESTO NO ARREGLA
+----------------------
+El comando SIGUE sin ser seguro de ejecutar a ciegas. Con la configuración
+puesta todavía reescribe 21 ficheros, y ya no por indentación sino por saltos
+de línea del pretty-printer, que no son una regla que se pueda apagar. En los
+casos vistos su salida es peor que el código escrito a mano:
+
+    -    private func pattern(... rotate amount: Int) -> String {
+    +    private func pattern(... rotate amount: Int) -> String
+    +    {
+
+    -        let variance = deviations.reduce(0.0) { ... } / Double(count)
+    +        let variance =
+    +            deviations.reduce(0.0) { ... } / Double(count)
+
+Queda pendiente decidir entre aceptar un reformateo global de una vez —en su
+propio chore, no dentro de la rebanada del MVP— o quitar el comando de
+workflow.md. No se toca ningún fichero de código en este commit.
