@@ -30,6 +30,14 @@ public final class VirtualLoopback: @unchecked Sendable {
     /// Endpoint al que hay que enviar para cerrar el bucle.
     public var endpoint: MIDIEndpointRef { destination }
 
+    /// Si el loopback ya se cerró.
+    ///
+    /// Bandera atómica porque el callback de recepción corre en el hilo de alta
+    /// prioridad de CoreMIDI mientras `close()` se llama desde el de control.
+    private let closed = AtomicFlag(false)
+
+    public var isClosed: Bool { closed.value }
+
     public init(name: String = "Torax H-0 Loopback", onReceive handler: @escaping ReceiveHandler) throws {
         let clientStatus = MIDIClientCreateWithBlock(name as CFString, &client, nil)
         guard clientStatus == noErr else {
@@ -41,7 +49,12 @@ public final class VirtualLoopback: @unchecked Sendable {
             name as CFString,
             ._1_0,
             &destination
-        ) { eventList, _ in
+        ) { [closed] eventList, _ in
+            // CoreMIDI puede tener una entrega en vuelo en el momento de
+            // cerrar. Descartarla aquí es lo que hace que `close()` signifique
+            // "no llegan más callbacks" y no solo "ya no escucho".
+            guard !closed.value else { return }
+
             // Se toma el instante ANTES de hacer nada más: cualquier trabajo
             // previo se contabilizaria como jitter que no existe.
             let actual = HostClock.now()
@@ -72,8 +85,26 @@ public final class VirtualLoopback: @unchecked Sendable {
         }
     }
 
-    deinit {
+    /// Cierra el loopback en orden: primero el endpoint, después el cliente.
+    ///
+    /// El orden importa y viene del problema: destruir el cliente antes deja el
+    /// endpoint huérfano, y es en ese estado donde el proceso pierde la
+    /// capacidad de crear clientes nuevos.
+    ///
+    /// Es idempotente. No es código de tiempo real: se llama desde el hilo de
+    /// control, nunca desde el callback de recepción.
+    public func close() {
+        guard !closed.value else { return }
+        closed.value = true
+
         MIDIEndpointDispose(destination)
         MIDIClientDispose(client)
+        destination = MIDIEndpointRef()
+        client = MIDIClientRef()
+    }
+
+    /// Red de seguridad idempotente, no el mecanismo principal.
+    deinit {
+        close()
     }
 }
