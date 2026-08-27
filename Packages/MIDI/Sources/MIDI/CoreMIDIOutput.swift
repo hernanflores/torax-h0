@@ -78,6 +78,16 @@ public final class CoreMIDIOutput: @unchecked Sendable {
     private var outputPort = MIDIPortRef()
     private let notifications = NotificationBox()
 
+    /// Si la salida ya se cerró.
+    ///
+    /// Va en una bandera atómica y no en un `Bool` porque `close()` se llama
+    /// desde el hilo de control mientras `send(_:to:atHostTime:)` puede estar
+    /// ejecutándose en el del scheduler. Leerla ahí es una carga atómica: sin
+    /// lock y sin asignaciones, como exige el camino de tiempo real.
+    private let closed = AtomicFlag(false)
+
+    public var isClosed: Bool { closed.value }
+
     /// Se invoca cuando el conjunto de dispositivos MIDI cambia: conexión o
     /// desconexión.
     ///
@@ -109,9 +119,36 @@ public final class CoreMIDIOutput: @unchecked Sendable {
         }
     }
 
-    deinit {
+    /// Cierra la salida en orden: primero el puerto, después el cliente.
+    ///
+    /// **Por qué explícito y no en `deinit`.** `deinit` ocurre cuando ARC decide
+    /// liberar el objeto, y ese instante puede caer dentro de la ventana en la
+    /// que CoreMIDI todavía está emitiendo eventos ya sellados con timestamp
+    /// futuro. Destruir el puerto ahí inutiliza la conexión MIDI del proceso:
+    /// las siguientes llamadas a `MIDIClientCreateWithBlock` devuelven
+    /// `paramErr`. Cerrar explícitamente devuelve ese momento a quien sí sabe
+    /// cuándo es seguro.
+    ///
+    /// Es idempotente: cerrar dos veces no vuelve a destruir nada.
+    ///
+    /// No es código de tiempo real. Se llama desde el hilo de control.
+    public func close() {
+        guard !closed.value else { return }
+        closed.value = true
+
+        // Antes que nada, cortar el aviso: no pueden llegar notificaciones
+        // sobre una salida que ya no existe.
+        notifications.onSetupChanged = nil
+
         MIDIPortDispose(outputPort)
         MIDIClientDispose(client)
+        outputPort = MIDIPortRef()
+        client = MIDIClientRef()
+    }
+
+    /// Red de seguridad idempotente, no el mecanismo principal.
+    deinit {
+        close()
     }
 
     /// Destinos MIDI presentes en el sistema.
@@ -145,6 +182,10 @@ public final class CoreMIDIOutput: @unchecked Sendable {
         to destination: MIDIEndpointRef,
         atHostTime hostTime: MIDITimeStamp
     ) -> MIDISendResult {
+        // Enviar por una salida cerrada es un estado esperado, no un error: el
+        // destino ya no existe, igual que al desenchufar el cable.
+        guard !closed.value else { return .destinationUnavailable }
+
         var eventList = MIDIEventList()
         var word = message.universalPacketWord(group: 0)
 
