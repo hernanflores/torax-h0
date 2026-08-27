@@ -9,7 +9,7 @@
 /// camino. La alternativa —un temporizador o un sleep que lo envíe más tarde—
 /// reintroduciría exactamente el jitter que la arquitectura de look-ahead
 /// evita: la precisión la da el timestamp, no el momento del envío.
-public struct NoteEmitter {
+public struct NoteEmitter: Equatable, Sendable {
 
     /// Duración del gate mientras no exista Sustain.
     ///
