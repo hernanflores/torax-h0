@@ -39,3 +39,44 @@ Qué no cierra
 Es indicativa, no el veredicto: falta el anillo circular, la parte visualmente
 cara de la interfaz. La definitiva es del track de UI, y ahí hay que volver a
 mirar si la tendencia de la σ con el tempo se mantiene o se acentúa.
+
+═══════════════════════════════════════════════════════════════════
+VERIFICACIÓN EN DISPOSITIVO — Phase 4 / Task "Primer sonido"
+═══════════════════════════════════════════════════════════════════
+
+Ejecutado por el usuario en el iPad con un sintetizador conectado.
+
+CRITERIO PRINCIPAL DE ACEPTACIÓN DEL TRACK: CUMPLIDO
+----------------------------------------------------
+"Con un sintetizador conectado al iPad: pulsar Play produce pulsos euclidianos
+audibles en el hardware, en las posiciones que marca la configuración del Track.
+Pulsar Stop detiene la emisión."
+
+Confirmado: sonó el patrón de Shape 16/5 y Stop detiene la emisión sin dejar
+notas colgadas.
+
+Merece decirse por qué hacía falta preguntarlo aparte: el arnés de jitter mide
+por LOOPBACK VIRTUAL, no por el cable al sintetizador. Sus números prueban que
+el reloj aguanta con carga, pero no que el hardware reciba una sola nota. Son
+dos verificaciones distintas.
+
+Casos borde
+-----------
+- Desconexión a media reproducción: se refleja como estado (`No MIDI device`),
+  sin caída ni error, y se recupera sola al volver a enchufar.
+- Play/Stop rápido repetido: NO se apreciaron notas duplicadas.
+
+Sobre esto último, que no es suerte
+------------------------------------
+La carrera de `scheduler-lifecycle_20260826` necesita `start()` sobre la MISMA
+instancia de `SchedulerThread` después de `stop()`: es entonces cuando `running`
+vuelve a subir antes de que el hilo viejo lea el `false`.
+
+`Transport.play()` construye un `SchedulerThread` NUEVO en cada arranque, con su
+propia bandera. La instancia vieja conserva su `running` en false y su bucle
+sale. El camino de producto es, por construcción, inmune a esta carrera.
+
+Eso REFINA la prioridad de aquel track: el defecto es real en la API de
+`SchedulerThread` y rompe la suite de tests, pero hoy no puede producir notas
+duplicadas a través de `Transport`. Lo que sigue doliendo es el `-50` en CI, que
+es alcance de `midi-test-flake_20260826`.
