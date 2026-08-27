@@ -1,0 +1,60 @@
+Task: Endpoints virtuales de loopback
+Track: timing-spike_20260826 — Phase 3
+
+Summary
+-------
+VirtualLoopback: destino MIDI virtual que devuelve a la app lo que ella misma
+envia, con el instante programado y el instante real de recepcion.
+
+Files created
+-------------
+- Packages/MIDI/Sources/MIDI/VirtualLoopback.swift
+- Packages/MIDI/Tests/MIDITests/VirtualLoopbackTests.swift
+
+Alcance
+-------
+Solo instrumentacion, segun la enmienda de tech-stack.md del 2026-08-26. Este
+endpoint NO debe ofrecerse nunca como destino elegible por el usuario.
+
+Que se mide realmente
+---------------------
+Detalle importante: el paquete recibido lleva el timestamp que se PIDIO, no el
+de entrega. La desviacion se obtiene tomando HostClock.now() en el instante de
+recepcion y restando el timestamp programado.
+
+El instante se toma como PRIMERA instruccion del bloque de recepcion: cualquier
+trabajo previo se contabilizaria como jitter que no existe.
+
+Que NO mide
+-----------
+El loopback virtual no cruza el cable USB. Valida el scheduler y la entrega de
+CoreMIDI; la latencia y el jitter del interfaz MIDI quedan fuera.
+
+Tests
+-----
+Red: 'cannot find VirtualLoopback in scope'. Confirmado.
+Green: 49 tests pasan, 1 skipped.
+
+Cuatro tests nuevos, y por primera vez en el proyecto miden algo real:
+  - el endpoint virtual se publica
+  - un mensaje enviado al endpoint llega de vuelta
+  - el timestamp recibido es exactamente el programado (es la referencia contra
+    la que se medira la desviacion)
+  - un evento programado en el futuro NO se entrega antes de tiempo
+
+El ultimo es el que sostiene toda la arquitectura: si CoreMIDI no respetara el
+timestamp, el look-ahead scheduling no serviria de nada. Usa margen generoso a
+proposito — comprueba que no llega ANTES, no la precision. Medir precision es
+trabajo del arnes, y el veredicto exige el iPad.
+
+Concurrencia
+------------
+Los tests recogen resultados del hilo de CoreMIDI en AtomicCounter, no en
+variables capturadas: Swift 6 estricto rechaza la mutacion de capturas en
+closures concurrentes, y con razon. El delta con signo viaja como patron de bits
+UInt64.
+
+Build
+-----
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+** BUILD SUCCEEDED **
