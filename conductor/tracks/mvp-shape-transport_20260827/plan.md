@@ -50,11 +50,11 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 3: Salida real, transporte y pantalla
 
-- [ ] Task: Selección de destino MIDI
-  - [ ] Tests (Red): la lista refleja los destinos del sistema; sin destinos es un estado válido
-  - [ ] Implementación (Green): enumeración y selección
-  - [ ] El endpoint de medición no aparece como destino elegible
-- [ ] Task: Desconexión como estado esperado
+- [x] Task: Selección de destino MIDI — `da0edb3`
+  - [x] Tests (Red): la lista refleja los destinos del sistema; sin destinos es un estado válido
+  - [x] Implementación (Green): enumeración y selección
+  - [x] El endpoint de medición no aparece como destino elegible
+- [~] Task: Desconexión como estado esperado
   - [ ] Tests (Red): `onSetupChanged` provoca reconsulta de destinos
   - [ ] Implementación (Green): estado `No MIDI device`, sin lenguaje de error ni disculpa
 - [ ] Task: Transporte
