@@ -77,3 +77,18 @@ public struct MIDIDestinationSelection: Equatable, Sendable {
         destination.displayName != VirtualLoopback.defaultName
     }
 }
+
+extension MIDIDestinationSelection {
+
+    /// Cómo se comunica el estado de la salida.
+    ///
+    /// `product-guidelines.md`: «Sin mensajes de error emotivos. Un dispositivo
+    /// MIDI desconectado se comunica con un estado (`No MIDI device`), no con
+    /// una disculpa.» Sin destino se dice qué hay, no qué ha fallado; con
+    /// destino se dice su nombre y nada más.
+    ///
+    /// En inglés y sin traducir, como el resto del vocabulario de la interfaz.
+    public var statusDescription: String {
+        selected?.displayName ?? "No MIDI device"
+    }
+}
