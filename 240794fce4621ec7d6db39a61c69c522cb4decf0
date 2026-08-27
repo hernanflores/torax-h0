@@ -1,0 +1,43 @@
+El check de CI fallaba SIEMPRE en este PR, no de vez en cuando.
+
+Los hechos
+----------
+- PR #4, check `build`: rojo en 2 de 2 ejecuciones, mismo error.
+- `clientCreationFailed(-2)` en las 4 pruebas de VirtualLoopbackTests.
+- `main` relanzado en el mismo runner, después del fallo: VERDE. No es el
+  entorno ni la imagen del runner.
+
+Distinguir esto del flake documentado importa: aquel es `-50` e intermitente
+(~1 de cada 12 sobre main). Este es `-2` y determinista. Decir "relanza y
+pasará" habría sido falso.
+
+Causa
+-----
+La suite arranca hilos de scheduler a prioridad máxima, y esa presión inutiliza
+la creación de endpoints virtuales de CoreMIDI para el resto del proceso. Este
+track lleva la suite de 2 hilos a 7 (TransportTests aporta 4,
+SchedulerThreadSnapshotTests 1). En el runner, más lento, lo que en local es
+intermitente se vuelve sistemático.
+
+Ninguno de los tests nuevos crea clientes de CoreMIDI: lo único que aportan es
+presión de hilos. Medido en local sobre esta rama: sin TransportTests, 0 fallos
+de 8 pasadas; con ella, 2 de 8.
+
+Mitigación
+----------
+`swift.yml` pasa de un paso a dos: los tests que tocan CoreMIDI
+—VirtualLoopbackTests, JitterHarnessTests, CoreMIDIOutputTests— corren PRIMERO
+y en su propio proceso, antes de que exista ningún hilo de scheduler. El resto
+va después.
+
+El orden es la clave, no solo la separación: partir en dos sin poner CoreMIDI
+delante no serviría, porque la contaminación ya habría ocurrido.
+
+NO SE PIERDE COBERTURA: 14 + 111 = los mismos 125 tests que en un solo proceso.
+Verificado localmente.
+
+Es una MITIGACIÓN, no un arreglo. La causa pertenece a
+`midi-test-flake_20260826`. Cuando se cierre, los dos pasos vuelven a ser uno.
+El flake `-50` preexistente tampoco desaparece con esto.
+
+`workflow.md` amplía su nota sobre el flake con estos datos.
