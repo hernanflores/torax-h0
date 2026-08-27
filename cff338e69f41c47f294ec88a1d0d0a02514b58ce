@@ -42,3 +42,63 @@ Frontera de dependencias sigue en verde: Engine solo importa stdlib.
 
 `Track` y `Shape` se comprueban `Sendable` en tiempo de compilación: es el
 requisito que hace posible el snapshot sin lock de la Fase 2.
+
+═══════════════════════════════════════════════════════════════════
+INFORME DE VERIFICACIÓN — Phase 1: Shape en `Engine`
+═══════════════════════════════════════════════════════════════════
+
+Tests automáticos
+-----------------
+swift test --package-path Packages/Engine --enable-code-coverage
+  → 59 tests, 0 fallos
+
+swift test --package-path Packages/MIDI --enable-code-coverage
+  → 64 tests, 1 omitido, 0 fallos
+
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  → BUILD SUCCEEDED
+
+Cobertura de Engine (umbral ≥90%)
+---------------------------------
+  Sources/Engine/EuclideanRhythm.swift   100.00%  (47 líneas)
+  Sources/Engine/MusicalTime.swift       100.00%  (27 líneas)
+  Sources/Engine/Shape.swift             100.00%  (27 líneas)
+
+Frontera de dependencias en verde: Engine importa solo la stdlib.
+Sin `.random(` / `randomElement` / `shuffled` en Engine/Sources.
+Todo fichero de código de la fase tiene test correspondiente.
+
+Sobre el flake de MIDITests
+---------------------------
+La primera pasada de MIDI dio 5 fallos. Las cinco siguientes —una de ellas con
+la misma bandera --enable-code-coverage— dieron 0. Encaja con el flake de
+CoreMIDI ya registrado en workflow.md (~1 de cada 12 pasadas sobre main limpio).
+
+Argumento decisivo: `git diff main HEAD -- Packages/MIDI` está vacío. El
+paquete es idéntico a main y no referencia ninguno de los tipos nuevos, así
+que el fallo no puede ser atribuible a este cambio.
+
+Verificación manual
+-------------------
+Fase sin superficie de usuario: no hay transporte (Fase 3) ni sonido (Fase 4),
+así que no hay nada audible ni visible que probar en dispositivo. Lo verificable
+es que los patrones fijados coinciden con lo que la Pre Spec describe en
+palabras (sección 4), y se revisó con el usuario:
+
+  16/4  "muy regular"              x...x...x...x...
+  16/5  "equilibrio con asimetría" x..x..x..x..x...  (huecos 3,3,3,3,4)
+  12/7  "más denso"                x.xx.x.xx.x.      (huecos alternos 1 y 2)
+
+  Rotate sobre 16/5, sin cambiar Steps ni Pulses:
+     0 → x..x..x..x..x...      +1 → .x..x..x..x..x..
+    +2 → ..x..x..x..x..x.      -1 → ..x..x..x..x...x
+    16 → x..x..x..x..x...  (identidad)
+
+Confirmación del usuario
+------------------------
+Se le presentó el informe y los patrones, junto con dos hallazgos laterales
+(la Pre Spec sin versionar y el reformateo global de `swift format`).
+Respondió: "Sí, cierra la fase".
+
+Decidió además versionar la Pre Spec y añadir un .swift-format; ambas cosas van
+en el commit 051dc48 con su propia nota.
