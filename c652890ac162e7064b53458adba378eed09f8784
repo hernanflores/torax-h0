@@ -1,0 +1,80 @@
+Task: Arnes de medicion de jitter
+Track: timing-spike_20260826 — Phase 3
+
+Summary
+-------
+Tres piezas con responsabilidades separadas: estadistica pura, registro seguro en
+tiempo real, y orquestacion del camino completo.
+
+Files created
+-------------
+- Packages/MIDI/Sources/MIDI/JitterStatistics.swift   (JitterStatistics + JitterRecorder)
+- Packages/MIDI/Sources/MIDI/JitterHarness.swift
+- Packages/MIDI/Tests/MIDITests/JitterStatisticsTests.swift
+- Packages/MIDI/Tests/MIDITests/JitterHarnessTests.swift
+
+PRIMERA MEDICION REAL DEL PROYECTO (macOS, no es el veredicto)
+---------------------------------------------------------------
+n=32 por tempo, loopback virtual, umbral del track: max < 2 ms, sigma < 0.5 ms
+
+   60 BPM : max=0.117 ms  media=+0.061 ms  sigma=0.014 ms  -> CUMPLE
+  120 BPM : max=0.080 ms  media=+0.057 ms  sigma=0.011 ms  -> CUMPLE
+  174 BPM : max=0.122 ms  media=+0.059 ms  sigma=0.016 ms  -> CUMPLE
+
+Aproximadamente 17x por debajo del umbral en maximo y 30x en desviacion tipica.
+
+Interpretacion:
+  - La sigma (10-16 us) es lo que decide la estabilidad musical, y es minuscula.
+    Es la senal de que el look-ahead hace lo que promete.
+  - El sesgo constante de +0.06 ms NO es jitter: es latencia fija del camino de
+    medicion (entrega de CoreMIDI + coste de leer el reloj en el bloque de
+    recepcion). Un desfase constante es musicalmente inocuo; la variacion no.
+    Por eso meanNanoseconds conserva el signo: distinguir sesgo de jitter es
+    necesario para no buscar el fallo donde no esta.
+
+ESTO NO ES EL VEREDICTO. Son 32 muestras, en macOS, por loopback virtual sin
+cruzar el cable USB. El iPad es otra maquina, con otro planificador y gestion
+termica y de energia que un Mac no tiene. La Fase 4 mide alli.
+
+Decisiones de diseno
+--------------------
+- maximumAbsoluteNanoseconds usa valor ABSOLUTO: llegar pronto es tan malo como
+  llegar tarde; mirar solo los retrasos dejaria pasar un adelanto grave.
+- meanNanoseconds conserva el SIGNO, para poder distinguir sesgo constante de
+  jitter.
+- Desviacion tipica POBLACIONAL (divide por N): las muestras no son un
+  subconjunto de una poblacion mayor, son todos los eventos de la medicion.
+- JitterRecorder usa buffer PREASIGNADO y descarta al llenarse en vez de crecer:
+  grabar ocurre dentro del bloque de recepcion de CoreMIDI, donde una asignacion
+  introduciria justo el jitter que se intenta medir.
+- El instante de recepcion se toma como PRIMERA instruccion del bloque.
+- El barrido de tempos existe para revelar si el error escala con el tempo: un
+  fallo que solo aparece a 174 BPM no se ve midiendo unicamente a 120.
+
+Sendable
+--------
+CoreMIDIOutput y VirtualLoopback se marcan @unchecked Sendable con
+justificacion: tras init sus handles son de solo lectura, MIDISendEventList es
+seguro entre hilos, y el unico estado mutable (callback de notificaciones) vive
+tras un lock.
+
+TDD
+---
+Red: 'cannot find JitterStatistics/JitterRecorder in scope'. Confirmado.
+Green: 64 tests pasan, 1 skipped.
+
+Coverage (MIDI)
+---------------
+JitterHarness.swift     : 100.00%
+JitterStatistics.swift  :  90.48%
+Atomics / HostClock / MIDIMessage : 100.00%
+SchedulerThread.swift   :  93.33%
+LookAheadScheduler.swift:  92.31%
+VirtualLoopback.swift   :  84.62%
+CoreMIDIOutput.swift    :  80.65%
+Umbral MIDI >=80%: CUMPLE en todos los ficheros.
+
+Build
+-----
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+** BUILD SUCCEEDED **
