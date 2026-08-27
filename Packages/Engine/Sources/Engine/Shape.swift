@@ -56,3 +56,74 @@ public struct Rotate: Equatable, Sendable {
     /// Patrón sin girar. Es el valor por defecto del producto.
     public static let none = Rotate(0)
 }
+
+/// Shape — la familia que decide **cuándo** ocurren los eventos.
+///
+/// La Pre Spec la sitúa primera en el flujo del motor: «Shape decide *cuándo* y
+/// con qué densidad ocurren eventos», antes de que Tonal elija alturas y Groove
+/// las interprete. Sus cuatro parámetros en esta rebanada son Steps, Pulses,
+/// Rotate y Division; el resto de la tabla de la Pre Spec —Repeats, Time,
+/// Voicing, Range, Cycles— llega en tracks posteriores.
+///
+/// Es un valor inmutable y `Sendable` a propósito: es lo que cruza al hilo del
+/// scheduler como snapshot, y por eso no hay ningún lock que tomar en el camino
+/// de timing (`conductor/code_styleguides/swift.md`).
+public struct Shape: Equatable, Sendable {
+
+    /// Valor rítmico de cada Step. Default del producto: 1/16.
+    public let division: Division
+
+    /// El anillo ya repartido y girado. Privado porque Shape es la fachada que
+    /// el resto del motor usa; el reparto es su mecanismo, no su interfaz.
+    private let rhythm: EuclideanRhythm
+
+    public var steps: Steps { rhythm.steps }
+    public var pulses: Pulses { rhythm.pulses }
+    public var rotate: Rotate { rhythm.rotate }
+
+    /// **No es código de tiempo real:** construir un Shape reparte los Pulses, y
+    /// eso asigna memoria. Se hace en el hilo principal al publicar un snapshot.
+    public init(
+        steps: Steps,
+        pulses: Pulses,
+        rotate: Rotate = .none,
+        division: Division = .sixteenth
+    ) {
+        self.division = division
+        self.rhythm = EuclideanRhythm(steps: steps, pulses: pulses, rotate: rotate)
+    }
+
+    /// Indica si el Step dado dispara. El índice envuelve sobre el anillo.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func triggers(atStep index: Int) -> Bool {
+        rhythm.triggers(atStep: index)
+    }
+}
+
+/// Track — «una voz/carril musical y de control».
+///
+/// La Pre Spec lo define como el sitio donde residen los parámetros
+/// generativos. En esta rebanada solo tiene Shape: Tonal y Groove están fuera de
+/// alcance, y con ellos el pool de alturas. **Que el Track no diga nada sobre la
+/// altura es deliberado**: `product-guidelines.md` advierte contra consolidar la
+/// idea de una nota fija por paso, que contradice el modelo de pool. La altura
+/// provisional de esta rebanada es una constante del camino MIDI, no estado del
+/// Track.
+public struct Track: Equatable, Sendable {
+
+    public let shape: Shape
+
+    public init(shape: Shape) {
+        self.shape = shape
+    }
+
+    /// Indica si el Step dado dispara, combinando Shape y Rotate.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func triggers(atStep index: Int) -> Bool {
+        shape.triggers(atStep: index)
+    }
+}
