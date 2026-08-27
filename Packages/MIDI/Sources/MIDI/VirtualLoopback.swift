@@ -27,10 +27,18 @@ public final class VirtualLoopback: @unchecked Sendable {
     private var client = MIDIClientRef()
     private var destination = MIDIEndpointRef()
 
+    /// Nombre del endpoint virtual que crea el arnés.
+    ///
+    /// Es una constante compartida y no un literal suelto porque la lista de
+    /// destinos del producto tiene que poder excluirlo: durante la medición de
+    /// jitter el arnés y la app corren a la vez, y este endpoint aparecería
+    /// entre los destinos elegibles como si fuera un sintetizador.
+    public static let defaultName = "Torax H-0 Loopback"
+
     /// Endpoint al que hay que enviar para cerrar el bucle.
     public var endpoint: MIDIEndpointRef { destination }
 
-    public init(name: String = "Torax H-0 Loopback", onReceive handler: @escaping ReceiveHandler) throws {
+    public init(name: String = VirtualLoopback.defaultName, onReceive handler: @escaping ReceiveHandler) throws {
         let clientStatus = MIDIClientCreateWithBlock(name as CFString, &client, nil)
         guard clientStatus == noErr else {
             throw MIDIOutputError.clientCreationFailed(clientStatus)
