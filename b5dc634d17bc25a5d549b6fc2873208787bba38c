@@ -1,0 +1,60 @@
+Task: Transporte (Fase 3 — Salida real, transporte y pantalla)
+
+Resumen
+-------
+`Transport` da play y stop sobre el reloj interno. TDD: los tests fallaron por
+tipo inexistente antes de implementar.
+
+Reparto de responsabilidades: el transporte no calcula tiempo ni decide qué
+Steps disparan. Arranca y para el hilo, convierte cada pulso en notas con el
+NoteEmitter y las entrega al camino de envío. La rejilla la lleva
+SchedulerThread; el material, TrackScheduler.
+
+Decisión: el envío se inyecta
+------------------------------
+Recibe un cierre en vez de hablar con CoreMIDIOutput. Es lo que permite
+verificar play, stop y "no quedan notas colgadas" sin sintetizador y sin
+CoreMIDI: los 12 tests corren en host. Quien lo construya en producto le pasa
+el envío real.
+
+Decisión: el hilo se crea en play(), no en init()
+-------------------------------------------------
+Para que cada reproducción empiece con un origen de tiempo recién tomado.
+Reutilizar el hilo haría que el segundo Play arrancara a mitad del anillo.
+
+Decisión: note-off inmediato al parar, ADEMÁS de los ya sellados
+----------------------------------------------------------------
+Cada pulso entrega su note-off con timestamp futuro, así que lo que ya salió se
+apaga solo. Pero parar entre el note-on y su note-off deja esa nota sonando en
+el sintetizador hasta que alguien la apague — y no hay nadie más que vaya a
+hacerlo: el hilo que la habría apagado es justo el que se acaba de detener.
+
+El timestamp 0 es la convención de CoreMIDI para "ahora", que es lo que se
+quiere: parar es un gesto, no un evento de la rejilla.
+
+Tests que lo fijan: nunca hay más note-on que note-off; el último mensaje al
+parar es un note-off del mismo canal y la misma altura; parado no se emite nada
+más (verificado esperando 300 ms tras el stop).
+
+NoteEmitter pasa a ser Equatable + Sendable: lo captura el cierre @Sendable del
+hilo del scheduler. Es un struct de tipos valor, así que la conformidad es
+gratis.
+
+LÍMITE CONOCIDO
+---------------
+Parar y volver a arrancar deprisa puede duplicar notas: es la carrera
+registrada en `scheduler-lifecycle_20260826`, que este track NO arregla. Este
+es el primer track que puede observarla, porque es el primero con transporte.
+Documentado en el propio tipo. Si resulta molesta al probar en dispositivo
+(Fase 4), es señal de subir la prioridad de aquel track, no de parchearlo aquí.
+
+Ficheros
+--------
+Nuevo:      Packages/MIDI/Sources/MIDI/Transport.swift
+Modificado: Packages/MIDI/Sources/MIDI/NoteEmitter.swift  (Equatable, Sendable)
+Nuevo:      Packages/MIDI/Tests/MIDITests/TransportTests.swift
+
+Verificación
+------------
+swift test --package-path Packages/MIDI  → 128 tests, 1 omitido, 0 fallos (×2 pasadas)
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
