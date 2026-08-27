@@ -1,0 +1,10 @@
+Torax H-0 — timing spike
+dispositivo: iPad · iPadOS 26.5
+eventos por tempo: 1000
+umbral: máx < 2 ms · σ < 0,5 ms
+
+60 BPM · n=1000  máx=0.149 ms  media=+0.063 ms  σ=0.009 ms  → CUMPLE
+120 BPM · n=1000  máx=0.108 ms  media=+0.060 ms  σ=0.009 ms  → CUMPLE
+174 BPM · n=1000  máx=0.105 ms  media=+0.057 ms  σ=0.008 ms  → CUMPLE
+
+VEREDICTO: CUMPLE
