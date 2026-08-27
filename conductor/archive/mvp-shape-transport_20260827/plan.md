@@ -97,7 +97,7 @@ Stop detiene la emisión.
 
 1. **El check de CI puede fallar** ~1 de cada 6 pasadas con
    `clientCreationFailed(-50)`. Relanzar. Alcance de
-   [`midi-test-flake_20260826`](../midi-test-flake_20260826/index.md), que pasó
+   [`midi-test-flake_20260826`](../../tracks/midi-test-flake_20260826/index.md), que pasó
    a ser el bloqueante de la cadena de defectos.
 2. **La carrera de `stop()`/`start()` sigue sin arreglar**, pero se acotó su
    alcance real: `Transport.play()` construye un `SchedulerThread` nuevo en cada

@@ -64,7 +64,7 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 
 > **Estado (2026-08-26): validado.** Medido en iPad Air 4ª generación: σ ≈ 9 µs y máximo 0,149 ms, frente a un umbral de 0,5 ms / 2 ms. La arquitectura de look-ahead scheduling aguanta. Ver [`verdict.md`](./archive/timing-spike_20260826/verdict.md).
 >
-> **Actualización (2026-08-27): medido con carga.** Con el motor generativo y la interfaz corriendo: máximo 0,127 ms y σ 0,015 ms en el peor tempo. Sin degradación grosera. La σ sube de 8–9 µs a 12–15 µs respecto al spike —4–7 µs, inaudibles— y sube con el tempo; conviene volver a mirarlo cuando exista el anillo circular, que es la carga visual que aún falta. Ver [`measurement-200.txt`](./tracks/mvp-shape-transport_20260827/measurement-200.txt).
+> **Actualización (2026-08-27): medido con carga.** Con el motor generativo y la interfaz corriendo: máximo 0,127 ms y σ 0,015 ms en el peor tempo. Sin degradación grosera. La σ sube de 8–9 µs a 12–15 µs respecto al spike —4–7 µs, inaudibles— y sube con el tempo; conviene volver a mirarlo cuando exista el anillo circular, que es la carga visual que aún falta. Ver [`measurement-200.txt`](./archive/mvp-shape-transport_20260827/measurement-200.txt).
 
 Secundarios:
 

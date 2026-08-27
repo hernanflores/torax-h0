@@ -6,12 +6,18 @@ La prioridad del proyecto. Sin app no hay nada que arreglar.
 
 ---
 
-- [x] **Track: MVP rebanada 1 — Shape, transporte y primer sonido** — *suena en hardware; jitter con carga máx 0,127 ms · σ 0,015 ms*
-  *Link: [conductor/tracks/mvp-shape-transport_20260827/index.md](./tracks/mvp-shape-transport_20260827/index.md)*
+*Sin tracks abiertos.* La rebanada 1 está cerrada y archivada: Torax H-0 suena.
+El siguiente paso natural es la **entrada de control** —knobs relativos,
+controlador virtual de desarrollo, preset del BeatStep Pro, MIDI Learn—, que es
+lo que convierte la app de solo lectura en instrumento. El relevo de snapshot en
+caliente ya está hecho y probado, así que girar un knob será publicar un `Track`
+nuevo por un camino que ya existe.
 
 ## Defectos conocidos
 
-Abiertos y despriorizados por debajo del MVP.
+Con la rebanada 1 del MVP cerrada, son lo siguiente en la cola junto con la
+entrada de control. La cadena tiene un orden forzado: `midi-test-flake` bloquea
+a `scheduler-lifecycle`, no al revés.
 
 ---
 
@@ -30,6 +36,9 @@ Abiertos y despriorizados por debajo del MVP.
   La investigación del 2026-08-27 invirtió la dependencia. El ciclo de vida del scheduler no se puede cerrar sin entender antes por qué retrasar el desmontaje inutiliza la creación de endpoints virtuales de CoreMIDI.
 
 ## Archivados
+
+- [x] **Track: MVP rebanada 1 — Shape, transporte y primer sonido** — suena en hardware; jitter con carga máx 0,127 ms · σ 0,015 ms
+  *Link: [conductor/archive/mvp-shape-transport_20260827/index.md](./archive/mvp-shape-transport_20260827/index.md)*
 
 - [x] **Track: Timing Spike — validación del reloj MIDI** — arquitectura validada en iPad (máx 0,149 ms, σ 0,009 ms)
   *Link: [conductor/archive/timing-spike_20260826/index.md](./archive/timing-spike_20260826/index.md)*
