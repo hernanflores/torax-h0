@@ -1,0 +1,35 @@
+Task: Tipos de Shape (Fase 1 — Shape en Engine)
+
+Resumen
+-------
+Primeros tipos del dominio de Shape en el motor puro. TDD: los tests se
+escribieron primero y fallaron por tipo inexistente antes de implementar.
+
+- Steps: validado a 1–16 en el inicializador. La Pre Spec describe 1–64, pero
+  v1 se acota a 16 (legibilidad del anillo a un metro, product-guidelines.md).
+- Pulses: su límite superior no es una constante sino el Steps en el que vive,
+  así que el inicializador exige el anillo — `Pulses(_:in:)`. Evita que alguien
+  tenga que revalidar contra el Track más tarde.
+- Rotate: deliberadamente SIN validar contra un rango. Es un giro sobre un
+  anillo cerrado: negativo gira al revés y mayor que Steps da la vuelta. Ambos
+  son musicalmente significativos; la envoltura la resolverá el reparto, que es
+  quien conoce el tamaño del anillo.
+
+Ficheros
+--------
+Nuevo: Packages/Engine/Sources/Engine/Shape.swift
+Nuevo: Packages/Engine/Tests/EngineTests/ShapeTypesTests.swift
+
+Verificación
+------------
+swift test --package-path Packages/Engine  → 27 tests, 0 fallos
+Cobertura Sources/Engine/Shape.swift        → 100% líneas y funciones
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+Frontera de dependencias (DependencyBoundaryTests) sigue en verde: solo stdlib.
+
+Nota sobre `swift format`
+-------------------------
+El comando de workflow.md `swift format --in-place --recursive App Packages`
+reformatea TODO el repo de 4 a 2 espacios: no hay fichero de configuración
+`.swift-format` que fije el estilo existente. Se revirtió ese ruido y los
+ficheros nuevos se dejaron a 4 espacios, como el resto del código.
