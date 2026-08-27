@@ -45,6 +45,11 @@ public enum JitterHarnessError: Error, Equatable {
 public struct JitterMeasurement: Sendable {
     public let beatsPerMinute: Double
     public let statistics: JitterStatistics
+
+    public init(beatsPerMinute: Double, statistics: JitterStatistics) {
+        self.beatsPerMinute = beatsPerMinute
+        self.statistics = statistics
+    }
 }
 
 /// Mide la desviación real de entrega de eventos MIDI.

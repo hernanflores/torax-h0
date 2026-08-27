@@ -59,7 +59,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 4: UI mínima y veredicto
 
-- [ ] Task: UI mínima de control
+- [~] Task: UI mínima de control
   - [ ] Play/stop, selección de tempo, presentación de resultados por tempo
   - [ ] Sin lenguaje visual del producto — es instrumentación
 - [ ] Task: Ejecutar la medición en el iPad objetivo
