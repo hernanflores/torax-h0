@@ -1,0 +1,44 @@
+Task: Estado del Track (Fase 1 — Shape en Engine)
+
+Resumen
+-------
+Se cierra la Fase 1 con los dos tipos que dan nombre al modelo de la Pre Spec.
+TDD: los tests fallaron por tipos inexistentes antes de implementar.
+
+- `Shape`: la familia que "decide *cuándo* y con qué densidad ocurren eventos"
+  (Pre Spec, sección 3). Cuatro parámetros en esta rebanada — Steps, Pulses,
+  Rotate y Division. Default 1/16, como manda la tabla de Shape.
+- `Track`: "una voz/carril musical y de control... donde residen los parámetros
+  generativos" (Pre Spec, sección 2). Aquí solo tiene Shape.
+
+Decisión: la jerarquía sigue la de la Pre Spec, no la del código
+----------------------------------------------------------------
+Habría sido más corto que el Track hablara directamente con `EuclideanRhythm` y
+ahorrarse `Shape`. Se mantienen las dos capas porque NFR5 exige el vocabulario
+del documento sin sinónimos, y "Shape" es el nombre de la familia a la que se le
+van a añadir Repeats, Time, Voicing y Range. `EuclideanRhythm` queda privado
+dentro de Shape: es su mecanismo, no su interfaz.
+
+Decisión: el Track no dice nada sobre la altura
+-----------------------------------------------
+`product-guidelines.md` advierte explícitamente contra consolidar la idea de una
+nota fija por paso, porque contradice el modelo de pool de la Pre Spec. La
+altura provisional de esta rebanada (Known Limitation 3 de la spec) será una
+constante del camino MIDI, NO estado del Track. Documentado en el propio tipo
+para que no se cuele por comodidad al llegar la Fase 2.
+
+Ficheros
+--------
+Modificado: Packages/Engine/Sources/Engine/Shape.swift
+Nuevo:      Packages/Engine/Tests/EngineTests/TrackTests.swift
+
+Verificación
+------------
+swift test --package-path Packages/Engine  → 59 tests, 0 fallos
+Cobertura Sources/Engine/  → 100% en los tres ficheros (umbral: ≥90%)
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+grep de `.random(` / `randomElement` / `shuffled` en Engine/Sources → ninguno
+Frontera de dependencias sigue en verde: Engine solo importa stdlib.
+
+`Track` y `Shape` se comprueban `Sendable` en tiempo de compilación: es el
+requisito que hace posible el snapshot sin lock de la Fase 2.
