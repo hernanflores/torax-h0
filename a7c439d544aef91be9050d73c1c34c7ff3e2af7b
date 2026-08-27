@@ -1,0 +1,41 @@
+Task: Lectura indicativa de jitter con carga (Fase 4)
+
+Barrido a 60, 120 y 174 BPM en el iPad, con el motor generativo (Shape 16/5) y
+la interfaz corriendo. n=200 por tempo.
+
+  60 BPM   máx=0.104 ms  media=+0.069 ms  σ=0.012 ms  CUMPLE
+ 120 BPM   máx=0.127 ms  media=+0.069 ms  σ=0.013 ms  CUMPLE
+ 174 BPM   máx=0.126 ms  media=+0.067 ms  σ=0.015 ms  CUMPLE
+
+Umbral: máx < 2 ms, σ < 0,5 ms. Los máximos quedan 16x por debajo; la σ, 33x.
+
+Comparación contra el spike (mismo iPad, mismo arnés, mismo n)
+---------------------------------------------------------------
+             máximo              σ                  media
+ 60 BPM  0.115 → 0.104 ms   0.008 → 0.012 ms   +0.062 → +0.069 ms
+120 BPM  0.104 → 0.127 ms   0.009 → 0.013 ms   +0.062 → +0.069 ms
+174 BPM  0.101 → 0.126 ms   0.008 → 0.015 ms   +0.056 → +0.067 ms
+
+NO hay degradación grosera, que es lo que FR6 pedía detectar. Meter el motor en
+el camino del scheduler —TrackHandoff.load() una vez por ventana y
+Track.triggers() por Step— no ha costado nada audible.
+
+Lo que sí hay, y conviene no maquillar: la σ sube de forma CONSISTENTE en los
+tres tempos, de 8-9 µs a 12-15 µs, un 50-90% relativo. Y sube CON el tempo
+(12 → 13 → 15), coherente con que a más BPM haya más despertares del scheduler
+y más consultas al anillo por segundo. En absoluto son 4-7 µs.
+
+La media sube ~7 µs uniformemente: eso es sesgo constante del camino de
+medición, no jitter, como ya explicaba el veredicto del spike.
+
+Salda la deuda de la Fase 2
+---------------------------
+La Fase 2 tocó el camino del scheduler y se cerró SIN medición de jitter, con la
+deuda anotada explícitamente en su checkpoint (99c6673) y la advertencia de que
+si esta lectura salía mal, ese cambio sería el primer sospechoso. No salió mal.
+
+Qué no cierra
+-------------
+Es indicativa, no el veredicto: falta el anillo circular, la parte visualmente
+cara de la interfaz. La definitiva es del track de UI, y ahí hay que volver a
+mirar si la tendencia de la σ con el tempo se mantiene o se acentúa.
