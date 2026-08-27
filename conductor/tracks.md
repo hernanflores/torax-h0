@@ -11,14 +11,14 @@ La prioridad del proyecto. Sin app no hay nada que arreglar.
 
 ## Defectos conocidos
 
-Abiertos y despriorizados por debajo del MVP.
-
 ---
 
-- [ ] **Track: Ciclo de vida del scheduler y desmontaje de CoreMIDI**
+- [~] **Track: Ciclo de vida del scheduler y desmontaje de CoreMIDI** — *priorizado por encima del MVP el 2026-08-27*
   *Link: [conductor/tracks/scheduler-lifecycle_20260826/index.md](./tracks/scheduler-lifecycle_20260826/index.md)*
 
-  La carrera es de producto: parar y arrancar el transporte puede duplicar notas. La rebanada 1 del MVP introduce transporte, así que será la primera en poder observarla.
+  Ya no es hipotético. La Fase 3 de la rebanada 1 del MVP introdujo el transporte y la carrera se manifestó, tal como este registro anticipaba: la suite de `MIDI` pasó a fallar ~1 de cada 6 pasadas con `clientCreationFailed(-50)`, contra 0 de 18 en `main`. Eso haría fallar el check del PR sin culpa del cambio revisado, que es justo lo que el gate de Pull Requests se reparó para evitar.
+
+  El MVP queda pausado tras su Fase 3 hasta que esto se cierre. Evidencia en las git notes de `a6e49fb` y `b9557f3`.
 
 ---
 
