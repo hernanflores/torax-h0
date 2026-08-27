@@ -1,0 +1,74 @@
+Task: Ejecutar la medicion en el iPad objetivo
+Track: timing-spike_20260826 — Phase 4
+
+RESULTADO — iPad Air (4a generacion), iPadOS 26.5, n=200 por tempo
+------------------------------------------------------------------
+Umbral: max < 2 ms, sigma < 0.5 ms
+
+   60 BPM : max=0.115 ms  media=+0.062 ms  sigma=0.008 ms  -> CUMPLE
+  120 BPM : max=0.104 ms  media=+0.062 ms  sigma=0.009 ms  -> CUMPLE
+  174 BPM : max=0.101 ms  media=+0.056 ms  sigma=0.008 ms  -> CUMPLE
+
+VEREDICTO (200 muestras): CUMPLE
+
+Margen: ~19x por debajo del umbral en maximo, ~60x en desviacion tipica.
+El iPad mide igual o mejor que macOS, contra lo que se temia por la gestion
+termica y de energia del dispositivo.
+
+BUG ENCONTRADO EN DISPOSITIVO: kMIDINotPermitted (-10844)
+----------------------------------------------------------
+Primer intento en el iPad: portCreationFailed(-10844) al crear el endpoint
+virtual. Causa: en iOS, crear endpoints MIDI virtuales exige declarar el modo de
+fondo `audio` en Info.plist. En macOS no hace falta — por eso los 64 tests
+pasaban en host y el dispositivo fallaba. Es exactamente el tipo de hallazgo
+para el que existe un spike.
+
+Correccion: Config/Info-Debug.plist con UIBackgroundModes=[audio], aplicado
+mediante INFOPLIST_FILE SOLO en la configuracion Debug.
+
+Por que solo en Debug: los endpoints virtuales son instrumentacion, no producto
+(enmienda de tech-stack.md del 2026-08-26). Declarar un modo de fondo en el
+binario de produccion por culpa de una herramienta de medicion habria roto esa
+frontera. El Release no declara modos de fondo que no necesita.
+
+Detalle: INFOPLIST_KEY_UIBackgroundModes NO funciona — Xcode solo reconoce una
+lista cerrada de claves INFOPLIST_KEY_*. Hizo falta un Info.plist explicito. Y
+tras cambiarlo hubo que hacer `xcodebuild clean`: el plist generado quedaba
+cacheado.
+
+Instrumentacion anadida para poder diagnosticar en dispositivo
+---------------------------------------------------------------
+El primer fallo no dejo rastro porque writeReport() solo se llamaba en la ruta
+de exito. Corregido: el informe se escribe TAMBIEN al fallar. Un fallo sin
+rastro no se puede diagnosticar.
+
+Ademas se anadio Documents/jitter-trace.txt con marcas de tiempo por hito, para
+reconstruir hasta donde llego la ejecucion si la app termina inesperadamente.
+
+Por que fichero y no consola: `devicectl --console` se invalida en mediciones de
+varios minutos (com.apple.Mercury.error 1001). Persistir en el dispositivo y
+recoger despues sobrevive a cualquier corte de conexion.
+
+Ademas: UIApplication.isIdleTimerDisabled mientras mide. Una pasada larga dura
+~8 minutos; si el iPad se auto-bloqueara a mitad, la app se suspende y el
+resultado parcial pareceria valido.
+
+Metodo
+------
+  xcodebuild build -scheme ToraxH0 -destination 'platform=iOS,id=<UDID>'
+  xcrun devicectl device install app --device <UUID> <ruta>.app
+  xcrun devicectl device process launch --device <UUID> --terminate-existing \
+      com.toraxh0.ToraxH0 --auto-measure --samples=200
+  xcrun devicectl device copy from --device <UUID> \
+      --domain-type appDataContainer --domain-identifier com.toraxh0.ToraxH0 \
+      --source Documents/jitter-report.txt --destination <local>
+
+El modo --auto-measure existe para que la medicion sea reproducible desde linea
+de comandos y no dependa de que alguien pulse un boton: el arnes de jitter es
+una herramienta permanente segun workflow.md.
+
+Pendiente
+---------
+Falta la pasada larga (~1000 eventos por tempo) para cubrir la limitacion de
+muestra corta registrada en la spec: 200 muestras dan una sigma fiable pero son
+poca muestra para el criterio de MAXIMO.
