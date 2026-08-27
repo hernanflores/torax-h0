@@ -1,0 +1,47 @@
+Task: Rotate (Fase 1 — Shape en Engine)
+
+Resumen
+-------
+Rotate se aplica sobre el mismo anillo del reparto euclidiano. TDD: los tests
+fallaron por miembro inexistente antes de implementar.
+
+Decisión: por qué Rotate vive en EuclideanRhythm
+------------------------------------------------
+La Pre Spec no lo lista como parámetro propio sino como detalle de Pulses en la
+tabla de Shape: "1 hasta el número actual de Steps; **Rotate** desplaza el
+patrón". Y en la sección 4: "Rotate desplaza todo el patrón sin cambiar Steps
+ni Pulses". Es una permutación del anillo, no un reparto distinto, así que vive
+donde vive el anillo.
+
+Decisión: girar en init, no al consultar
+----------------------------------------
+La máscara se guarda YA GIRADA. La alternativa —girar el índice dentro de
+`triggers(atStep:)`— metería una resta y un segundo módulo en el camino del
+scheduler a cambio de nada. Aplicarlo una vez en init deja la consulta como un
+único desplazamiento de bits.
+
+El giro es circular sobre el ANCHO DEL ANILLO, no sobre el de UInt16: los bits
+por encima de `steps` no pertenecen al anillo, así que el resultado se enmascara
+con `ringMask`. El caso steps = 16 se trata aparte porque `1 << 16` desborda un
+UInt16.
+
+La normalización del giro (negativo, o mayor que Steps) ocurre aquí y no en el
+tipo `Rotate`, porque es aquí donde se conoce el tamaño del anillo. Es la
+contrapartida de la decisión del commit 71d8bb8 de no validar `Rotate` contra un
+rango.
+
+Ficheros
+--------
+Modificado: Packages/Engine/Sources/Engine/EuclideanRhythm.swift
+Nuevo:      Packages/Engine/Tests/EngineTests/RotateTests.swift
+
+Verificación
+------------
+swift test --package-path Packages/Engine  → 49 tests, 0 fallos
+Cobertura Sources/Engine/  → 100% en los tres ficheros (umbral: ≥90%)
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+
+Dos invariantes exhaustivas: sobre las 136 combinaciones válidas de
+(Steps, Pulses) por 41 giros (-20…20), girar conserva el número de Pulses; y el
+anillo girado es el original leído desde otro punto de entrada
+—`rotado.triggers(i) == original.triggers(i - amount)`— para todo i.
