@@ -42,10 +42,10 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Implementación (Green)
   - [x] Revisión explícita: sin asignaciones, locks, `await`, logging ni SwiftUI en el camino del scheduler
   - [x] Marcar las funciones nuevas del camino con `/// Realtime:`
-- [ ] Task: Emisión de note-on y note-off
-  - [ ] Tests (Red): cada pulso produce el par, con el note-off en su propio timestamp futuro
-  - [ ] Implementación (Green): gate de duración fija, declarado provisional en el código
-  - [ ] Sin sleeps ni temporizadores — el note-off va sellado, como el note-on
+- [x] Task: Emisión de note-on y note-off — `99c6673`
+  - [x] Tests (Red): cada pulso produce el par, con el note-off en su propio timestamp futuro
+  - [x] Implementación (Green): gate de duración fija, declarado provisional en el código
+  - [x] Sin sleeps ni temporizadores — el note-off va sellado, como el note-on
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Salida real, transporte y pantalla
