@@ -57,21 +57,21 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tamaño de muestra configurable, 200 eventos por defecto
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (c652890)
 
-## Phase 4: UI mínima y veredicto [checkpoint: b7c4597]
+## Phase 4: UI mínima y veredicto [checkpoint: 5cf6598]
 
-- [x] Task: UI mínima de control (520de2d)
+- [x] Task: UI mínima de control (e9cdfb2)
   - [x] Play/stop, selección de tempo, presentación de resultados por tempo
   - [x] Sin lenguaje visual del producto — es instrumentación
-- [x] Task: Ejecutar la medición en el iPad objetivo (69119f8)
+- [x] Task: Ejecutar la medición en el iPad objetivo (aec0ebe)
   - [x] Barrido a 60, 120 y 174 BPM, 200 eventos por tempo
   - [x] Registrar máximo, media y desviación típica de cada tempo
-- [x] Task: Pasada larga de confirmación (5813017)
+- [x] Task: Pasada larga de confirmación (f44db25)
   - [x] Repetir con ~1000 eventos por tempo para cubrir la limitación de muestra corta
-- [x] Task: Veredicto sobre el criterio de aceptación (b7c4597)
+- [x] Task: Veredicto sobre el criterio de aceptación (5cf6598)
   - [x] Contrastar contra el umbral: máx < 2 ms, desviación típica < 0.5 ms
   - [x] Registrar los números en la git note del commit
   - [x] Si no se cumple: parar y reportar con datos. No iterar arquitecturas dentro de este track
-- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (b7c4597)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (5cf6598)
 
 ## Notas de riesgo
 
