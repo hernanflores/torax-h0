@@ -75,12 +75,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [ ] Verificar los pulsos euclidianos audibles en las posiciones esperadas
   - [ ] Verificar que parar no deja notas colgadas
   - [ ] Verificar que desconectar a media reproducción se refleja como estado, no como caída
-- [~] Task: Lectura indicativa de jitter con carga — **requiere iPad**
-  - [ ] Barrido a 60, 120 y 174 BPM con el motor y la interfaz corriendo
-  - [ ] Contrastar contra el umbral: máx < 2 ms, σ < 0,5 ms
-  - [ ] Registrar los números en la git note del commit
-  - [ ] Comparar contra la medición del spike: lo que interesa es la degradación al meter carga, no el valor absoluto
-  - [ ] Si no se cumple: parar y reportar con datos. No iterar arquitecturas dentro de este track
+- [x] Task: Lectura indicativa de jitter con carga — `a7c439d`
+  - [x] Barrido a 60, 120 y 174 BPM con el motor y la interfaz corriendo
+  - [x] Contrastar contra el umbral: máx < 2 ms, σ < 0,5 ms
+  - [x] Registrar los números en la git note del commit
+  - [x] Comparar contra la medición del spike: lo que interesa es la degradación al meter carga, no el valor absoluto
+  - [x] Si no se cumple: parar y reportar con datos. No iterar arquitecturas dentro de este track
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Estado del track
