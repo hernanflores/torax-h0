@@ -70,11 +70,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 4: Primer sonido y lectura de jitter
 
-- [~] Task: Primer sonido en dispositivo — **requiere iPad y sintetizador**
-  - [ ] Ejecutar en el iPad con un sintetizador conectado
-  - [ ] Verificar los pulsos euclidianos audibles en las posiciones esperadas
-  - [ ] Verificar que parar no deja notas colgadas
-  - [ ] Verificar que desconectar a media reproducción se refleja como estado, no como caída
+- [x] Task: Primer sonido en dispositivo — **verificado en iPad el 2026-08-27** (sin commit: es verificación, no código)
+  - [x] Ejecutar en el iPad con un sintetizador conectado
+  - [x] Verificar los pulsos euclidianos audibles en las posiciones esperadas
+  - [x] Verificar que parar no deja notas colgadas
+  - [x] Verificar que desconectar a media reproducción se refleja como estado, no como caída
+  - [x] **Extra:** Play/Stop rápido **no** duplicó notas de forma audible — ver la nota de `a7c439d`
 - [x] Task: Lectura indicativa de jitter con carga — `a7c439d`
   - [x] Barrido a 60, 120 y 174 BPM con el motor y la interfaz corriendo
   - [x] Contrastar contra el umbral: máx < 2 ms, σ < 0,5 ms
