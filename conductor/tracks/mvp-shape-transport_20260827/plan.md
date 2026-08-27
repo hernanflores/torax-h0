@@ -13,12 +13,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): `Rotate` admite valores negativos y mayores que Steps
   - [x] Implementación (Green): validación en el inicializador, no en cada sitio de uso
   - [x] Vocabulario de la Pre Spec, sin sinónimos (`steps`, `pulses`, `rotate`)
-- [ ] Task: Reparto euclidiano
-  - [ ] Tests (Red): **16/4, 16/5 y 12/7 de la Pre Spec**, como casos literales
-  - [ ] Tests (Red): bordes — Pulses = 1, Pulses = Steps, Steps = 1
-  - [ ] Tests (Red): determinismo — mismo estado, misma salida
-  - [ ] Implementación (Green): distribución euclidiana pura
-  - [ ] Refactor y verificar cobertura de `Engine` ≥90%
+- [x] Task: Reparto euclidiano — `b5a10fe`
+  - [x] Tests (Red): **16/4, 16/5 y 12/7 de la Pre Spec**, como casos literales
+  - [x] Tests (Red): bordes — Pulses = 1, Pulses = Steps, Steps = 1
+  - [x] Tests (Red): determinismo — mismo estado, misma salida
+  - [x] Implementación (Green): distribución euclidiana pura
+  - [x] Refactor y verificar cobertura de `Engine` ≥90%
 - [ ] Task: Rotate
   - [ ] Tests (Red): Rotate 0 es la identidad; Rotate = Steps vuelve al patrón original
   - [ ] Tests (Red): Rotate negativo; Rotate mayor que Steps envuelve
