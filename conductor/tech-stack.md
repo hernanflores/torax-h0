@@ -50,7 +50,10 @@ Esto no es organización cosmética: **el compilador garantiza que el motor es p
 
 - **Engine** — motor generativo puro. Sin dependencias de plataforma.
 - **MIDI** — CoreMIDI: scheduler, salida, entrada de control.
+- **CToraxAtomics** — target C con atómicos sin lock, dentro del paquete `MIDI`.
 - **App** — SwiftUI, presentación y estado de aplicación.
+
+**Sobre `CToraxAtomics`:** el hilo del scheduler necesita comunicarse con el hilo de control sin bloquearse, y en iPadOS 17 no hay forma de hacerlo sin salir de la stdlib — `Synchronization.Atomic` de Swift 6 exige iOS 18 y `swift-atomics` sería una dependencia de terceros. Un target C propio con `<stdatomic.h>` resuelve el problema sin violar la regla de cero dependencias: es código del proyecto. Un test verifica que los atómicos son realmente lock-free y no una emulación con lock interno.
 
 ## Motor generativo
 
@@ -65,6 +68,10 @@ El aleatorio es **pseudoaleatorio con semilla**: la Pre Spec exige que sea repet
 **Salida: solo a hardware externo en v1.** CoreMIDI a dispositivos físicos (USB / Camera Kit). Coherente con el MVP y con medir timing contra hardware real, que es lo que se quiere validar.
 
 Fuera de v1: puertos virtuales como **funcionalidad de producto** (para que otras apps del iPad reciban de Torax H-0), y Bluetooth MIDI (que introduce latencia y jitter propios, justo sobre lo que se quiere medir).
+
+**Entrada de control:** CoreMIDI de entrada, encoders en **modo relativo**. Preset para Arturia BeatStep Pro + MIDI Learn para reasignar a otro hardware.
+
+**Controlador virtual de desarrollo:** inyector de eventos MIDI relativos para probar el motor sin hardware conectado. Herramienta de test, excluida del build de producción.
 
 ### Enmienda — 2026-08-26: endpoints virtuales como instrumentación
 
@@ -81,10 +88,6 @@ Fuera de v1: puertos virtuales como **funcionalidad de producto** (para que otra
 **Limitación que introduce.** Un loopback virtual no cruza el cable USB: valida el scheduler y CoreMIDI, no la cadena completa hasta el sintetizador. La latencia y el jitter del interfaz USB-MIDI quedan sin medir. Está registrado como limitación conocida en `conductor/tracks/timing-spike_20260826/spec.md`.
 
 **Cuándo revisar esto.** Si en algún momento se decide publicar un puerto virtual como funcionalidad real (para sintes en el propio iPad), esta enmienda deja de ser una excepción y pasa a ser una decisión de producto que hay que tomar en `product.md`.
-
-**Entrada de control:** CoreMIDI de entrada, encoders en **modo relativo**. Preset para Arturia BeatStep Pro + MIDI Learn para reasignar a otro hardware.
-
-**Controlador virtual de desarrollo:** inyector de eventos MIDI relativos para probar el motor sin hardware conectado. Herramienta de test, excluida del build de producción.
 
 ## Persistencia
 
