@@ -1,0 +1,78 @@
+Task: Pantalla mínima de estado (Fase 3)
+
+Resumen
+-------
+Transporte, selección de destino y valores de Shape, en solo lectura. Sin
+anillo, sin overlay de valor grande, sin acentos por familia: el lenguaje visual
+del producto llega en el track de UI.
+
+Que nada sea editable NO es un recorte: es el estado "sin controlador
+conectado" que product-guidelines.md especifica —solo lectura y transporte—.
+Un slider provisional para Steps o Pulses sería el antipatrón que ese documento
+nombra ("parámetros generativos que solo existan en pantalla") y habría que
+desmontarlo después.
+
+Decisión: el texto de estado vive en Engine, no en la app
+---------------------------------------------------------
+`Shape.description` da "Steps 16 · Pulses 5 · Rotate 0 · Division 1/16", con el
+formato que fija product-guidelines.md: "Preciso, no conversacional" y
+"Vocabulario de la Pre Spec, en inglés, sin traducir".
+
+Está en Engine porque ahí sí se puede testear. Hay tres tests que vigilan las
+guidelines directamente: que no suene conversacional, que use los términos en
+inglés sin traducir, y que NO MENCIONE NINGUNA ALTURA — ni "note", ni "pitch",
+ni el número de la nota. Mostrarla sugeriría una nota fija por paso, que
+product-guidelines.md advierte que contradice el modelo de pool.
+
+Decisión: el destino activo va en un atómico, no en el modelo
+--------------------------------------------------------------
+Lo destapó el compilador al rechazar la captura de `self` en el cierre
+@Sendable del scheduler, y resultó ser un problema real de tiempo real: leer una
+propiedad `@Observable` desde el hilo del scheduler registraría una dependencia
+de observación, y eso ASIGNA MEMORIA en pleno camino de timing.
+
+El endpoint vigente vive ahora en un `AtomicCounter` y el cierre de envío es
+`static`, así que no captura el modelo ni puede tocar estado observable. El 0 de
+CoreMIDI (objeto nulo) sirve como "ningún destino".
+
+Decisión: el panel de jitter comparte pantalla con el transporte
+-----------------------------------------------------------------
+La Fase 4 exige medir "con el motor y la interfaz corriendo", así que tienen que
+convivir. En pestañas que se excluyan no se podría.
+
+Decisión: perder el destino no para el reloj
+---------------------------------------------
+Desenchufar es un estado, no una interrupción de la sesión: el transporte sigue
+y vuelve a sonar solo en cuanto haya dónde enviar.
+
+DEUDA: la cobertura de App no se puede medir
+---------------------------------------------
+El plan pide `App` ≥80%. NO SE VERIFICÓ, y no por omisión:
+
+  - `ToraxH0.xcodeproj` tiene UN SOLO target (`ToraxH0`, aplicación) y ningún
+    target de test. Comprobado con `xcodebuild -list`.
+  - `workflow.md` ya registra que no hay runtimes de simulador instalados, así
+    que un target de test iOS tampoco podría ejecutarse.
+
+Lo que se hizo en su lugar fue mover fuera de la app todo lo que merece test:
+el texto de Shape a Engine, y la selección de destino, la desconexión y el
+transporte a MIDI — todos cubiertos al 100% o cerca. Lo que queda en App son 82
+líneas de cableado en TransportModel y una vista SwiftUI sin lógica.
+
+Queda por decidir si se añade un target de test al proyecto (exige instalar un
+runtime de simulador) o si se ajusta el umbral de workflow.md reconociendo que
+la app es una capa de cableado. Se plantea en el checkpoint de fase.
+
+Ficheros
+--------
+Nuevo:      App/TransportModel.swift
+Reescrito:  App/ContentView.swift
+Modificado: Packages/Engine/Sources/Engine/Shape.swift        (description)
+Modificado: Packages/Engine/Sources/Engine/MusicalTime.swift  (Division.description)
+Nuevo:      Packages/Engine/Tests/EngineTests/ShapeDescriptionTests.swift
+
+Verificación
+------------
+swift test --package-path Packages/Engine → 66 tests, 0 fallos
+swift test --package-path Packages/MIDI   → 128 tests, 1 omitido, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
