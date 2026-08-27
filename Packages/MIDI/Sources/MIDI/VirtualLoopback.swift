@@ -46,9 +46,21 @@ public final class VirtualLoopback: @unchecked Sendable {
             // previo se contabilizaria como jitter que no existe.
             let actual = HostClock.now()
 
-            let list = eventList.pointee
-            var packet = withUnsafePointer(to: list.packet) { UnsafeMutablePointer(mutating: $0) }
-            for _ in 0..<list.numPackets {
+            // Se recorre sobre el puntero original, nunca sobre una copia por
+            // valor de la lista: `MIDIEventList` solo lleva dentro el primer
+            // paquete, y los siguientes viven en memoria de longitud variable
+            // detrás del puntero. Copiar la estructura y avanzar con
+            // `MIDIEventPacketNext` leería fuera de la copia a partir del
+            // segundo paquete.
+            //
+            // El `!` está justificado: `offset(of:)` solo devuelve `nil` para
+            // propiedades sin dirección estable, y `MIDIEventList` es una
+            // estructura de C con disposición fija.
+            let numPackets = eventList.pointee.numPackets
+            var packet = UnsafeMutableRawPointer(mutating: eventList)
+                .advanced(by: MemoryLayout<MIDIEventList>.offset(of: \.packet)!)
+                .assumingMemoryBound(to: MIDIEventPacket.self)
+            for _ in 0..<numPackets {
                 handler(packet.pointee.timeStamp, actual)
                 packet = MIDIEventPacketNext(packet)
             }

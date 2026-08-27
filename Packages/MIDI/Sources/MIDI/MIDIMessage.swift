@@ -10,6 +10,14 @@ public struct MIDIChannel: Equatable, Sendable {
         self.number = number
     }
 
+    /// Vía interna para valores que son literales conocidos, como los del
+    /// arnés de medición. Igual que en `Division`: evita forzar el
+    /// desempaquetado del inicializador validador, que `swift.md` prohíbe
+    /// fuera de tests.
+    init(unchecked number: Int) {
+        self.number = number
+    }
+
     /// Valor 0-indexado que viaja en el nibble bajo del status.
     var wireValue: UInt8 { UInt8(number - 1) }
 }
@@ -22,6 +30,11 @@ public struct MIDINote: Equatable, Sendable {
         guard (0...127).contains(value) else { return nil }
         self.value = UInt8(value)
     }
+
+    /// Vía interna para literales conocidos. Ver `MIDIChannel.init(unchecked:)`.
+    init(unchecked value: UInt8) {
+        self.value = value
+    }
 }
 
 /// Velocity MIDI, 0–127.
@@ -31,6 +44,11 @@ public struct MIDIVelocity: Equatable, Sendable {
     public init?(_ value: Int) {
         guard (0...127).contains(value) else { return nil }
         self.value = UInt8(value)
+    }
+
+    /// Vía interna para literales conocidos. Ver `MIDIChannel.init(unchecked:)`.
+    init(unchecked value: UInt8) {
+        self.value = value
     }
 }
 

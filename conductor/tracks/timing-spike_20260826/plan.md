@@ -77,3 +77,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 - **La Fase 2 concentra el riesgo**, pero no es medible hasta la Fase 4, cuando el instrumento existe. Es inherente a un spike.
 - **La última tarea puede terminar en "no".** Está escrita como veredicto, no como éxito garantizado.
+
+## Phase: Review Fixes
+
+- [x] Task: Apply review suggestions (4f7cfba)
+  - [x] CI: invocar cada paquete SPM por su ruta — no hay `Package.swift` en la raíz
+  - [x] `VirtualLoopback`: recorrer los paquetes sobre el puntero original, no sobre una copia
+  - [x] `JitterHarness`: eliminar los force unwraps con `init(unchecked:)` interno
+  - [ ] Carrera `start()`/`stop()` del scheduler — **no aplicada**, requiere track propio
+  - [ ] Flake `clientCreationFailed(-50)` en `MIDITests` — preexistente, requiere track propio
