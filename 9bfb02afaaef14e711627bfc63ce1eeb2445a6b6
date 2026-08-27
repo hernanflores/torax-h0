@@ -1,0 +1,39 @@
+Task: JitterHarness desmonta en orden (Fase 2)
+
+Sustituye `defer { thread.stop() }` más liberación por ARC por el desmontaje
+explícito que exige FR3:
+
+  1. dejar de programar eventos nuevos       thread.stop()
+  2. dejar que se vacíe la ventana entregada usleep(2 × look-ahead)
+  3. dejar de enviar                         output.close()
+  4. destruir endpoint y cliente             loopback.close()
+
+El paso 2 es el que antes no existía: sin él, los pasos 3 y 4 caen dentro de la
+ventana en la que CoreMIDI sigue emitiendo eventos ya sellados.
+
+La spec registra que "drenar con usleep + withExtendedLifetime" ya se probó y
+fue inestable. La diferencia aquí es que la destrucción ya NO la hace ARC: el
+drenaje sin cierre explícito no bastaba, porque el instante del desmontaje
+seguía sin controlarse.
+
+ESTADO DE LA MEDICIÓN DE -50 (honesto)
+--------------------------------------
+Tras la Fase 2 la rama da 12 de 12 pasadas con -50, contra 0 de 18 en main.
+Eso NO es una regresión de la Fase 2: es el test de la Fase 1 haciendo su
+trabajo. `SchedulerLifecycleTests` provoca deliberadamente la carrera y deja
+SEIS bucles del scheduler huérfanos girando a prioridad máxima durante el resto
+del proceso. A partir de ahí, toda creación de cliente de CoreMIDI falla.
+
+Aislado con datos:
+  suite completa                             8 ocurrencias de -50, 12 de 12 pasadas
+  sin los tests de cierre nuevos             4 ocurrencias  (quedan los de la carrera)
+
+Y los que fallan con -50 son siempre VirtualLoopbackTests, que corren DESPUÉS de
+que la carrera haya dejado los huérfanos.
+
+HALLAZGO: esto establece la cadena causal que la spec daba por plausible
+(Known Limitation 1, "comparten causa"). Los bucles huérfanos que deja la
+carrera son lo que rompe CoreMIDI. Si es así, cerrar la carrera en la Fase 3
+debería hacer desaparecer el -50 — aquí y en la rama del MVP.
+
+Se verifica al terminar la Fase 3.
