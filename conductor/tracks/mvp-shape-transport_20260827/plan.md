@@ -24,10 +24,10 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): Rotate negativo; Rotate mayor que Steps envuelve
   - [x] Tests (Red): rotar no cambia el número de Pulses
   - [x] Implementación (Green)
-- [ ] Task: Estado del Track
-  - [ ] Tests (Red): un Track resuelve qué Steps disparan, combinando Shape y Rotate
-  - [ ] Implementación (Green): valor inmutable y `Sendable`, con su `Division`
-  - [ ] Sin `Int.random()` ni `.randomElement()` — no hay aleatorio en esta rebanada
+- [x] Task: Estado del Track — `cff338e`
+  - [x] Tests (Red): un Track resuelve qué Steps disparan, combinando Shape y Rotate
+  - [x] Implementación (Green): valor inmutable y `Sendable`, con su `Division`
+  - [x] Sin `Int.random()` ni `.randomElement()` — no hay aleatorio en esta rebanada
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Snapshot en caliente
