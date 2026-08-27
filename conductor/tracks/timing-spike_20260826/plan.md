@@ -42,7 +42,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Revisión explícita: sin asignaciones, locks, `await`, logging ni SwiftUI en el camino
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (2d75d89)
 
-## Phase 3: Instrumentación de medición
+## Phase 3: Instrumentación de medición [checkpoint: c652890]
 
 - [x] Task: Documentar la desviación de `tech-stack.md` (antes de implementar FR4) (a3c6c7b)
   - [x] Añadir nota fechada: endpoints virtuales admitidos como instrumentación, no como producto
@@ -55,7 +55,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): cálculo de máximo, media y desviación típica sobre series conocidas
   - [x] Implementación (Green): captura de desviaciones y agregación por tempo
   - [x] Tamaño de muestra configurable, 200 eventos por defecto
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) (c652890)
 
 ## Phase 4: UI mínima y veredicto
 
