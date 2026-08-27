@@ -1,0 +1,15 @@
+Task: Cierre ordenado de VirtualLoopback (Fase 2)
+
+`close()` explícito: primero el endpoint, después el cliente. Idempotente.
+`deinit` queda como red de seguridad.
+
+El orden importa y viene del problema: destruir el cliente antes deja el
+endpoint huérfano, y es en ese estado donde el proceso pierde la capacidad de
+crear clientes nuevos.
+
+La guarda se comprueba DENTRO del callback de recepción, antes de tocar nada:
+CoreMIDI puede tener una entrega en vuelo al cerrar, y descartarla ahí es lo que
+hace que `close()` signifique "no llegan más callbacks" y no solo "ya no
+escucho".
+
+Verificación: 4 tests nuevos, 0 fallos.
