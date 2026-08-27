@@ -1,0 +1,23 @@
+Task: Cierre ordenado de CoreMIDIOutput (Fase 2 — Cierre explícito del arnés)
+
+`close()` explícito: primero el puerto, después el cliente. Idempotente.
+`deinit` pasa a ser red de seguridad que llama a `close()`, no el mecanismo.
+
+Por qué explícito y no en deinit
+--------------------------------
+`deinit` ocurre cuando ARC decide liberar el objeto, y ese instante puede caer
+dentro de la ventana en la que CoreMIDI todavía está emitiendo eventos ya
+sellados con timestamp futuro. Destruir el puerto ahí inutiliza la conexión MIDI
+del proceso. Cerrar explícitamente devuelve ese momento a quien sí sabe cuándo
+es seguro.
+
+Enviar tras cerrar devuelve `.destinationUnavailable`: es un estado esperado,
+no un error, igual que desenchufar el cable. La guarda usa `AtomicFlag` y no un
+Bool porque `close()` llega del hilo de control mientras `send` puede estar
+corriendo en el del scheduler; leerla ahí es una carga atómica, sin lock y sin
+asignaciones.
+
+Cerrar también pone a nil el callback de `onSetupChanged`: no pueden llegar
+notificaciones sobre una salida que ya no existe.
+
+Verificación: 5 tests nuevos, 0 fallos.
