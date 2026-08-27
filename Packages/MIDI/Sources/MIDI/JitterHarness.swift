@@ -105,7 +105,30 @@ public enum JitterHarness {
         }
 
         thread.start()
-        defer { thread.stop() }
+
+        // Desmontaje explícito y en orden, en lugar de confiar en `defer` para
+        // el hilo y en ARC para el resto.
+        //
+        // El orden lo impone el problema, no el gusto: destruir los recursos de
+        // CoreMIDI mientras todavía está emitiendo eventos ya sellados con
+        // timestamp futuro inutiliza la conexión MIDI del proceso, y las
+        // siguientes llamadas a `MIDIClientCreateWithBlock` devuelven
+        // `paramErr`. Ver el track `scheduler-lifecycle_20260826`.
+        //
+        //   1. dejar de programar eventos nuevos
+        //   2. dejar que se vacíe la ventana ya entregada
+        //   3. dejar de enviar  (puerto y cliente del emisor)
+        //   4. destruir endpoint y cliente del loopback
+        //
+        // El paso 2 es el que antes no existía: sin él, los pasos 3 y 4 caen
+        // dentro de la ventana. Se espera el doble del look-ahead, que acota por
+        // arriba lo que CoreMIDI pueda tener pendiente.
+        defer {
+            thread.stop()
+            usleep(UInt32(configuration.lookAheadNanoseconds * 2 / 1_000))
+            output.close()
+            loopback.close()
+        }
 
         let deadline = Date().addingTimeInterval(configuration.timeoutSeconds)
         while !recorder.isFull && Date() < deadline {
