@@ -1,0 +1,32 @@
+Task: Pasada larga de confirmacion
+Track: timing-spike_20260826 — Phase 4
+
+RESULTADO — iPad Air (4a generacion), iPadOS 26.5, n=1000 por tempo
+-------------------------------------------------------------------
+Umbral: max < 2 ms, sigma < 0.5 ms
+
+   60 BPM : max=0.149 ms  media=+0.063 ms  sigma=0.009 ms  -> CUMPLE
+  120 BPM : max=0.108 ms  media=+0.060 ms  sigma=0.009 ms  -> CUMPLE
+  174 BPM : max=0.105 ms  media=+0.057 ms  sigma=0.008 ms  -> CUMPLE
+
+VEREDICTO (1000 muestras): CUMPLE
+
+Para que servia esta pasada
+---------------------------
+La spec registro como limitacion conocida que 200 muestras dan una sigma fiable
+pero son poca muestra para el criterio de MAXIMO: un outlier que ocurra una vez
+por minuto podria no aparecer. Esta pasada existe para cubrir esa duda.
+
+Comparacion 200 vs 1000 muestras (el dato que responde la duda):
+
+  tempo    max@200    max@1000   sigma@200  sigma@1000
+   60 BPM  0.115 ms   0.149 ms   0.008 ms   0.009 ms
+  120 BPM  0.104 ms   0.108 ms   0.009 ms   0.009 ms
+  174 BPM  0.101 ms   0.105 ms   0.008 ms   0.008 ms
+
+Con 5x mas muestras el maximo apenas se mueve (+0.034 ms en el peor caso, a
+60 BPM) y la sigma no cambia. La cola de la distribucion se comporta: no habia
+outliers escondidos. La limitacion registrada en la spec queda cubierta.
+
+Duracion: ~8 minutos (60 BPM: 250 s, 120: 125 s, 174: 86 s). La inhibicion del
+auto-bloqueo anadida en la tarea anterior fue necesaria para esto.
