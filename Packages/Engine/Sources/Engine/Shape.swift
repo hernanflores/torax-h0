@@ -127,3 +127,25 @@ public struct Track: Equatable, Sendable {
         shape.triggers(atStep: index)
     }
 }
+
+extension Shape: CustomStringConvertible {
+
+    /// Cómo se lee Shape en pantalla: `Steps 16 · Pulses 5 · Rotate 0 · Division 1/16`.
+    ///
+    /// El formato sale de `product-guidelines.md`: «Preciso, no conversacional.
+    /// La app no explica ni acompaña: informa» y «Vocabulario de la Pre Spec, en
+    /// inglés, sin traducir». Por eso los términos van en inglés aunque el resto
+    /// de la documentación esté en castellano — son nombres de parámetro, no
+    /// prosa.
+    ///
+    /// **No dice nada sobre la altura, y es deliberado.** La nota de esta
+    /// rebanada es una constante provisional del camino MIDI; mostrarla
+    /// sugeriría una nota fija por paso, que es justo lo que
+    /// `product-guidelines.md` advierte que contradice el modelo de pool.
+    ///
+    /// Rotate se muestra con el valor del parámetro, no con el giro ya
+    /// normalizado: es lo que el usuario ajustará cuando haya knobs.
+    public var description: String {
+        "Steps \(steps.count) · Pulses \(pulses.count) · Rotate \(rotate.amount) · Division \(division)"
+    }
+}
