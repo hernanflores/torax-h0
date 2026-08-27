@@ -1,9 +1,24 @@
 # Tracks Registry
 
+## MVP — v1
+
+La prioridad del proyecto. Sin app no hay nada que arreglar.
+
+---
+
+- [ ] **Track: MVP rebanada 1 — Shape, transporte y primer sonido**
+  *Link: [conductor/tracks/mvp-shape-transport_20260827/index.md](./tracks/mvp-shape-transport_20260827/index.md)*
+
+## Defectos conocidos
+
+Abiertos y despriorizados por debajo del MVP.
+
 ---
 
 - [ ] **Track: Ciclo de vida del scheduler y desmontaje de CoreMIDI**
   *Link: [conductor/tracks/scheduler-lifecycle_20260826/index.md](./tracks/scheduler-lifecycle_20260826/index.md)*
+
+  La carrera es de producto: parar y arrancar el transporte puede duplicar notas. La rebanada 1 del MVP introduce transporte, así que será la primera en poder observarla.
 
 ---
 

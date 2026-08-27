@@ -64,7 +64,7 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 
 > **Estado (2026-08-26): validado.** Medido en iPad Air 4ª generación: σ ≈ 9 µs y máximo 0,149 ms, frente a un umbral de 0,5 ms / 2 ms. La arquitectura de look-ahead scheduling aguanta.
 >
-> Pendiente: medir **con carga real** —motor generativo y UI encima—, que es el siguiente riesgo. La medición se hizo con el scheduler solo en la máquina. Ver [`verdict.md`](./tracks/timing-spike_20260826/verdict.md).
+> Pendiente: medir **con carga real** —motor generativo y UI encima—, que es el siguiente riesgo. La medición se hizo con el scheduler solo en la máquina. Ver [`verdict.md`](./archive/timing-spike_20260826/verdict.md).
 
 Secundarios:
 
