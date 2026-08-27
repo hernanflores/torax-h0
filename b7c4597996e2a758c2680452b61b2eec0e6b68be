@@ -43,3 +43,40 @@ Files created
 - conductor/tracks/timing-spike_20260826/verdict.md
 - conductor/tracks/timing-spike_20260826/measurement-200.txt
 - conductor/tracks/timing-spike_20260826/measurement-1000.txt
+
+================================================================
+PHASE VERIFICATION REPORT — Phase 4: UI minima y veredicto
+================================================================
+
+Automated tests
+---------------
+  swift test --package-path Packages/Engine        -> 16 tests, 0 failures
+  swift test --package-path Packages/MIDI          -> 64 tests, 1 skipped, 0 failures
+  xcodebuild build -scheme ToraxH0 -destination 'platform=iOS,id=<UDID>'
+                                                   -> ** BUILD SUCCEEDED **
+  xcodebuild build -configuration Release -destination 'generic/platform=iOS'
+                                                   -> ** BUILD SUCCEEDED **
+
+Verificacion de la frontera instrumentacion/producto
+-----------------------------------------------------
+Se comprobo explicitamente que el Info.plist del binario RELEASE no declara
+UIBackgroundModes. El modo de fondo `audio` que exigen los endpoints virtuales
+existe SOLO en Debug. La enmienda de tech-stack.md ("instrumentacion, no
+producto") se sostiene en el binario, no solo en el documento.
+
+Manual verification steps
+-------------------------
+1. App en el iPad -> Medir con 200 eventos -> tres lineas verdes + VEREDICTO:
+   CUMPLE (~1 min 40 s)
+2. La pantalla no se apaga durante la medicion
+3. Detener a mitad -> estado "Detenido" y el auto-bloqueo vuelve a la normalidad
+4. conductor/tracks/timing-spike_20260826/verdict.md: la seccion "Que NO queda
+   validado" refleja lo pendiente
+
+Se pidio atencion expresa sobre la limitacion principal: se midio SIN CARGA
+—sin UI redibujando, sin motor generativo, sin 16 Tracks—. El scheduler tenia la
+maquina para el solo. Ese es el siguiente riesgo, no el timing en abstracto.
+
+User confirmation
+-----------------
+"si, verificado"
