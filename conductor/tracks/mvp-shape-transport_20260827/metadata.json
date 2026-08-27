@@ -1,0 +1,36 @@
+{
+  "id": "mvp-shape-transport_20260827",
+  "title": "MVP rebanada 1: Shape, transporte y primer sonido",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-08-27",
+  "updated_at": "2026-08-27",
+  "phases": 4,
+  "mvp_slice": 1,
+  "scope": {
+    "in": [
+      "Shape en Engine: Steps 1-16, Pulses euclidianos, Rotate, Division",
+      "Snapshot inmutable publicado en caliente, sin locks",
+      "Transporte play/stop con reloj interno",
+      "Salida a destino MIDI real, con note-on y note-off",
+      "Pantalla mínima de estado, en solo lectura",
+      "Lectura indicativa de jitter con carga"
+    ],
+    "out": [
+      "Entrada de control: knobs relativos, controlador virtual, BeatStep Pro, MIDI Learn",
+      "Edición de parámetros generativos por cualquier vía, incluida la táctil",
+      "Tonal: pool, Scale, Root",
+      "Groove: Velocity, Sustain, Timing, Delay, Probability",
+      "Anillo circular y lenguaje visual del producto",
+      "Persistencia, Patterns, Banks, Cycles"
+    ]
+  },
+  "acceptance_criteria": {
+    "primary": "Play produce pulsos euclidianos audibles en hardware externo; Stop los detiene",
+    "euclidean_cases": ["16/4", "16/5", "12/7"],
+    "jitter_max_ms": 2.0,
+    "jitter_stddev_ms": 0.5,
+    "jitter_reading": "indicativa"
+  },
+  "known_open_defects": ["scheduler-lifecycle_20260826"]
+}

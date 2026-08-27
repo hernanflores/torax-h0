@@ -26,7 +26,7 @@ iPadOS 17 como mínimo: cubre iPads desde ~2018 y da acceso a SwiftUI maduro (`O
 
 > **Validado empíricamente el 2026-08-26** (track `timing-spike_20260826`), en iPad Air 4ª generación / iPadOS 26.5, con 1000 eventos por tempo a 60, 120 y 174 BPM: máximo **0,149 ms** y σ **0,009 ms** en el peor caso, frente a un umbral de 2 ms / 0,5 ms.
 >
-> Ver [`verdict.md`](./tracks/timing-spike_20260826/verdict.md), **incluida su sección "Qué NO queda validado"**: la medición se hizo por loopback virtual (sin cruzar el cable USB) y sin carga — sin UI redibujando, sin motor generativo y sin 16 Tracks.
+> Ver [`verdict.md`](./archive/timing-spike_20260826/verdict.md), **incluida su sección "Qué NO queda validado"**: la medición se hizo por loopback virtual (sin cruzar el cable USB) y sin carga — sin UI redibujando, sin motor generativo y sin 16 Tracks.
 
 El criterio de éxito es *timing MIDI estable*, así que la arquitectura se organiza alrededor de él.
 
@@ -95,7 +95,7 @@ Nota de implementación: `INFOPLIST_KEY_UIBackgroundModes` **no funciona** — X
 - **No** aparecen como destino elegible para el usuario ni como puerto publicado del producto.
 - No cambian la decisión de v1: la salida de producto sigue siendo solo a hardware externo.
 
-**Limitación que introduce.** Un loopback virtual no cruza el cable USB: valida el scheduler y CoreMIDI, no la cadena completa hasta el sintetizador. La latencia y el jitter del interfaz USB-MIDI quedan sin medir. Está registrado como limitación conocida en `conductor/tracks/timing-spike_20260826/spec.md`.
+**Limitación que introduce.** Un loopback virtual no cruza el cable USB: valida el scheduler y CoreMIDI, no la cadena completa hasta el sintetizador. La latencia y el jitter del interfaz USB-MIDI quedan sin medir. Está registrado como limitación conocida en `conductor/archive/timing-spike_20260826/spec.md`.
 
 **Cuándo revisar esto.** Si en algún momento se decide publicar un puerto virtual como funcionalidad real (para sintes en el propio iPad), esta enmienda deja de ser una excepción y pasa a ser una decisión de producto que hay que tomar en `product.md`.
 
