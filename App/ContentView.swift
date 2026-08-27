@@ -23,6 +23,7 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.black)
         .foregroundStyle(.white)
+        .onAppear { model.startIfRequestedByLaunchArguments() }
     }
 
     private var header: some View {

@@ -62,7 +62,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 - [x] Task: UI mínima de control (520de2d)
   - [x] Play/stop, selección de tempo, presentación de resultados por tempo
   - [x] Sin lenguaje visual del producto — es instrumentación
-- [ ] Task: Ejecutar la medición en el iPad objetivo
+- [~] Task: Ejecutar la medición en el iPad objetivo
   - [ ] Barrido a 60, 120 y 174 BPM, 200 eventos por tempo
   - [ ] Registrar máximo, media y desviación típica de cada tempo
 - [ ] Task: Pasada larga de confirmación
