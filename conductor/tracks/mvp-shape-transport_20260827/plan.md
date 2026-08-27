@@ -70,12 +70,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 4: Primer sonido y lectura de jitter
 
-- [ ] Task: Primer sonido en dispositivo
+- [~] Task: Primer sonido en dispositivo — **requiere iPad y sintetizador**
   - [ ] Ejecutar en el iPad con un sintetizador conectado
   - [ ] Verificar los pulsos euclidianos audibles en las posiciones esperadas
   - [ ] Verificar que parar no deja notas colgadas
   - [ ] Verificar que desconectar a media reproducción se refleja como estado, no como caída
-- [ ] Task: Lectura indicativa de jitter con carga
+- [~] Task: Lectura indicativa de jitter con carga — **requiere iPad**
   - [ ] Barrido a 60, 120 y 174 BPM con el motor y la interfaz corriendo
   - [ ] Contrastar contra el umbral: máx < 2 ms, σ < 0,5 ms
   - [ ] Registrar los números en la git note del commit
@@ -85,21 +85,30 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Estado del track
 
-**Pausado tras la Fase 3, el 2026-08-27.** Las Fases 1, 2 y 3 están completas y
-verificadas; la Fase 4 exige dispositivo y queda pendiente.
+**Fases 1, 2 y 3 completas y verificadas.** Falta la Fase 4, que exige iPad y
+sintetizador conectado.
 
-La razón de la pausa es la que este mismo plan anticipó en las notas de riesgo:
-el transporte destapó la carrera de `stop()`/`start()`, y ahora se manifiesta
-como una inestabilidad medible de la suite de MIDI —~1 de cada 6 pasadas, con
-`clientCreationFailed(-50)` en las tres clases que crean clientes de CoreMIDI—
-que haría fallar el check del PR sin culpa del cambio revisado.
+### La pausa por `scheduler-lifecycle` se levantó el 2026-08-27
 
-Se sube la prioridad de [`scheduler-lifecycle_20260826`](../scheduler-lifecycle_20260826/index.md)
-y se arregla antes de seguir. La verificación en dispositivo de la Fase 4 se
-hará después: parar y arrancar es justo el gesto afectado, así que medir antes
-del arreglo daría una lectura sucia.
+El transporte de la Fase 3 destapó la carrera de `stop()`/`start()`, tal como
+las notas de riesgo de abajo anticipaban, y se subió la prioridad de
+[`scheduler-lifecycle_20260826`](../scheduler-lifecycle_20260826/index.md) para
+arreglarla antes de seguir.
 
-Evidencia completa en la git note del commit `a6e49fb` y en `b9557f3`.
+**La carrera se cerró, pero el arreglo no se integra.** Cerrarla empeora la tasa
+de `clientCreationFailed(-50)` de 0 a 3 ocurrencias por pasada, y la hipótesis
+sobre la que se construyó aquel plan resultó falsa. El trabajo queda en la rama
+`fix/scheduler-lifecycle` como registro; el bloqueante real pasa a ser
+`midi-test-flake_20260826`.
+
+### Lo que eso implica para este track
+
+Se sigue con la Fase 4 asumiendo dos cosas conscientemente:
+
+1. **El check de CI puede fallar** ~1 de cada 6 pasadas por el `-50`. Relanzar.
+2. **Parar y arrancar deprisa puede duplicar notas en el iPad.** Es el defecto
+   conocido, sin arreglar. Si al probar resulta molesto, es información para
+   priorizar `midi-test-flake` y luego `scheduler-lifecycle`.
 
 ## Notas de riesgo
 
