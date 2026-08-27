@@ -1,0 +1,63 @@
+Task: Apply review suggestions (Review Fixes)
+
+Dos hallazgos de severidad Medium de la revisión del camino de tiempo real.
+
+1. El note-off de parada no podía callar una nota ya programada
+--------------------------------------------------------------
+`Transport.stop()` sellaba el note-off de pánico en 0, que en CoreMIDI significa
+"ahora". Pero CoreMIDI emite EN ORDEN DE TIMESTAMP, así que ese mensaje salía
+ANTES que cualquier note-on que el hilo moribundo ya hubiera entregado con
+timestamp futuro — es decir, antes de la nota que existía para apagar.
+
+Hoy no mordía porque el gate provisional de 25 ms apagaba la nota igualmente.
+Eso era suerte, no diseño: cuando Sustain sustituya el gate por una duración
+larga, se convierte en nota colgada audible. El defecto habría aparecido en el
+track de Groove, lejos de donde se introdujo.
+
+Arreglo: sellarlo una ventana de look-ahead por delante, que lo pone detrás de
+todo lo ya entregado —nada puede estar programado más allá del look-ahead— con
+un retraso de milisegundos, por debajo de lo que se percibe como respuesta al
+botón.
+
+Verificado revirtiendo el arreglo: el test nuevo falla sin él y pasa con él.
+
+2. `Track?` significaba dos cosas incompatibles
+-----------------------------------------------
+En `TrackScheduler`, `track == nil` quería decir "emite TODOS los Steps" (modo
+del arnés de medición). En `TrackHandoff.load()`, `nil` quiere decir "descarta
+esta lectura". `Transport.play()` enchufaba el segundo en el primero:
+
+    track: handoff.load()
+
+Un descarte habría arrancado el transporte emitiendo el anillo completo a
+densidad máxima en vez del patrón euclidiano. No era alcanzable hoy —`publish()`
+y `play()` son ambos del hilo principal, así que no compiten— pero dependía de
+un contrato que el tipo no imponía.
+
+Arreglo: `SchedulerMaterial`, un enum con `.track(Track)` y `.everyStep`. Con
+dos casos con nombre, la confusión no se puede escribir. `Transport` guarda
+además el último Track publicado, así que arrancar siempre tiene material
+válido: `.track(handoff.load() ?? lastPublishedTrack)`.
+
+`Transport.track` pasa de `Track?` a `Track`: ya no puede devolver nil espurio a
+la interfaz.
+
+Ficheros
+--------
+Modificado: Packages/MIDI/Sources/MIDI/Transport.swift
+Modificado: Packages/MIDI/Sources/MIDI/TrackScheduler.swift  (enum SchedulerMaterial)
+Modificado: Packages/MIDI/Sources/MIDI/SchedulerThread.swift (material: en vez de track:)
+Modificado: Packages/MIDI/Tests/MIDITests/TransportTests.swift
+Modificado: Packages/MIDI/Tests/MIDITests/TrackSchedulerTests.swift
+
+NO se arreglaron los dos hallazgos Low, por decisión: el contrato de hilo de
+`Transport` (documentación) y el `UInt32(...)` que atrapa con un look-ahead
+mayor de ~8,6 s en `SchedulerThread` (preexistente de main, no lo introduce este
+track). Quedan registrados en el plan.
+
+Verificación
+------------
+swift test --package-path Packages/Engine → 66 tests, 0 fallos
+swift test --package-path Packages/MIDI   → 125 tests, 1 omitido, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+Cobertura: TrackScheduler 100%, Transport 95,65% líneas, MIDI global 96,27%
