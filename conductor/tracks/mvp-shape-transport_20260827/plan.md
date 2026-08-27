@@ -68,7 +68,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Verificar cobertura de `App` ≥80% — **umbral retirado**: el proyecto no tiene target de test ni runtime de simulador. La lógica se movió a `Engine` y `MIDI`, donde sí se cubre. Ver la nota del 2026-08-27 en `workflow.md`.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 4: Primer sonido y lectura de jitter
+## Phase 4: Primer sonido y lectura de jitter [checkpoint: a7c439d]
 
 - [x] Task: Primer sonido en dispositivo — **verificado en iPad el 2026-08-27** (sin commit: es verificación, no código)
   - [x] Ejecutar en el iPad con un sintetizador conectado
@@ -82,7 +82,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Registrar los números en la git note del commit
   - [x] Comparar contra la medición del spike: lo que interesa es la degradación al meter carga, no el valor absoluto
   - [x] Si no se cumple: parar y reportar con datos. No iterar arquitecturas dentro de este track
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Estado del track
 
