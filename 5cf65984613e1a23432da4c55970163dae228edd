@@ -1,0 +1,82 @@
+Task: Veredicto sobre el criterio de aceptacion
+Track: timing-spike_20260826 — Phase 4
+
+VEREDICTO: CUMPLE
+-----------------
+iPad Air (4a generacion), iPadOS 26.5.
+Umbral: max < 2 ms, sigma < 0.5 ms.
+
+n=200 por tempo:
+   60 BPM : max=0.115 ms  media=+0.062 ms  sigma=0.008 ms
+  120 BPM : max=0.104 ms  media=+0.062 ms  sigma=0.009 ms
+  174 BPM : max=0.101 ms  media=+0.056 ms  sigma=0.008 ms
+
+n=1000 por tempo (confirmacion):
+   60 BPM : max=0.149 ms  media=+0.063 ms  sigma=0.009 ms
+  120 BPM : max=0.108 ms  media=+0.060 ms  sigma=0.009 ms
+  174 BPM : max=0.105 ms  media=+0.057 ms  sigma=0.008 ms
+
+Margen: ~13x en maximo, ~55x en desviacion tipica.
+
+La arquitectura de tech-stack.md —look-ahead scheduling con timestamps de
+CoreMIDI, hilo dedicado sin locks, snapshot inmutable— alcanza el timing que el
+producto necesita en el dispositivo objetivo. El proyecto sigue adelante.
+
+QUE NO QUEDA VALIDADO
+---------------------
+1. La cadena hasta el sintetizador: el loopback es virtual, no cruza el USB.
+2. El comportamiento bajo carga: se midio sin UI redibujando, sin motor
+   generativo y sin 16 Tracks. El snapshot es fijo al arrancar; cambiar
+   parametros en caliente exigira publicacion atomica, codigo nuevo en el camino
+   critico.
+3. Sesiones largas y estres termico: la pasada mas larga fue de ~4 min por tempo.
+4. Otros iPads: un solo dispositivo, y no el mas antiguo con iPadOS 17.
+
+RECOMENDACION
+-------------
+Seguir con el MVP sobre esta arquitectura. El siguiente riesgo NO es el timing
+sino la carga: volver a medir con el motor generativo y la UI reales encima,
+que es cuando el hilo del scheduler tendra competencia.
+
+Files created
+-------------
+- conductor/tracks/timing-spike_20260826/verdict.md
+- conductor/tracks/timing-spike_20260826/measurement-200.txt
+- conductor/tracks/timing-spike_20260826/measurement-1000.txt
+
+================================================================
+PHASE VERIFICATION REPORT — Phase 4: UI minima y veredicto
+================================================================
+
+Automated tests
+---------------
+  swift test --package-path Packages/Engine        -> 16 tests, 0 failures
+  swift test --package-path Packages/MIDI          -> 64 tests, 1 skipped, 0 failures
+  xcodebuild build -scheme ToraxH0 -destination 'platform=iOS,id=<UDID>'
+                                                   -> ** BUILD SUCCEEDED **
+  xcodebuild build -configuration Release -destination 'generic/platform=iOS'
+                                                   -> ** BUILD SUCCEEDED **
+
+Verificacion de la frontera instrumentacion/producto
+-----------------------------------------------------
+Se comprobo explicitamente que el Info.plist del binario RELEASE no declara
+UIBackgroundModes. El modo de fondo `audio` que exigen los endpoints virtuales
+existe SOLO en Debug. La enmienda de tech-stack.md ("instrumentacion, no
+producto") se sostiene en el binario, no solo en el documento.
+
+Manual verification steps
+-------------------------
+1. App en el iPad -> Medir con 200 eventos -> tres lineas verdes + VEREDICTO:
+   CUMPLE (~1 min 40 s)
+2. La pantalla no se apaga durante la medicion
+3. Detener a mitad -> estado "Detenido" y el auto-bloqueo vuelve a la normalidad
+4. conductor/tracks/timing-spike_20260826/verdict.md: la seccion "Que NO queda
+   validado" refleja lo pendiente
+
+Se pidio atencion expresa sobre la limitacion principal: se midio SIN CARGA
+—sin UI redibujando, sin motor generativo, sin 16 Tracks—. El scheduler tenia la
+maquina para el solo. Ese es el siguiente riesgo, no el timing en abstracto.
+
+User confirmation
+-----------------
+"si, verificado"
