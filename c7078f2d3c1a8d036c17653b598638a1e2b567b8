@@ -1,0 +1,22 @@
+Desviación documentada, según el paso 8 del Task Workflow.
+
+El umbral de `App` ≥80% NO SE PUEDE MEDIR:
+  - `ToraxH0.xcodeproj` tiene un solo target (`ToraxH0`, aplicación) y ninguno
+    de test. Comprobado con `xcodebuild -list`.
+  - `workflow.md` ya registraba que no hay runtimes de simulador instalados, así
+    que un target de test iOS tampoco podría ejecutarse.
+
+Se descubrió al implementar la pantalla del track mvp-shape-transport_20260827.
+
+La respuesta no fue bajar el listón sino mover la lógica a donde sí se testea:
+el texto de estado de Shape a `Engine`, y la selección de destino, la
+desconexión y el transporte a `MIDI`. En `App` quedan 82 líneas de cableado y
+una vista SwiftUI sin lógica.
+
+La regla que sustituye al número: si algo en `App` merece un test, está en el
+sitio equivocado.
+
+Se actualizaron las tres menciones del umbral para que el documento no se
+contradiga: principio 4, tabla de Coverage Requirements y Quality Gates.
+
+Decidido con el usuario en el checkpoint de la Fase 3.
