@@ -114,6 +114,38 @@ final class SchedulerLifecycleTests: XCTestCase {
         )
     }
 
+    // MARK: - Parar informa, y nunca cuelga
+
+    func testStoppingAFreshSchedulerReportsStopped() {
+        let thread = SchedulerThread(configuration: configuration()) { _, _ in }
+        XCTAssertEqual(thread.stop(), .stopped, "parar sin haber arrancado debería ser inmediato")
+    }
+
+    func testStoppingARunningSchedulerReportsStopped() {
+        let thread = SchedulerThread(configuration: configuration()) { _, _ in }
+        thread.start()
+        usleep(30_000)
+        XCTAssertEqual(thread.stop(), .stopped)
+    }
+
+    /// La espera tiene cota, pero el caso normal ni se acerca a ella: el bucle
+    /// duerme media ventana, así que sale en ese orden de magnitud.
+    func testStoppingReturnsWellWithinItsBound() {
+        let thread = SchedulerThread(configuration: configuration()) { _, _ in }
+        thread.start()
+        usleep(30_000)
+
+        let before = HostClock.now()
+        XCTAssertEqual(thread.stop(), .stopped)
+        let elapsed = HostClock.nanoseconds(fromHostTicks: HostClock.now() &- before)
+
+        XCTAssertLessThan(
+            elapsed,
+            100_000_000,
+            "parar tardó \(elapsed / 1_000_000) ms; la ventana es de 20 ms"
+        )
+    }
+
     // MARK: - Reiniciar no solapa bucles
 
     /// Tras parar y arrancar, los Steps vuelven a empezar en cero y avanzan de

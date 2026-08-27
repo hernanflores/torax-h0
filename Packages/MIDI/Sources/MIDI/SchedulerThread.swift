@@ -41,6 +41,19 @@ public struct SchedulerConfiguration: Sendable, Equatable {
 /// **Reglas de tiempo real.** El bucle no asigna memoria, no toma locks, no usa
 /// `await`, no registra logs y no toca SwiftUI. Lo único que comparte con otros
 /// hilos es una bandera atómica sin lock.
+/// Resultado de pedir que el scheduler pare.
+public enum SchedulerStopResult: Equatable, Sendable {
+    /// El hilo salió del bucle antes de agotar la cota. Es el caso normal:
+    /// tarda lo que el bucle en despertar, del orden de milisegundos.
+    case stopped
+    /// Se agotó la cota sin ver salir al hilo.
+    ///
+    /// **Se reporta, no se cuelga a quien pide parar.** Si esto ocurre el hilo
+    /// sigue vivo, y arrancar otro solaparía bucles: quien lo reciba no debe
+    /// volver a arrancar sin más.
+    case timedOut
+}
+
 public final class SchedulerThread: @unchecked Sendable {
 
     /// Se invoca por cada Step, desde el hilo del scheduler.
@@ -53,7 +66,25 @@ public final class SchedulerThread: @unchecked Sendable {
     private let configuration: SchedulerConfiguration
     private let handler: StepHandler
     private let running = AtomicFlag(false)
+
+    /// Baja mientras hay un bucle vivo; sube cuando sale.
+    ///
+    /// Es la señal que hace que `stop()` signifique parar. La bandera `running`
+    /// sola no basta: es una PETICIÓN de parada, y entre bajarla y que el hilo
+    /// la lea pasa hasta media ventana, porque está dormido. Sin una señal de
+    /// salida, un `start()` dentro de esa ventana vuelve a subir `running` y el
+    /// hilo viejo nunca llega a leer el `false` — quedan dos bucles emitiendo
+    /// cada Step dos veces.
+    private let finished = AtomicFlag(true)
+
     private var thread: Thread?
+
+    /// Cuánto espera `stop()` como máximo a que el hilo salga.
+    ///
+    /// El bucle duerme media ventana, así que sale en ese orden de magnitud. Un
+    /// segundo es holgadísimo a propósito: la cota existe para que parar no
+    /// pueda colgarse nunca, no para apretar el caso normal.
+    private static let stopTimeoutNanoseconds: UInt64 = 1_000_000_000
 
     public init(configuration: SchedulerConfiguration, handler: @escaping StepHandler) {
         self.configuration = configuration
@@ -65,9 +96,13 @@ public final class SchedulerThread: @unchecked Sendable {
     public func start() {
         guard !running.value else { return }
         running.value = true
+        finished.value = false
 
-        let thread = Thread { [configuration, handler, running] in
+        let thread = Thread { [configuration, handler, running, finished] in
             SchedulerThread.run(configuration: configuration, handler: handler, running: running)
+            // Señal de salida: es lo que `stop()` espera. Va aquí, fuera del
+            // bucle, para que suba exactamente cuando ya no puede emitirse nada.
+            finished.value = true
         }
         thread.name = "com.toraxh0.scheduler"
         // Prioridad máxima: el hilo compite con la interfaz por la CPU y el
@@ -78,9 +113,30 @@ public final class SchedulerThread: @unchecked Sendable {
         thread.start()
     }
 
-    public func stop() {
+    /// Pide parar y **espera a que el hilo salga del bucle**.
+    ///
+    /// Cuando esto retorna `.stopped`, el handler no volverá a invocarse: ni un
+    /// Step más. Es lo que permite que un `start()` inmediatamente después
+    /// arranque exactamente un scheduler y no dos.
+    ///
+    /// **La espera corre en el hilo de control, nunca en el del scheduler.**
+    /// Llamar a `stop()` desde dentro del bucle sería un error de programación,
+    /// no un caso a soportar: se esperaría a sí mismo hasta agotar la cota.
+    ///
+    /// Bloquea del orden de milisegundos —lo que tarda el bucle en despertar—,
+    /// que para un gesto de transporte está por debajo de un fotograma.
+    @discardableResult
+    public func stop() -> SchedulerStopResult {
         running.value = false
         thread = nil
+
+        let deadline = HostClock.now()
+            &+ HostClock.hostTicks(fromNanoseconds: Self.stopTimeoutNanoseconds)
+        while !finished.value && HostClock.now() < deadline {
+            usleep(200)
+        }
+
+        return finished.value ? .stopped : .timedOut
     }
 
     /// Bucle del scheduler.
