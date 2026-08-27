@@ -1,0 +1,60 @@
+Task: Desconexión como estado esperado (Fase 3)
+
+Resumen
+-------
+`MIDIDestinationWatcher` convierte la notificación del sistema en una
+reconsulta de destinos. TDD: los tests fallaron por tipo inexistente antes de
+implementar.
+
+Por qué hace falta: la desconexión no se detecta por el envío
+--------------------------------------------------------------
+Está medido y documentado en `MIDISendResult.classify`: CoreMIDI acepta el
+mensaje para un endpoint inexistente y lo descarta en silencio, devolviendo
+`noErr`. No valida el destino de forma síncrona. El único mecanismo fiable es
+`onSetupChanged`, y este tipo es lo que la convierte en estado.
+
+Decisión: dependencias inyectadas, no CoreMIDI directo
+-------------------------------------------------------
+El watcher recibe la enumeración y la entrega como cierres. No es abstracción
+por gusto: es la única forma de tener la desconexión CUBIERTA POR TESTS en una
+máquina sin sintetizadores. Los 10 tests desenchufan y vuelven a enchufar sin
+tocar hardware.
+
+`delivering` existe porque la notificación llega desde el hilo de CoreMIDI y el
+estado lo lee la interfaz: por defecto salta al hilo principal, y los tests lo
+sustituyen por entrega síncrona.
+
+Decisión: no se avisa si nada cambió
+-------------------------------------
+CoreMIDI emite `msgSetupChanged` por cambios que no afectan a los destinos.
+Propagar todos agitaría la interfaz con ruido, así que el watcher compara el
+estado nuevo con el vigente y solo avisa si difieren. Hay un test que lo fija.
+
+Comportamiento ante desconexión
+-------------------------------
+- Desaparece el destino elegido y no queda ninguno → `No MIDI device`.
+- Desaparece el elegido pero queda otro → se cae al que queda, sin dejar al
+  usuario sin salida.
+- Se vuelve a enchufar → recupera sin reiniciar nada.
+
+El lenguaje del estado
+----------------------
+`statusDescription` devuelve exactamente "No MIDI device", que es el literal
+que `product-guidelines.md` prescribe: «Un dispositivo MIDI desconectado se
+comunica con un estado (No MIDI device), no con una disculpa.» En inglés y sin
+traducir, como el resto del vocabulario de interfaz.
+
+Hay un test que barre ambos estados buscando lenguaje de error o disculpa
+—error, fail, sorry, unable, could not, problem, signo de exclamación— y falla
+si aparece alguno. Es una guardia sobre la guideline, no sobre el código.
+
+Ficheros
+--------
+Nuevo:      Packages/MIDI/Sources/MIDI/MIDIDestinationWatcher.swift
+Modificado: Packages/MIDI/Sources/MIDI/MIDIDestinationSelection.swift (statusDescription)
+Nuevo:      Packages/MIDI/Tests/MIDITests/MIDIDestinationWatcherTests.swift
+
+Verificación
+------------
+swift test --package-path Packages/MIDI  → 116 tests, 1 omitido, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
