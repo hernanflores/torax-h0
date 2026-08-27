@@ -1,0 +1,51 @@
+Task: Selección de destino MIDI (Fase 3 — Salida real, transporte y pantalla)
+
+Resumen
+-------
+`MIDIDestinationSelection` decide qué destinos son elegibles y cuál está
+elegido. TDD: los tests fallaron por tipo inexistente antes de implementar.
+
+Decisión: es un valor, no un objeto que consulte al sistema
+-----------------------------------------------------------
+Recibe la lista ya enumerada y decide qué hacer con ella; la enumeración real
+sigue en `CoreMIDIOutput.availableDestinations()`. Así la lógica —qué es
+elegible, qué pasa al refrescar, qué significa no tener nada— se testea sin
+sintetizadores conectados, que es exactamente lo que hay en la máquina de CI.
+Los 12 tests corren en host sin hardware.
+
+Decisión: el endpoint de medición se filtra por NOMBRE
+------------------------------------------------------
+La Fase 4 corre el arnés de jitter CON la app corriendo, así que el endpoint
+virtual del arnés aparece en la lista del sistema junto a los sintetizadores
+reales. Elegirlo mandaría las notas al medidor.
+
+Se filtra por nombre y no por referencia de endpoint porque quien construye la
+lista no conoce al arnés: cuando la app corre sola, ese endpoint ni siquiera
+existe. El literal "Torax H-0 Loopback" pasa a ser `VirtualLoopback.defaultName`
+para que las dos partes compartan la misma constante en vez de repetirla.
+
+Un sistema donde lo único presente es el medidor equivale a no tener nada
+conectado, y hay un test que lo fija.
+
+Decisión: se elige el primer destino automáticamente
+----------------------------------------------------
+Con un sintetizador conectado, pulsar Play tiene que sonar sin pasar antes por
+un selector: es el criterio principal de aceptación del track. Refrescar, en
+cambio, CONSERVA la elección del usuario si el destino sigue presente, aunque
+haya cambiado de posición en la lista — refrescar no puede mover la elección
+bajo los pies de quien la hizo. Si desapareció, cae al primero disponible, y a
+nil si no queda ninguno.
+
+`selected == nil` es el estado "No MIDI device": no es error ni fallo de
+arranque, es lo que se ve sin nada enchufado.
+
+Ficheros
+--------
+Nuevo:      Packages/MIDI/Sources/MIDI/MIDIDestinationSelection.swift
+Modificado: Packages/MIDI/Sources/MIDI/VirtualLoopback.swift  (constante del nombre)
+Nuevo:      Packages/MIDI/Tests/MIDITests/MIDIDestinationSelectionTests.swift
+
+Verificación
+------------
+swift test --package-path Packages/MIDI  → 106 tests, 1 omitido, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
