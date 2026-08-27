@@ -54,25 +54,25 @@ public final class SchedulerThread: @unchecked Sendable {
     public typealias StepHandler = @Sendable (_ step: Int, _ hostTime: UInt64) -> Void
 
     private let configuration: SchedulerConfiguration
-    private let track: Track?
+    private let material: SchedulerMaterial
     private let handoff: TrackHandoff?
     private let handler: StepHandler
     private let running = AtomicFlag(false)
     private var thread: Thread?
 
     /// - Parameters:
-    ///   - track: Track con el que arranca. `nil` emite todos los Steps, que es
-    ///     lo que quiere el arnés de medición.
+    ///   - material: con qué arranca. Por defecto `.everyStep`, que es lo que
+    ///     quiere el arnés de medición.
     ///   - handoff: por donde llegan los Tracks publicados mientras suena. `nil`
-    ///     deja el Track fijo durante toda la reproducción.
+    ///     deja el material fijo durante toda la reproducción.
     public init(
         configuration: SchedulerConfiguration,
-        track: Track? = nil,
+        material: SchedulerMaterial = .everyStep,
         handoff: TrackHandoff? = nil,
         handler: @escaping StepHandler
     ) {
         self.configuration = configuration
-        self.track = track
+        self.material = material
         self.handoff = handoff
         self.handler = handler
     }
@@ -83,10 +83,10 @@ public final class SchedulerThread: @unchecked Sendable {
         guard !running.value else { return }
         running.value = true
 
-        let thread = Thread { [configuration, track, handoff, handler, running] in
+        let thread = Thread { [configuration, material, handoff, handler, running] in
             SchedulerThread.run(
                 configuration: configuration,
-                track: track,
+                material: material,
                 handoff: handoff,
                 handler: handler,
                 running: running
@@ -112,12 +112,12 @@ public final class SchedulerThread: @unchecked Sendable {
     /// Sin asignaciones, sin locks, sin await.
     private static func run(
         configuration: SchedulerConfiguration,
-        track: Track?,
+        material: SchedulerMaterial,
         handoff: TrackHandoff?,
         handler: StepHandler,
         running: AtomicFlag
     ) {
-        var scheduler = TrackScheduler(timeline: configuration.timeline, track: track)
+        var scheduler = TrackScheduler(timeline: configuration.timeline, material: material)
         let startHostTicks = HostClock.now()
         let sleepNanoseconds = UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))
 

@@ -1,5 +1,35 @@
 import Engine
 
+/// Qué decide si un Step dispara.
+///
+/// **Existe para que dos significados no compartan un `nil`.** Antes esto era un
+/// `Track?`, y `nil` quería decir «emite todos los Steps». Pero
+/// `TrackHandoff.load()` devuelve `nil` con otro significado —«descarta esta
+/// lectura»—, así que enchufar uno en el otro convertía un descarte en una
+/// ráfaga de notas a densidad máxima. Con dos casos con nombre, esa confusión no
+/// se puede escribir.
+public enum SchedulerMaterial: Equatable, Sendable {
+
+    /// El material musical de un Track: dispara donde diga su Shape.
+    case track(Track)
+
+    /// Todos los Steps disparan.
+    ///
+    /// Es el modo del arnés de medición, que mide la rejilla temporal y no el
+    /// material musical: ahí un reparto euclidiano solo quitaría muestras al
+    /// histograma.
+    case everyStep
+
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    func triggers(atStep index: Int) -> Bool {
+        switch self {
+        case let .track(track): track.triggers(atStep: index)
+        case .everyStep: true
+        }
+    }
+}
+
 /// Decide qué Steps de un Track se emiten en cada ventana, y recoge los
 /// snapshots que se publiquen mientras suena.
 ///
@@ -24,18 +54,18 @@ import Engine
 /// cambian en caliente y están cubiertos por tests.
 public struct TrackScheduler {
 
-    /// Track vigente. Se conserva entre ventanas: si una lectura del snapshot se
-    /// descarta, se sigue tocando esto en lugar de callar o inventar.
-    ///
-    /// **Sin Track se emiten todos los Steps.** Es el modo del arnés de
-    /// medición, que mide la rejilla temporal y no el material musical: ahí un
-    /// reparto euclidiano solo quitaría muestras al histograma.
-    public private(set) var track: Track?
+    /// Material vigente. Se conserva entre ventanas: si una lectura del snapshot
+    /// se descarta, se sigue tocando esto en lugar de callar o inventar.
+    public private(set) var material: SchedulerMaterial
 
     private var lookAhead: LookAheadScheduler
 
-    public init(timeline: MusicalTimeline, track: Track? = nil, startingAtStep startingStep: Int = 0) {
-        self.track = track
+    public init(
+        timeline: MusicalTimeline,
+        material: SchedulerMaterial = .everyStep,
+        startingAtStep startingStep: Int = 0
+    ) {
+        self.material = material
         self.lookAhead = LookAheadScheduler(timeline: timeline, startingAtStep: startingStep)
     }
 
@@ -54,11 +84,11 @@ public struct TrackScheduler {
         emit: (_ step: Int, _ offsetNanoseconds: Int64) -> Void
     ) {
         if let published = handoff?.load() {
-            track = published
+            material = .track(published)
         }
 
         for step in lookAhead.advance(toHorizon: horizonNanoseconds) {
-            guard track?.triggers(atStep: step) ?? true else { continue }
+            guard material.triggers(atStep: step) else { continue }
             emit(step, lookAhead.timeline.nanosecondOffset(forStep: step))
         }
     }

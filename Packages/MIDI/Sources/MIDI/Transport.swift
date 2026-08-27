@@ -30,10 +30,17 @@ public final class Transport: @unchecked Sendable {
 
     private var scheduler: SchedulerThread?
 
+    /// Último Track publicado.
+    ///
+    /// Se guarda aparte del handoff porque `load()` puede descartar una lectura,
+    /// y arrancar sin Track significaría `.everyStep` — una ráfaga a densidad
+    /// máxima en lugar del patrón. Aquí siempre hay un Track válido.
+    private var lastPublishedTrack: Track
+
     public var isPlaying: Bool { scheduler?.isRunning ?? false }
 
     /// Track vigente. Cambiarlo mientras suena se hace con `publish(_:)`.
-    public var track: Track? { handoff.load() }
+    public var track: Track { lastPublishedTrack }
 
     public init(
         configuration: SchedulerConfiguration,
@@ -45,6 +52,7 @@ public final class Transport: @unchecked Sendable {
         self.emitter = emitter
         self.send = send
         self.handoff = TrackHandoff(track)
+        self.lastPublishedTrack = track
     }
 
     deinit {
@@ -53,6 +61,7 @@ public final class Transport: @unchecked Sendable {
 
     /// Publica un Track nuevo. Se recoge en la ventana siguiente, suene o no.
     public func publish(_ track: Track) {
+        lastPublishedTrack = track
         handoff.publish(track)
     }
 
@@ -66,7 +75,7 @@ public final class Transport: @unchecked Sendable {
 
         let thread = SchedulerThread(
             configuration: configuration,
-            track: handoff.load(),
+            material: .track(handoff.load() ?? lastPublishedTrack),
             handoff: handoff
         ) { [emitter, send] _, hostTime in
             emitter.emit(atHostTime: hostTime, send: send)
@@ -84,16 +93,25 @@ public final class Transport: @unchecked Sendable {
     /// más que vaya a hacerlo: el hilo que la habría apagado es el que se acaba
     /// de detener.
     ///
-    /// El timestamp 0 es la convención de CoreMIDI para «ahora», que es lo que
-    /// se quiere: parar es un gesto, no un evento de la rejilla.
+    /// **Por qué no va sellado en «ahora».** CoreMIDI emite en orden de
+    /// timestamp, así que un note-off a 0 saldría *antes* que cualquier note-on
+    /// que el hilo moribundo ya hubiera programado con timestamp futuro — es
+    /// decir, antes de la nota que este mensaje existe para apagar. Sellarlo una
+    /// ventana por delante lo pone detrás de todo lo ya entregado, porque nada
+    /// puede estar programado más allá del look-ahead.
+    ///
+    /// El retraso es el de la ventana, unos milisegundos: por debajo de lo que
+    /// se percibe como respuesta al botón.
     public func stop() {
         guard let scheduler else { return }
         scheduler.stop()
         self.scheduler = nil
 
+        let silenceAt = HostClock.now()
+            &+ HostClock.hostTicks(fromNanoseconds: UInt64(max(0, configuration.lookAheadNanoseconds)))
         send(
             .noteOff(channel: emitter.channel, note: emitter.note, velocity: MIDIVelocity(unchecked: 0)),
-            0
+            silenceAt
         )
     }
 }

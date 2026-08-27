@@ -16,9 +16,11 @@ final class TransportTests: XCTestCase {
         private var messages: [MIDIMessage] = []
 
         func record(_ message: MIDIMessage, _ hostTime: UInt64) {
-            lock.withLock { messages.append(message) }
+            lock.withLock { messages.append(message); times.append(hostTime) }
         }
 
+        private var times: [UInt64] = []
+        var allTimes: [UInt64] { lock.withLock { times } }
         var all: [MIDIMessage] { lock.withLock { messages } }
         var noteOnCount: Int { all.filter { if case .noteOn = $0 { true } else { false } }.count }
         var noteOffCount: Int { all.filter { if case .noteOff = $0 { true } else { false } }.count }
@@ -137,6 +139,39 @@ final class TransportTests: XCTestCase {
         let settled = recorder.all.count
         usleep(300_000)
         XCTAssertEqual(recorder.all.count, settled, "siguió emitiendo después de parar")
+    }
+
+    /// El note-off de parada va **sellado una ventana por delante**, no en
+    /// «ahora».
+    ///
+    /// CoreMIDI emite en orden de timestamp: uno sellado a 0 saldría *antes* que
+    /// cualquier note-on que el hilo moribundo ya hubiera programado con
+    /// timestamp futuro — es decir, antes de la nota que este mensaje existe
+    /// para apagar. Sellarlo por delante del look-ahead lo pone detrás de todo
+    /// lo ya entregado.
+    func testStopNoteOffIsStampedAheadOfAnythingAlreadyScheduled() {
+        let recorder = Recorder()
+        let transport = makeTransport(recorder)
+
+        transport.play()
+        waitUntil { recorder.noteOnCount >= 1 }
+
+        let beforeStop = HostClock.now()
+        transport.stop()
+
+        guard let silenceAt = recorder.allTimes.last else {
+            return XCTFail("parar no mandó nada")
+        }
+        XCTAssertGreaterThan(silenceAt, beforeStop, "el note-off de parada salió en «ahora»")
+
+        // Una ventana es 20 ms; se admite algo menos por el tiempo transcurrido
+        // entre tomar `beforeStop` y sellar el mensaje.
+        let aheadNanoseconds = HostClock.nanoseconds(fromHostTicks: silenceAt &- beforeStop)
+        XCTAssertGreaterThan(
+            aheadNanoseconds,
+            15_000_000,
+            "el note-off de parada no cubre la ventana de look-ahead"
+        )
     }
 
     // MARK: - Publicar mientras suena
