@@ -1,0 +1,49 @@
+Task: Test de regresión que falle de verdad (Fase 1 — Caracterizar la carrera)
+
+LA SUITE QUEDA EN ROJO A PROPÓSITO
+-----------------------------------
+Este commit añade un test que FALLA, y así se queda hasta la Fase 3. Es lo que
+pide el plan: caracterizar la carrera antes de tocarla. La rama no se integra
+hasta que esté verde; el PR se abre al final.
+
+Cómo se detecta la carrera, y por qué así
+------------------------------------------
+No por Steps repetidos: cada `start()` reinicia la cuenta en cero, así que ver
+el Step 0 otra vez es esperado. Y tampoco por "el hilo viejo emite algo justo
+después de stop()", que también es esperado mientras stop() no espere — la spec
+avisa de que ya hubo un test que confundía las dos cosas y pasaba por razones
+equivocadas.
+
+Lo que no admite otra lectura es EL RITMO DE EMISIÓN: dos bucles emiten al doble
+de velocidad que uno. El test mide la tasa en régimen estable, después de cinco
+ciclos rápidos de stop()/start(), y la compara con la que dicta la línea de
+tiempo.
+
+Línea de tiempo: 300 BPM con Division 1/256 → Steps de 3,125 ms contra una
+ventana de 20 ms. La proporción es la que pide el plan y es deliberada: con los
+125 ms por Step del resto de los tests un bucle huérfano no llega a emitir nada
+dentro de la ventana, y el test pasaría aunque la carrera existiera.
+
+Resultado sin el arreglo (medido)
+---------------------------------
+  testRapidStopStartLeavesExactlyOneSchedulerRunning   4 de 4 pasadas FALLA
+  testRestartEmitsOneContiguousSequence               2 de 4 pasadas falla
+  testNoStepIsEmittedAfterStopReturns                 1 de 4 pasadas falla
+
+El principal falla 4 de 4, que es el criterio de aceptación del track ("falla de
+forma fiable sin el arreglo"). Reporta:
+
+  "Se emitieron 1950 Steps/s cuando un solo scheduler emite 320. Hay más de un
+   bucle vivo: `start()` volvió a subir la bandera antes de que el hilo viejo la
+   leyera."
+
+1950 / 320 ≈ 6 bucles vivos tras 5 ciclos de stop()/start(). Coincide
+exactamente con el mecanismo que describe la spec: cada ciclo deja un huérfano.
+
+Los otros dos son de apoyo y fallan de forma intermitente porque dependen de en
+qué punto de su sueño de 10 ms pille al hilo. Detectan el defecto pero no
+siempre; tras el arreglo tienen que pasar SIEMPRE, y eso sí es determinista.
+
+Ficheros
+--------
+Nuevo: Packages/MIDI/Tests/MIDITests/SchedulerLifecycleTests.swift
