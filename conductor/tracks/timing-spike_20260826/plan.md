@@ -47,7 +47,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 - [x] Task: Documentar la desviación de `tech-stack.md` (antes de implementar FR4) (a3c6c7b)
   - [x] Añadir nota fechada: endpoints virtuales admitidos como instrumentación, no como producto
   - [x] Commit separado con scope `docs`
-- [ ] Task: Endpoints virtuales de loopback
+- [~] Task: Endpoints virtuales de loopback
   - [ ] Implementación: fuente y destino virtuales
   - [ ] Implementación: recepción con timestamp de CoreMIDI
   - [ ] Excluidos del build de producción
