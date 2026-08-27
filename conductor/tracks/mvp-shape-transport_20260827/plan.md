@@ -65,7 +65,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Transporte, selección de destino y valores de Shape **en solo lectura**
   - [x] Sin lenguaje visual del producto: ni anillo, ni overlay de valor, ni acentos por familia
   - [x] Nada en pantalla debe sugerir una nota fija por paso — contradice el modelo de pool
-  - [~] Verificar cobertura de `App` ≥80% — **bloqueado: el proyecto no tiene target de test y no hay runtime de simulador**
+  - [x] Verificar cobertura de `App` ≥80% — **umbral retirado**: el proyecto no tiene target de test ni runtime de simulador. La lógica se movió a `Engine` y `MIDI`, donde sí se cubre. Ver la nota del 2026-08-27 en `workflow.md`.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Primer sonido y lectura de jitter
