@@ -56,10 +56,10 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Implementación (Green): puerto de entrada y conexión a la fuente elegida
   - [x] Cierre explícito y ordenado desde el principio — no repetir el problema de `scheduler-lifecycle`
   - [x] Medir la tasa de `-50`/`-2` antes y después: este track añade un segundo cliente de CoreMIDI — **0 de 6 antes, 0 de 6 después**
-- [~] Task: Controlador virtual de desarrollo
-  - [ ] Tests (Red): inyectar un giro produce el mismo efecto que un CC real
-  - [ ] Implementación (Green): inyector de eventos relativos, sin CoreMIDI
-  - [ ] **Verificar que el binario de Release no lo contiene**
+- [x] Task: Controlador virtual de desarrollo — `06470b2`
+  - [x] Tests (Red): inyectar un giro produce el mismo efecto que un CC real
+  - [x] Implementación (Green): inyector de eventos relativos, sin CoreMIDI
+  - [~] **Verificar que el binario de Release no lo contiene** — verificado sobre el paquete (release: 0 símbolos; debug: 131). Sobre el binario de la app queda **pendiente de la Fase 4**: hoy la comprobación es vacua porque nada lo referencia todavía.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Integración y verificación en dispositivo
