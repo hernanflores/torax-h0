@@ -11,16 +11,18 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 > `workflow.md`: si algo en `App` merece un test, está en el sitio equivocado.
 > Toda esta fase se testea sin simulador, sin hardware y sin dibujar nada.
 
-- [ ] Task: Posiciones del anillo
-  - [ ] Tests (Red): un anillo de N Steps produce N posiciones, repartidas por igual sobre la vuelta completa
-  - [ ] Tests (Red): el Step 0 está en una posición fija y conocida, para que el anillo no gire solo al cambiar Steps
-  - [ ] Tests (Red): cambiar Steps redistribuye sin dejar huecos ni solapes
-  - [ ] Implementación (Green): la posición se expresa en fracción de vuelta, no en píxeles ni en radianes — `App` decide cómo se dibuja
-- [ ] Task: Qué posiciones llevan Pulse
-  - [ ] Tests (Red): los casos de la Pre Spec (16/4, 16/5, 12/7) marcan exactamente las posiciones que ya cubre `EuclideanRhythm`
-  - [ ] Tests (Red): `Rotate` desplaza las marcas de forma coherente con el gesto, no reordena el patrón en el sitio
-  - [ ] Tests (Red): con `Pulses > Steps` se marcan `effectivePulses`, sin destruir el valor — la invariante de la rebanada 2 sigue en pie
-  - [ ] Implementación (Green): se reutiliza `EuclideanRhythm`, no se recalcula el reparto
+- [x] Task: Posiciones del anillo — `4d45046`
+  - [x] Tests (Red): un anillo de N Steps produce N posiciones, repartidas por igual sobre la vuelta completa
+  - [x] Tests (Red): el Step 0 está en una posición fija y conocida, para que el anillo no gire solo al cambiar Steps
+  - [x] Tests (Red): cambiar Steps redistribuye sin dejar huecos ni solapes
+  - [x] Implementación (Green): la posición se expresa en fracción de vuelta, no en píxeles ni en radianes — `App` decide cómo se dibuja
+- [x] Task: Qué posiciones llevan Pulse — `4d45046`
+  - [x] Tests (Red): los casos de la Pre Spec (16/4, 16/5, 12/7) marcan exactamente las posiciones que ya cubre `EuclideanRhythm`
+  - [x] Tests (Red): `Rotate` desplaza las marcas de forma coherente con el gesto, no reordena el patrón en el sitio
+  - [x] Tests (Red): con `Pulses > Steps` se marcan `effectivePulses`, sin destruir el valor — la invariante de la rebanada 2 sigue en pie
+  - [x] Implementación (Green): se reutiliza `EuclideanRhythm`, no se recalcula el reparto
+
+  > Las dos tareas comparten SHA: son un solo tipo, y partirlo habría exigido publicar un `Ring` sin `isPulse` que ningún llamante puede usar.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: El camino de vuelta del playhead
