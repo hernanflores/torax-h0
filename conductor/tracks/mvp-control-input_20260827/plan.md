@@ -59,16 +59,16 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 - [x] Task: Controlador virtual de desarrollo — `06470b2`
   - [x] Tests (Red): inyectar un giro produce el mismo efecto que un CC real
   - [x] Implementación (Green): inyector de eventos relativos, sin CoreMIDI
-  - [~] **Verificar que el binario de Release no lo contiene** — verificado sobre el paquete (release: 0 símbolos; debug: 131). Sobre el binario de la app queda **pendiente de la Fase 4**: hoy la comprobación es vacua porque nada lo referencia todavía.
+  - [x] **Verificar que el binario de Release no lo contiene** — hecho en la Fase 4 sobre el binario de la app: `CoreMIDIInput` 129 símbolos, `ControlInput` 81, `VirtualController` **0**.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Integración y verificación en dispositivo
 
-- [ ] Task: Cablear en la app
-  - [ ] Selección de fuente en la pantalla, junto a la de destino
-  - [ ] El texto de Shape se actualiza al girar
-  - [ ] Sin controlador conectado, la app sigue siendo de solo lectura y transporte
-- [ ] Task: Verificación en iPad
+- [x] Task: Cablear en la app — `f442bfb`
+  - [x] Selección de fuente en la pantalla, junto a la de destino
+  - [x] El texto de Shape se actualiza al girar
+  - [x] Sin controlador conectado, la app sigue siendo de solo lectura y transporte
+- [~] Task: Verificación en iPad — **requiere iPad y controlador**
   - [ ] Girar Pulses cambia el patrón audible **en el Step siguiente**
   - [ ] Bajar Steps por debajo de Pulses y volver a subir: nada se pierde
   - [ ] Desconectar el controlador a media sesión se refleja como estado
