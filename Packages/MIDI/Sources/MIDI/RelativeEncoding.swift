@@ -40,4 +40,23 @@ public enum RelativeEncoding: Equatable, Sendable, CaseIterable {
             return value < 0x40 ? Int(value) : Int(value) - 128
         }
     }
+
+    /// Codifica un desplazamiento con signo como el byte que lo transporta.
+    ///
+    /// Es el inverso de `delta(from:)`, y existe para el controlador virtual de
+    /// desarrollo: lo que inyecta tiene que ser indistinguible de lo que manda
+    /// un controlador real, así que se codifica de verdad en lugar de saltarse
+    /// el camino.
+    ///
+    /// Devuelve `nil` para lo que no se puede representar —el cero y cualquier
+    /// magnitud mayor que 63—, en vez de truncar en silencio a un giro que nadie
+    /// pidió.
+    public func value(for delta: Int) -> UInt8? {
+        guard delta != 0, (-63...63).contains(delta) else { return nil }
+
+        switch self {
+        case .twosComplement:
+            return delta > 0 ? UInt8(delta) : UInt8(delta + 128)
+        }
+    }
 }
