@@ -57,3 +57,61 @@ Verificación
 swift test --package-path Packages/Engine → 86 tests, 0 fallos
 swift test --package-path Packages/MIDI (sin los de CoreMIDI) → 111 tests, 0 fallos
 xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+
+═══════════════════════════════════════════════════════════════════
+INFORME DE VERIFICACIÓN — Phase 1: El modelo de Pulses en `Engine`
+═══════════════════════════════════════════════════════════════════
+
+Tests automáticos
+-----------------
+swift test --package-path Packages/Engine --enable-code-coverage
+  → 86 tests, 0 fallos
+
+swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests'   (×3)
+  → 14 tests, 1 omitido, 0 fallos en las tres pasadas
+
+swift test --package-path Packages/MIDI --skip (los tres anteriores)
+  → 111 tests, 0 fallos
+
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  → BUILD SUCCEEDED
+
+Cobertura
+---------
+  Sources/Engine/EuclideanRhythm.swift   100.00%
+  Sources/Engine/MusicalTime.swift       100.00%
+  Sources/Engine/Shape.swift             100.00%
+  MIDI (suite entera, un proceso)        91,06% regiones / 95,77% líneas
+
+Todos los ficheros de código de la fase tienen test correspondiente.
+
+Hallazgo: la partición de la CI rompe la medición de cobertura
+---------------------------------------------------------------
+Cada mitad genera su propio .profdata, así que leer cualquiera de los dos
+informes da una cifra falsamente baja: los ficheros de la otra mitad cuentan
+como no cubiertos. Medido: la partición reporta 77,7% de líneas en MIDI; la
+suite entera en un proceso, 95,8%.
+
+No rompe ningún gate —la CI no mide cobertura— pero sí engañaría a quien lo
+mirase. Documentado en workflow.md junto a la nota de la partición, con el
+comando correcto para medir.
+
+Verificación manual
+-------------------
+Fase sin superficie de usuario: es todo `Engine` y los knobs llegan en la Fase 2.
+Lo verificable es que el comportamiento nuevo cumple lo que piden las guidelines:
+
+  Steps 16, Pulses 9  →  x.xx.x.x.xx.x.x.   (9 pulsos)
+  Steps  4, Pulses 9  →  xxxx               (caben 4, se guarda 9)
+  Steps 16, Pulses 9  →  x.xx.x.x.xx.x.x.   (vuelve intacto)
+
+  Division girando:  1/1 → 1/2 → 1/4 → 1/8 → 1/16 → 1/16 (frena, no envuelve)
+
+Los tres casos de la Pre Spec (16/4, 16/5, 12/7) siguen dando el mismo patrón
+que antes del cambio: el riesgo principal de la fase —tocar código ya
+entregado— no se materializó.
+
+Confirmación del usuario
+------------------------
+Se le presentó el informe y el hallazgo de la cobertura.
+Respondió: "Sí, cierra la fase".
