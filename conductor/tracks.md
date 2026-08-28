@@ -6,9 +6,38 @@ La prioridad del proyecto. Sin app no hay nada que arreglar.
 
 ---
 
-*Sin track abierto.* La rebanada 2 cerró el 2026-08-28; la 3 no está planificada
-todavía. El [handoff de diseño](../design_handoff/README.md) es la entrada del
-track de UI cuando le toque.
+Lo que queda de v1, en cinco rebanadas. El orden no es de gusto: cada una paga
+una deuda que la siguiente necesita.
+
+| # | Rebanada | Estado |
+|---|---|---|
+| 3 | Anillo, playhead y valor transitorio | **abierta** |
+| 4 | Tonal: pool, Scale y Root | por planificar |
+| 5 | Groove estático: Velocity, Sustain, Probability | por planificar |
+| 6 | Groove temporal: Timing y Delay | por planificar |
+| 7 | Preset del BeatStep Pro y MIDI Learn | por planificar |
+
+**Por qué ese orden.** La 3 no toca el motor y salda la última carga de jitter
+sin medir que `product.md` dejó anotada —la visual—; además evita desarrollar
+las tres rebanadas de motor contra una pantalla de texto. La 4 es la más cara
+porque paga tres deudas de golpe: no existe PRNG sembrado, el camino de tiempo
+real emite una nota fija y constante, y el pool de Pitch se edita con pads, que
+es entrada nueva y no una extensión del mapeo de CC. La 5 y la 6 están separadas
+por el riesgo, no por el tamaño: Velocity, Sustain y Probability cambian **qué**
+se envía; Timing y Delay cambian **cuándo**, que es el camino de jitter que
+costó validar, y aislarlas evita que una regresión ahí se lleve por delante al
+resto. La 7 va última porque hasta entonces la tabla fija de cuatro CC alcanza.
+
+**Cuándo se vuelve bloqueante un defecto.** En la rebanada 7:
+`network-session-source` impide que MIDI Learn escuche la fuente correcta. Antes
+de eso, ninguno de los tres defectos abiertos bloquea nada.
+
+---
+
+- [ ] **Track: MVP rebanada 3 — Anillo, playhead y valor transitorio**
+  *Link: [conductor/tracks/mvp-ring-feedback_20260828/index.md](./tracks/mvp-ring-feedback_20260828/index.md)*
+
+  La pantalla deja de ser texto y pasa a ser el espejo que `product-guidelines.md` describe. No toca el motor: todo lo que necesita ya existe en `Engine`. Cierra la medición de jitter con carga visual que `product.md` dejó pendiente desde la rebanada 1.
 
 ## Defectos conocidos
 
