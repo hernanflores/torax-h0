@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#e9e6e1;font-family:'Figtree',sans-serif}
+.ring-outer{width:130px;height:130px;border-radius:50%;background:conic-gradient(#9AAB79 0deg 55deg,#2a1f2c 55deg 90deg,#9AAB79 90deg 150deg,#2a1f2c 150deg 180deg,#9AAB79 180deg 245deg,#2a1f2c 245deg 270deg,#9AAB79 270deg 330deg,#2a1f2c 330deg 360deg);position:relative;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.ring-inner{width:68px;height:68px;border-radius:50%;background:conic-gradient(#AA6DA8 0deg 70deg,transparent 70deg 110deg,#7C5FD9 110deg 150deg,transparent 150deg 200deg,#AA6DA8 200deg 260deg,transparent 260deg 300deg,#7C5FD9 300deg 340deg,transparent 340deg 360deg);display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.ring-core{width:30px;height:30px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center}
+.nav-btn{border:0;background:none;cursor:pointer;font-family:'Figtree',sans-serif;font-weight:600;padding:8px 14px;border-radius:6px;font-size:12px}
+</style>
+</helmet>
+
+<div style="width:900px;margin:40px auto;background:#211823;border-radius:20px;border:3px solid #1a1a1a;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.25)">
+
+  <div style="display:flex;gap:4px;padding:10px 14px;background:#1a1420;border-bottom:1px solid #3a2c3d">
+    <button class="nav-btn" style="{{ navStyle_main }}" onClick="{{ goMain }}">1 · Track</button>
+    <button class="nav-btn" style="{{ navStyle_scale }}" onClick="{{ goScale }}">2 · Scale</button>
+    <button class="nav-btn" style="{{ navStyle_midi }}" onClick="{{ goMidi }}">3 · MIDI</button>
+    <button class="nav-btn" style="{{ navStyle_banks }}" onClick="{{ goBanks }}">4 · Banks</button>
+    <button class="nav-btn" style="{{ navStyle_tracks }}" onClick="{{ goTracks }}">5 · Tracks</button>
+  </div>
+
+  <!-- SCREEN 1: MAIN (based on 1b) -->
+  <sc-if value="{{ isMain }}" hint-placeholder-val="{{ true }}">
+  <div style="height:520px;padding:20px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box;color:#fff">
+    <div style="display:flex;justify-content:space-between;color:#bbb;font-family:'Figtree',sans-serif;font-size:12px">
+      <span>Bank 1 · Pattern A</span><span>120.0 BPM · ▶</span>
+    </div>
+    <div style="flex:1;display:flex;gap:18px">
+      <div style="display:flex;align-items:center;justify-content:center;width:190px;position:relative">
+        <div style="position:absolute;width:180px;height:180px;border-radius:50%;{{ ring1Style }}"></div>
+        <div style="position:absolute;width:148px;height:148px;border-radius:50%;{{ ring2Style }}"></div>
+        <div style="position:absolute;width:116px;height:116px;border-radius:50%;{{ ring3Style }}"></div>
+        <div style="position:absolute;width:84px;height:84px;border-radius:50%;{{ ring4Style }}"></div>
+        <div style="position:absolute;width:52px;height:52px;border-radius:50%;{{ ring5Style }}"></div>
+        <div style="position:absolute;width:22px;height:22px;border-radius:50%;background:#000;border:1px solid #444"></div>
+      </div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;background:#0e0a10;border-radius:10px;border:1px solid #3a2c3d">
+        <div style="text-align:center;color:{{ activeColor }};font-family:'Figtree',sans-serif">
+          <div style="font-size:46px;font-weight:600">{{ activeValue }}</div>
+          <div style="font-size:12px;color:#8a7d8d">{{ activeTab }} — tap tabs to inspect</div>
+        </div>
+      </div>
+      <div style="width:170px;display:flex;flex-direction:column;gap:8px;font-family:'Figtree',sans-serif;font-size:11px">
+        <div style="cursor:pointer;background:#0e0a10;border-left:4px solid #9AAB79;color:#9AAB79;padding:8px 10px;border-radius:4px;{{ shapeTabStyle }}" onClick="{{ setShape }}">SHAPE tab ▸</div>
+        <div style="cursor:pointer;background:#0e0a10;border-left:4px solid #AA6DA8;color:#AA6DA8;padding:8px 10px;border-radius:4px;{{ grooveTabStyle }}" onClick="{{ setGroove }}">GROOVE tab</div>
+        <div style="cursor:pointer;background:#0e0a10;border-left:4px solid #7C5FD9;color:#7C5FD9;padding:8px 10px;border-radius:4px;{{ tonalTabStyle }}" onClick="{{ setTonal }}">TONAL tab</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;height:52px">
+      <div style="cursor:pointer;flex:1;border-radius:8px;font-family:'Figtree',sans-serif;font-size:11px;display:flex;align-items:center;justify-content:center;{{ trackBtnKick }}" onClick="{{ selectKick }}">KICK</div>
+      <div style="cursor:pointer;flex:1;border-radius:8px;font-family:'Figtree',sans-serif;font-size:11px;display:flex;align-items:center;justify-content:center;{{ trackBtnSnare }}" onClick="{{ selectSnare }}">SNARE</div>
+      <div style="cursor:pointer;flex:1;border-radius:8px;font-family:'Figtree',sans-serif;font-size:11px;display:flex;align-items:center;justify-content:center;{{ trackBtnChh }}" onClick="{{ selectChh }}">CHH</div>
+      <div style="cursor:pointer;flex:1;border-radius:8px;font-family:'Figtree',sans-serif;font-size:11px;display:flex;align-items:center;justify-content:center;{{ trackBtnRide }}" onClick="{{ selectRide }}">RIDE</div>
+      <div style="cursor:pointer;flex:1;border-radius:8px;font-family:'Figtree',sans-serif;font-size:11px;display:flex;align-items:center;justify-content:center;{{ trackBtnPerc }}" onClick="{{ selectPerc }}">PERC</div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- SCREEN 2: SCALE (based on 2b) -->
+  <sc-if value="{{ isScale }}" hint-placeholder-val="{{ false }}">
+  <div style="height:520px;padding:20px;display:flex;flex-direction:column;gap:16px;box-sizing:border-box;color:#fff;font-family:'Figtree',sans-serif">
+    <div style="font-size:12px;color:#8a7d8d">Scale &amp; Root</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">
+      <div style="cursor:pointer;{{ scaleMinorStyle }}" onClick="{{ setScaleMinor }}">Minor</div>
+      <div style="cursor:pointer;{{ scaleMajorStyle }}" onClick="{{ setScaleMajor }}">Major</div>
+      <div style="cursor:pointer;{{ scaleDorianStyle }}" onClick="{{ setScaleDorian }}">Dorian</div>
+      <div style="border:1px solid #4a3d4d;border-radius:6px;padding:10px;text-align:center;font-size:12px;color:#a99cab">Phrygian</div>
+      <div style="border:1px solid #4a3d4d;border-radius:6px;padding:10px;text-align:center;font-size:12px;color:#a99cab">Pentatonic</div>
+      <div style="border:1px dashed #665968;border-radius:6px;padding:10px;text-align:center;font-size:12px;color:#8a7d8d">+ User</div>
+    </div>
+    <div style="flex:1;display:flex;align-items:flex-end;gap:3px">
+      <div style="flex:1;height:90px;{{ keyCStyle }}" onClick="{{ setRootC }}">C</div>
+      <div style="flex:1;height:60px;background:#3a2c3d;border-radius:3px 3px 0 0"></div>
+      <div style="flex:1;height:90px;{{ keyDStyle }}" onClick="{{ setRootD }}">D</div>
+      <div style="flex:1;height:90px;{{ keyEStyle }}" onClick="{{ setRootE }}">E</div>
+      <div style="flex:1;height:60px;background:#3a2c3d;border-radius:3px 3px 0 0"></div>
+      <div style="flex:1;height:90px;{{ keyFStyle }}" onClick="{{ setRootF }}">F</div>
+      <div style="flex:1;height:90px;{{ keyGStyle }}" onClick="{{ setRootG }}">G</div>
+      <div style="flex:1;height:60px;background:#3a2c3d;border-radius:3px 3px 0 0"></div>
+      <div style="flex:1;height:90px;{{ keyAStyle }}" onClick="{{ setRootA }}">A</div>
+      <div style="flex:1;height:90px;background:#0e0a10;border:1px solid #7C5FD9;border-radius:3px 3px 0 0"></div>
+    </div>
+    <div style="font-family:'Figtree',sans-serif;font-size:14px;color:#fff;font-weight:600">Scale <span style="color:#a99cab;font-weight:400">·</span> {{ scaleName }} &nbsp; Root <span style="color:#a99cab;font-weight:400">·</span> <span style="color:#7C5FD9;font-weight:700">{{ rootName }}</span></div>
+    <div style="font-size:11px;color:#8a7d8d;font-family:'Figtree',sans-serif">greyed keys are outside the current scale · root key outlined</div>
+  </div>
+  </sc-if>
+
+  <!-- SCREEN 3: MIDI (based on 3a) -->
+  <sc-if value="{{ isMidi }}" hint-placeholder-val="{{ false }}">
+  <div style="height:520px;padding:20px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box;color:#fff;font-family:'Figtree',sans-serif;font-size:12px">
+    <div style="cursor:pointer;background:{{ learnBg }};color:#1a1420;padding:10px 14px;border-radius:6px;text-align:center;border:2px solid #fff;box-shadow:3px 3px 0 rgba(0,0,0,.4);font-weight:700" onClick="{{ toggleLearn }}">{{ learnLabel }}</div>
+    <div style="display:flex;gap:8px;align-items:center"><span style="color:#8a7d8d">Device</span><span style="background:#0e0a10;border:2px solid #7C5FD9;color:#7C5FD9;padding:4px 10px;border-radius:6px;font-weight:700">BeatStep Pro — connected</span></div>
+    <div style="flex:1;overflow:hidden;border:2px solid #3a2c3d;border-radius:8px">
+      <div style="display:flex;padding:8px 12px;border-bottom:2px solid #3a2c3d;color:#8a7d8d;font-weight:700;text-transform:uppercase;font-size:11px"><span style="flex:1">Param</span><span style="width:90px">CC</span><span style="width:70px">Knob</span></div>
+      <div style="display:flex;padding:8px 12px;border-left:4px solid #9AAB79"><span style="flex:1;color:#9AAB79">Steps</span><span style="width:90px">CC 16</span><span style="width:70px">K1</span></div>
+      <div style="display:flex;padding:8px 12px;border-left:4px solid #9AAB79"><span style="flex:1;color:#9AAB79">Pulses</span><span style="width:90px">CC 17</span><span style="width:70px">K2</span></div>
+      <div style="display:flex;padding:8px 12px;border-left:4px solid #AA6DA8"><span style="flex:1;color:#AA6DA8">Velocity</span><span style="width:90px">CC 18</span><span style="width:70px">K3</span></div>
+      <div style="display:flex;padding:8px 12px;border-left:4px solid #7C5FD9"><span style="flex:1;color:#7C5FD9">Pitch pool</span><span style="width:90px">Pads 1-16</span><span style="width:70px">—</span></div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- SCREEN 4: BANKS (based on 6a) -->
+  <sc-if value="{{ isBanks }}" hint-placeholder-val="{{ false }}">
+  <div style="height:520px;padding:20px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box;color:#fff;font-family:'Figtree',sans-serif;font-size:12px;position:relative">
+    <div style="color:#8a7d8d">Autosave: on · last saved 2 min ago</div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:10px;background:#0e0a10;border:2px solid #9AAB79;padding:8px 12px;border-radius:6px"><span style="flex:1;color:#9AAB79">Bank 1 — 120 BPM</span><span style="color:#8a7d8d">saved</span><button style="background:#9AAB79;color:#1a1420;border:2px solid #1a1420;padding:5px 10px;border-radius:4px;font-weight:700;box-shadow:2px 2px 0 rgba(0,0,0,.4)">Save</button><button style="background:none;border:2px solid #8a7d8d;color:#ccc;padding:5px 10px;border-radius:4px;font-weight:600">Reload</button></div>
+      <div style="display:flex;align-items:center;gap:10px;border:2px solid #3a2c3d;padding:8px 12px;border-radius:6px"><span style="flex:1;color:#ccc">Bank 2 — 96 BPM</span><span style="color:#AA6DA8">unsaved •</span><button style="background:#3a2c3d;color:#fff;border:2px solid #fff;padding:5px 10px;border-radius:4px;font-weight:700">Save</button><button style="cursor:pointer;background:none;border:2px solid #AA6DA8;color:#AA6DA8;padding:5px 10px;border-radius:4px;font-weight:700" onClick="{{ openReload }}">Reload</button></div>
+      <div style="display:flex;align-items:center;gap:10px;border:2px dashed #3a2c3d;padding:8px 12px;border-radius:6px;color:#665968">Bank 3 — empty</div>
+    </div>
+    <div style="display:flex;gap:10px;border-top:1px solid #3a2c3d;padding-top:10px">
+      <button style="flex:1;background:none;border:2px solid #8a7d8d;color:#ccc;padding:9px;border-radius:6px;font-weight:600">Export Backup</button>
+      <button style="flex:1;background:none;border:2px solid #8a7d8d;color:#ccc;padding:9px;border-radius:6px;font-weight:600">Import Backup</button>
+    </div>
+    <sc-if value="{{ reloadOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:80px;right:80px;top:180px;background:#0e0a10;border:2px solid #fff;border-radius:10px;padding:16px;box-shadow:0 0 0 2000px rgba(0,0,0,.55), 6px 6px 0 rgba(0,0,0,.4)">
+      <div style="color:#ccc;margin-bottom:10px">Reload Bank 2? Unsaved changes will be discarded.</div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <span style="cursor:pointer;color:#AA6DA8;border:2px solid #AA6DA8;padding:5px 12px;border-radius:5px;font-weight:700" onClick="{{ confirmReload }}">Discard</span>
+        <span style="cursor:pointer;color:#ccc;border:2px solid #8a7d8d;padding:5px 12px;border-radius:5px;font-weight:600" onClick="{{ cancelReload }}">Cancel</span>
+      </div>
+    </div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <!-- SCREEN 5: TRACKS (based on 6b) -->
+  <sc-if value="{{ isTracks }}" hint-placeholder-val="{{ false }}">
+  <div style="height:520px;padding:20px;box-sizing:border-box;color:#fff;font-family:'Figtree',sans-serif;font-size:11px;overflow:hidden">
+    <div style="display:grid;grid-template-columns:70px 40px repeat(8,1fr);gap:4px;align-items:center">
+      <div></div><div></div>
+      <div style="text-align:center;color:#8a7d8d">A</div><div style="text-align:center;color:#8a7d8d">B</div><div style="text-align:center;color:#8a7d8d">C</div><div style="text-align:center;color:#8a7d8d">D</div><div style="text-align:center;color:#8a7d8d">E</div><div style="text-align:center;color:#8a7d8d">F</div><div style="text-align:center;color:#8a7d8d">G</div><div style="text-align:center;color:#8a7d8d">H</div>
+
+      <div style="color:#9AAB79">KICK</div>
+      <div style="display:flex;gap:4px"><span style="cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:3px;font-weight:700;{{ kickMuteStyle }}" onClick="{{ toggleKickMute }}">M</span><span style="cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:3px;font-weight:700;{{ kickSoloStyle }}" onClick="{{ toggleKickSolo }}">S</span></div>
+      <div style="background:#9AAB79;border-radius:3px;height:20px"></div><div style="background:#3a2c3d;border-radius:3px;height:20px"></div><div style="background:#9AAB79;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div>
+
+      <div style="color:#ccc">SNARE</div>
+      <div style="display:flex;gap:4px"><span style="cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:3px;font-weight:700;{{ snareMuteStyle }}" onClick="{{ toggleSnareMute }}">M</span><span style="cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:3px;font-weight:700;{{ snareSoloStyle }}" onClick="{{ toggleSnareSolo }}">S</span></div>
+      <div style="background:#665968;border-radius:3px;height:20px"></div><div style="background:#665968;border-radius:3px;height:20px"></div><div style="background:#3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div>
+
+      <div style="color:#ccc">CHH</div>
+      <div style="display:flex;gap:4px"><span style="cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:3px;font-weight:700;{{ chhMuteStyle }}" onClick="{{ toggleChhMute }}">M</span><span style="cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:3px;font-weight:700;{{ chhSoloStyle }}" onClick="{{ toggleChhSolo }}">S</span></div>
+      <div style="background:#665968;border-radius:3px;height:20px"></div><div style="background:#3a2c3d;border-radius:3px;height:20px"></div><div style="background:#665968;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div><div style="background:#0e0a10;border:1px dashed #3a2c3d;border-radius:3px;height:20px"></div>
+    </div>
+    <div style="margin-top:14px;color:#8a7d8d">M/S per Track row — click to toggle · filled cell = Track has data in that Pattern · 13 more rows below</div>
+  </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    screen: 'main',
+    paramTab: 'shape',
+    scale: 'minor',
+    root: 'C',
+    learnOn: false,
+    reloadOpen: false,
+    kickMute: false, kickSolo: false,
+    snareMute: false, snareSolo: false,
+    chhMute: false, chhSolo: false,
+    selectedTrack: 'kick'
+  };
+
+  go(s) { this.setState({ screen: s }); }
+
+  navStyle(active) {
+    return active ? 'background:#fff;color:#1a1420;border:2px solid #fff;box-shadow:2px 2px 0 rgba(0,0,0,.4)' : 'background:none;color:#8a7d8d;border:2px solid transparent';
+  }
+
+  renderVals() {
+    const s = this.state;
+    const tabInfo = {
+      shape: { color: '#9AAB79', value: 'PULSES 5', label: 'SHAPE — transient' },
+      groove: { color: '#AA6DA8', value: 'VEL 88', label: 'GROOVE — transient' },
+      tonal: { color: '#7C5FD9', value: 'C MIN', label: 'TONAL — transient' }
+    }[s.paramTab];
+
+    const keyStyle = (name, inScale) => {
+      const isRoot = s.root === name;
+      const base = "border-radius:4px 4px 0 0;cursor:pointer;display:flex;align-items:end;justify-content:center;font-family:'Figtree',sans-serif;padding-bottom:6px";
+      if (isRoot) return `background:#7C5FD9;${base};border:3px solid #fff;color:#fff;font-size:15px;font-weight:700;box-shadow:2px 2px 0 rgba(0,0,0,.4)`;
+      return inScale ? `background:#9AAB79;${base};color:#1a1420;font-size:11px;font-weight:700;border:2px solid #1a1420`
+        : `background:#0e0a10;border:2px solid #3a2c3d;${base};color:#8a7d8d;font-size:11px;font-weight:600`;
+    };
+    const scaleKeys = {
+      minor: { C:1,D:1,E:1,F:1,G:1,A:0 },
+      major: { C:1,D:1,E:1,F:1,G:1,A:1 },
+      dorian: { C:1,D:1,E:0,F:1,G:1,A:1 }
+    }[s.scale];
+
+    const scaleBtnStyle = (name) => {
+      const active = s.scale === name;
+      return active ? 'background:#7C5FD9;color:#fff;border:2px solid #fff;border-radius:6px;padding:10px;text-align:center;font-size:12px;font-weight:700;box-shadow:2px 2px 0 rgba(0,0,0,.4)'
+        : 'border:2px solid #4a3d4d;border-radius:6px;padding:10px;text-align:center;font-size:12px;color:#a99cab;font-weight:600';
+    };
+
+    const soloActive = s.kickSolo || s.snareSolo || s.chhSolo;
+    const mSStyle = (mute, solo) => solo ? 'color:#1a1420;background:#7C5FD9;border:2px solid #7C5FD9' : mute ? 'color:#1a1420;background:#AA6DA8;border:2px solid #AA6DA8' : 'color:#8a7d8d;background:transparent;border:2px solid #4a3d4d';
+
+    // ring stack: each track has a fixed pulse pattern (angle list) + a size slot; bright when selected
+    const tracks = ['kick', 'snare', 'chh', 'ride', 'perc'];
+    const patterns = {
+      kick:  [[0,45],[90,135],[180,202.5],[270,292.5]],
+      snare: [[0,90],[135,180],[225,270]],
+      chh:   [[0,22.5],[45,112.5],[157.5,202.5],[247.5,270],[315,337.5]],
+      ride:  [[0,90],[180,270]],
+      perc:  [[0,60],[120,180],[240,300]]
+    };
+    const ringGradient = (name, isSelected) => {
+      const color = isSelected ? tabInfo.color : '#3a2c3d';
+      const gap = isSelected ? '#0e0a10' : '#1a1420';
+      const segs = patterns[name];
+      let stops = [], last = 0;
+      segs.forEach(([a, b]) => {
+        if (a > last) stops.push(`${gap} ${last}deg ${a}deg`);
+        stops.push(`${color} ${a}deg ${b}deg`);
+        last = b;
+      });
+      if (last < 360) stops.push(`${gap} ${last}deg 360deg`);
+      return `background:conic-gradient(${stops.join(',')})`;
+    };
+    const trackBtnStyle = (name) => s.selectedTrack === name
+      ? `border:2px solid ${tabInfo.color};background:${tabInfo.color};color:#1a1420;font-weight:700;box-shadow:2px 2px 0 rgba(0,0,0,.4)`
+      : 'border:2px solid #4a3d4d;color:#a99cab;background:transparent;font-weight:600';
+    const trackLabels = { kick: 'KICK', snare: 'SNARE', chh: 'CHH', ride: 'RIDE', perc: 'PERC' };
+
+    return {
+      isMain: s.screen === 'main', isScale: s.screen === 'scale', isMidi: s.screen === 'midi',
+      isBanks: s.screen === 'banks', isTracks: s.screen === 'tracks',
+      navStyle_main: this.navStyle(s.screen === 'main'), navStyle_scale: this.navStyle(s.screen === 'scale'),
+      navStyle_midi: this.navStyle(s.screen === 'midi'), navStyle_banks: this.navStyle(s.screen === 'banks'),
+      navStyle_tracks: this.navStyle(s.screen === 'tracks'),
+      goMain: () => this.go('main'), goScale: () => this.go('scale'), goMidi: () => this.go('midi'),
+      goBanks: () => this.go('banks'), goTracks: () => this.go('tracks'),
+
+      activeColor: tabInfo.color, activeValue: tabInfo.value, activeTab: trackLabels[s.selectedTrack] + ' selected · ' + tabInfo.label,
+      ring1Style: ringGradient(tracks[0], s.selectedTrack === tracks[0]),
+      ring2Style: ringGradient(tracks[1], s.selectedTrack === tracks[1]),
+      ring3Style: ringGradient(tracks[2], s.selectedTrack === tracks[2]),
+      ring4Style: ringGradient(tracks[3], s.selectedTrack === tracks[3]),
+      ring5Style: ringGradient(tracks[4], s.selectedTrack === tracks[4]),
+      trackBtnKick: trackBtnStyle('kick'), trackBtnSnare: trackBtnStyle('snare'), trackBtnChh: trackBtnStyle('chh'),
+      trackBtnRide: trackBtnStyle('ride'), trackBtnPerc: trackBtnStyle('perc'),
+      selectKick: () => this.setState({ selectedTrack: 'kick' }), selectSnare: () => this.setState({ selectedTrack: 'snare' }),
+      selectChh: () => this.setState({ selectedTrack: 'chh' }), selectRide: () => this.setState({ selectedTrack: 'ride' }),
+      selectPerc: () => this.setState({ selectedTrack: 'perc' }),
+      shapeTabStyle: s.paramTab === 'shape' ? 'border:2px solid #9AAB79;box-shadow:2px 2px 0 rgba(0,0,0,.4);font-weight:700' : 'border:2px solid transparent',
+      grooveTabStyle: s.paramTab === 'groove' ? 'border:2px solid #AA6DA8;box-shadow:2px 2px 0 rgba(0,0,0,.4);font-weight:700' : 'border:2px solid transparent',
+      tonalTabStyle: s.paramTab === 'tonal' ? 'border:2px solid #7C5FD9;box-shadow:2px 2px 0 rgba(0,0,0,.4);font-weight:700' : 'border:2px solid transparent',
+      setShape: () => this.setState({ paramTab: 'shape' }), setGroove: () => this.setState({ paramTab: 'groove' }), setTonal: () => this.setState({ paramTab: 'tonal' }),
+
+      scaleMinorStyle: scaleBtnStyle('minor'), scaleMajorStyle: scaleBtnStyle('major'), scaleDorianStyle: scaleBtnStyle('dorian'),
+      setScaleMinor: () => this.setState({ scale: 'minor' }), setScaleMajor: () => this.setState({ scale: 'major' }), setScaleDorian: () => this.setState({ scale: 'dorian' }),
+      keyCStyle: keyStyle('C', scaleKeys.C), keyDStyle: keyStyle('D', scaleKeys.D), keyEStyle: keyStyle('E', scaleKeys.E),
+      keyFStyle: keyStyle('F', scaleKeys.F), keyGStyle: keyStyle('G', scaleKeys.G), keyAStyle: keyStyle('A', scaleKeys.A),
+      setRootC: () => this.setState({ root: 'C' }), setRootD: () => this.setState({ root: 'D' }), setRootE: () => this.setState({ root: 'E' }),
+      setRootF: () => this.setState({ root: 'F' }), setRootG: () => this.setState({ root: 'G' }), setRootA: () => this.setState({ root: 'A' }),
+      scaleName: s.scale.charAt(0).toUpperCase() + s.scale.slice(1), rootName: s.root,
+
+      learnBg: s.learnOn ? '#9AAB79' : '#3a2c3d', learnLabel: s.learnOn ? 'LEARN MODE ON — turn a knob to assign' : 'Tap to enter Learn Mode',
+      toggleLearn: () => this.setState({ learnOn: !s.learnOn }),
+
+      reloadOpen: s.reloadOpen, openReload: () => this.setState({ reloadOpen: true }),
+      confirmReload: () => this.setState({ reloadOpen: false }), cancelReload: () => this.setState({ reloadOpen: false }),
+
+      kickMuteStyle: mSStyle(s.kickMute, s.kickSolo), kickSoloStyle: mSStyle(false, s.kickSolo),
+      snareMuteStyle: mSStyle(s.snareMute, s.snareSolo), snareSoloStyle: mSStyle(false, s.snareSolo),
+      chhMuteStyle: mSStyle(s.chhMute, s.chhSolo), chhSoloStyle: mSStyle(false, s.chhSolo),
+      toggleKickMute: () => this.setState({ kickMute: !s.kickMute }), toggleKickSolo: () => this.setState({ kickSolo: !s.kickSolo }),
+      toggleSnareMute: () => this.setState({ snareMute: !s.snareMute }), toggleSnareSolo: () => this.setState({ snareSolo: !s.snareSolo }),
+      toggleChhMute: () => this.setState({ chhMute: !s.chhMute }), toggleChhSolo: () => this.setState({ chhSolo: !s.chhSolo })
+    };
+  }
+}
+
+</script>
+</body>
+</html>
