@@ -1,0 +1,35 @@
+Task: Decodificación de encoders relativos (Fase 2)
+
+`RelativeEncoding.twosComplement` traduce el byte de un mensaje de control a un
+desplazamiento con signo. TDD: el test falló por tipo inexistente antes de
+implementar.
+
+Por qué un tipo y no una función suelta
+----------------------------------------
+Hoy solo hace falta una convención, pero el preset del BeatStep Pro traerá las
+suyas. Que la convención entre como VALOR significa que añadirlas será añadir
+casos, no reescribir el decodificador ni a sus llamantes. Sus valores exactos se
+verificarán contra el manual del fabricante cuando llegue ese track, no de
+memoria.
+
+Decisión: 0x40 no mueve nada
+-----------------------------
+En complemento a dos estricto, 0x40 valdría −64: el mayor decremento posible.
+Pero muchos controladores lo emiten en reposo, así que interpretarlo
+literalmente convertiría un knob quieto en un salto brutal de parámetro. Se
+trata como ausencia de movimiento, igual que 0x00.
+
+Es una desviación consciente de la aritmética pura a favor del comportamiento
+del hardware real. Documentada en el código, donde se toma la decisión.
+
+Robustez: un byte de datos MIDI nunca supera 127. Si llega uno, no se inventa un
+giro — se devuelve 0.
+
+Cobertura de los tests
+----------------------
+Los cuatro extremos (0x01→+1, 0x3F→+63, 0x7F→−1, 0x41→−63), el rango entero
+byte a byte, los dos valores neutros, los valores fuera de rango, determinismo,
+y una invariante de simetría: un giro y su contrario se cancelan para las 63
+magnitudes.
+
+Verificación: 10 tests, 0 fallos.
