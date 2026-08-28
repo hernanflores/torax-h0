@@ -28,6 +28,11 @@ public final class Transport: @unchecked Sendable {
     private let send: Send
     private let handoff: TrackHandoff
 
+    /// Ancla temporal del playhead. Vive aquí y no en el hilo porque el hilo se
+    /// crea y se tira en cada Play; el reloj tiene que sobrevivir a eso para que
+    /// quien dibuja consulte siempre al mismo sitio.
+    private let playheadClock = PlayheadClock()
+
     private var scheduler: SchedulerThread?
 
     /// Último Track publicado.
@@ -41,6 +46,26 @@ public final class Transport: @unchecked Sendable {
 
     /// Track vigente. Cambiarlo mientras suena se hace con `publish(_:)`.
     public var track: Track { lastPublishedTrack }
+
+    /// Dónde está el playhead sobre el anillo, o `nil` con el transporte
+    /// parado.
+    ///
+    /// **Se calcula al preguntar, no se guarda.** Guardarlo obligaría a alguien
+    /// a refrescarlo, y ese alguien sería un temporizador de la interfaz — una
+    /// animación no derivada del reloj musical, que `product-guidelines.md`
+    /// nombra como antipatrón. Aquí el reloj es la única fuente: quien dibuja
+    /// pregunta cuando va a dibujar y siempre obtiene el instante real.
+    ///
+    /// La aritmética vive en `Engine`, donde se testea sin CoreMIDI; esto solo
+    /// le pasa el tiempo transcurrido y el anillo sobre el que resolverlo.
+    public var playhead: Playhead? {
+        guard let elapsed = playheadClock.elapsedNanoseconds() else { return nil }
+        return Playhead(
+            elapsedNanoseconds: elapsed,
+            timeline: configuration.timeline,
+            steps: lastPublishedTrack.shape.steps
+        )
+    }
 
     public init(
         configuration: SchedulerConfiguration,
@@ -76,7 +101,8 @@ public final class Transport: @unchecked Sendable {
         let thread = SchedulerThread(
             configuration: configuration,
             material: .track(handoff.load() ?? lastPublishedTrack),
-            handoff: handoff
+            handoff: handoff,
+            playhead: playheadClock
         ) { [emitter, send] _, hostTime in
             emitter.emit(atHostTime: hostTime, send: send)
         }

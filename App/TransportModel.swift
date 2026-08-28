@@ -100,6 +100,19 @@ final class TransportModel {
     /// (`product-guidelines.md`). Es un estado, no una carencia: no se abre
     /// ninguna vía táctil para suplirlo.
     var isReadOnly: Bool { !sourceSelection.hasEndpoint }
+
+    /// El anillo del Track vigente: dónde cae cada Step y cuáles disparan.
+    var ring: Ring { Ring(shape: track.shape) }
+
+    /// Dónde está el playhead, o `nil` con el transporte parado.
+    ///
+    /// **No es estado observable y no debe serlo.** Se consulta al dibujar, y
+    /// cambia de forma continua: publicarlo como propiedad observada obligaría a
+    /// alguien a refrescarlo a 60 Hz y a invalidar la vista entera en cada
+    /// fotograma. Quien lo dibuje se redibuja solo —`TimelineView`— y pregunta
+    /// aquí; el valor que recibe deriva del reloj musical, no del temporizador
+    /// que provocó el redibujado.
+    var playhead: Playhead? { transport?.playhead }
     var canPlay: Bool { selection.hasEndpoint && transport != nil }
 
     init() {
