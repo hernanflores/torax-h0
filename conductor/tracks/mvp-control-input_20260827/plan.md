@@ -47,12 +47,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 3: Entrada MIDI real y controlador virtual
 
-- [ ] Task: Fuentes de entrada y selección
-  - [ ] Tests (Red): la lista refleja las fuentes del sistema; sin fuentes es un estado válido
-  - [ ] Tests (Red): `onSetupChanged` provoca reconsulta
-  - [ ] Implementación (Green): estado `No MIDI input`, sin lenguaje de error ni disculpa
-  - [ ] Reutilizar la lógica de selección de la salida en lugar de duplicarla
-- [ ] Task: Recepción por CoreMIDI
+- [x] Task: Fuentes de entrada y selección — `2d7b155`
+  - [x] Tests (Red): la lista refleja las fuentes del sistema; sin fuentes es un estado válido
+  - [x] Tests (Red): `onSetupChanged` provoca reconsulta
+  - [x] Implementación (Green): estado `No MIDI input`, sin lenguaje de error ni disculpa
+  - [x] Reutilizar la lógica de selección de la salida en lugar de duplicarla
+- [~] Task: Recepción por CoreMIDI
   - [ ] Implementación (Green): puerto de entrada y conexión a la fuente elegida
   - [ ] Cierre explícito y ordenado desde el principio — no repetir el problema de `scheduler-lifecycle`
   - [ ] Medir la tasa de `-50`/`-2` antes y después: este track añade un segundo cliente de CoreMIDI
