@@ -45,3 +45,55 @@ La documentación de la vista decía que los Roots fuera de la escala no eran
 elegibles. Es falso: el Root es la fundamental que **transpone** la Scale.
 
 Checkpoint: f65dce5
+
+---
+
+## Verificación de fase — Fase 6: Verificación en dispositivo
+
+Ejecutada el 2026-08-28 en iPad Air (4ª generación) con BeatStep Pro en
+Relative #2 y sintetizador de destino.
+
+### Sin medición de jitter
+
+Retirada el mismo día por cambio de regla en `workflow.md`: se mide cuando el
+cambio altera **cuándo** cae un evento, no cuánto trabajo se hace para
+producirlo. Esta rebanada añade un módulo, una máscara y un `nonzeroBitCount` al
+hilo del scheduler —nanosegundos contra una ventana de 20 ms— y no desplaza
+ningún instante. La próxima medición es la rebanada 6, con Timing y Delay.
+
+### Verificación de uso
+
+   1. Play con el pool inicial de una nota ............ OK
+   2. Pads añaden notas y se ven en el pool ........... OK
+   3. El Track arpegia en vez de repetir una altura ... OK
+   4. Todo suena dentro de la Scale y el Root ......... OK
+   5. Pad fuera de escala se ignora sin error ......... OK
+   6. El mismo pad mete y saca la nota ................ OK
+   7. Cambiar Scale reencuadra el pool sin cortar ..... OK
+   8. Pool vacío no suena, sin error .................. OK
+   9. Girar Pulses no borra el pool ................... OK
+  10. Anillo, playhead y valor grande siguen .......... OK
+
+El punto 9 verifica en dispositivo el defecto encontrado en la Fase 4:
+`ControlInput` reconstruía el Track sin el pool y girar un knob lo habría
+borrado. El punto 7 verifica la regla de destructividad de
+`product-guidelines.md` en la app, que es la razón por la que la pantalla de
+Scale y Root entró en la rebanada.
+
+### Automático
+
+  swift test --package-path Packages/Engine --enable-code-coverage
+    → 184 tests, 0 fallos. Cobertura 96,99% (umbral ≥90%).
+
+  swift test --package-path Packages/MIDI --enable-code-coverage
+    → 209 tests, 1 skip, 0 fallos, en un solo proceso y sin `-50`.
+      Cobertura 91,15% (umbral ≥80%).
+
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+
+### Confirmación
+
+El usuario verificó en dispositivo: «Validado, funcionó todo.»
+
+Checkpoint: f65dce5
