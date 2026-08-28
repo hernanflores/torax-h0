@@ -1,0 +1,62 @@
+Task: Cablear en la app (Fase 4)
+
+Los giros de un controlador llegan ya al motor: CoreMIDIInput recibe, ControlInput
+decodifica y aplica, y el Track resultante se publica por el transporte.
+
+Decisión: ControlInput publica por un cierre, no por un TrackHandoff
+---------------------------------------------------------------------
+`Transport` tiene su propio handoff, que es el que lee el scheduler. Pasarle otro
+a `ControlInput` habría hecho que los knobs escribieran en un sitio y el
+scheduler leyera de otro — un fallo silencioso y difícil de ver.
+
+El inicializador pasa a recibir `publish: (Track) -> Void`, y la app le pasa
+`transport.publish`. Se conserva un `init(publishingTo:)` de conveniencia para
+tests y para quien no tenga transporte, así que ningún test existente cambió.
+
+Decisión: el modelo se aísla al hilo principal
+-----------------------------------------------
+Lo destapó el compilador: el callback de recepción de CoreMIDI es `@Sendable` y
+capturaba el modelo, que no lo era.
+
+La respuesta correcta no era silenciarlo sino decir la verdad — el estado que
+lee la interfaz vive en el hilo principal. `@MainActor` sobre `TransportModel` lo
+declara, y de paso lo hace `Sendable`, así que la captura pasa a ser legítima.
+
+Eso obligó a marcar `nonisolated` el camino de envío, y también ahí es lo
+correcto: corre en el hilo del scheduler, no toca estado del modelo, y por eso
+ya era `static`.
+
+El salto al hilo principal en la recepción está en el camino de CONTROL, no en
+el de timing. Su coste es irrelevante frente a los 125 ms de un Step a 120 BPM.
+
+Sin controlador, solo lectura
+------------------------------
+`isReadOnly` es cierto cuando no hay fuente. La pantalla lo dice y no ofrece
+nada más: `product-guidelines.md` especifica ese estado y advierte contra abrir
+una vía táctil para suplirlo.
+
+VERIFICACIÓN DEL BINARIO, AHORA SÍ CONCLUYENTE
+-----------------------------------------------
+En la Fase 3 esta comprobación salió vacua: 0 símbolos de VirtualController en
+Release y también 0 en Debug, porque nada lo referenciaba.
+
+Con la app ya cableada, sobre el binario de Release:
+
+  CoreMIDIInput      129 símbolos   ← el camino de entrada viaja
+  ControlInput        81 símbolos   ← también
+  VirtualController    0 símbolos   ← el `#if DEBUG` lo deja fuera
+
+El contraste está dentro del MISMO binario, así que ya no es una ausencia
+ambigua: lo que tiene que estar, está; lo que no, no.
+
+Se decidió además NO exponer el controlador virtual en la interfaz ni en Debug.
+`product-guidelines.md` lo define como herramienta de test y advierte que no es
+"un modo de edición táctil por la puerta de atrás"; unos botones en pantalla
+para girar knobs serían exactamente eso. Su sitio son los tests.
+
+Verificación
+------------
+swift test --package-path Packages/Engine → 101 tests, 0 fallos
+swift test --package-path Packages/MIDI (mitad sin CoreMIDI) → 161 tests, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+xcodebuild build -scheme ToraxH0 -configuration Release → SUCCEEDED
