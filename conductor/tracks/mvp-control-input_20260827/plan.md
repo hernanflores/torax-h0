@@ -33,11 +33,11 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): `0x00` y `0x40` no producen movimiento
   - [x] Tests (Red): determinismo — mismo mensaje, mismo delta
   - [x] Implementación (Green): la convención entra como parámetro, no cableada
-- [~] Task: Mapeo de CC a parámetro de Shape
-  - [ ] Tests (Red): un CC mapeado mueve su parámetro y **solo** el suyo
-  - [ ] Tests (Red): un CC sin mapear se ignora en silencio, no es error
-  - [ ] Implementación (Green): tabla fija, **declarada provisional** en el código
-- [ ] Task: Aplicar el delta y publicar
+- [x] Task: Mapeo de CC a parámetro de Shape — `10a9eb6`
+  - [x] Tests (Red): un CC mapeado mueve su parámetro y **solo** el suyo
+  - [x] Tests (Red): un CC sin mapear se ignora en silencio, no es error
+  - [x] Implementación (Green): tabla fija, **declarada provisional** en el código
+- [~] Task: Aplicar el delta y publicar
   - [ ] Tests (Red): girar Pulses publica un `Track` nuevo, recogido en la ventana siguiente
   - [ ] Tests (Red): bajar Steps acota sin destruir; subirlo restaura — de extremo a extremo desde el mensaje
   - [ ] Tests (Red): los extremos de rango no desbordan ni envuelven donde no deben
