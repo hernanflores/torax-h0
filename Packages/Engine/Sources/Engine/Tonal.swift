@@ -45,6 +45,21 @@ public struct Root: Equatable, Sendable {
     }
 }
 
+extension Pitch: CustomStringConvertible {
+
+    /// Nombre de la altura, con octava.
+    ///
+    /// **Con octava porque un pool son alturas concretas, no clases.** Do3 y Do4
+    /// son dos entradas distintas, y sin la octava se verían iguales en
+    /// pantalla.
+    ///
+    /// Convención científica: Do central —MIDI 60— es C4, así que la octava del
+    /// extremo grave es −1.
+    public var description: String {
+        "\(Root(pitchClass)!.description)\(value / 12 - 1)"
+    }
+}
+
 extension Root: CustomStringConvertible {
 
     /// Sostenidos y no bemoles, elegido por consistencia: un solo nombre por
