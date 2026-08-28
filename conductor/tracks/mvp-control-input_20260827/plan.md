@@ -24,7 +24,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Implementación (Green): secuencia de valores musicales, no un entero libre
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: Del mensaje MIDI al Track publicado
+## Phase 2: Del mensaje MIDI al Track publicado [checkpoint: 3251d76]
 
 > Toda esta fase se testea sin CoreMIDI y sin hardware.
 
@@ -43,7 +43,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): los extremos de rango no desbordan ni envuelven donde no deben
   - [x] Implementación (Green): publicación por `TrackHandoff`, sin tocar el camino de tiempo real
   - [x] Revisión explícita: decodificar y publicar corren en el hilo de control, nunca en el del scheduler
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Entrada MIDI real y controlador virtual
 
