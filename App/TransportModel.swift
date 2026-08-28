@@ -38,6 +38,22 @@ final class TransportModel {
         return Shape(steps: steps, pulses: Pulses(5)!)
     }()
 
+    /// El marco tonal vigente. Configuración táctil, no de knob
+    /// (`product-guidelines.md`).
+    private(set) var frame = TonalFrame(scale: .minor, root: Root(0)!)
+
+    /// Cambia Scale o Root y reencuadra el pool.
+    ///
+    /// **Sigue disponible sin controlador conectado:** es configuración, no
+    /// material generativo, y la frontera de `product-guidelines.md` la pone del
+    /// lado de la pantalla.
+    func setFrame(_ updated: TonalFrame) {
+        frame = updated
+        guard let controlInput else { return }
+        controlInput.setFrame(updated)
+        track = controlInput.track
+    }
+
     /// Con qué material arranca la app.
     ///
     /// **Una sola altura, que es la que sonaba antes de Tonal.** La Pre Spec
@@ -178,6 +194,7 @@ final class TransportModel {
 
         let controlInput = ControlInput(
             track: track,
+            frame: frame,
             publish: { [weak transport] updated in transport?.publish(updated) }
         )
         self.controlInput = controlInput

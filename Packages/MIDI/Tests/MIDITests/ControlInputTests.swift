@@ -96,11 +96,15 @@ final class ControlInputTests: XCTestCase {
         XCTAssertEqual(input.track.shape.pulses.count, 4)
     }
 
-    /// Los mensajes que no son de control tampoco mueven nada.
-    func testNoteMessagesAreIgnored() {
+    /// Los mensajes de nota **no mueven el Shape**.
+    ///
+    /// Desde Tonal sí hacen algo —editan el pool, y eso lo cubre
+    /// `PadPoolInputTests`—, pero son capas distintas del motor: un pad no puede
+    /// mover Steps ni Pulses, igual que un knob de Shape no puede tocar el pool.
+    func testNoteMessagesDoNotMoveTheShape() {
         let (input, _) = makeInput(shape(pulses: 4))
         let note = MIDIMessage.noteOn(channel: channel, note: MIDINote(60)!, velocity: MIDIVelocity(100)!)
-        XCTAssertFalse(input.receive(note))
+        input.receive(note)
         XCTAssertEqual(input.track.shape.pulses.count, 4)
     }
 
