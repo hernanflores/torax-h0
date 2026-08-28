@@ -51,3 +51,49 @@ anillo marca exactamente `effectivePulses`, y otro que coincide con
 
 No toca el camino de tiempo real: construir el anillo asigna, y se hace en el
 hilo principal para dibujar.
+
+---
+
+## Verificación de fase — Fase 1: La geometría vive en `Engine`
+
+Protocolo de `workflow.md` → Phase Completion Verification and Checkpointing.
+Ejecutado el 2026-08-28.
+
+### Cobertura de los cambios de la fase
+
+  git diff --name-only 759acb7 HEAD
+    → Ring.swift, con su RingTests.swift correspondiente. Ningún fichero de
+      código sin test.
+
+### Automático
+
+  swift test --package-path Packages/Engine --enable-code-coverage
+    → 111 tests, 0 fallos (101 antes del track).
+    → Ring.swift: 100% líneas, funciones y regiones.
+    → Engine: 100% líneas (umbral ≥90%).
+
+### Manual
+
+Volcado del anillo real dibujado desde `Ring.positions`, con los tres casos de
+la Pre Spec, un caso de Rotate y uno de acotado no destructivo. Verificado a ojo
+contra el registro canónico de `EuclideanRhythmTests`:
+
+- 16/4 «muy regular» — cruz perfecta a 12, 3, 6 y 9 en punto.
+- 16/5 «equilibrio con asimetría» — hueco de cuatro Steps visible al cerrar.
+- 12/7 «más denso» — huecos alternos de uno y dos.
+- 16/5 con Rotate 3 — las mismas marcas corridas tres posiciones, no otro
+  patrón en el sitio.
+- Steps 4 con Pulses 9 — se marcan las 4 que caben y `pulses` sigue en 9.
+
+### Confirmación y alcance de lo verificado
+
+El usuario preguntó dónde se ve el anillo en la app. **No se ve, y no debe
+verse todavía:** esta fase no toca `App/`, y la pantalla es la Fase 3. Se le
+ofreció adelantar un anillo estático y decidió seguir el plan: *«Sigamos el
+plan, validemos todo cuando ya esté el anillo disponible en la app.»*
+
+**La validación visual en pantalla queda diferida a las Fases 3 y 4.** Lo que
+este checkpoint da por bueno es la geometría y sus invariantes, verificadas por
+tests y por el volcado; no cómo se ve dibujada.
+
+Checkpoint: 4d45046
