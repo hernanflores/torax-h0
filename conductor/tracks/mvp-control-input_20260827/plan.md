@@ -52,11 +52,11 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): `onSetupChanged` provoca reconsulta
   - [x] Implementación (Green): estado `No MIDI input`, sin lenguaje de error ni disculpa
   - [x] Reutilizar la lógica de selección de la salida en lugar de duplicarla
-- [~] Task: Recepción por CoreMIDI
-  - [ ] Implementación (Green): puerto de entrada y conexión a la fuente elegida
-  - [ ] Cierre explícito y ordenado desde el principio — no repetir el problema de `scheduler-lifecycle`
-  - [ ] Medir la tasa de `-50`/`-2` antes y después: este track añade un segundo cliente de CoreMIDI
-- [ ] Task: Controlador virtual de desarrollo
+- [x] Task: Recepción por CoreMIDI — `45d7783`
+  - [x] Implementación (Green): puerto de entrada y conexión a la fuente elegida
+  - [x] Cierre explícito y ordenado desde el principio — no repetir el problema de `scheduler-lifecycle`
+  - [x] Medir la tasa de `-50`/`-2` antes y después: este track añade un segundo cliente de CoreMIDI — **0 de 6 antes, 0 de 6 después**
+- [~] Task: Controlador virtual de desarrollo
   - [ ] Tests (Red): inyectar un giro produce el mismo efecto que un CC real
   - [ ] Implementación (Green): inyector de eventos relativos, sin CoreMIDI
   - [ ] **Verificar que el binario de Release no lo contiene**
