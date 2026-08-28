@@ -1,0 +1,47 @@
+Tarea: Almacenamiento inline · El pool vive en Track · Reencuadre no destructivo
+Track: mvp-tonal_20260828 — Fase 2
+
+## Qué cambia
+
+Nuevo `Packages/Engine/Sources/Engine/PitchPool.swift` y su fichero de tests.
+`Track` gana `pool`, con valor por defecto vacío para no romper a los llamantes.
+
+## La restricción dura, resuelta sin rediseño
+
+El riesgo del plan era que el pool inline no cupiera en `Track` sin romper
+`_isPOD`, y que la salida fácil fuera relajar el test o sacar el pool del
+snapshot. No hizo falta: una altura MIDI son siete bits, así que ocho caben en
+los ocho bytes de un `UInt64` y sobra `0xFF` como centinela de hueco vacío.
+
+`_isPOD(Track.self)` verde en los dos paquetes — el de `TrackHandoffTests` no se
+tocó.
+
+## Decisiones
+
+- **Ordenado de grave a agudo**, no en orden de pulsación: el recorrido será el
+  arpegio ascendente de Style monofónico, y así no depende de en qué orden se
+  pulsaron los pads. Dos pools con las mismas notas son iguales.
+- **Lleno rechaza la novena** sin tocar las ocho. Hacer sitio tirando una nota
+  sería destruir material.
+- **El reencuadre reubica en la más cercana, no vacía.** Regla de
+  destructividad de `product-guidelines.md`.
+- **Pérdida aceptada y fijada:** si dos alturas colapsan en la misma, el pool
+  encoge. Guardar el duplicado haría que el arpegio repitiera una nota sin que
+  nadie lo pidiera; elegir otra sería inventar material.
+
+## Dos tests míos estaban mal
+
+Esperaban que tres notas sobrevivieran a un reencuadre donde dos colisionan
+—Do# baja a Do por el desempate, y Do ya estaba—, que es justo el caso que el
+test de colapso fija. Corregidas las expectativas; el código tenía razón.
+
+## Verificación
+
+  swift test --package-path Packages/Engine --enable-code-coverage
+    → 168 tests, 0 fallos (149 antes: +19)
+    → PitchPool 96,83% líneas · Engine 98,48% (umbral ≥90%)
+
+  swift test --package-path Packages/MIDI (mitad sin CoreMIDI)
+    → 167 tests, 0 fallos. `_isPOD(Track.self)` en verde.
+
+Todavía no se toca el camino de emisión: eso es la Fase 3.
