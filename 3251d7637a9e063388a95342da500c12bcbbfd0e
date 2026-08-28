@@ -1,0 +1,17 @@
+Paso de refactor de la Fase 2, disparado por la cobertura.
+
+`Shape.swift` había bajado a 92,86% de regiones: dos ramas muertas. Eran los
+`guard let moved = Steps(clamped) else { return self }` de `applying(_:to:)`,
+inalcanzables porque el acotado previo ya garantiza que el valor está en rango.
+
+Cobertura al 100% no es el objetivo; lo que la cifra señalaba sí: código que no
+se puede ejecutar y que, si algún día se pudiera, escondería el fallo
+devolviendo el Shape sin cambios en vez de decir nada.
+
+`Steps` y `Pulses` reciben un `init(unchecked:)` interno, que es el idioma que
+`Division` y `MIDIChannel` ya usan en este proyecto para exactamente esto:
+valores que el llamante ya validó. `applying` los usa y las ramas desaparecen.
+
+Shape.swift vuelve a 100%, con 26 regiones en vez de 28.
+
+Verificación: Engine 101 tests, MIDI 139 (sin los de CoreMIDI), build de iOS OK.
