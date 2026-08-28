@@ -1,0 +1,39 @@
+Verificación de fase — Fase 4: Los pads editan el pool
+Track: mvp-tonal_20260828
+
+## Automático
+
+  swift test --package-path Packages/MIDI (mitad sin CoreMIDI)
+    → 188 tests, 0 fallos (173 antes: +15 entre PadPoolInputTests y
+      FrameChangeTests)
+
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+
+## El defecto que destapó
+
+`ControlInput.receive` reconstruía `Track(shape: adjusted)` sin el pool. Desde
+que el pool entró en `Track` (Fase 2), girar cualquier knob de Shape lo habría
+**borrado**. No lo detectó ningún test porque hasta esta fase no había forma de
+poblar el pool desde la entrada.
+
+Es la destrucción silenciosa que `product-guidelines.md` prohíbe, y la misma
+clase de defecto que motivó la enmienda de `Pulses` en la rebanada 2. Cubierto
+ahora en las dos direcciones: `testTurningAKnobKeepsThePool` y
+`testEditingThePoolKeepsTheShape`.
+
+## Decisiones
+
+- **Fuera de marco se ignora en silencio**, como un CC sin mapear.
+- **Los note-off no alternan**, ni un note-on con velocity cero: alternar en la
+  pulsación y en la soltada sería no alternar.
+- **El pool lleno rechaza el noveno pad** sin publicar: nada cambió.
+- **`setFrame` no publica si el pool ya cabía** en el marco nuevo.
+
+## Un test que dejó de ser cierto
+
+`testNoteMessagesAreIgnored` afirmaba que los mensajes de nota no hacen nada.
+Lo era antes de Tonal. Pasa a afirmar lo que sigue siendo verdad: un pad no
+mueve el Shape — son capas distintas y ninguna pisa a la otra.
+
+Checkpoint: 5105f2d
