@@ -19,20 +19,41 @@ public final class ControlInput: @unchecked Sendable {
     /// una lectura, y perder un giro por eso sería un knob que no responde.
     public private(set) var track: Track
 
-    private let handoff: TrackHandoff
+    private let publish: @Sendable (Track) -> Void
     private let mapping: ControlMapping
     private let encoding: RelativeEncoding
 
+    /// - Parameter publish: dónde va el Track resultante de cada giro.
+    ///
+    ///   Es un cierre y no un `TrackHandoff` porque quien publica en producto es
+    ///   el transporte, que tiene el suyo propio: pasarle otro haría que el
+    ///   scheduler leyera de un sitio y los knobs escribieran en otro.
     public init(
+        track: Track,
+        publish: @escaping @Sendable (Track) -> Void,
+        mapping: ControlMapping = .provisional,
+        encoding: RelativeEncoding = .twosComplement
+    ) {
+        self.track = track
+        self.publish = publish
+        self.mapping = mapping
+        self.encoding = encoding
+    }
+
+    /// Publica directamente en un handoff. Atajo para tests y para quien no
+    /// tenga un transporte de por medio.
+    public convenience init(
         track: Track,
         publishingTo handoff: TrackHandoff,
         mapping: ControlMapping = .provisional,
         encoding: RelativeEncoding = .twosComplement
     ) {
-        self.track = track
-        self.handoff = handoff
-        self.mapping = mapping
-        self.encoding = encoding
+        self.init(
+            track: track,
+            publish: { handoff.publish($0) },
+            mapping: mapping,
+            encoding: encoding
+        )
     }
 
     /// Procesa un mensaje entrante.
@@ -58,7 +79,7 @@ public final class ControlInput: @unchecked Sendable {
         guard adjusted != track.shape else { return false }
 
         track = Track(shape: adjusted)
-        handoff.publish(track)
+        publish(track)
         return true
     }
 }
