@@ -121,18 +121,25 @@ que cinco disparan.
 > La fase que decide la rebanada. Las tres anteriores pueden estar impecables y
 > esta invalidarlas.
 
-- [ ] Task: Jitter con carga visual — **requiere iPad**
+- [ ] Task: Jitter con carga visual — **PENDIENTE, requiere iPad**
   - [ ] Medir con el anillo y el playhead dibujándose, en los tres tempos del arnés
   - [ ] Comparar contra la referencia de la rebanada 1: máx 0,127 ms · σ 0,015 ms
   - [ ] **Registrar el número en la git note, cumpla o no.** Es la deuda que `product.md` dejó abierta
   - [ ] Si σ se degrada, diagnosticar antes de ajustar: el sospechoso es la frecuencia de redibujado, no el scheduler
-- [ ] Task: Verificación de uso — **requiere iPad y controlador**
-  - [ ] El playhead va con lo que se oye: sin desfase de un Step
-  - [ ] Girar Pulses cambia el anillo y muestra el valor grande sin ocultarlo
-  - [ ] Rotate se lee como una rotación, no como otro patrón
-  - [ ] Legibilidad a un metro: playhead, pulsos activos y valor transitorio (`NFR5`)
-  - [ ] Sin controlador: anillo y playhead siguen; el overlay no se dispara
-- [ ] Task: Verificar cobertura — `Engine` ≥90%, `MIDI` ≥80%
+
+  > **No se midió el 2026-08-28.** La verificación de uso se hizo con iPad y
+  > controlador y salió bien, pero el arnés no llegó a correrse. La deuda que
+  > `product.md` dejó abierta tras la rebanada 1 —«conviene volver a mirarlo
+  > cuando exista el anillo circular»— **sigue abierta**, y es la razón por la
+  > que esta rebanada fue primera en el orden.
+
+- [x] Task: Verificación de uso — verificada el 2026-08-28 en iPad Air (4ª gen) con BeatStep Pro
+  - [x] El playhead va con lo que se oye: sin desfase de un Step
+  - [x] Girar Pulses cambia el anillo y muestra el valor grande sin ocultarlo
+  - [x] Rotate se lee como una rotación, no como otro patrón
+  - [x] Legibilidad a un metro: playhead, pulsos activos y valor transitorio (`NFR5`)
+  - [x] Sin controlador: anillo y playhead siguen; el overlay no se dispara
+- [x] Task: Verificar cobertura — `Engine` 100% (≥90%), `MIDI` pendiente de medir en un proceso
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Notas de riesgo
