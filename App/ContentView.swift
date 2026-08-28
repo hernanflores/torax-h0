@@ -66,7 +66,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(model.outputUnavailable ?? model.destinationStatus)
                 .font(.title2)
-                .foregroundStyle(model.selection.hasDestination ? .white : .secondary)
+                .foregroundStyle(model.selection.hasEndpoint ? .white : .secondary)
 
             if model.selection.available.count > 1 {
                 Picker("Destination", selection: destinationBinding) {

@@ -1,6 +1,10 @@
 import Foundation
 
-/// Mantiene la lista de destinos al día ante los cambios del sistema.
+/// Mantiene la lista de endpoints al día ante los cambios del sistema.
+///
+/// Sirve tanto para destinos como para fuentes: el papel decide qué es elegible
+/// y cómo se dice que no hay ninguno, y el resto —enumerar, comparar, avisar—
+/// es idéntico.
 ///
 /// **Por qué existe.** La desconexión no se puede detectar por el resultado del
 /// envío: está medido que CoreMIDI acepta el mensaje para un endpoint
@@ -12,36 +16,38 @@ import Foundation
 /// cierres, en vez de hablar con CoreMIDI directamente. No es abstracción por
 /// gusto: permite testear la desconexión sin desenchufar nada, que es la única
 /// forma de tenerla cubierta en una máquina sin sintetizadores.
-public final class MIDIDestinationWatcher: @unchecked Sendable {
+public final class MIDIEndpointWatcher: @unchecked Sendable {
 
     /// Estado vigente de la salida.
-    public private(set) var selection: MIDIDestinationSelection
+    public private(set) var selection: MIDIEndpointSelection
 
     /// Se invoca cuando la lista o la elección cambian de verdad.
     ///
     /// No se invoca por notificaciones que no cambian nada: CoreMIDI emite
     /// `msgSetupChanged` por cambios que no afectan a los destinos, y agitar la
     /// interfaz con ellos sería ruido.
-    public var onChange: ((MIDIDestinationSelection) -> Void)?
+    public var onChange: ((MIDIEndpointSelection) -> Void)?
 
-    private let enumerate: () -> [MIDIDestination]
+    private let enumerate: () -> [MIDIEndpointInfo]
     private let deliver: (@escaping () -> Void) -> Void
 
     /// - Parameters:
-    ///   - enumerating: enumera los destinos del sistema. En producto,
-    ///     `CoreMIDIOutput.availableDestinations`.
+    ///   - role: si son destinos de salida o fuentes de entrada.
+    ///   - enumerating: enumera los endpoints del sistema. En producto,
+    ///     `CoreMIDIOutput.availableDestinations` o `CoreMIDIInput.availableSources`.
     ///   - delivering: dónde se aplica el cambio de estado. Por defecto el hilo
     ///     principal, porque la notificación de CoreMIDI llega desde el suyo y
     ///     el estado lo lee la interfaz.
     public init(
-        enumerating: @escaping () -> [MIDIDestination],
+        _ role: MIDIEndpointRole,
+        enumerating: @escaping () -> [MIDIEndpointInfo],
         delivering: @escaping (@escaping () -> Void) -> Void = { work in
             DispatchQueue.main.async(execute: work)
         }
     ) {
         self.enumerate = enumerating
         self.deliver = delivering
-        self.selection = MIDIDestinationSelection(discovering: enumerating())
+        self.selection = MIDIEndpointSelection(role, discovering: enumerating())
     }
 
     /// Reacciona a un cambio en el conjunto de dispositivos MIDI.

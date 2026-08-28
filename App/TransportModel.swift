@@ -53,7 +53,7 @@ final class TransportModel {
     private static let tempo = Tempo(beatsPerMinute: 120)!
 
     private(set) var isPlaying = false
-    private(set) var selection = MIDIDestinationSelection()
+    private(set) var selection = MIDIEndpointSelection(.destination)
 
     /// Por qué la salida no está disponible, si no lo está.
     ///
@@ -65,7 +65,7 @@ final class TransportModel {
     let shape = TransportModel.initialShape
 
     private var output: CoreMIDIOutput?
-    private var watcher: MIDIDestinationWatcher?
+    private var watcher: MIDIEndpointWatcher?
     private var transport: Transport?
 
     /// Endpoint al que se está enviando, leído desde el hilo del scheduler.
@@ -81,14 +81,14 @@ final class TransportModel {
 
     var destinationStatus: String { selection.statusDescription }
     var shapeSummary: String { shape.description }
-    var canPlay: Bool { selection.hasDestination && transport != nil }
+    var canPlay: Bool { selection.hasEndpoint && transport != nil }
 
     init() {
         do {
             let output = try CoreMIDIOutput()
             self.output = output
 
-            let watcher = MIDIDestinationWatcher(enumerating: output.availableDestinations)
+            let watcher = MIDIEndpointWatcher(.destination, enumerating: output.availableDestinations)
             self.watcher = watcher
             selection = watcher.selection
 
@@ -126,7 +126,7 @@ final class TransportModel {
         isPlaying = false
     }
 
-    private func destinationsChanged(to selection: MIDIDestinationSelection) {
+    private func destinationsChanged(to selection: MIDIEndpointSelection) {
         self.selection = selection
         activeDestination.value = UInt64(selection.selected?.endpoint ?? 0)
         // Perder el destino no para el reloj: el transporte sigue corriendo y
@@ -157,7 +157,7 @@ extension TransportModel {
 
     /// Elige otro destino. Es lo único que la pantalla puede cambiar, junto con
     /// el transporte: los parámetros generativos no se tocan en esta rebanada.
-    func select(_ destination: MIDIDestination) {
+    func select(_ destination: MIDIEndpointInfo) {
         selection = selection.selecting(destination)
         activeDestination.value = UInt64(selection.selected?.endpoint ?? 0)
     }
