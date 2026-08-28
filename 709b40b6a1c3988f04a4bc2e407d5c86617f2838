@@ -1,0 +1,50 @@
+Task: `Pulses` se valida por sí solo (Fase 1 — El modelo de Pulses en Engine)
+
+REVISA UNA DECISIÓN DE LA REBANADA 1
+------------------------------------
+El commit 71d8bb8 ató `Pulses` a `Steps` en el inicializador —`Pulses(_:in:)`—
+y lo justificó así: "su límite superior no es una constante sino el Steps en el
+que vive, así que el inicializador exige el anillo, para que nadie tenga que
+revalidar más tarde".
+
+Lo que aquella decisión no anticipó es que el usuario giraría Steps. Bajarlo por
+debajo de Pulses obligaba a destruir el valor, y `product-guidelines.md` lo
+prohíbe: "cambiar un parámetro nunca destruye material: el pool tonal sobrevive
+a un cambio de Scale reencuadrándose, no vaciándose".
+
+El cambio
+---------
+`Pulses` pasa a validarse 1–16 por sí solo, con `validRange = Steps.validRange`
+— no puede haber más Pulses que posiciones donde ponerlos ni en el anillo más
+largo. El reparto usa `min(pulses, steps)`.
+
+El valor guardado es LA INTENCIÓN; lo que se acota es el reparto.
+
+Por qué esto es coherente y no un parche
+-----------------------------------------
+Es exactamente el criterio que `Rotate` ya seguía desde la rebanada 1: no se
+valida contra el anillo porque la resolución la hace quien conoce su tamaño. El
+proyecto tenía dos criterios distintos para el mismo problema; ahora tiene uno.
+
+Desviación de la Pre Spec, documentada
+---------------------------------------
+La Pre Spec dice "Pulses: 1 hasta el número actual de Steps". Se sigue
+cumpliendo EN LO QUE SUENA; lo que cambia es que el valor almacenado puede
+excederlo temporalmente. Registrado en el spec del track.
+
+Alcance del cambio
+------------------
+20 llamadas a `Pulses(_:in:)` actualizadas en 9 ficheros: 5 de test de Engine,
+3 de test de MIDI y `App/TransportModel.swift`. Es la mitad del coste de esta
+decisión, y era previsible: el plan lo anotó como riesgo de la fase.
+
+Verificación
+------------
+swift test --package-path Packages/Engine → 67 tests, 0 fallos
+swift test --package-path Packages/MIDI (sin los de CoreMIDI) → 111 tests, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+Cobertura Sources/Engine → 100% en los tres ficheros
+
+Las invariantes exhaustivas de la rebanada 1 —conservación de Pulses sobre las
+136 combinaciones válidas, primer Step siempre dispara, 16/4 y 16/5 y 12/7
+literales— siguen en verde. Eran la red que el plan pedía para esta fase.
