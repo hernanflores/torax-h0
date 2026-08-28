@@ -159,7 +159,12 @@ Además:
    existan sus parámetros. El token queda preparado, no poblado.
 3. **Steps 1–16.** El comportamiento del anillo por encima de 16 —densidad, no
    rejilla— se decide cuando exista el rango amplio.
-4. **Lenguaje visual no final.** El handoff es lofi por declaración propia. Esta
+4. **La publicación del origen no tiene test automático.** Correr el bucle del
+   scheduler dentro de la suite dispara `clientCreationFailed(-50)` en
+   `VirtualLoopbackTests` de forma determinista (3 de 3, contra 0 de 4 en
+   `main`; medido el 2026-08-28). Se verifica en dispositivo hasta que
+   `midi-test-flake_20260826` esté resuelto.
+5. **Lenguaje visual no final.** El handoff es lofi por declaración propia. Esta
    rebanada fija estructura e interacción; el acabado se revisa después.
 
 ## Out of Scope

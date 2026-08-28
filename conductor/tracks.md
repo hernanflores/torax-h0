@@ -28,9 +28,14 @@ se envía; Timing y Delay cambian **cuándo**, que es el camino de jitter que
 costó validar, y aislarlas evita que una regresión ahí se lleve por delante al
 resto. La 7 va última porque hasta entonces la tabla fija de cuatro CC alcanza.
 
-**Cuándo se vuelve bloqueante un defecto.** En la rebanada 7:
-`network-session-source` impide que MIDI Learn escuche la fuente correcta. Antes
-de eso, ninguno de los tres defectos abiertos bloquea nada.
+**Cuándo se vuelve bloqueante un defecto.** `network-session-source` en la
+rebanada 7, cuando MIDI Learn tenga que escuchar la fuente correcta.
+
+`midi-test-flake` **ya lo es, desde el 2026-08-28**: cualquier test que arranque
+el bucle del scheduler lleva `VirtualLoopbackTests` a fallar 3 de 3 pasadas,
+contra 0 de 4 en `main`. La rebanada 3 lo esquiva dejando una línea sin test y
+verificándola en dispositivo, pero la 6 —Timing y Delay— no va a poder: toca el
+camino de tiempo real y necesita tests que lo corran. Se toma antes de esa.
 
 ---
 

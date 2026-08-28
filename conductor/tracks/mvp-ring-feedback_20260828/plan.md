@@ -27,23 +27,53 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
   > Validación visual **diferida a las Fases 3 y 4** por decisión del usuario: esta fase no toca `App/`. El checkpoint da por buena la geometría y sus invariantes, no cómo se ve dibujada.
 
-## Phase 2: El camino de vuelta del playhead
+## Phase 2: El camino de vuelta del playhead [checkpoint: 03c62a9]
 
 > La dirección que falta. `TrackHandoff` publica del control al scheduler; aquí
 > el scheduler publica a la interfaz, y **sin pagar nada por ello**.
 
-- [ ] Task: Posición publicada sin coste en tiempo real
-  - [ ] Tests (Red): la posición leída corresponde al último Step emitido
-  - [ ] Tests (Red): no leer durante un rato no atrasa al scheduler ni le hace perder Steps
-  - [ ] Tests (Red): con el transporte parado la posición no avanza
-  - [ ] Implementación (Green): un valor que el scheduler escribe sin bloquearse y la interfaz lee sin bloquearlo — mismas reglas que `TrackHandoff`, dirección contraria
-  - [ ] Marcador `/// Realtime:` en lo que corra en el hilo del scheduler
-  - [ ] **Revisión explícita registrada:** sin asignaciones, sin locks, sin `await`, sin logging en el camino del scheduler (`NFR1`)
-- [ ] Task: La interfaz lee al ritmo del refresco
-  - [ ] Tests (Red): el modelo expone la posición sin exigir que la vista conozca el scheduler
-  - [ ] Implementación (Green): lectura derivada del transporte; parado significa quieto (`FR2`)
-  - [ ] Sin temporizador propio de la interfaz que no venga del reloj musical (`NFR6`)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Posición publicada sin coste en tiempo real — `e7e1919`
+  - [~] Tests (Red): ~~la posición leída corresponde al último Step emitido~~ → **el tiempo transcurrido se mide contra el origen**. Ver la desviación abajo.
+  - [x] Tests (Red): no leer durante un rato no atrasa al scheduler ni le hace perder Steps
+  - [x] Tests (Red): con el transporte parado la posición no avanza
+  - [x] Implementación (Green): un solo atómico con el origen en ticks de host — no hizo falta el anillo de ranuras de `TrackHandoff`
+  - [x] Marcador `/// Realtime:` en lo que corra en el hilo del scheduler
+  - [x] **Revisión explícita registrada:** el bucle solo gana una escritura atómica antes de entrar; dentro no cambia nada. Sin asignaciones, sin locks, sin `await`, sin logging (`NFR1`)
+- [x] Task: La interfaz lee al ritmo del refresco — `03c62a9`
+  - [x] Implementación (Green): `Transport.playhead` resuelve contra su reloj; el modelo lo ofrece junto al anillo sin que la vista sepa que hay un scheduler
+  - [x] Parado significa quieto (`FR2`): el reloj se limpia en `stop()`, desde el hilo de control
+  - [x] Sin temporizador propio de la interfaz que no venga del reloj musical (`NFR6`): el playhead se calcula al preguntar, no se guarda ni se observa
+
+### Desviación: se publica el origen, no el Step entregado
+
+El plan pedía «la posición leída corresponde al último Step emitido». **No sirve
+y se cambió a propósito.** El scheduler entrega los Steps hasta una ventana de
+look-ahead *antes* de que suenen, así que el último entregado va por delante de
+lo que se oye — el desfase que `FR2` prohíbe. Publicando el origen temporal, la
+posición es la que suena por construcción, y de paso la fracción de vuelta sale
+continua en vez de a saltos.
+
+### Laguna de test conocida, medida el 2026-08-28
+
+**Que el bucle publique su propio origen no tiene test automático.** Verificarlo
+exige arrancar el bucle del scheduler dentro de la suite, y hacerlo lleva
+`VirtualLoopbackTests` de fallar intermitentemente a fallar **3 de 3 pasadas**
+con `clientCreationFailed(-50)`, contra **0 de 4** en `main`.
+
+Descartado que sea evitable: no es el número de tests —fusionar dos en uno da
+igual— ni la prioridad del hilo —correr el bucle a prioridad normal da igual—.
+Es que la suite arranque el bucle una vez más.
+
+La CI queda verde: su partición corre los tests de CoreMIDI primero y en su
+propio proceso, 0 de 3 en ambas mitades. Lo que se rompe es el run en un solo
+proceso, que es el que `workflow.md` exige para medir la cobertura de `MIDI`.
+
+La causa pertenece a [`midi-test-flake_20260826`](../midi-test-flake_20260826/index.md),
+**que pasa a ser bloqueante cuatro rebanadas antes de lo previsto**. Hasta
+entonces, esa línea se verifica en dispositivo en la Fase 4: el playhead va con
+lo que suena, o no va.
+
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: La pantalla
 
