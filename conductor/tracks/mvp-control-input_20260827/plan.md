@@ -62,18 +62,41 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] **Verificar que el binario de Release no lo contiene** — hecho en la Fase 4 sobre el binario de la app: `CoreMIDIInput` 129 símbolos, `ControlInput` 81, `VirtualController` **0**.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 4: Integración y verificación en dispositivo
+## Phase 4: Integración y verificación en dispositivo [checkpoint: f442bfb]
 
 - [x] Task: Cablear en la app — `f442bfb`
   - [x] Selección de fuente en la pantalla, junto a la de destino
   - [x] El texto de Shape se actualiza al girar
   - [x] Sin controlador conectado, la app sigue siendo de solo lectura y transporte
-- [~] Task: Verificación en iPad — **requiere iPad y controlador**
-  - [ ] Girar Pulses cambia el patrón audible **en el Step siguiente**
-  - [ ] Bajar Steps por debajo de Pulses y volver a subir: nada se pierde
-  - [ ] Desconectar el controlador a media sesión se refleja como estado
-  - [ ] Verificar que el transporte sigue funcionando sin controlador
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Verificación en iPad — verificada el 2026-08-28 sobre iPad Air (4ª gen)
+  - [x] Girar Pulses cambia el patrón audible **en el Step siguiente**
+  - [x] Bajar Steps por debajo de Pulses y volver a subir: nada se pierde
+  - [~] Desconectar el controlador a media sesión se refleja como estado — no cae ni da error, pero el estado que se muestra es el equivocado. Ver abajo.
+  - [x] Verificar que el transporte sigue funcionando sin controlador
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+### Lo que la verificación en dispositivo encontró
+
+**1. Los encoders tienen que estar en `Relative #2`.** Con el BeatStep Pro en
+otro modo relativo, un solo clic se decodifica como un delta de ±63 y Steps,
+Pulses y Division saltan a su extremo — 1 o 16, sin valores intermedios. Rotate
+parecía sano por ser el único que envuelve módulo Steps en vez de acotar, lo que
+lo convierte en el peor testigo de los cuatro. **No es un defecto:**
+`RelativeEncoding` decodifica complemento a dos y lo declara; lo que faltaba era
+decir en algún sitio que el controlador tiene que hablarlo. Anotado en
+`workflow.md` → *Device Testing*. Los demás modos entran con el preset del
+BeatStep Pro, que es un track posterior.
+
+**2. `Red Session 1` monopoliza la entrada — defecto real, fuera de este track.**
+iPadOS publica siempre la sesión MIDI de red como fuente, así que la lista nunca
+está vacía: se autoselecciona, `No MIDI input` y el indicador `read-only` son
+inalcanzables en el dispositivo de destino, y al conectar el BeatStep Pro hay
+que elegir la fuente a mano. El criterio *«sin controlador conectado, la app
+sigue siendo de solo lectura y transporte»* se cumple **en comportamiento** —no
+llegan giros y no hay vía táctil para suplirlos— pero no en lo que la pantalla
+dice. Registrado como
+[`network-session-source_20260828`](../network-session-source_20260828/index.md),
+que no bloquea a nadie ni depende de la cadena de CoreMIDI.
 
 ## Notas de riesgo
 
