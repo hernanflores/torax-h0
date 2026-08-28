@@ -289,6 +289,19 @@ distingue nada.
 > se pierde ni un test — 14 + 111 = los mismos 125. Es una mitigación, no un
 > arreglo; la causa pertenece a `midi-test-flake_20260826`, que bloquea a
 > `scheduler-lifecycle_20260826`.
+>
+> **Efecto secundario: la cobertura de `MIDI` hay que medirla en un proceso.**
+> Cada mitad de la partición genera su propio `.profdata`, así que ejecutar los
+> dos pasos y leer cualquiera de los dos informes da una cifra falsamente baja
+> —los ficheros de la otra mitad cuentan como no cubiertos—. Medido el
+> 2026-08-28: la partición reporta 77,7% de líneas; la suite entera en un solo
+> proceso, 95,8%. Para verificar el umbral de `MIDI` usar siempre:
+>
+> ```bash
+> swift test --package-path Packages/MIDI --enable-code-coverage
+> ```
+>
+> La CI no mide cobertura, así que esto no afecta a ningún gate automático.
 
 ## Commit Guidelines
 
