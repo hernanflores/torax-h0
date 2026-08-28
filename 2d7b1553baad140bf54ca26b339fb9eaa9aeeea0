@@ -1,0 +1,50 @@
+Task: Fuentes de entrada y selección (Fase 3)
+
+El plan pedía "reutilizar la lógica de selección de la salida en lugar de
+duplicarla". Duplicarla habrían sido 160 líneas de fuente y 268 de test casi
+idénticas, así que se generaliza.
+
+Qué cambia
+----------
+  MIDIDestination         → MIDIEndpointInfo
+  MIDIDestinationSelection → MIDIEndpointSelection  (+ role)
+  MIDIDestinationWatcher   → MIDIEndpointWatcher    (+ role)
+  hasDestination           → hasEndpoint
+
+Decisión: un enum de papel, no un genérico ni una copia
+--------------------------------------------------------
+Enumerar, elegir, conservar la elección al refrescar y caer a "no hay ninguno"
+es IDÉNTICO para entrada y salida. Lo único que difiere son dos cosas, y ambas
+caben en un enum:
+
+  .destination → excluye el endpoint del arnés; vacío se dice "No MIDI device"
+  .source      → no excluye nada;              vacío se dice "No MIDI input"
+
+Se descartó un genérico con un cierre de elegibilidad porque los cierres rompen
+`Equatable`, y esta selección se compara para decidir si avisar a la interfaz.
+El enum lo mantiene todo como valor.
+
+El papel forma parte del valor: dos selecciones con el mismo contenido pero
+distinto papel no son iguales. Hay un test que lo fija.
+
+Por qué el arnés no se filtra como fuente
+------------------------------------------
+`VirtualLoopback` crea un DESTINO virtual, no una fuente: nunca aparece en la
+lista de entradas, así que filtrarlo ahí sería código que no puede ejecutarse.
+Como destino se sigue excluyendo, y ambos comportamientos tienen test.
+
+Alcance del cambio
+------------------
+Fuente: MIDIEndpointSelection.swift (reescrito), MIDIEndpointWatcher.swift,
+CoreMIDIOutput.swift. Tests: los de destino adaptados, MIDISourceSelectionTests
+nuevo. App: TransportModel.swift y ContentView.swift.
+
+Los tests de destino de la rebanada 1 siguen pasando sin cambiar una sola
+aserción: solo se renombraron los tipos. Esa era la comprobación de que la
+generalización no cambia comportamiento.
+
+Verificación
+------------
+swift test --package-path Packages/MIDI → 162 tests, 1 omitido, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+Cobertura MIDIEndpointSelection → 100%
