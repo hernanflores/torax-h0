@@ -61,22 +61,49 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: Del pool a la nota que suena
+## Phase 3: Del pool a la nota que suena [checkpoint: e91688a]
 
 > Aquí se toca el camino de tiempo real. Es el único sitio de la rebanada donde
 > una regresión de jitter es posible.
 
-- [ ] Task: El recorrido del pool, como valor
-  - [ ] Tests (Red): cada Pulse toma la siguiente altura y vuelve al principio al agotar el pool
-  - [ ] Tests (Red): determinismo — mismo pool y mismo Pulse, misma altura
-  - [ ] Tests (Red): un pool de una nota da un centro estable; uno vacío no da ninguna
-  - [ ] Implementación (Green): la convención entra como tipo de un solo caso, igual que `RelativeEncoding` — añadir el aleatorio será añadir un caso
-- [ ] Task: `NoteEmitter` deja de llevar una altura fija
-  - [ ] Tests (Red): emitir con la altura que le pasan, en note-on y en su note-off
-  - [ ] Tests (Red): sin altura no se emite nada — ni note-on huérfano ni note-off suelto
-  - [ ] Implementación (Green): la altura entra por parámetro; canal y velocity siguen siendo la constante provisional hasta Groove
-  - [ ] **Revisión explícita registrada:** elegir y emitir no asigna, no toma locks, no espera (`NFR1`)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: El recorrido del pool, como valor — `2365241`
+  - [x] Tests (Red): cada Pulse toma la siguiente altura y vuelve al principio al agotar el pool
+  - [x] Tests (Red): determinismo — mismo pool y mismo Pulse, misma altura
+  - [x] Tests (Red): un pool de una nota da un centro estable; uno vacío no da ninguna
+  - [x] Implementación (Green): `PoolTraversal`, tipo de un solo caso como `RelativeEncoding`
+
+  > **El ordinal del Pulse se deriva, no se acumula.** `EuclideanRhythm.pulseOrdinal`
+  > cuenta bits encendidos por debajo de la posición más las vueltas completas.
+  > Es la disciplina de `MusicalTimeline`: un contador que avanzara solo
+  > derivaría al descartarse una lectura del snapshot, y esa deriva no se vería
+  > hasta oírla. Sigue contando al dar la vuelta, que es lo que hace que un pool
+  > de tres sobre un anillo de ocho no repita la misma altura en la misma
+  > posición.
+
+- [x] Task: `NoteEmitter` deja de llevar una altura fija — `e91688a`
+  - [x] Tests (Red): emitir con la altura que le pasan, en note-on y en su note-off
+  - [x] Tests (Red): sin altura no se emite nada — ni note-on huérfano ni note-off suelto
+  - [x] Implementación (Green): la altura entra por parámetro; canal y velocity siguen constantes hasta Groove
+  - [x] **Revisión explícita registrada:** elegir la altura es aritmética sobre enteros y una consulta a un `UInt64`; emitir no cambió de forma. Sin asignaciones, sin locks, sin `await` (`NFR1`)
+
+  > **Dos cosas que la fase destapó y no estaban en el plan.**
+  >
+  > **Parar tiene que apagar todo el pool, no una nota.** Con una altura fija
+  > bastaba con apagarla; ahora cualquiera del pool pudo ser la última en sonar,
+  > y saber cuál exigiría que el scheduler publicara algo por cada pulso —
+  > trabajo en el camino de tiempo real para resolver un caso de parada. Se
+  > apagan todas. Queda un hueco documentado: una altura quitada del pool
+  > mientras sonaba no se apaga. Dura lo que el gate (25 ms), así que es
+  > inaudible; **cuando Sustain permita gates largos hay que volver a mirarlo.**
+  >
+  > **Pool vacío significa silencio, y todos los `Track` se construían sin
+  > pool.** La app habría arrancado muda. Se le da un pool de una altura —la
+  > misma que sonaba antes—, que la Pre Spec llama «centro estable». Abrir la
+  > app en silencio es correcto por el modelo, pero la pantalla todavía no
+  > explica que hay que pulsar un pad, así que sería un cambio a peor disfrazado
+  > de coherencia.
+
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Los pads editan el pool
 
