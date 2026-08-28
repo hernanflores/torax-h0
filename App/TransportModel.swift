@@ -101,6 +101,17 @@ final class TransportModel {
     /// ninguna vía táctil para suplirlo.
     var isReadOnly: Bool { !sourceSelection.hasEndpoint }
 
+    /// Cuánto se queda el valor grande tras el último giro.
+    ///
+    /// Lo bastante para leerlo de pie y a un metro sin que estorbe al anillo
+    /// después. No es un valor medido: se ajusta con la app en la mano.
+    private static let transientLifetime: Double = 1.6
+
+    /// El valor grande que se está mostrando, o `nil` si no hay ninguno.
+    private(set) var transientChange: ShapeChange?
+
+    private var transientDismissal: Task<Void, Never>?
+
     /// El anillo del Track vigente: dónde cae cada Step y cuáles disparan.
     var ring: Ring { Ring(shape: track.shape) }
 
@@ -195,8 +206,29 @@ final class TransportModel {
 
     /// Aplica un mensaje entrante. Corre en el hilo principal.
     private func apply(_ message: MIDIMessage) {
-        guard let controlInput, controlInput.receive(message) else { return }
+        guard let controlInput else { return }
+        let previous = track.shape
+        guard controlInput.receive(message) else { return }
         track = controlInput.track
+        announce(ShapeChange(from: previous, to: track.shape))
+    }
+
+    /// Muestra el valor grande y programa su desvanecimiento.
+    ///
+    /// **Cada giro reinicia la cuenta.** Girando sin parar el valor se queda
+    /// puesto, que es lo que se quiere: se desvanece «tras la inactividad»
+    /// (`product-guidelines.md`), no tras un tiempo fijo desde que apareció.
+    private func announce(_ change: ShapeChange?) {
+        guard let change else { return }
+        transientChange = change
+
+        transientDismissal?.cancel()
+        let dismissal = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(Self.transientLifetime))
+            guard !Task.isCancelled else { return }
+            self?.transientChange = nil
+        }
+        transientDismissal = dismissal
     }
 
     /// Elige otra fuente de entrada.

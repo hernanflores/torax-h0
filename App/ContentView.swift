@@ -1,22 +1,25 @@
 import CoreMIDI
+import Engine
 import MIDI
 import SwiftUI
 
-/// Pantalla mínima de estado.
+/// La pantalla del Track.
 ///
-/// **Sin el lenguaje visual del producto.** Ni anillo circular, ni overlay de
-/// valor grande, ni acentos por familia: eso llega en el track de UI. Aquí solo
-/// se ve el transporte, el destino y los valores de Shape, y **nada de eso es
-/// editable**.
+/// **El controlador es el instrumento; la pantalla es el espejo**
+/// (`product-guidelines.md`). Nada de lo que hay aquí se edita tocando: el
+/// anillo, el playhead y el valor grande informan, y los parámetros
+/// generativos se mueven con knobs. Lo táctil se limita a lo que la guía
+/// asigna a la pantalla — transporte y selección de dispositivo.
 ///
-/// Que no lo sea no es un recorte: es el estado «sin controlador conectado» que
-/// `product-guidelines.md` especifica —solo lectura y transporte—. Un slider
-/// provisional para Steps o Pulses sería el antipatrón que ese documento nombra
-/// y habría que desmontarlo después.
+/// **Sin controlador conectado la app es de solo lectura y transporte.** El
+/// anillo y el playhead siguen viéndose, porque son estado y no edición; lo que
+/// no aparece es el valor grande, porque nadie gira nada. No se abre ninguna
+/// vía táctil para suplirlo: un slider provisional para Steps o Pulses sería el
+/// antipatrón que la guía nombra.
 ///
 /// El panel de medición de jitter sigue debajo porque la Fase 4 del track exige
-/// medir «con el motor y la interfaz corriendo»: tienen que convivir en la misma
-/// pantalla, no en pestañas que se excluyan.
+/// medir con la interfaz corriendo: el anillo redibujándose es justamente la
+/// carga visual que faltaba por medir.
 struct ContentView: View {
 
     @State private var model = TransportModel()
@@ -25,16 +28,61 @@ struct ContentView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
+                pattern
                 transport
-                Divider().overlay(.white.opacity(0.2))
+                Divider().overlay(Palette.border)
                 measurement
             }
             .padding(32)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color.black)
+        .background(Palette.background)
         .foregroundStyle(.white)
         .onAppear { jitter.startIfRequestedByLaunchArguments() }
+    }
+
+    // MARK: - El patrón
+
+    /// El anillo, con el valor grande encima cuando lo hay.
+    ///
+    /// **El anillo nunca se oculta.** `product-guidelines.md`: el valor
+    /// transitorio se dibuja *sobre* el patrón, que permanece siempre visible
+    /// bajo él. Nunca se sustituye el contexto por el detalle, así que esto es
+    /// un `ZStack` y no dos estados de la misma vista.
+    private var pattern: some View {
+        ZStack {
+            // `TimelineView` redibuja al ritmo de la pantalla, pero **la
+            // posición no la decide él**: cada fotograma vuelve a preguntar al
+            // modelo, que la resuelve contra el origen que publicó el bucle del
+            // scheduler. El movimiento deriva del reloj musical; lo que el
+            // temporizador decide es cuándo repintar, no dónde está el tiempo.
+            TimelineView(.animation(paused: !model.isPlaying)) { _ in
+                RingView(ring: model.ring, playhead: model.playhead)
+            }
+
+            if let change = model.transientChange {
+                transient(change)
+            }
+        }
+        .frame(maxWidth: 420)
+        .padding(24)
+        .background(Palette.inset, in: RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    /// El valor grande.
+    ///
+    /// Tipografía muy grande y jerarquía marcada porque el criterio es leerlo a
+    /// un metro, de pie y delante del sintetizador — no el gusto.
+    private func transient(_ change: ShapeChange) -> some View {
+        Text(change.description)
+            .font(.system(size: 64, weight: .bold, design: .default))
+            .minimumScaleFactor(0.4)
+            .lineLimit(1)
+            .foregroundStyle(Palette.shape)
+            .padding(.horizontal, 24)
+            .transition(.opacity)
+            .animation(.easeOut(duration: 0.18), value: change)
     }
 
     // MARK: - Transporte
@@ -138,7 +186,7 @@ struct ContentView: View {
     private var shape: some View {
         Text(model.shapeSummary)
             .font(.title3.monospaced())
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Palette.muted)
     }
 
     // MARK: - Medición de jitter
