@@ -51,3 +51,68 @@ Verificación
 ------------
 swift test --package-path Packages/MIDI (mitad sin CoreMIDI) → 161 tests, 0 fallos
 xcodebuild build -scheme ToraxH0 -configuration Release → SUCCEEDED
+
+═══════════════════════════════════════════════════════════════════
+INFORME DE VERIFICACIÓN — Phase 3: Entrada MIDI real y controlador virtual
+═══════════════════════════════════════════════════════════════════
+
+Tests automáticos
+-----------------
+swift test --package-path Packages/Engine        → 101 tests, 0 fallos
+swift test --package-path Packages/MIDI (entera) → 182 tests, 1 omitido, 0 fallos
+  mitad CoreMIDI, ×3 pasadas                     → 21 tests, 0 fallos en las tres
+xcodebuild build -scheme ToraxH0 -configuration Release -destination 'generic/platform=iOS'
+                                                 → BUILD SUCCEEDED
+
+Cobertura de MIDI: 90,24% regiones / 94,19% líneas (umbral ≥80%)
+  MIDIEndpointSelection 100%, VirtualController 100%
+
+MEDICIÓN QUE EL PLAN PEDÍA
+---------------------------
+Este track añade un SEGUNDO cliente de CoreMIDI al proceso, que es el recurso
+implicado en clientCreationFailed(-2)/(-50).
+
+  Antes de CoreMIDIInput:  0 de 6 pasadas con fallo
+  Después:                 0 de 6 pasadas con fallo
+
+No empeora. Los tests nuevos que crean clientes se añadieron al filtro de la
+mitad aislada en swift.yml; sin eso habrían corrido en el proceso equivocado.
+
+Lo que queda demostrado
+-----------------------
+- La selección de endpoints se generalizó en vez de duplicarse. Los tests de
+  destino de la rebanada 1 siguen pasando SIN CAMBIAR UNA SOLA ASERCIÓN: solo
+  se renombraron tipos. Esa era la comprobación de que no cambia comportamiento.
+- `CoreMIDIInput` nace con `close()` explícito y ordenado, al contrario que
+  `CoreMIDIOutput`. No se retrofitea la salida: es alcance del otro track y ya
+  se midió allí que hacerlo rompe la suite.
+- El parseo de UMP se extrajo a `MIDIMessage.init?(universalPacketWord:)` y se
+  verifica con ida y vuelta sobre los 16 canales. Fue deliberado: sacar lo
+  testeable de donde no se puede testear.
+
+Cobertura de CoreMIDIInput: 58% de líneas
+------------------------------------------
+Lo no cubierto es el callback de recepción, que solo corre cuando CoreMIDI
+entrega algo de una fuente real — misma situación que el camino de envío de
+CoreMIDIOutput. Es la razón de haber extraído el parseo.
+
+VERIFICACIÓN VACUA, CORREGIDA
+------------------------------
+La comprobación de que el controlador virtual no viaja en Release salió mal la
+primera vez: sobre el binario de la app daba 0 símbolos en Release y también 0
+en Debug, porque nada lo referencia todavía. No probaba nada.
+
+Repetida sobre el paquete, donde sí concluye: release 0 símbolos, debug 131.
+
+La que cuenta —sobre el binario de la app— queda PENDIENTE DE LA FASE 4, cuando
+exista una referencia real. Marcado como `[~]` en el plan, no como hecho.
+
+Verificación manual
+-------------------
+Fase sin superficie de usuario todavía: nadie construye un `CoreMIDIInput` ni un
+`VirtualController` desde la app. El cableado es la Fase 4.
+
+Confirmación del usuario
+------------------------
+Se le presentó el informe, la medición del segundo cliente y la corrección de la
+verificación vacua. Respondió: "Sí, cierra la fase".
