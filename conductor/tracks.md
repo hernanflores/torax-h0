@@ -6,12 +6,10 @@ La prioridad del proyecto. Sin app no hay nada que arreglar.
 
 ---
 
-*Sin tracks abiertos.* La rebanada 1 está cerrada y archivada: Torax H-0 suena.
-El siguiente paso natural es la **entrada de control** —knobs relativos,
-controlador virtual de desarrollo, preset del BeatStep Pro, MIDI Learn—, que es
-lo que convierte la app de solo lectura en instrumento. El relevo de snapshot en
-caliente ya está hecho y probado, así que girar un knob será publicar un `Track`
-nuevo por un camino que ya existe.
+- [ ] **Track: MVP rebanada 2 — Entrada de control**
+  *Link: [conductor/tracks/mvp-control-input_20260827/index.md](./tracks/mvp-control-input_20260827/index.md)*
+
+  La app deja de ser de solo lectura. La rebanada 1 dejó el relevo de snapshot en caliente probado pero sin nadie que publicara; aquí se conecta un controlador MIDI a ese camino. Solo los cuatro parámetros de Shape, que son los únicos que existen. Sin preset del BeatStep Pro ni MIDI Learn: llegan después, junto con el anillo.
 
 ## Defectos conocidos
 
