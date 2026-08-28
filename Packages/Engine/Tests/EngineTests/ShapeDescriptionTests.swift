@@ -21,7 +21,7 @@ final class ShapeDescriptionTests: XCTestCase {
         let steps = Steps(stepCount)!
         return Shape(
             steps: steps,
-            pulses: Pulses(pulseCount, in: steps)!,
+            pulses: Pulses(pulseCount)!,
             rotate: Rotate(amount),
             division: division
         )

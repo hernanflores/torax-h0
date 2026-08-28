@@ -20,7 +20,7 @@ final class RotateTests: XCTestCase {
 
     func testDefaultRotateIsNone() {
         let steps = Steps(16)!
-        let unrotated = EuclideanRhythm(steps: steps, pulses: Pulses(5, in: steps)!)
+        let unrotated = EuclideanRhythm(steps: steps, pulses: Pulses(5)!)
         XCTAssertEqual(unrotated.rotate, .none)
     }
 
@@ -64,7 +64,7 @@ final class RotateTests: XCTestCase {
         for stepCount in Steps.validRange {
             let steps = Steps(stepCount)!
             for pulseCount in 1...stepCount {
-                let pulses = Pulses(pulseCount, in: steps)!
+                let pulses = Pulses(pulseCount)!
                 for amount in -20...20 {
                     let rhythm = EuclideanRhythm(steps: steps, pulses: pulses, rotate: Rotate(amount))
                     let triggering = (0..<stepCount).filter { rhythm.triggers(atStep: $0) }
@@ -80,7 +80,7 @@ final class RotateTests: XCTestCase {
 
     func testRotateDoesNotChangeStepsOrPulses() {
         let steps = Steps(12)!
-        let pulses = Pulses(7, in: steps)!
+        let pulses = Pulses(7)!
         let rhythm = EuclideanRhythm(steps: steps, pulses: pulses, rotate: Rotate(5))
         XCTAssertEqual(rhythm.steps, steps)
         XCTAssertEqual(rhythm.pulses, pulses)
@@ -90,7 +90,7 @@ final class RotateTests: XCTestCase {
     /// leído desde otro punto de entrada, no un reparto distinto.
     func testRotatingIsReadingTheSameRingFromAnotherEntryPoint() {
         let steps = Steps(12)!
-        let pulses = Pulses(7, in: steps)!
+        let pulses = Pulses(7)!
         let unrotated = EuclideanRhythm(steps: steps, pulses: pulses)
 
         for amount in -20...20 {
@@ -108,7 +108,7 @@ final class RotateTests: XCTestCase {
     /// El anillo girado sigue envolviendo hacia arriba y hacia abajo.
     func testRotatedRingStillWrapsOnTheStepIndex() {
         let steps = Steps(16)!
-        let rhythm = EuclideanRhythm(steps: steps, pulses: Pulses(5, in: steps)!, rotate: Rotate(3))
+        let rhythm = EuclideanRhythm(steps: steps, pulses: Pulses(5)!, rotate: Rotate(3))
         for index in 0..<16 {
             XCTAssertEqual(rhythm.triggers(atStep: index + 16), rhythm.triggers(atStep: index))
             XCTAssertEqual(rhythm.triggers(atStep: index - 16), rhythm.triggers(atStep: index))
@@ -121,7 +121,7 @@ final class RotateTests: XCTestCase {
         let steps = Steps(stepCount)!
         let rhythm = EuclideanRhythm(
             steps: steps,
-            pulses: Pulses(pulseCount, in: steps)!,
+            pulses: Pulses(pulseCount)!,
             rotate: Rotate(amount)
         )
         return (0..<stepCount).map { rhythm.triggers(atStep: $0) ? "x" : "." }.joined()

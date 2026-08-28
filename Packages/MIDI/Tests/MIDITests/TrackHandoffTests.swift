@@ -21,7 +21,7 @@ final class TrackHandoffTests: XCTestCase {
         return Track(
             shape: Shape(
                 steps: steps,
-                pulses: Pulses(value, in: steps)!,
+                pulses: Pulses(value)!,
                 rotate: Rotate(value)
             )
         )

@@ -30,7 +30,7 @@ final class TransportModel {
         // desempaquetado no puede fallar. Es el único sitio de la app que lo
         // hace, y por eso lleva esta justificación (`swift.md`).
         let steps = Steps(16)!
-        return Shape(steps: steps, pulses: Pulses(5, in: steps)!)
+        return Shape(steps: steps, pulses: Pulses(5)!)
     }()
 
     /// Altura, canal y velocity con los que suena el Track.

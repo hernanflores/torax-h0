@@ -33,6 +33,11 @@ public struct EuclideanRhythm: Equatable, Sendable {
 
     /// Reparte los Pulses sobre el anillo y lo gira.
     ///
+    /// **Si se piden más Pulses de los que hay Steps, se reparten los que
+    /// caben.** El valor de `pulses` es la intención del usuario y se conserva
+    /// tal cual; lo que se acota es el reparto. Así, bajar Steps y volver a
+    /// subirlo devuelve el patrón original en vez de haber perdido el valor.
+    ///
     /// **No es código de tiempo real:** el reparto asigna memoria. Se construye
     /// en el hilo principal, al publicar un snapshot, nunca dentro del bucle del
     /// scheduler.
@@ -41,7 +46,7 @@ public struct EuclideanRhythm: Equatable, Sendable {
         self.pulses = pulses
         self.rotate = rotate
         self.pattern = Self.rotate(
-            Self.distribute(pulses: pulses.count, over: steps.count),
+            Self.distribute(pulses: min(pulses.count, steps.count), over: steps.count),
             by: rotate.amount,
             over: steps.count
         )

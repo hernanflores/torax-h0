@@ -23,16 +23,31 @@ public struct Steps: Equatable, Sendable {
 
 /// Número de Pulses repartidos sobre el anillo.
 ///
-/// Su límite superior no es una constante: es el `Steps` en el que vive. Por eso
-/// el inicializador exige el anillo, en lugar de aceptar un entero suelto que
-/// alguien tendría que validar más tarde contra el Track.
+/// **No se valida contra un `Steps` concreto, a propósito.** Hasta la rebanada 1
+/// su inicializador exigía el anillo y rechazaba cualquier valor mayor, para que
+/// ningún sitio de uso tuviera que revalidar. Lo que aquella decisión no
+/// anticipó es que el usuario giraría Steps: bajarlo por debajo de Pulses
+/// destruía el valor, y `product-guidelines.md` lo prohíbe —«cambiar un
+/// parámetro nunca destruye material: el pool tonal sobrevive a un cambio de
+/// Scale reencuadrándose, no vaciándose».
+///
+/// Así que el valor que se guarda aquí es **la intención**, y el reparto usa lo
+/// que quepa en el anillo. Es exactamente el criterio que `Rotate` ya seguía: la
+/// resolución contra el anillo la hace quien conoce su tamaño.
+///
+/// Ver la desviación documentada en `spec.md` del track
+/// `mvp-control-input_20260827`.
 public struct Pulses: Equatable, Sendable {
+
+    /// Rango admitido. Coincide con el de `Steps` porque no puede haber más
+    /// Pulses que posiciones donde ponerlos, ni en el anillo más largo.
+    public static let validRange = Steps.validRange
 
     public let count: Int
 
-    /// Devuelve `nil` si el número de Pulses cae fuera de `1...steps.count`.
-    public init?(_ count: Int, in steps: Steps) {
-        guard (1...steps.count).contains(count) else { return nil }
+    /// Devuelve `nil` si el número de Pulses cae fuera de `validRange`.
+    public init?(_ count: Int) {
+        guard Self.validRange.contains(count) else { return nil }
         self.count = count
     }
 }

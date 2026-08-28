@@ -18,7 +18,7 @@ final class TrackTests: XCTestCase {
         let steps = Steps(stepCount)!
         return Shape(
             steps: steps,
-            pulses: Pulses(pulseCount, in: steps)!,
+            pulses: Pulses(pulseCount)!,
             rotate: Rotate(amount),
             division: division
         )
@@ -37,7 +37,7 @@ final class TrackTests: XCTestCase {
     /// Default del producto, según la Pre Spec: «Division. Default: 1/16».
     func testShapeDefaultsToSixteenthDivision() {
         let steps = Steps(16)!
-        let shape = Shape(steps: steps, pulses: Pulses(4, in: steps)!)
+        let shape = Shape(steps: steps, pulses: Pulses(4)!)
         XCTAssertEqual(shape.division, .sixteenth)
         XCTAssertEqual(shape.rotate, .none)
     }
