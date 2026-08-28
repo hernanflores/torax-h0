@@ -171,3 +171,54 @@ extension Shape: CustomStringConvertible {
         "Steps \(steps.count) · Pulses \(pulses.count) · Rotate \(rotate.amount) · Division \(division)"
     }
 }
+
+extension Shape {
+
+    /// Devuelve el Shape resultante de desplazar un parámetro.
+    ///
+    /// Es lo que produce un giro de knob, expresado sin saber nada de MIDI: el
+    /// motor recibe un desplazamiento con signo y decide qué significa para cada
+    /// parámetro.
+    ///
+    /// **Cada parámetro se comporta según su naturaleza, no según una regla
+    /// única:**
+    ///
+    /// - `steps` y `division` **se frenan** en sus extremos. Son escalas con
+    ///   principio y fin; envolver convertiría un ajuste fino en un salto
+    ///   brutal, y `product-guidelines.md` pide que girar produzca «siempre un
+    ///   cambio inmediato y proporcional».
+    /// - `rotate` **envuelve**, porque es un giro sobre un anillo cerrado:
+    ///   pasarse del último Step y aparecer en el primero es el comportamiento
+    ///   correcto. Se normaliza dentro del anillo para que el valor que se
+    ///   muestra siga significando algo tras muchos giros.
+    /// - `pulses` se frena en **su propio rango**, no en Steps. Frenarlo antes
+    ///   sería el acotado destructivo que este track eliminó: el valor guardado
+    ///   es la intención y `effectivePulses` es lo que suena.
+    ///
+    /// No es código de tiempo real: construir un Shape reparte los Pulses, y eso
+    /// asigna. Se llama desde el hilo de control, al recibir un giro.
+    public func applying(_ delta: Int, to parameter: ShapeParameter) -> Shape {
+        switch parameter {
+        case .steps:
+            let clamped = min(max(steps.count + delta, Steps.validRange.lowerBound), Steps.validRange.upperBound)
+            guard let moved = Steps(clamped) else { return self }
+            return Shape(steps: moved, pulses: pulses, rotate: rotate, division: division)
+
+        case .pulses:
+            let clamped = min(max(pulses.count + delta, Pulses.validRange.lowerBound), Pulses.validRange.upperBound)
+            guard let moved = Pulses(clamped) else { return self }
+            return Shape(steps: steps, pulses: moved, rotate: rotate, division: division)
+
+        case .rotate:
+            // El resto puede ser negativo, así que se lleva al anillo antes de
+            // guardarlo: `Rotate` admite cualquier entero, pero un valor
+            // normalizado es el único que se puede mostrar sin confundir.
+            let remainder = (rotate.amount + delta) % steps.count
+            let wrapped = remainder < 0 ? remainder + steps.count : remainder
+            return Shape(steps: steps, pulses: pulses, rotate: Rotate(wrapped), division: division)
+
+        case .division:
+            return Shape(steps: steps, pulses: pulses, rotate: rotate, division: division.advanced(by: delta))
+        }
+    }
+}
