@@ -8,12 +8,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 1: El modelo de Pulses en `Engine`
 
-- [ ] Task: `Pulses` se valida por sí solo
-  - [ ] Tests (Red): `Pulses` acepta 1–16 sin conocer Steps; rechaza 0, negativos y mayores que 16
-  - [ ] Tests (Red): los casos de la Pre Spec (16/4, 16/5, 12/7) siguen dando el mismo patrón
-  - [ ] Implementación (Green): `init?(_:)` sustituye a `init?(_:in:)`
-  - [ ] Actualizar los tests de la rebanada 1 que asumen el inicializador acoplado
-- [ ] Task: Acotado no destructivo en el reparto
+- [x] Task: `Pulses` se valida por sí solo — `709b40b`
+  - [x] Tests (Red): `Pulses` acepta 1–16 sin conocer Steps; rechaza 0, negativos y mayores que 16
+  - [x] Tests (Red): los casos de la Pre Spec (16/4, 16/5, 12/7) siguen dando el mismo patrón
+  - [x] Implementación (Green): `init?(_:)` sustituye a `init?(_:in:)`
+  - [x] Actualizar los tests de la rebanada 1 que asumen el inicializador acoplado
+- [~] Task: Acotado no destructivo en el reparto
   - [ ] Tests (Red): `Steps 4` con `Pulses 9` reparte 4 pulsos y **conserva** el 9
   - [ ] Tests (Red): subir Steps restaura el reparto original — ida y vuelta sin pérdida
   - [ ] Tests (Red): invariante exhaustiva — `effectivePulses == min(pulses, steps)` para toda combinación
