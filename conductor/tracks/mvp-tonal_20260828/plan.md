@@ -29,28 +29,37 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: El pool, sin romper la trivialidad de `Track`
+## Phase 2: El pool, sin romper la trivialidad de `Track` [checkpoint: a773d90]
 
 > **La fase con la restricción dura.** `tech-stack.md` lo dejó escrito antes de
 > que hiciera falta: almacenamiento inline de ocho huecos, no un `Array`.
 
-- [ ] Task: Almacenamiento inline de ocho pitches
-  - [ ] Tests (Red): **`_isPOD` sobre el pool y sobre `Track`** — el test que ya existe en `TrackHandoffTests` no se relaja ni se mueve
-  - [ ] Tests (Red): insertar, quitar y consultar; de cero a ocho notas
-  - [ ] Tests (Red): insertar una altura ya presente no la duplica ni crece el pool
-  - [ ] Tests (Red): el pool lleno rechaza la novena sin destruir las ocho
-  - [ ] Implementación (Green): huecos fijos, sin `Array` ni nada con conteo de referencias
-- [ ] Task: El pool vive en `Track`
-  - [ ] Tests (Red): `_isPOD(Track.self)` sigue en verde con el pool dentro
-  - [ ] Tests (Red): un pool vacío es un estado válido, no un `nil` ni un error
-  - [ ] Implementación (Green): `Track` gana el pool y `TrackHandoff` sigue publicándolo sin cambios de protocolo
-- [ ] Task: Reencuadre no destructivo
-  - [ ] Tests (Red): cambiar Scale reubica las notas fuera de marco en la más cercana y **conserva el tamaño del pool**
-  - [ ] Tests (Red): cambiar Root hace lo mismo
-  - [ ] Tests (Red): invariante — tras cualquier cambio de marco, ninguna nota del pool queda fuera y ninguna desapareció
-  - [ ] Tests (Red): si dos notas del pool caen en la misma tras reencuadrar, el pool encoge en vez de duplicar
-  - [ ] Implementación (Green): es la regla de destructividad de `product-guidelines.md`, la misma que rige a `Pulses` desde la rebanada 2
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Almacenamiento inline de ocho pitches — `a773d90`
+  - [x] Tests (Red): **`_isPOD` sobre el pool y sobre `Track`** — el test que ya existe en `TrackHandoffTests` no se relajó ni se movió
+  - [x] Tests (Red): insertar, quitar y consultar; de cero a ocho notas
+  - [x] Tests (Red): insertar una altura ya presente no la duplica ni crece el pool
+  - [x] Tests (Red): el pool lleno rechaza la novena sin destruir las ocho
+  - [x] Implementación (Green): ocho huecos de ocho bits en un `UInt64`, con `0xFF` como hueco vacío — el rango MIDI son siete bits y sobra el centinela
+- [x] Task: El pool vive en `Track` — `a773d90`
+  - [x] Tests (Red): `_isPOD(Track.self)` sigue en verde con el pool dentro, en `Engine` y en `MIDI`
+  - [x] Tests (Red): un pool vacío es un estado válido, no un `nil` ni un error
+  - [x] Implementación (Green): `Track` gana el pool; `TrackHandoff` sigue publicándolo sin cambios de protocolo
+- [x] Task: Reencuadre no destructivo — `a773d90`
+  - [x] Tests (Red): cambiar Scale reubica las notas fuera de marco y conserva el pool
+  - [x] Tests (Red): cambiar Root hace lo mismo
+  - [x] Tests (Red): invariante — tras cualquier reencuadre, ninguna nota queda fuera del marco (5 escalas × 12 Roots)
+  - [x] Tests (Red): si dos notas caen en la misma tras reencuadrar, el pool encoge en vez de duplicar
+  - [x] Implementación (Green): la regla de destructividad de `product-guidelines.md`, la misma que rige a `Pulses`
+
+  > **La restricción dura no obligó a rediseñar nada.** El riesgo anotado en el
+  > plan —que el pool inline no cupiera en `Track` sin romper `_isPOD`— no se
+  > materializó: ocho alturas de siete bits caben en un `UInt64` con centinela
+  > de sobra, y el test pasó a la primera.
+
+  > Las tres tareas comparten SHA: el pool sin reencuadre publicaría un tipo que
+  > viola la regla de destructividad en cuanto alguien cambie la Scale.
+
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Del pool a la nota que suena
 
