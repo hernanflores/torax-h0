@@ -15,3 +15,57 @@ valores que el llamante ya validó. `applying` los usa y las ramas desaparecen.
 Shape.swift vuelve a 100%, con 26 regiones en vez de 28.
 
 Verificación: Engine 101 tests, MIDI 139 (sin los de CoreMIDI), build de iOS OK.
+
+═══════════════════════════════════════════════════════════════════
+INFORME DE VERIFICACIÓN — Phase 2: Del mensaje MIDI al Track publicado
+═══════════════════════════════════════════════════════════════════
+
+Tests automáticos
+-----------------
+swift test --package-path Packages/Engine --enable-code-coverage
+  → 101 tests, 0 fallos
+
+swift test --package-path Packages/MIDI --enable-code-coverage
+  → 153 tests, 1 omitido, 0 fallos
+
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  → BUILD SUCCEEDED
+
+Cobertura
+---------
+  Engine: 100% en los cuatro ficheros
+  MIDI:   ControlInput 100%, ControlMapping 100%, RelativeEncoding 100%
+          total 91,07% regiones / 95,81% líneas
+
+Todos los ficheros de código de la fase tienen test correspondiente.
+
+Lo que queda demostrado
+-----------------------
+La cadena completa funciona de extremo a extremo SIN CoreMIDI y SIN hardware:
+un mensaje de control entra, se decodifica a un desplazamiento con signo, se
+traduce al parámetro que le toca, se aplica al Shape y el Track resultante se
+publica por el TrackHandoff que la rebanada 1 dejó probado.
+
+Girar un knob y publicar un snapshot son, a partir de aquí, la misma cosa.
+
+La propiedad que motivó el track está verificada desde los mensajes, no solo
+desde el modelo: doce giros de Steps hacia abajo dejan Pulses intacto en 12
+aunque solo suenen 4, y doce hacia arriba devuelven el Shape original.
+
+Verificación manual
+-------------------
+Fase sin superficie de usuario todavía: nadie llama a `ControlInput.receive`.
+La recepción real por CoreMIDI es la Fase 3 y el cableado en la app, la Fase 4.
+
+Lo verificable a ojo es la tabla de comportamiento por parámetro:
+
+  Steps     1 ←→ 16    frena en los extremos
+  Pulses    1 ←→ 16    frena en SU rango, no en Steps
+  Rotate    envuelve sobre el anillo (15 +1 → 0)
+  Division  1/1 ←→ 1/16, frena; no salta de 1/16 a 1/1
+
+Refactor incluido en la fase
+-----------------------------
+La cobertura señaló dos ramas muertas en `applying(_:to:)`; se eliminaron con
+`init(unchecked:)` en Steps y Pulses, siguiendo el idioma que ya usaban Division
+y MIDIChannel. Ver el commit de refactor.
