@@ -1,0 +1,76 @@
+Verificación de fase — Fase 4: Verificación en dispositivo
+Track: mvp-ring-feedback_20260828
+
+Protocolo de `workflow.md` → Phase Completion Verification and Checkpointing.
+Ejecutado el 2026-08-28 sobre iPad Air (4ª generación) con BeatStep Pro en
+Relative #2 y sintetizador de destino.
+
+## Jitter con carga visual — la deuda de `product.md`
+
+Medido con el anillo y el playhead dibujándose, 200 eventos por tempo:
+
+  60 BPM    n=200  máx=0,123 ms  media=+0,090 ms  σ=0,020 ms
+  120 BPM   n=200  máx=0,134 ms  media=+0,099 ms  σ=0,012 ms
+  174 BPM   n=200  máx=0,096 ms  media=+0,019 ms  σ=0,019 ms
+  VEREDICTO: CUMPLE
+
+Comparado con la referencia de la rebanada 1, sin anillo:
+
+  | Configuración        | máx      | σ        |
+  |----------------------|----------|----------|
+  | Sin anillo (reb. 1)  | 0,127 ms | 0,015 ms |
+  | Con anillo (esta)    | 0,134 ms | 0,020 ms |
+  | Umbral               | < 2 ms   | < 0,5 ms |
+
+El redibujado cuesta ~5 µs de σ en el peor tempo. Es el mismo orden que el salto
+del spike a la rebanada 1 (8–9 → 12–15 µs) e inaudible; la σ queda 25 veces por
+debajo del umbral. **La carga visual que faltaba por medir no degrada el
+timing.**
+
+Con esto se cierra la nota que `product.md` arrastraba desde el 2026-08-27:
+«conviene volver a mirarlo cuando exista el anillo circular, que es la carga
+visual que aún falta».
+
+## Verificación de uso
+
+  1. Playhead en sincronía con lo que se oye ......... OK
+  2. Parar deja el playhead quieto .................... OK
+  3. Girar Pulses: anillo + valor grande sin ocultarlo  OK
+  4. El valor se desvanece por inactividad ............ OK
+  5. Rotate se lee como rotación, no como otro patrón . OK
+  6. Steps abajo y arriba sin perder Pulses ........... OK
+  7. Legibilidad a un metro ........................... OK
+  8. Sin controlador: anillo y playhead siguen ........ OK
+
+El punto 1 sustituye al test que no se pudo escribir: que el bucle del scheduler
+publica su propio origen no tiene verificación automática por el flake de
+CoreMIDI (`midi-test-flake_20260826`), y el playhead yendo con el sonido es la
+prueba de que el origen publicado es el correcto.
+
+## Automático
+
+  swift test --package-path Packages/Engine --enable-code-coverage
+    → 131 tests, 0 fallos. Cobertura 99,52% líneas (umbral ≥90%).
+      Ring 100%, Playhead 100%, ShapeChange 95,2%.
+
+  swift test --package-path Packages/MIDI --enable-code-coverage
+    → Cobertura 86,48% líneas (umbral ≥80%). PlayheadClock 100%.
+      Esta pasada dio 0 ocurrencias de `-50`, así que se pudo medir en un
+      proceso como exige `workflow.md`.
+
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+
+## Un defecto encontrado y corregido durante la fase
+
+Las posiciones sin Pulse se dibujaban con el color de los bordes y desaparecían
+contra el panel: el anillo se leía como cinco puntos sueltos en vez de dieciséis
+posiciones de las que cinco disparan. Encontrado en captura del simulador,
+corregido en `9189aec`.
+
+## Confirmación
+
+El usuario verificó en dispositivo y confirmó: «Validado con el controlador y el
+iPad. Funcionó.» La medición de jitter se aportó después, por separado.
+
+Checkpoint: 9189aec
