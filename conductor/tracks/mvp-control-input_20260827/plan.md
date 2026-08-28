@@ -13,13 +13,13 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): los casos de la Pre Spec (16/4, 16/5, 12/7) siguen dando el mismo patrón
   - [x] Implementación (Green): `init?(_:)` sustituye a `init?(_:in:)`
   - [x] Actualizar los tests de la rebanada 1 que asumen el inicializador acoplado
-- [~] Task: Acotado no destructivo en el reparto
-  - [ ] Tests (Red): `Steps 4` con `Pulses 9` reparte 4 pulsos y **conserva** el 9
-  - [ ] Tests (Red): subir Steps restaura el reparto original — ida y vuelta sin pérdida
-  - [ ] Tests (Red): invariante exhaustiva — `effectivePulses == min(pulses, steps)` para toda combinación
-  - [ ] Implementación (Green): `EuclideanRhythm` reparte `min(pulses, steps)`; `Shape.effectivePulses`
-  - [ ] Documentar la desviación de la Pre Spec con nota fechada (`workflow.md` paso 8)
-- [ ] Task: Lista ordenada de Divisions
+- [x] Task: Acotado no destructivo en el reparto — `48e9a5f`
+  - [x] Tests (Red): `Steps 4` con `Pulses 9` reparte 4 pulsos y **conserva** el 9
+  - [x] Tests (Red): subir Steps restaura el reparto original — ida y vuelta sin pérdida
+  - [x] Tests (Red): invariante exhaustiva — `effectivePulses == min(pulses, steps)` para toda combinación
+  - [x] Implementación (Green): `EuclideanRhythm` reparte `min(pulses, steps)`; `Shape.effectivePulses`
+  - [x] Documentar la desviación de la Pre Spec con nota fechada (`workflow.md` paso 8)
+- [~] Task: Lista ordenada de Divisions
   - [ ] Tests (Red): recorrer hacia arriba y hacia abajo se detiene en los extremos, no envuelve
   - [ ] Implementación (Green): secuencia de valores musicales, no un entero libre
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
