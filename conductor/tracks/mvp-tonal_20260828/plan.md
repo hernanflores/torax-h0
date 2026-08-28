@@ -6,20 +6,28 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 **Orden:** el marco tonal antes que el pool, porque el pool solo tiene sentido dentro de un marco; el pool antes que la emisión, porque hay que saber qué se guarda antes de decidir cómo se lee; y la emisión antes que la entrada y la pantalla, que son las dos superficies que lo usan. La verificación en dispositivo cierra, porque esta rebanada vuelve a tocar el camino de tiempo real.
 
-## Phase 1: El marco tonal
+## Phase 1: El marco tonal [checkpoint: a666348]
 
 > `Engine` puro. Sin CoreMIDI, sin simulador, sin hardware.
 
-- [ ] Task: `Scale` y `Root`
-  - [ ] Tests (Red): cada preset —Minor, Major, Dorian, Phrygian, Pentatonic— produce su conjunto de intervalos, escritos literalmente en el test
-  - [ ] Tests (Red): `Root` transpone el conjunto entero sin cambiar su forma
-  - [ ] Tests (Red): recorrer las escalas hacia arriba y hacia abajo se detiene en los extremos, como ya hace `Division`
-  - [ ] Implementación (Green): conjuntos preset, no escalas de usuario
-- [ ] Task: Qué alturas permite el marco
-  - [ ] Tests (Red): una altura está o no en el marco, para toda combinación de Scale y Root
-  - [ ] Tests (Red): la nota permitida **más cercana** a una dada; con dos a la misma distancia, la regla de desempate es fija y está escrita
-  - [ ] Implementación (Green): el marco responde sin asignar — lo va a consultar el hilo del scheduler
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: `Scale` y `Root` — `a666348`
+  - [x] Tests (Red): cada preset —Minor, Major, Dorian, Phrygian, Pentatonic— produce su conjunto de intervalos, escritos literalmente en el test
+  - [x] Tests (Red): `Root` transpone el conjunto entero sin cambiar su forma
+  - [x] Tests (Red): recorrer las escalas hacia arriba y hacia abajo se detiene en los extremos, como ya hace `Division`
+  - [x] Implementación (Green): conjuntos preset, no escalas de usuario
+- [x] Task: Qué alturas permite el marco — `a666348`
+  - [x] Tests (Red): una altura está o no en el marco, para toda combinación de Scale y Root — invariante exhaustiva sobre 5 escalas × 12 Roots × 128 alturas
+  - [x] Tests (Red): la nota permitida **más cercana**; el desempate baja, fijado sobre las 60 combinaciones
+  - [x] Implementación (Green): máscara de doce bits, sin asignar — como `EuclideanRhythm`
+
+  > Las dos tareas comparten SHA: son un solo fichero y un solo concepto. `Scale`
+  > sin saber qué alturas permite no lo puede usar nadie.
+
+  > **Decisión que la Pre Spec deja abierta.** Nombra «Pentatonic» sin decir
+  > cuál, y la lista ya trae Major y Minor completas. Se elige la **menor**
+  > (0-3-5-7-10). Documentado en el código con nota fechada.
+
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: El pool, sin romper la trivialidad de `Track`
 
