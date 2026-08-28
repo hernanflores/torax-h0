@@ -12,7 +12,7 @@ una deuda que la siguiente necesita.
 | # | Rebanada | Estado |
 |---|---|---|
 | 3 | Anillo, playhead y valor transitorio | cerrada |
-| 4 | Tonal: pool, Scale y Root | **siguiente**, por planificar |
+| 4 | Tonal: pool, Scale y Root | **abierta** |
 | 5 | Groove estático: Velocity, Sustain, Probability | por planificar |
 | 6 | Groove temporal: Timing y Delay | por planificar |
 | 7 | Preset del BeatStep Pro y MIDI Learn | por planificar |
@@ -20,9 +20,12 @@ una deuda que la siguiente necesita.
 **Por qué ese orden.** La 3 no toca el motor y salda la última carga de jitter
 sin medir que `product.md` dejó anotada —la visual—; además evita desarrollar
 las tres rebanadas de motor contra una pantalla de texto. La 4 es la más cara
-porque paga tres deudas de golpe: no existe PRNG sembrado, el camino de tiempo
-real emite una nota fija y constante, y el pool de Pitch se edita con pads, que
-es entrada nueva y no una extensión del mapeo de CC. La 5 y la 6 están separadas
+porque paga tres deudas de golpe: el camino de tiempo real emite una nota fija y
+constante, el snapshot tiene que absorber el pool sin dejar de ser trivial, y el
+pool de Pitch se edita con pads, que es entrada nueva y no una extensión del
+mapeo de CC. *(Corregido el 2026-08-28: se decía que también pagaba el PRNG
+sembrado. No lo hace — con recorrido secuencial del pool no hay aleatoriedad que
+sembrar, y el PRNG se va entero a la rebanada 5, con Probability.)* La 5 y la 6 están separadas
 por el riesgo, no por el tamaño: Velocity, Sustain y Probability cambian **qué**
 se envía; Timing y Delay cambian **cuándo**, que es el camino de jitter que
 costó validar, y aislarlas evita que una regresión ahí se lleve por delante al
@@ -39,8 +42,10 @@ camino de tiempo real y necesita tests que lo corran. Se toma antes de esa.
 
 ---
 
-*Sin track abierto.* La rebanada 3 cerró el 2026-08-28; la 4 —Tonal— está en la
-cola de arriba, pendiente de planificar.
+- [ ] **Track: MVP rebanada 4 — Tonal: pool, Scale y Root**
+  *Link: [conductor/tracks/mvp-tonal_20260828/index.md](./tracks/mvp-tonal_20260828/index.md)*
+
+  El Track deja de sonar en una sola altura. Pool de hasta 8 pitches acotado por Scale y Root, los pads que lo editan y la pantalla que lo muestra. La más cara del roadmap: toca el camino de tiempo real, añade una superficie de entrada y una pantalla.
 
 ## Defectos conocidos
 
