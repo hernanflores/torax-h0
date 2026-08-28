@@ -1,0 +1,34 @@
+{
+  "id": "mvp-tonal_20260828",
+  "title": "MVP rebanada 4: Tonal — pool, Scale y Root",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-08-28",
+  "updated_at": "2026-08-28",
+  "phases": 6,
+  "mvp_slice": 4,
+  "scope": {
+    "in": [
+      "Scale y Root: el marco tonal que acota las alturas",
+      "Pool de hasta 8 pitches, con almacenamiento inline que preserva la trivialidad de Track",
+      "El pool se reencuadra al cambiar Scale o Root, no se vacía",
+      "Elección de altura por Pulse: recorrido secuencial, con la convención como tipo",
+      "NoteEmitter deja de llevar una altura fija",
+      "Los pads editan el pool: entrada de notas por CoreMIDI",
+      "Representación del pool en pantalla, paralela al anillo",
+      "Pantalla de Scale y Root, con acento de la familia Tonal"
+    ],
+    "out": [
+      "Style polifónico: acordes simultáneos, fuera de v1 por la Pre Spec",
+      "Voicing, Harmony, Range y Phrase",
+      "Elección aleatoria de altura: el PRNG llega con Probability, en la rebanada 5",
+      "Groove entero",
+      "Escalas de usuario: solo presets en esta rebanada",
+      "Persistencia del pool y de la Scale"
+    ]
+  },
+  "decisions": {
+    "pitch_selection": "Recorrido secuencial del pool, con la convención entrando como tipo de un solo caso — mismo patrón que RelativeEncoding, para que el aleatorio sea añadir un caso y no reescribir el camino de tiempo real",
+    "scale_root_screen": "Dentro de la rebanada: sin ella, el reencuadre del pool al cambiar Scale no se puede verificar en la app"
+  }
+}
