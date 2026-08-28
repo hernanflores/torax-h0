@@ -45,9 +45,48 @@ public struct Division: Equatable, Sendable {
         self.denominator = denominator
     }
 
+    public static let whole = Division(unchecked: 1, denominator: 1)
+    public static let half = Division(unchecked: 1, denominator: 2)
     public static let quarter = Division(unchecked: 1, denominator: 4)
     public static let eighth = Division(unchecked: 1, denominator: 8)
     public static let sixteenth = Division(unchecked: 1, denominator: 16)
+
+    /// Los valores por los que recorre el knob, **de más lenta a más rápida**.
+    ///
+    /// Cada uno dura la mitad que el anterior: girar se percibe como duplicar o
+    /// dividir la velocidad de la línea, que es lo que la Pre Spec describe —
+    /// «cambia la velocidad sin cambiar la estructura».
+    ///
+    /// **Por qué se corta en 1/16 y no sigue a 1/32.** El note-off de cada pulso
+    /// se sella un gate provisional por delante del note-on, y ese gate tiene
+    /// que caber dentro del Step más corto que el producto pueda producir. A 300
+    /// BPM —el tempo máximo— un Step de 1/32 dura exactamente 25 ms, que es el
+    /// gate: las notas empezarían a solaparse. Los valores más rápidos entran
+    /// cuando Sustain sustituya al gate, en Groove.
+    ///
+    /// El tipo sigue admitiendo cualquier fracción positiva; esta lista es solo
+    /// por dónde pasa el knob.
+    public static let ordered: [Division] = [whole, half, quarter, eighth, sixteenth]
+
+    /// Extremos de la lista. Opcionales porque `ordered` es un array.
+    public static var slowest: Division? { ordered.first }
+    public static var fastest: Division? { ordered.last }
+
+    /// Devuelve la Division que está `delta` posiciones más adelante en la
+    /// lista; hacia delante es más rápida.
+    ///
+    /// **Se detiene en los extremos, no envuelve.** Un knob que saltara de 1/16
+    /// a 1/1 al pasarse convertiría un ajuste fino en un cambio brutal de
+    /// velocidad — y `product-guidelines.md` pide que girar produzca «siempre un
+    /// cambio inmediato y proporcional».
+    ///
+    /// Una Division que no esté en la lista se devuelve intacta: el recorrido no
+    /// puede inventar un punto de partida que no existe.
+    public func advanced(by delta: Int) -> Division {
+        guard let index = Self.ordered.firstIndex(of: self) else { return self }
+        let target = min(max(index + delta, 0), Self.ordered.count - 1)
+        return Self.ordered[target]
+    }
 
     /// Fracción de redonda que ocupa un Step con esta Division.
     var fractionOfWholeNote: Double {
