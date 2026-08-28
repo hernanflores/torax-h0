@@ -105,19 +105,28 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 4: Los pads editan el pool
+## Phase 4: Los pads editan el pool [checkpoint: 5105f2d]
 
-- [ ] Task: Recepción de notas
-  - [ ] Tests (Red): un note-on alterna la pertenencia de esa altura al pool
-  - [ ] Tests (Red): el mismo pad dos veces la mete y la saca
-  - [ ] Tests (Red): una altura fuera del marco tonal se ignora en silencio, no es error
-  - [ ] Tests (Red): los note-off no alternan nada — alternar dos veces por pulsación sería no alternar
-  - [ ] Implementación (Green): `ControlInput` entiende notas además de Control Change
-  - [ ] Revisión: decodificar y publicar siguen en el hilo de control, nunca en el del scheduler
-- [ ] Task: El pool publicado se recoge en caliente
-  - [ ] Tests (Red): editar el pool publica un `Track` nuevo, recogido en la ventana siguiente
-  - [ ] Implementación (Green): por `TrackHandoff`, el mismo camino que ya usa Shape
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Recepción de notas — `5105f2d`
+  - [x] Tests (Red): un note-on alterna la pertenencia de esa altura al pool
+  - [x] Tests (Red): el mismo pad dos veces la mete y la saca
+  - [x] Tests (Red): una altura fuera del marco tonal se ignora en silencio, no es error
+  - [x] Tests (Red): los note-off no alternan; un note-on con velocity cero tampoco
+  - [x] Implementación (Green): `ControlInput` entiende notas además de Control Change
+  - [x] Revisión: decodificar y publicar siguen en el hilo de control
+- [x] Task: El pool publicado se recoge en caliente — `5105f2d`
+  - [x] Tests (Red): editar el pool publica un `Track` nuevo por `TrackHandoff`
+  - [x] Tests (Red): cambiar Scale o Root reencuadra el pool y publica; si nada cambió, no publica
+  - [x] Implementación (Green): el mismo camino que ya usa Shape
+
+  > **Un defecto que la fase destapó.** `ControlInput` reconstruía
+  > `Track(shape:)` al girar un knob, y desde que el pool entró en `Track` eso lo
+  > **borraba**: mover Pulses habría vaciado el material tonal. Es la
+  > destrucción silenciosa que `product-guidelines.md` prohíbe, introducida en la
+  > Fase 2 y no detectada hasta aquí. Cubierto ahora en las dos direcciones:
+  > girar conserva el pool, y editar el pool conserva el Shape.
+
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: El pool y el marco en pantalla
 
