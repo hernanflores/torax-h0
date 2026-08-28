@@ -1,0 +1,57 @@
+Task: Recepción por CoreMIDI (Fase 3)
+
+Dos piezas: el parseo de Universal MIDI Packets a `MIDIMessage`, y
+`CoreMIDIInput`, que enumera fuentes, se conecta a una y entrega lo que llega.
+
+El parseo se testea sin CoreMIDI
+---------------------------------
+La salida ya sabía EMPAQUETAR; la entrada necesita lo contrario. Es aritmética
+de bits, así que se verifica sobre palabras de 32 bits directamente, sin que el
+sistema entregue nada.
+
+La propiedad central es la ida y vuelta: lo empaquetado se vuelve a leer igual,
+sobre los 16 canales y una rejilla de controladores y valores. Si alguien cambia
+el empaquetado, el test lo detecta.
+
+Lo que no se entiende devuelve nil, y NO es un error: por el cable llegan
+relojes, SysEx, program change, pitch bend y aftertouch, y descartarlos en
+silencio es el comportamiento correcto. Hay tests para los paquetes que no son
+de canal y para los mensajes de canal que el producto no usa.
+
+DECISIÓN: cierre explícito desde el primer commit
+--------------------------------------------------
+`CoreMIDIOutput` destruye sus recursos en `deinit`, es decir, cuando ARC decide
+liberar el objeto. El track `scheduler-lifecycle_20260826` documenta lo caro que
+sale no controlar ese instante: retrasar el desmontaje inutiliza la creación de
+endpoints del proceso.
+
+`CoreMIDIInput` nace con `close()` ordenado —desconectar la fuente, el puerto,
+el cliente— e idempotente, y `deinit` es solo la red de seguridad. No se
+retrofitea la salida: eso pertenece al otro track, y ya se midió allí que
+hacerlo rompe la suite.
+
+MEDICIÓN QUE EL PLAN PEDÍA
+---------------------------
+Este track añade un SEGUNDO cliente de CoreMIDI al proceso, que es exactamente
+el recurso implicado en clientCreationFailed(-2)/(-50). El plan anotó como
+riesgo que la CI podía empeorar, y pidió medir antes y después en vez de
+descubrirlo en el PR, como pasó en la rebanada 1.
+
+  Antes de CoreMIDIInput:  0 de 6 pasadas con fallo
+  Después:                 0 de 6 pasadas con fallo
+
+No empeora. La medición se hizo sobre la mitad de CoreMIDI de la suite, que es
+la que la CI aísla.
+
+Los tests de CoreMIDIInput crean clientes reales, así que se añaden al filtro de
+esa mitad en `swift.yml`. Sin eso habrían corrido en el proceso equivocado y
+podrían haber reintroducido el fallo.
+
+Entre ellos, el que importa para este track: crear y cerrar quince entradas en
+orden no inutiliza la creación de clientes del proceso.
+
+Verificación
+------------
+swift test --package-path Packages/MIDI (mitad sin CoreMIDI) → 154 tests, 0 fallos
+swift test --package-path Packages/MIDI --filter (mitad CoreMIDI) → 0 fallos ×6
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
