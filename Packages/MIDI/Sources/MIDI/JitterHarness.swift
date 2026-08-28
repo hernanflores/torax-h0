@@ -77,7 +77,8 @@ public enum JitterHarness {
         let loopback = try VirtualLoopback(name: "Torax H-0 Jitter") { scheduled, actual in
             // Realtime: hilo de recepción de CoreMIDI. Resta y escritura en
             // buffer preasignado, nada más.
-            let deviation = Int64(HostClock.nanoseconds(fromHostTicks: actual))
+            let deviation =
+                Int64(HostClock.nanoseconds(fromHostTicks: actual))
                 - Int64(HostClock.nanoseconds(fromHostTicks: scheduled))
             recorder.record(deviation)
         }
@@ -99,7 +100,10 @@ public enum JitterHarness {
             velocity: MIDIVelocity(unchecked: 100)
         )
 
-        let thread = SchedulerThread(configuration: schedulerConfiguration) { _, hostTime in
+        // La altura la ignora a propósito: el arnés mide la rejilla temporal,
+        // no el material musical, y manda siempre el mismo mensaje para que dos
+        // muestras solo se diferencien en cuándo salieron.
+        let thread = SchedulerThread(configuration: schedulerConfiguration) { _, _, hostTime in
             // Realtime: hilo del scheduler.
             output.send(message, to: endpoint, atHostTime: hostTime)
         }

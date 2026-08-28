@@ -9,6 +9,10 @@ import XCTest
 /// CoreMIDI: lo que importa aquí es qué mensajes salen y cuándo dejan de salir.
 final class TransportTests: XCTestCase {
 
+    /// Un pool de una altura: el «centro estable» de la Pre Spec, y lo que
+    /// sonaba antes de que Tonal existiera.
+    private let voicePool = PitchPool().inserting(Pitch(48)!)
+
     /// Recoge los mensajes que salen. El scheduler los emite desde su hilo, así
     /// que la recogida va con lock — es código de test, no del camino de timing.
     private final class Recorder: @unchecked Sendable {
@@ -35,10 +39,11 @@ final class TransportTests: XCTestCase {
                 timeline: MusicalTimeline(tempo: Tempo(beatsPerMinute: 300)!, division: .sixteenth),
                 lookAheadNanoseconds: 20_000_000
             ),
-            track: Track(shape: Shape(steps: steps, pulses: Pulses(4)!)),
+            // Con el pool vacío el Track dispara y no emite nada, que es
+            // comportamiento correcto y no lo que estos tests miden.
+            track: Track(shape: Shape(steps: steps, pulses: Pulses(4)!), pool: voicePool),
             emitter: NoteEmitter(
                 channel: MIDIChannel(1)!,
-                note: MIDINote(48)!,
                 velocity: MIDIVelocity(100)!
             ),
             send: recorder.record
@@ -185,7 +190,7 @@ final class TransportTests: XCTestCase {
         waitUntil { recorder.noteOnCount >= 1 }
 
         let steps = Steps(8)!
-        transport.publish(Track(shape: Shape(steps: steps, pulses: Pulses(1)!)))
+        transport.publish(Track(shape: Shape(steps: steps, pulses: Pulses(1)!), pool: voicePool))
 
         let after = recorder.noteOnCount
         waitUntil { recorder.noteOnCount > after }

@@ -14,7 +14,6 @@ final class NoteEmitterTests: XCTestCase {
     private func emitter(gateNanoseconds: Int64 = NoteEmitter.provisionalGateNanoseconds) -> NoteEmitter {
         NoteEmitter(
             channel: MIDIChannel(1)!,
-            note: MIDINote(48)!,
             velocity: MIDIVelocity(100)!,
             gateNanoseconds: gateNanoseconds
         )
@@ -26,7 +25,11 @@ final class NoteEmitterTests: XCTestCase {
         atHostTime hostTime: UInt64
     ) -> [(message: MIDIMessage, hostTime: UInt64)] {
         var sent: [(MIDIMessage, UInt64)] = []
-        emitter.emit(atHostTime: hostTime) { message, time in sent.append((message, time)) }
+        // La altura llega por parámetro desde que existe Tonal; estos tests
+        // miden el par de mensajes y su sellado, así que cualquiera sirve.
+        emitter.emit(pitch: Pitch(48)!, atHostTime: hostTime) { message, time in
+            sent.append((message, time))
+        }
         return sent
     }
 

@@ -20,12 +20,35 @@ public enum SchedulerMaterial: Equatable, Sendable {
     /// histograma.
     case everyStep
 
+    /// Altura del arnés de medición.
+    ///
+    /// El arnés mide la rejilla temporal, no el material musical: necesita que
+    /// suene *algo* y le da igual qué. Es una constante suya, no un valor
+    /// musical, y por eso vive aquí y no en `Engine`.
+    static let measurementPitch = Pitch(48)!
+
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
     func triggers(atStep index: Int) -> Bool {
         switch self {
-        case let .track(track): track.triggers(atStep: index)
+        case .track(let track): track.triggers(atStep: index)
         case .everyStep: true
+        }
+    }
+
+    /// Con qué altura suena el Step.
+    ///
+    /// **Quien conoce el material decide la altura.** Podría hacerlo el
+    /// emisor, pero entonces habría que pasarle el Track entero en cada pulso o
+    /// dejarle una copia que se desincronizara del snapshot. Aquí ya está el
+    /// material vigente, recogido una vez por ventana.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    func pitch(atStep index: Int) -> Pitch? {
+        switch self {
+        case .track(let track): track.pitch(atStep: index)
+        case .everyStep: Self.measurementPitch
         }
     }
 }
@@ -72,16 +95,17 @@ public struct TrackScheduler {
     /// Recoge el snapshot pendiente y emite los Steps que disparan hasta el
     /// horizonte.
     ///
-    /// `emit` recibe el índice de Step y su offset en nanosegundos respecto al
-    /// origen de la línea de tiempo. El cierre no escapa, así que no hay nada que
-    /// asignar para llamarlo.
+    /// `emit` recibe el índice de Step, la altura que le toca —`nil` con el pool
+    /// vacío— y su offset en nanosegundos respecto al origen de la línea de
+    /// tiempo. El cierre no escapa, así que no hay nada que asignar para
+    /// llamarlo.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
     public mutating func advance(
         toHorizon horizonNanoseconds: Int64,
         refreshingFrom handoff: TrackHandoff?,
-        emit: (_ step: Int, _ offsetNanoseconds: Int64) -> Void
+        emit: (_ step: Int, _ pitch: Pitch?, _ offsetNanoseconds: Int64) -> Void
     ) {
         if let published = handoff?.load() {
             material = .track(published)
@@ -89,7 +113,11 @@ public struct TrackScheduler {
 
         for step in lookAhead.advance(toHorizon: horizonNanoseconds) {
             guard material.triggers(atStep: step) else { continue }
-            emit(step, lookAhead.timeline.nanosecondOffset(forStep: step))
+            emit(
+                step,
+                material.pitch(atStep: step),
+                lookAhead.timeline.nanosecondOffset(forStep: step)
+            )
         }
     }
 }

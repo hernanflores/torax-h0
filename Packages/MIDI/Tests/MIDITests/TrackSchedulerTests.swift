@@ -45,7 +45,7 @@ final class TrackSchedulerTests: XCTestCase {
         scheduler.advance(
             toHorizon: Int64(stepIndex) * stepNanoseconds,
             refreshingFrom: handoff
-        ) { step, _ in steps.append(step) }
+        ) { step, _, _ in steps.append(step) }
         return steps
     }
 
@@ -73,7 +73,7 @@ final class TrackSchedulerTests: XCTestCase {
     func testEmittedOffsetIsTheStepOffset() {
         var scheduler = TrackScheduler(timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
         var offsets: [Int64] = []
-        scheduler.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: nil) { _, offset in
+        scheduler.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: nil) { _, _, offset in
             offsets.append(offset)
         }
         XCTAssertEqual(offsets, [0, 4, 8, 12].map { Int64($0) * stepNanoseconds })
@@ -218,7 +218,7 @@ final class SchedulerThreadSnapshotTests: XCTestCase {
             configuration: configuration(),
             material: .track(track(rotate: 0)),
             handoff: handoff
-        ) { step, _ in
+        ) { step, _, _ in
             if UInt64(step % 4) != expectedOffset.value { unexpectedPosition.value = true }
             emitted.increment()
         }

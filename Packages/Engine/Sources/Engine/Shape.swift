@@ -134,6 +134,14 @@ public struct Shape: Equatable, Sendable {
     public func triggers(atStep index: Int) -> Bool {
         rhythm.triggers(atStep: index)
     }
+
+    /// Cuántos Pulses dispararon antes que este Step.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func pulseOrdinal(atStep index: Int) -> Int {
+        rhythm.pulseOrdinal(atStep: index)
+    }
 }
 
 /// Track — «una voz/carril musical y de control».
@@ -171,6 +179,17 @@ public struct Track: Equatable, Sendable {
     /// Sin asignaciones, sin locks, sin await.
     public func triggers(atStep index: Int) -> Bool {
         shape.triggers(atStep: index)
+    }
+
+    /// La altura que le toca a este Step, recorriendo el pool.
+    ///
+    /// Devuelve `nil` con el pool vacío: el Track dispara y no tiene material
+    /// que emitir. Es un estado válido, no un fallo.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func pitch(atStep index: Int, traversal: PoolTraversal = .ascending) -> Pitch? {
+        traversal.pitch(from: pool, atPulse: shape.pulseOrdinal(atStep: index))
     }
 }
 
@@ -224,13 +243,16 @@ extension Shape {
     public func applying(_ delta: Int, to parameter: ShapeParameter) -> Shape {
         switch parameter {
         case .steps:
-            let clamped = min(max(steps.count + delta, Steps.validRange.lowerBound), Steps.validRange.upperBound)
+            let clamped = min(
+                max(steps.count + delta, Steps.validRange.lowerBound), Steps.validRange.upperBound)
             return Shape(
                 steps: Steps(unchecked: clamped), pulses: pulses, rotate: rotate, division: division
             )
 
         case .pulses:
-            let clamped = min(max(pulses.count + delta, Pulses.validRange.lowerBound), Pulses.validRange.upperBound)
+            let clamped = min(
+                max(pulses.count + delta, Pulses.validRange.lowerBound),
+                Pulses.validRange.upperBound)
             return Shape(
                 steps: steps, pulses: Pulses(unchecked: clamped), rotate: rotate, division: division
             )
@@ -244,7 +266,9 @@ extension Shape {
             return Shape(steps: steps, pulses: pulses, rotate: Rotate(wrapped), division: division)
 
         case .division:
-            return Shape(steps: steps, pulses: pulses, rotate: rotate, division: division.advanced(by: delta))
+            return Shape(
+                steps: steps, pulses: pulses, rotate: rotate, division: division.advanced(by: delta)
+            )
         }
     }
 }
