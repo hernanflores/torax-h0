@@ -20,8 +20,19 @@
 public struct EuclideanRhythm: Equatable, Sendable {
 
     public let steps: Steps
+
+    /// Pulses **pretendidos**: lo que el usuario pidió.
+    ///
+    /// Puede exceder el número de Steps. Lo que suena es `effectivePulses`.
     public let pulses: Pulses
+
     public let rotate: Rotate
+
+    /// Pulses que realmente se reparten sobre el anillo: los que caben.
+    ///
+    /// Es `min(pulses, steps)`. La diferencia entre este valor y `pulses` es
+    /// justo lo que se recupera al volver a subir Steps.
+    public var effectivePulses: Int { min(pulses.count, steps.count) }
 
     /// Un bit por Step: el bit *i* está a uno si el Step *i* dispara.
     ///

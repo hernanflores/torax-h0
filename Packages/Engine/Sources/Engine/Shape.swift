@@ -93,7 +93,14 @@ public struct Shape: Equatable, Sendable {
     private let rhythm: EuclideanRhythm
 
     public var steps: Steps { rhythm.steps }
+
+    /// Pulses pretendidos: el valor del parámetro, que es lo que el knob mueve
+    /// y lo que la pantalla muestra.
     public var pulses: Pulses { rhythm.pulses }
+
+    /// Pulses que suenan: los que caben en el anillo actual.
+    public var effectivePulses: Int { rhythm.effectivePulses }
+
     public var rotate: Rotate { rhythm.rotate }
 
     /// **No es código de tiempo real:** construir un Shape reparte los Pulses, y
