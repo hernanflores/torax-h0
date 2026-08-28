@@ -128,20 +128,34 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 5: El pool y el marco en pantalla
+## Phase 5: El pool y el marco en pantalla [checkpoint: f65dce5]
 
-- [ ] Task: Acento de la familia Tonal
-  - [ ] Implementación: se puebla el token que la rebanada 3 dejó preparado, en el mismo sitio
-- [ ] Task: El pool, sin sugerir una nota por paso
-  - [ ] Implementación: las notas de la Scale y cuáles están en el pool
-  - [ ] **No se conecta con el anillo ni se muestra qué sonó en cada Step** — es el antipatrón declarado
-  - [ ] Revisión: es una representación paralela y separada, no una capa sobre el anillo
-- [ ] Task: Elegir Scale y Root
-  - [ ] Implementación: pantalla 2 del handoff — rejilla de escalas y barras por nota, con el Root destacado
-  - [ ] El cambio se ve en el pool al instante, reencuadrado y no vaciado
-  - [ ] Se puede cambiar con el transporte corriendo, sin modal que bloquee (`product-guidelines.md`)
-  - [ ] Sigue siendo táctil sin controlador conectado: es configuración, no material generativo
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Acento de la familia Tonal — `f65dce5`
+  - [x] Se puebla el token que la rebanada 3 dejó preparado, en el mismo sitio. Groove sigue sin poblar: sigue sin parámetros
+- [x] Task: El pool, sin sugerir una nota por paso — `f65dce5`
+  - [x] Implementación: las alturas del pool con su octava, y el marco vigente
+  - [x] **No se conecta con el anillo ni se muestra qué sonó en cada Step** — la vista no sabe que el anillo existe
+  - [x] Revisión: es una representación paralela y separada, no una capa sobre el anillo
+  - [x] `Pitch.description` vive en `Engine`, con tests: ninguna altura sin nombre, ninguna repetida, y el nombre no puede discrepar de `pitchClass`
+- [x] Task: Elegir Scale y Root — `f65dce5`
+  - [x] Implementación: rejilla de las cinco escalas y las doce clases de altura
+  - [x] El cambio reencuadra el pool y se ve al instante
+  - [x] Se puede cambiar con el transporte corriendo, sin modal que bloquee
+  - [x] Sigue siendo táctil sin controlador: es configuración, no material generativo
+  - [~] Verificación de que el reencuadre se ve al cambiar Scale — **pendiente de dispositivo**: el simulador no permite tocar desde la línea de comandos
+
+  > **Desviación del handoff, deliberada.** Su pantalla 2 vive en una navegación
+  > de cinco pestañas que no existe: hay un Track, una familia con knobs y
+  > ninguna de las otras cuatro pantallas. Construirla ahora sería chrome sin
+  > función. Tonal entra como sección de la pantalla única y se moverá cuando
+  > haya dónde moverla.
+
+  > **Un desajuste corregido antes de commitear:** la documentación decía que los
+  > Roots fuera de la escala no eran elegibles. Es falso — el Root es la
+  > fundamental *que transpone* la Scale, así que es él quien decide dónde se
+  > apoya el conjunto, y las doce clases son válidas.
+
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 6: Verificación en dispositivo
 
