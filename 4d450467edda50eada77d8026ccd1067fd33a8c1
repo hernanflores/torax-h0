@@ -1,0 +1,53 @@
+Tarea: Posiciones del anillo · Qué posiciones llevan Pulse
+Track: mvp-ring-feedback_20260828 — Fase 1
+
+## Qué cambia
+
+Nuevo tipo `Ring` en `Engine`: dispone el patrón de un `Shape` como posiciones
+sobre un círculo, cada una con su índice de Step, su fracción de vuelta y si
+dispara.
+
+Ficheros creados:
+- Packages/Engine/Sources/Engine/Ring.swift
+- Packages/Engine/Tests/EngineTests/RingTests.swift
+
+## Por qué
+
+La geometría del anillo tiene invariantes que se rompen en silencio —reparto
+uniforme, Step 0 clavado, tantas marcas como `effectivePulses`—, así que vive
+donde hay tests. `workflow.md`: «si algo en `App` merece un test, está en el
+sitio equivocado».
+
+Tres decisiones que el código documenta:
+
+1. **Fracción de vuelta, no radianes ni píxeles.** Quien dibuja conoce el
+   tamaño de la pantalla, el sentido de giro y el origen visual; `Engine` no.
+2. **El Step 0 cae siempre en 0.** Si dependiera del número de Steps, el anillo
+   giraría solo al mover ese knob y Rotate dejaría de ser lo único que rota —
+   que es lo que `product-guidelines.md` pide leer literalmente.
+3. **No se reparte de nuevo.** `EuclideanRhythm` ya lo hizo, Rotate incluido.
+   Dos algoritmos para el mismo reparto podrían discrepar.
+
+## Dos tareas, un commit
+
+El plan las separa —«Posiciones del anillo» y «Qué posiciones llevan Pulse»—
+pero son un solo tipo: partirlo en dos commits habría exigido publicar un
+`Ring` sin `isPulse` que ningún llamante puede usar. Comparten SHA en vez de
+inventar una frontera que el código no tiene.
+
+## Verificación
+
+  swift test --package-path Packages/Engine
+    → 111 tests, 0 fallos (101 antes: +10 de `RingTests`)
+
+Cobertura de `Ring.swift`: 100% líneas, funciones y regiones.
+Cobertura de `Engine`: 100% (umbral ≥90%).
+
+Los tres casos de la Pre Spec (16/4, 16/5, 12/7) se releen desde el anillo con
+la misma notación que `EuclideanRhythmTests`, para poder comparar los dos
+registros a ojo. Un test exhaustivo sobre las 256 combinaciones verifica que el
+anillo marca exactamente `effectivePulses`, y otro que coincide con
+`triggers(atStep:)` en todas ellas.
+
+No toca el camino de tiempo real: construir el anillo asigna, y se hace en el
+hilo principal para dibujar.
