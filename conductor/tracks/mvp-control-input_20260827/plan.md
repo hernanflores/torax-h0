@@ -37,12 +37,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): un CC mapeado mueve su parámetro y **solo** el suyo
   - [x] Tests (Red): un CC sin mapear se ignora en silencio, no es error
   - [x] Implementación (Green): tabla fija, **declarada provisional** en el código
-- [~] Task: Aplicar el delta y publicar
-  - [ ] Tests (Red): girar Pulses publica un `Track` nuevo, recogido en la ventana siguiente
-  - [ ] Tests (Red): bajar Steps acota sin destruir; subirlo restaura — de extremo a extremo desde el mensaje
-  - [ ] Tests (Red): los extremos de rango no desbordan ni envuelven donde no deben
-  - [ ] Implementación (Green): publicación por `TrackHandoff`, sin tocar el camino de tiempo real
-  - [ ] Revisión explícita: decodificar y publicar corren en el hilo de control, nunca en el del scheduler
+- [x] Task: Aplicar el delta y publicar — `590c8d0`
+  - [x] Tests (Red): girar Pulses publica un `Track` nuevo, recogido en la ventana siguiente
+  - [x] Tests (Red): bajar Steps acota sin destruir; subirlo restaura — de extremo a extremo desde el mensaje
+  - [x] Tests (Red): los extremos de rango no desbordan ni envuelven donde no deben
+  - [x] Implementación (Green): publicación por `TrackHandoff`, sin tocar el camino de tiempo real
+  - [x] Revisión explícita: decodificar y publicar corren en el hilo de control, nunca en el del scheduler
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Entrada MIDI real y controlador virtual
