@@ -57,6 +57,9 @@ public final class SchedulerThread: @unchecked Sendable {
     private let material: SchedulerMaterial
     private let handoff: TrackHandoff?
     private let handler: StepHandler
+
+    /// Ancla temporal para el playhead. `nil` cuando nadie la mira.
+    private let playhead: PlayheadClock?
     private let running = AtomicFlag(false)
     private var thread: Thread?
 
@@ -65,15 +68,20 @@ public final class SchedulerThread: @unchecked Sendable {
     ///     quiere el arnés de medición.
     ///   - handoff: por donde llegan los Tracks publicados mientras suena. `nil`
     ///     deja el material fijo durante toda la reproducción.
+    ///   - playhead: dónde se publica el origen temporal para la interfaz.
+    ///     `nil` cuando nadie dibuja un playhead — el arnés de medición, por
+    ///     ejemplo, que no tiene pantalla.
     public init(
         configuration: SchedulerConfiguration,
         material: SchedulerMaterial = .everyStep,
         handoff: TrackHandoff? = nil,
+        playhead: PlayheadClock? = nil,
         handler: @escaping StepHandler
     ) {
         self.configuration = configuration
         self.material = material
         self.handoff = handoff
+        self.playhead = playhead
         self.handler = handler
     }
 
@@ -83,11 +91,12 @@ public final class SchedulerThread: @unchecked Sendable {
         guard !running.value else { return }
         running.value = true
 
-        let thread = Thread { [configuration, material, handoff, handler, running] in
+        let thread = Thread { [configuration, material, handoff, playhead, handler, running] in
             SchedulerThread.run(
                 configuration: configuration,
                 material: material,
                 handoff: handoff,
+                playhead: playhead,
                 handler: handler,
                 running: running
             )
@@ -101,8 +110,21 @@ public final class SchedulerThread: @unchecked Sendable {
         thread.start()
     }
 
+    /// Para el bucle.
+    ///
+    /// **El reloj del playhead se limpia aquí y no al salir del bucle.** `stop()`
+    /// baja la bandera y vuelve sin esperar al hilo, que puede tardar hasta
+    /// media ventana en verla (ese retraso es el defecto `scheduler-lifecycle`,
+    /// abierto y sin integrar). Limpiarlo desde el hilo moribundo tendría dos
+    /// consecuencias, y ninguna es aceptable: el playhead seguiría moviéndose
+    /// unos milisegundos después de pulsar Stop, y un Play inmediato podría ver
+    /// su origen recién publicado **borrado por el hilo anterior al morir**.
+    ///
+    /// Escribirlo desde aquí no compite con nadie: el hilo del scheduler solo
+    /// toca el origen una vez, al arrancar, y este es el hilo de control.
     public func stop() {
         running.value = false
+        playhead?.stop()
         thread = nil
     }
 
@@ -114,12 +136,18 @@ public final class SchedulerThread: @unchecked Sendable {
         configuration: SchedulerConfiguration,
         material: SchedulerMaterial,
         handoff: TrackHandoff?,
+        playhead: PlayheadClock?,
         handler: StepHandler,
         running: AtomicFlag
     ) {
         var scheduler = TrackScheduler(timeline: configuration.timeline, material: material)
         let startHostTicks = HostClock.now()
         let sleepNanoseconds = UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))
+
+        // El mismo origen que sella los timestamps es el que ve la interfaz: si
+        // fueran dos, el playhead y lo que suena podrían discrepar. Se publica
+        // una vez, antes del bucle, y no se vuelve a tocar mientras suene.
+        playhead?.start(atHostTime: startHostTicks)
 
         while running.value {
             let elapsedNanoseconds = Int64(
