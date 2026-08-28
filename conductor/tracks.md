@@ -12,8 +12,8 @@ una deuda que la siguiente necesita.
 | # | Rebanada | Estado |
 |---|---|---|
 | 3 | Anillo, playhead y valor transitorio | cerrada |
-| 4 | Tonal: pool, Scale y Root | **en curso** |
-| 5 | Groove estático: Velocity, Sustain, Probability | por planificar |
+| 4 | Tonal: pool, Scale y Root | cerrada |
+| 5 | Groove estático: Velocity, Sustain, Probability | **siguiente**, por planificar |
 | 6 | Groove temporal: Timing y Delay | por planificar |
 | 7 | Preset del BeatStep Pro y MIDI Learn | por planificar |
 
@@ -42,10 +42,8 @@ camino de tiempo real y necesita tests que lo corran. Se toma antes de esa.
 
 ---
 
-- [~] **Track: MVP rebanada 4 — Tonal: pool, Scale y Root**
-  *Link: [conductor/tracks/mvp-tonal_20260828/index.md](./tracks/mvp-tonal_20260828/index.md)*
-
-  El Track deja de sonar en una sola altura. Pool de hasta 8 pitches acotado por Scale y Root, los pads que lo editan y la pantalla que lo muestra. La más cara del roadmap: toca el camino de tiempo real, añade una superficie de entrada y una pantalla.
+*Sin track abierto.* La rebanada 4 cerró el 2026-08-28; la 5 —Groove estático—
+está en la cola de arriba, pendiente de planificar.
 
 ## Defectos conocidos
 
@@ -78,6 +76,9 @@ en cualquier momento.
   La investigación del 2026-08-27 invirtió la dependencia. El ciclo de vida del scheduler no se puede cerrar sin entender antes por qué retrasar el desmontaje inutiliza la creación de endpoints virtuales de CoreMIDI.
 
 ## Archivados
+
+- [x] **Track: MVP rebanada 4 — Tonal: pool, Scale y Root** — el Track arpegia sobre el pool, dentro del marco tonal
+  *Link: [conductor/archive/mvp-tonal_20260828/index.md](./archive/mvp-tonal_20260828/index.md)*
 
 - [x] **Track: MVP rebanada 3 — Anillo, playhead y valor transitorio** — jitter con carga visual: máx 0,134 ms · σ 0,020 ms
   *Link: [conductor/archive/mvp-ring-feedback_20260828/index.md](./archive/mvp-ring-feedback_20260828/index.md)*

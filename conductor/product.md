@@ -43,9 +43,9 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 **Dentro:**
 
 - Un **Track generativo completo**:
-  - Shape: Steps (1–16), Pulses euclidianos, Rotate, Division.
-  - Tonal: pool de hasta 8 pitches, Scale + Root.
-  - Groove: Velocity, Sustain, Timing (swing), Delay, Probability.
+  - Shape: Steps (1–16), Pulses euclidianos, Rotate, Division. **Entregado** (rebanadas 1–2).
+  - Tonal: pool de hasta 8 pitches, Scale + Root. **Entregado** (rebanada 4).
+  - Groove: Velocity, Sustain, Timing (swing), Delay, Probability. Pendiente (rebanadas 5–6).
 - Transporte (play/stop) y reloj interno.
 - Salida MIDI por CoreMIDI a dispositivo externo.
 - Mapeo del controlador + MIDI Learn.
