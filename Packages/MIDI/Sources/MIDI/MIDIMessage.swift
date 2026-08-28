@@ -52,6 +52,18 @@ public struct MIDIVelocity: Equatable, Sendable {
     }
 }
 
+/// Número de controlador MIDI, 0–127.
+public struct MIDIController: Hashable, Sendable {
+    public let number: Int
+
+    public init?(_ number: Int) {
+        guard (0...127).contains(number) else { return nil }
+        self.number = number
+    }
+
+    var wireValue: UInt8 { UInt8(number) }
+}
+
 /// Mensaje de canal MIDI 1.0.
 ///
 /// El spike solo necesita note-on y note-off. El resto del vocabulario llegará
@@ -60,11 +72,21 @@ public enum MIDIMessage: Equatable, Sendable {
     case noteOn(channel: MIDIChannel, note: MIDINote, velocity: MIDIVelocity)
     case noteOff(channel: MIDIChannel, note: MIDINote, velocity: MIDIVelocity)
 
+    /// Cambio de control.
+    ///
+    /// El valor va como `UInt8` desnudo y no como un tipo del dominio a
+    /// propósito: en modo relativo **no es una cantidad**, es un desplazamiento
+    /// codificado, y quien sabe interpretarlo es `RelativeEncoding`. Darle aquí
+    /// un tipo con rango sugeriría una semántica de posición que el producto no
+    /// usa.
+    case controlChange(channel: MIDIChannel, controller: MIDIController, value: UInt8)
+
     /// Byte de status: nibble de tipo en la parte alta, canal en la baja.
     var statusByte: UInt8 {
         switch self {
         case let .noteOn(channel, _, _): 0x90 | channel.wireValue
         case let .noteOff(channel, _, _): 0x80 | channel.wireValue
+        case let .controlChange(channel, _, _): 0xB0 | channel.wireValue
         }
     }
 
@@ -72,6 +94,7 @@ public enum MIDIMessage: Equatable, Sendable {
         switch self {
         case let .noteOn(_, note, velocity): (note.value, velocity.value)
         case let .noteOff(_, note, velocity): (note.value, velocity.value)
+        case let .controlChange(_, controller, value): (controller.wireValue, value)
         }
     }
 
@@ -87,7 +110,7 @@ public enum MIDIMessage: Equatable, Sendable {
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
-    func universalPacketWord(group: UInt8) -> UInt32 {
+    public func universalPacketWord(group: UInt8) -> UInt32 {
         let (data1, data2) = dataBytes
         return (UInt32(0x2) << 28)
             | (UInt32(group & 0x0F) << 24)
