@@ -75,27 +75,46 @@ lo que suena, o no va.
 
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: La pantalla
+## Phase 3: La pantalla [checkpoint: 9189aec]
 
 > Aquí ya no hay lógica que testear: `App` recibe fracciones de vuelta y las
 > dibuja. Lo que se verifica es que no se coló lógica dentro.
 
-- [ ] Task: El anillo y sus Pulses
-  - [ ] Implementación: círculo de posiciones con las marcadas destacadas, sobre fondo oscuro y alto contraste
-  - [ ] Steps, Pulses y Rotate movidos por knob se ven al instante
-  - [ ] Revisión: la vista no calcula geometría, solo la dibuja (`NFR3`)
-- [ ] Task: El playhead
-  - [ ] Implementación: marca que recorre el anillo derivada del transporte
-  - [ ] Parado no se mueve; ninguna animación que no comunique tiempo musical
-- [ ] Task: Valor grande transitorio
-  - [ ] Implementación: el valor aparece en grande al girar y se desvanece por inactividad
-  - [ ] **El anillo permanece visible bajo él y nunca se oculta** (`FR4`)
-  - [ ] Tipografía muy grande y jerarquía marcada: el criterio es un metro, no el gusto
-- [ ] Task: Acento de familia y estado heredado
-  - [ ] Implementación: el acento de Shape se declara como token en un solo sitio, listo para que Tonal y Groove añadan el suyo
-  - [ ] Transporte, destino, fuente y solo lectura siguen visibles y operativos (`FR6`)
-  - [ ] Sin controlador, anillo y playhead siguen funcionando (`FR7`)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: El anillo y sus Pulses — `4e0798f`, contraste corregido en `9189aec`
+  - [x] Implementación: círculo de posiciones con las marcadas destacadas, sobre fondo oscuro y alto contraste
+  - [x] Revisión: la vista no calcula geometría, solo la dibuja (`NFR3`) — convierte fracción de vuelta en ángulo y nada más
+  - [~] Steps, Pulses y Rotate movidos por knob se ven al instante — **pendiente de dispositivo**: mover un knob exige controlador
+- [x] Task: El playhead — `4e0798f`
+  - [x] Implementación: aguja desde el centro, derivada del transporte
+  - [x] Parado no se mueve: `TimelineView` va en pausa y `Transport.playhead` devuelve `nil`
+  - [~] **Pendiente de dispositivo:** el simulador no tiene destino MIDI, así que Play está deshabilitado y el playhead no se puede ver correr
+- [x] Task: Valor grande transitorio — `4e0798f`
+  - [x] Implementación: aparece al girar y se desvanece tras la inactividad; cada giro reinicia la cuenta
+  - [x] **El anillo permanece visible bajo él y nunca se oculta** (`FR4`) — es un `ZStack`, no dos estados de la misma vista
+  - [x] Qué parámetro anunciar lo decide `ShapeChange` en `Engine`, con tests
+  - [~] **Pendiente de dispositivo:** sin controlador no hay giro que lo dispare
+- [x] Task: Acento de familia y estado heredado — `4e0798f`
+  - [x] El acento de Shape se declara como token en un solo sitio; Groove y Tonal quedan sin poblar hasta que existan sus parámetros
+  - [x] Transporte, destino, fuente y solo lectura siguen visibles y operativos (`FR6`)
+  - [x] Sin controlador, el anillo se dibuja igual (`FR7`) — verificado en el simulador, que no tiene MIDI: se lee `No MIDI input` y `read-only`
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+### Verificado en simulador, no en dispositivo
+
+Hay runtimes de simulador instalados —`workflow.md` decía que no, y ya no es
+cierto—, así que el anillo se pudo verificar en captura antes de tocar hardware:
+16 Steps con Pulses en 0, 3, 6, 9 y 12, que es `x..x..x..x..x...`, el patrón que
+`EuclideanRhythmTests` fija para 16/5.
+
+**Lo que el simulador no puede verificar** es todo lo que necesita un destino
+MIDI o un controlador: el playhead corriendo, el valor grande al girar, y que el
+anillo reaccione a los knobs. `canPlay` exige destino y el simulador no tiene
+ninguno. Queda para la Fase 4, con el resto de la verificación de uso.
+
+Un defecto real encontrado y corregido por la captura: las posiciones sin Pulse
+se dibujaban con el color de los bordes y desaparecían contra el panel — el
+anillo se leía como cinco puntos sueltos en lugar de dieciséis posiciones de las
+que cinco disparan.
 
 ## Phase 4: Verificación en dispositivo
 
