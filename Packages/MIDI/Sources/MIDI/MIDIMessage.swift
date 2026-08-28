@@ -52,6 +52,18 @@ public struct MIDIVelocity: Equatable, Sendable {
     }
 }
 
+/// Número de controlador MIDI, 0–127.
+public struct MIDIController: Hashable, Sendable {
+    public let number: Int
+
+    public init?(_ number: Int) {
+        guard (0...127).contains(number) else { return nil }
+        self.number = number
+    }
+
+    var wireValue: UInt8 { UInt8(number) }
+}
+
 /// Mensaje de canal MIDI 1.0.
 ///
 /// El spike solo necesita note-on y note-off. El resto del vocabulario llegará
@@ -60,11 +72,21 @@ public enum MIDIMessage: Equatable, Sendable {
     case noteOn(channel: MIDIChannel, note: MIDINote, velocity: MIDIVelocity)
     case noteOff(channel: MIDIChannel, note: MIDINote, velocity: MIDIVelocity)
 
+    /// Cambio de control.
+    ///
+    /// El valor va como `UInt8` desnudo y no como un tipo del dominio a
+    /// propósito: en modo relativo **no es una cantidad**, es un desplazamiento
+    /// codificado, y quien sabe interpretarlo es `RelativeEncoding`. Darle aquí
+    /// un tipo con rango sugeriría una semántica de posición que el producto no
+    /// usa.
+    case controlChange(channel: MIDIChannel, controller: MIDIController, value: UInt8)
+
     /// Byte de status: nibble de tipo en la parte alta, canal en la baja.
     var statusByte: UInt8 {
         switch self {
         case let .noteOn(channel, _, _): 0x90 | channel.wireValue
         case let .noteOff(channel, _, _): 0x80 | channel.wireValue
+        case let .controlChange(channel, _, _): 0xB0 | channel.wireValue
         }
     }
 
@@ -72,6 +94,7 @@ public enum MIDIMessage: Equatable, Sendable {
         switch self {
         case let .noteOn(_, note, velocity): (note.value, velocity.value)
         case let .noteOff(_, note, velocity): (note.value, velocity.value)
+        case let .controlChange(_, controller, value): (controller.wireValue, value)
         }
     }
 
@@ -87,12 +110,60 @@ public enum MIDIMessage: Equatable, Sendable {
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
-    func universalPacketWord(group: UInt8) -> UInt32 {
+    public func universalPacketWord(group: UInt8) -> UInt32 {
         let (data1, data2) = dataBytes
         return (UInt32(0x2) << 28)
             | (UInt32(group & 0x0F) << 24)
             | (UInt32(statusByte) << 16)
             | (UInt32(data1) << 8)
             | UInt32(data2)
+    }
+}
+
+extension MIDIMessage {
+
+    /// Reconstruye un mensaje a partir de un Universal MIDI Packet de 32 bits.
+    ///
+    /// Es lo contrario de `universalPacketWord(group:)`, y hace falta porque la
+    /// entrada recibe lo que la salida emite: CoreMIDI entrega UMP, no los bytes
+    /// sueltos del MIDI 1.0 clásico.
+    ///
+    /// **Devuelve `nil` para todo lo que este producto no usa, y eso no es un
+    /// error.** Por el cable llegan relojes, SysEx, program change y mensajes de
+    /// tipos que la app no interpreta; descartarlos en silencio es el
+    /// comportamiento correcto, no un fallo del que informar.
+    ///
+    /// No es código de tiempo real: se llama desde el callback de recepción de
+    /// CoreMIDI, no desde el hilo del scheduler.
+    init?(universalPacketWord word: UInt32) {
+        // Tipo 0x2: mensaje de canal MIDI 1.0. El resto no se interpreta.
+        guard (word >> 28) & 0xF == 0x2 else { return nil }
+
+        let status = UInt8((word >> 16) & 0xFF)
+        let data1 = UInt8((word >> 8) & 0xFF)
+        let data2 = UInt8(word & 0xFF)
+
+        // El canal viaja 0-indexado en el nibble bajo del status y se presenta
+        // 1-indexado, como en el hardware y en la Pre Spec.
+        guard let channel = MIDIChannel(Int(status & 0x0F) + 1) else { return nil }
+
+        switch status & 0xF0 {
+        case 0x90:
+            guard let note = MIDINote(Int(data1)), let velocity = MIDIVelocity(Int(data2))
+            else { return nil }
+            self = .noteOn(channel: channel, note: note, velocity: velocity)
+
+        case 0x80:
+            guard let note = MIDINote(Int(data1)), let velocity = MIDIVelocity(Int(data2))
+            else { return nil }
+            self = .noteOff(channel: channel, note: note, velocity: velocity)
+
+        case 0xB0:
+            guard let controller = MIDIController(Int(data1)) else { return nil }
+            self = .controlChange(channel: channel, controller: controller, value: data2)
+
+        default:
+            return nil
+        }
     }
 }

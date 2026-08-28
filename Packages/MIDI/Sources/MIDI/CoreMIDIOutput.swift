@@ -41,12 +41,6 @@ public enum MIDIOutputError: Error, Equatable {
     case portCreationFailed(OSStatus)
 }
 
-/// Un destino MIDI disponible.
-public struct MIDIDestination: Equatable, Sendable {
-    public let endpoint: MIDIEndpointRef
-    public let displayName: String
-}
-
 /// Salida MIDI por CoreMIDI.
 ///
 /// Envía con `MIDISendEventList` y un **timestamp de entrega futuro**: CoreMIDI
@@ -118,14 +112,14 @@ public final class CoreMIDIOutput: @unchecked Sendable {
     ///
     /// No es código de tiempo real: consultar nombres asigna memoria y se hace
     /// solo al poblar la interfaz, nunca en el camino del scheduler.
-    public func availableDestinations() -> [MIDIDestination] {
+    public func availableDestinations() -> [MIDIEndpointInfo] {
         (0..<MIDIGetNumberOfDestinations()).map { index in
             let endpoint = MIDIGetDestination(index)
-            return MIDIDestination(endpoint: endpoint, displayName: Self.displayName(of: endpoint))
+            return MIDIEndpointInfo(endpoint: endpoint, displayName: Self.displayName(of: endpoint))
         }
     }
 
-    private static func displayName(of endpoint: MIDIEndpointRef) -> String {
+    static func displayName(of endpoint: MIDIEndpointRef) -> String {
         var name: Unmanaged<CFString>?
         let status = MIDIObjectGetStringProperty(endpoint, kMIDIPropertyDisplayName, &name)
         guard status == noErr, let name else { return "Unknown" }

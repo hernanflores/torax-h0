@@ -1,0 +1,39 @@
+{
+  "id": "mvp-control-input_20260827",
+  "title": "MVP rebanada 2: Entrada de control",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-08-27",
+  "updated_at": "2026-08-27",
+  "phases": 4,
+  "mvp_slice": 2,
+  "depends_on": ["mvp-shape-transport_20260827"],
+  "scope": {
+    "in": [
+      "Entrada MIDI: fuentes, selección y desconexión como estado",
+      "Decodificación de encoders relativos, con la convención como parámetro",
+      "Mapeo fijo y provisional de CC a los cuatro parámetros de Shape",
+      "Acotado no destructivo: Pulses conserva su valor al bajar Steps",
+      "Publicación del Track por TrackHandoff al girar",
+      "Controlador virtual de desarrollo, excluido del build de producción",
+      "Feedback en el texto de estado que ya existe"
+    ],
+    "out": [
+      "Preset del BeatStep Pro y MIDI Learn",
+      "Overlay de valor grande y anillo circular",
+      "Aceleración por velocidad de giro",
+      "Tonal y Groove",
+      "Pads como Value Buttons",
+      "Persistencia, Patterns, Banks, Cycles"
+    ]
+  },
+  "acceptance_criteria": {
+    "primary": "Girar el knob de Pulses cambia el patrón audible en el Step siguiente",
+    "non_destructive_clamp": "Bajar Steps por debajo de Pulses acota sin destruir; subirlo restaura",
+    "no_hardware_required": "El controlador virtual permite verificarlo todo sin controlador conectado",
+    "release_excludes_virtual_controller": true,
+    "latency_measured_on_device": false
+  },
+  "pre_spec_deviation": "El valor almacenado de Pulses puede exceder Steps; la restricción 1..Steps se mantiene en lo que suena",
+  "known_open_defects": ["midi-test-flake_20260826", "scheduler-lifecycle_20260826"]
+}

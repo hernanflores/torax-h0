@@ -20,8 +20,19 @@
 public struct EuclideanRhythm: Equatable, Sendable {
 
     public let steps: Steps
+
+    /// Pulses **pretendidos**: lo que el usuario pidió.
+    ///
+    /// Puede exceder el número de Steps. Lo que suena es `effectivePulses`.
     public let pulses: Pulses
+
     public let rotate: Rotate
+
+    /// Pulses que realmente se reparten sobre el anillo: los que caben.
+    ///
+    /// Es `min(pulses, steps)`. La diferencia entre este valor y `pulses` es
+    /// justo lo que se recupera al volver a subir Steps.
+    public var effectivePulses: Int { min(pulses.count, steps.count) }
 
     /// Un bit por Step: el bit *i* está a uno si el Step *i* dispara.
     ///
@@ -33,6 +44,11 @@ public struct EuclideanRhythm: Equatable, Sendable {
 
     /// Reparte los Pulses sobre el anillo y lo gira.
     ///
+    /// **Si se piden más Pulses de los que hay Steps, se reparten los que
+    /// caben.** El valor de `pulses` es la intención del usuario y se conserva
+    /// tal cual; lo que se acota es el reparto. Así, bajar Steps y volver a
+    /// subirlo devuelve el patrón original en vez de haber perdido el valor.
+    ///
     /// **No es código de tiempo real:** el reparto asigna memoria. Se construye
     /// en el hilo principal, al publicar un snapshot, nunca dentro del bucle del
     /// scheduler.
@@ -41,7 +57,7 @@ public struct EuclideanRhythm: Equatable, Sendable {
         self.pulses = pulses
         self.rotate = rotate
         self.pattern = Self.rotate(
-            Self.distribute(pulses: pulses.count, over: steps.count),
+            Self.distribute(pulses: min(pulses.count, steps.count), over: steps.count),
             by: rotate.amount,
             over: steps.count
         )

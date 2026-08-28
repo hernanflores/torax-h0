@@ -85,14 +85,22 @@ final class NoteEmitterTests: XCTestCase {
     /// producir, o el note-off de un pulso llegaría después del note-on del
     /// siguiente y se solaparían en la misma altura.
     ///
-    /// El Step más corto es el del tempo máximo con la Division más fina:
-    /// 300 BPM y 1/16 dan 50 ms.
-    func testProvisionalGateFitsInsideTheShortestPossibleStep() {
-        let fastest = MusicalTimeline(tempo: Tempo(beatsPerMinute: 300)!, division: .sixteenth)
+    /// **Los dos extremos se leen del dominio, no se escriben aquí.** Si algún
+    /// día se añade una Division más rápida o sube el tempo máximo, este test
+    /// falla en vez de dejar que las notas empiecen a solaparse en silencio.
+    func testProvisionalGateFitsInsideTheShortestPossibleStep() throws {
+        let fastestDivision = try XCTUnwrap(Division.fastest)
+        let highestTempo = try XCTUnwrap(Tempo(beatsPerMinute: Tempo.validRange.upperBound))
+        let shortestStep = MusicalTimeline(tempo: highestTempo, division: fastestDivision)
+
         XCTAssertLessThan(
             Double(NoteEmitter.provisionalGateNanoseconds),
-            fastest.stepDurationNanoseconds,
-            "el gate se solaparía con el pulso siguiente al tempo máximo"
+            shortestStep.stepDurationNanoseconds,
+            """
+            El gate (\(NoteEmitter.provisionalGateNanoseconds / 1_000_000) ms) no cabe en el \
+            Step más corto: \(fastestDivision) a \(Tempo.validRange.upperBound) BPM dura \
+            \(Int(shortestStep.stepDurationNanoseconds / 1_000_000)) ms. Las notas se solaparían.
+            """
         )
     }
 

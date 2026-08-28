@@ -23,7 +23,7 @@ final class TrackSchedulerTests: XCTestCase {
         return Track(
             shape: Shape(
                 steps: steps,
-                pulses: Pulses(pulseCount, in: steps)!,
+                pulses: Pulses(pulseCount)!,
                 rotate: Rotate(amount)
             )
         )
@@ -203,7 +203,7 @@ final class SchedulerThreadSnapshotTests: XCTestCase {
     private func track(rotate amount: Int) -> Track {
         let steps = Steps(16)!
         return Track(
-            shape: Shape(steps: steps, pulses: Pulses(4, in: steps)!, rotate: Rotate(amount))
+            shape: Shape(steps: steps, pulses: Pulses(4)!, rotate: Rotate(amount))
         )
     }
 

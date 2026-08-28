@@ -1,0 +1,42 @@
+import Engine
+
+/// Qué controlador mueve qué parámetro de Shape.
+///
+/// **Es fija y provisional.** La sustituyen el preset del BeatStep Pro y MIDI
+/// Learn, que son el track siguiente. Hasta entonces los números están aquí, en
+/// un solo sitio y declarados como lo que son, en vez de repartidos por el
+/// código de recepción.
+public struct ControlMapping: Equatable, Sendable {
+
+    /// Mapeo por defecto mientras no exista MIDI Learn.
+    ///
+    /// Los números salen del rango de controladores de propósito general
+    /// (70–79), que es donde la especificación MIDI espera parámetros de
+    /// síntesis sin significado fijo — no pisan volumen, paneo ni pedal.
+    public static let provisional = ControlMapping(assignments: [
+        .steps: 70,
+        .pulses: 71,
+        .rotate: 72,
+        .division: 73,
+    ])
+
+    private let assignments: [ShapeParameter: Int]
+
+    public init(assignments: [ShapeParameter: Int]) {
+        self.assignments = assignments
+    }
+
+    /// Controlador asignado a un parámetro, si tiene uno.
+    public func controller(for parameter: ShapeParameter) -> MIDIController? {
+        assignments[parameter].flatMap(MIDIController.init)
+    }
+
+    /// Parámetro que mueve un controlador.
+    ///
+    /// Devuelve `nil` para lo que no esté asignado. **No es un error:** en una
+    /// sesión real llegan mensajes de todo tipo, y no es asunto del mapeo
+    /// quejarse de ellos.
+    public func parameter(for controller: MIDIController) -> ShapeParameter? {
+        assignments.first { $0.value == controller.number }?.key
+    }
+}

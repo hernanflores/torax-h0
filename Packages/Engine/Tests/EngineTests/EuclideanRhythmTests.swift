@@ -50,7 +50,7 @@ final class EuclideanRhythmTests: XCTestCase {
         for stepCount in Steps.validRange {
             let steps = Steps(stepCount)!
             for pulseCount in 1...stepCount {
-                let rhythm = EuclideanRhythm(steps: steps, pulses: Pulses(pulseCount, in: steps)!)
+                let rhythm = EuclideanRhythm(steps: steps, pulses: Pulses(pulseCount)!)
                 let triggering = (0..<stepCount).filter { rhythm.triggers(atStep: $0) }
                 XCTAssertEqual(
                     triggering.count,
@@ -67,7 +67,7 @@ final class EuclideanRhythmTests: XCTestCase {
         for stepCount in Steps.validRange {
             let steps = Steps(stepCount)!
             for pulseCount in 1...stepCount {
-                let rhythm = EuclideanRhythm(steps: steps, pulses: Pulses(pulseCount, in: steps)!)
+                let rhythm = EuclideanRhythm(steps: steps, pulses: Pulses(pulseCount)!)
                 XCTAssertTrue(rhythm.triggers(atStep: 0), "\(stepCount)/\(pulseCount)")
             }
         }
@@ -85,7 +85,7 @@ final class EuclideanRhythmTests: XCTestCase {
 
     func testEqualConfigurationsAreEqual() {
         let steps = Steps(16)!
-        let pulses = Pulses(5, in: steps)!
+        let pulses = Pulses(5)!
         XCTAssertEqual(
             EuclideanRhythm(steps: steps, pulses: pulses),
             EuclideanRhythm(steps: steps, pulses: pulses)
@@ -97,7 +97,7 @@ final class EuclideanRhythmTests: XCTestCase {
     /// El scheduler cuenta Steps hacia arriba sin parar, así que el índice
     /// envuelve sobre el anillo en lugar de salirse de rango.
     func testStepIndexWrapsAroundTheRing() {
-        let rhythm = EuclideanRhythm(steps: Steps(12)!, pulses: Pulses(7, in: Steps(12)!)!)
+        let rhythm = EuclideanRhythm(steps: Steps(12)!, pulses: Pulses(7)!)
         for index in 0..<12 {
             XCTAssertEqual(rhythm.triggers(atStep: index + 12), rhythm.triggers(atStep: index))
             XCTAssertEqual(rhythm.triggers(atStep: index + 120), rhythm.triggers(atStep: index))
@@ -108,7 +108,7 @@ final class EuclideanRhythmTests: XCTestCase {
     /// para Delay, que desplaza un Track por detrás del origen.
     func testNegativeStepIndexWrapsAroundTheRing() {
         let steps = Steps(16)!
-        let rhythm = EuclideanRhythm(steps: steps, pulses: Pulses(5, in: steps)!)
+        let rhythm = EuclideanRhythm(steps: steps, pulses: Pulses(5)!)
         for index in 0..<16 {
             XCTAssertEqual(rhythm.triggers(atStep: index - 16), rhythm.triggers(atStep: index))
             XCTAssertEqual(rhythm.triggers(atStep: index - 160), rhythm.triggers(atStep: index))
@@ -121,7 +121,7 @@ final class EuclideanRhythmTests: XCTestCase {
     /// igual que se leen en el documento.
     private func pattern(steps stepCount: Int, pulses pulseCount: Int) -> String {
         let steps = Steps(stepCount)!
-        let rhythm = EuclideanRhythm(steps: steps, pulses: Pulses(pulseCount, in: steps)!)
+        let rhythm = EuclideanRhythm(steps: steps, pulses: Pulses(pulseCount)!)
         return (0..<stepCount).map { rhythm.triggers(atStep: $0) ? "x" : "." }.joined()
     }
 }

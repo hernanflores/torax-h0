@@ -8,21 +8,21 @@ import XCTest
 /// silencio (ver `MIDISendResult.classify`). El único mecanismo fiable es la
 /// notificación `onSetupChanged`, y lo que este tipo garantiza es que esa
 /// notificación acaba en una reconsulta.
-final class MIDIDestinationWatcherTests: XCTestCase {
+final class MIDIEndpointWatcherTests: XCTestCase {
 
-    private func destination(_ id: UInt32, _ name: String) -> MIDIDestination {
-        MIDIDestination(endpoint: id, displayName: name)
+    private func destination(_ id: UInt32, _ name: String) -> MIDIEndpointInfo {
+        MIDIEndpointInfo(endpoint: id, displayName: name)
     }
 
-    private var synth: MIDIDestination { destination(1, "Prophet Rev2") }
-    private var drums: MIDIDestination { destination(2, "Digitakt") }
+    private var synth: MIDIEndpointInfo { destination(1, "Prophet Rev2") }
+    private var drums: MIDIEndpointInfo { destination(2, "Digitakt") }
 
     /// Enumerador que el test controla, en lugar del sistema.
     private final class FakeSystem: @unchecked Sendable {
-        var destinations: [MIDIDestination] = []
+        var destinations: [MIDIEndpointInfo] = []
         private(set) var queryCount = 0
 
-        func enumerate() -> [MIDIDestination] {
+        func enumerate() -> [MIDIEndpointInfo] {
             queryCount += 1
             return destinations
         }
@@ -30,8 +30,9 @@ final class MIDIDestinationWatcherTests: XCTestCase {
 
     /// Entrega síncrona: en producto el salto es al hilo principal, porque la
     /// notificación llega desde el hilo de CoreMIDI.
-    private func makeWatcher(_ system: FakeSystem) -> MIDIDestinationWatcher {
-        MIDIDestinationWatcher(
+    private func makeWatcher(_ system: FakeSystem) -> MIDIEndpointWatcher {
+        MIDIEndpointWatcher(
+            .destination,
             enumerating: system.enumerate,
             delivering: { work in work() }
         )
@@ -52,7 +53,7 @@ final class MIDIDestinationWatcherTests: XCTestCase {
     func testDestinationAppearingIsPickedUp() {
         let system = FakeSystem()
         let watcher = makeWatcher(system)
-        XCTAssertFalse(watcher.selection.hasDestination)
+        XCTAssertFalse(watcher.selection.hasEndpoint)
 
         system.destinations = [synth]
         watcher.setupChanged()
@@ -71,7 +72,7 @@ final class MIDIDestinationWatcherTests: XCTestCase {
         watcher.setupChanged()
 
         XCTAssertNil(watcher.selection.selected)
-        XCTAssertFalse(watcher.selection.hasDestination)
+        XCTAssertFalse(watcher.selection.hasEndpoint)
     }
 
     /// Desaparecer uno de dos no deja al usuario sin salida: se cae al que queda.
@@ -95,7 +96,7 @@ final class MIDIDestinationWatcherTests: XCTestCase {
 
         system.destinations = []
         watcher.setupChanged()
-        XCTAssertFalse(watcher.selection.hasDestination)
+        XCTAssertFalse(watcher.selection.hasEndpoint)
 
         system.destinations = [synth]
         watcher.setupChanged()
@@ -108,7 +109,7 @@ final class MIDIDestinationWatcherTests: XCTestCase {
         let system = FakeSystem()
         let watcher = makeWatcher(system)
 
-        var observed: [MIDIDestinationSelection] = []
+        var observed: [MIDIEndpointSelection] = []
         watcher.onChange = { observed.append($0) }
 
         system.destinations = [synth]
@@ -139,12 +140,12 @@ final class MIDIDestinationWatcherTests: XCTestCase {
     /// `product-guidelines.md`: «Un dispositivo MIDI desconectado se comunica
     /// con un estado (`No MIDI device`), no con una disculpa.»
     func testNoDeviceStateUsesTheExactWordingFromTheGuidelines() {
-        XCTAssertEqual(MIDIDestinationSelection().statusDescription, "No MIDI device")
+        XCTAssertEqual(MIDIEndpointSelection(.destination).statusDescription, "No MIDI device")
     }
 
     func testStatusShowsTheDestinationNameWhenConnected() {
         XCTAssertEqual(
-            MIDIDestinationSelection(discovering: [synth]).statusDescription,
+            MIDIEndpointSelection(.destination, discovering: [synth]).statusDescription,
             "Prophet Rev2"
         )
     }
@@ -153,8 +154,8 @@ final class MIDIDestinationWatcherTests: XCTestCase {
     func testStatusNeverApologises() {
         let forbidden = ["error", "fail", "sorry", "unable", "could not", "problem", "!"]
         for status in [
-            MIDIDestinationSelection().statusDescription,
-            MIDIDestinationSelection(discovering: [synth]).statusDescription,
+            MIDIEndpointSelection(.destination).statusDescription,
+            MIDIEndpointSelection(.destination, discovering: [synth]).statusDescription,
         ] {
             for word in forbidden {
                 XCTAssertFalse(

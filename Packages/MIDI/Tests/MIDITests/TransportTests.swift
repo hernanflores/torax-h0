@@ -35,7 +35,7 @@ final class TransportTests: XCTestCase {
                 timeline: MusicalTimeline(tempo: Tempo(beatsPerMinute: 300)!, division: .sixteenth),
                 lookAheadNanoseconds: 20_000_000
             ),
-            track: Track(shape: Shape(steps: steps, pulses: Pulses(4, in: steps)!)),
+            track: Track(shape: Shape(steps: steps, pulses: Pulses(4)!)),
             emitter: NoteEmitter(
                 channel: MIDIChannel(1)!,
                 note: MIDINote(48)!,
@@ -185,7 +185,7 @@ final class TransportTests: XCTestCase {
         waitUntil { recorder.noteOnCount >= 1 }
 
         let steps = Steps(8)!
-        transport.publish(Track(shape: Shape(steps: steps, pulses: Pulses(1, in: steps)!)))
+        transport.publish(Track(shape: Shape(steps: steps, pulses: Pulses(1)!)))
 
         let after = recorder.noteOnCount
         waitUntil { recorder.noteOnCount > after }

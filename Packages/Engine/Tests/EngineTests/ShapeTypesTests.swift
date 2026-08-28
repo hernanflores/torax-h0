@@ -35,31 +35,38 @@ final class ShapeTypesTests: XCTestCase {
 
     // MARK: - Pulses
 
-    func testPulsesAcceptsOneThroughSteps() {
-        let steps = Steps(12)!
-        for count in 1...12 {
-            XCTAssertEqual(Pulses(count, in: steps)?.count, count)
+    func testPulsesAcceptsTheWholeValidRange() {
+        for count in 1...16 {
+            XCTAssertEqual(Pulses(count)?.count, count)
         }
     }
 
     func testPulsesRejectsZeroAndNegativeCounts() {
-        let steps = Steps(16)!
-        XCTAssertNil(Pulses(0, in: steps))
-        XCTAssertNil(Pulses(-3, in: steps))
+        XCTAssertNil(Pulses(0))
+        XCTAssertNil(Pulses(-3))
     }
 
-    func testPulsesRejectsMoreThanSteps() {
-        let steps = Steps(8)!
-        XCTAssertNil(Pulses(9, in: steps))
-        XCTAssertNil(Pulses(16, in: steps))
+    func testPulsesRejectsCountsAboveSixteen() {
+        XCTAssertNil(Pulses(17))
+        XCTAssertNil(Pulses(64))
     }
 
-    /// El límite superior depende de Steps, no de una constante: con Steps = 1
-    /// el único Pulses válido es 1.
-    func testPulsesUpperBoundFollowsSteps() {
-        let steps = Steps(1)!
-        XCTAssertEqual(Pulses(1, in: steps)?.count, 1)
-        XCTAssertNil(Pulses(2, in: steps))
+    /// El rango de Pulses es el de Steps: no puede haber más Pulses que
+    /// posiciones donde ponerlos, ni siquiera en el anillo más largo.
+    func testPulsesRangeMatchesTheStepsRange() {
+        XCTAssertEqual(Pulses.validRange, Steps.validRange)
+    }
+
+    /// **Pulses ya no se valida contra un Steps concreto.**
+    ///
+    /// Antes su inicializador exigía el anillo y rechazaba cualquier valor
+    /// mayor. Eso hacía que girar Steps hacia abajo destruyera Pulses, y
+    /// `product-guidelines.md` lo prohíbe: «cambiar un parámetro nunca destruye
+    /// material». Ahora el valor guardado es la intención y el reparto usa lo
+    /// que cabe — igual que `Rotate`, que tampoco se valida contra el anillo
+    /// porque es el reparto quien conoce su tamaño.
+    func testPulsesMayExceedTheRingItWillBePlacedIn() {
+        XCTAssertEqual(Pulses(9)?.count, 9)
     }
 
     // MARK: - Rotate

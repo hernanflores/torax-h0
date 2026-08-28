@@ -69,6 +69,18 @@ Esto no es organización cosmética: **el compilador garantiza que el motor es p
 
 Es lo que hace testeable el criterio de éxito y lo que permite añadir después Cycles, Random y LFO sin tocar la capa MIDI.
 
+### Enmienda — 2026-08-27: Pulses guarda la intención, no lo que cabe
+
+**Qué cambia.** `Pulses` se valida 1–16 por sí solo, no contra el `Steps` en el que vive. El reparto euclidiano usa `min(pulses, steps)`; el valor almacenado es el que pidió el usuario.
+
+**Desviación de la Pre Spec.** La Pre Spec dice «Pulses: 1 hasta el número actual de Steps». Eso se sigue cumpliendo **en lo que suena** —nunca se reparten más Pulses que Steps—, pero el valor guardado puede excederlo temporalmente.
+
+**Por qué.** El track `mvp-control-input_20260827` pone Steps en un knob. Con el inicializador acoplado de la rebanada 1, girar Steps hacia abajo obligaba a recortar Pulses y perder su valor; volver a subirlo ya no lo recuperaba. `product-guidelines.md` lo prohíbe explícitamente: «cambiar un parámetro nunca destruye material: el pool tonal sobrevive a un cambio de Scale reencuadrándose, no vaciándose».
+
+**Coherencia.** Es el criterio que `Rotate` ya seguía desde la rebanada 1: no se valida contra el anillo porque la resolución la hace quien conoce su tamaño. El motor tenía dos criterios para el mismo problema; ahora tiene uno.
+
+**Consecuencia visible.** `Shape` expone `pulses` (pretendido, lo que muestra la pantalla y mueve el knob) y `effectivePulses` (lo que suena). Una invariante exhaustiva sobre las 256 combinaciones verifica que `effectivePulses == min(pulses, steps)` y que el valor pedido nunca se pierde.
+
 El aleatorio es **pseudoaleatorio con semilla**: la Pre Spec exige que sea repetible en loop, no caótico ("cambia, pero no es caos totalmente impredecible"). PRNG explícito y sembrado, nunca `Int.random()`.
 
 ## MIDI

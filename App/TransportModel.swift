@@ -11,7 +11,12 @@ import Observation
 /// proyecto de app no tiene target de test y la máquina no tiene runtime de
 /// simulador (`conductor/workflow.md`). Cuanto menos haya en esta capa, menos
 /// código queda sin cubrir.
+/// **Aislado al hilo principal.** Es donde vive el estado que lee la interfaz, y
+/// además lo que permite capturarlo desde el callback de CoreMIDI: una clase
+/// `@MainActor` es `Sendable`, así que el cierre de recepción puede referirla
+/// sin romper las garantías de concurrencia.
 @Observable
+@MainActor
 final class TransportModel {
 
     /// Configuración del Track con la que arranca la app.
@@ -30,7 +35,7 @@ final class TransportModel {
         // desempaquetado no puede fallar. Es el único sitio de la app que lo
         // hace, y por eso lleva esta justificación (`swift.md`).
         let steps = Steps(16)!
-        return Shape(steps: steps, pulses: Pulses(5, in: steps)!)
+        return Shape(steps: steps, pulses: Pulses(5)!)
     }()
 
     /// Altura, canal y velocity con los que suena el Track.
@@ -53,7 +58,13 @@ final class TransportModel {
     private static let tempo = Tempo(beatsPerMinute: 120)!
 
     private(set) var isPlaying = false
-    private(set) var selection = MIDIDestinationSelection()
+    private(set) var selection = MIDIEndpointSelection(.destination)
+
+    /// De dónde llegan los giros de knob.
+    private(set) var sourceSelection = MIDIEndpointSelection(.source)
+
+    /// Track vigente, con los giros ya aplicados.
+    private(set) var track = Track(shape: TransportModel.initialShape)
 
     /// Por qué la salida no está disponible, si no lo está.
     ///
@@ -62,11 +73,13 @@ final class TransportModel {
     /// esto.
     private(set) var outputUnavailable: String?
 
-    let shape = TransportModel.initialShape
-
     private var output: CoreMIDIOutput?
-    private var watcher: MIDIDestinationWatcher?
+    private var watcher: MIDIEndpointWatcher?
     private var transport: Transport?
+
+    private var input: CoreMIDIInput?
+    private var sourceWatcher: MIDIEndpointWatcher?
+    private var controlInput: ControlInput?
 
     /// Endpoint al que se está enviando, leído desde el hilo del scheduler.
     ///
@@ -80,15 +93,21 @@ final class TransportModel {
     private let activeDestination = AtomicCounter(0)
 
     var destinationStatus: String { selection.statusDescription }
-    var shapeSummary: String { shape.description }
-    var canPlay: Bool { selection.hasDestination && transport != nil }
+    var sourceStatus: String { sourceSelection.statusDescription }
+    var shapeSummary: String { track.shape.description }
+
+    /// Sin controlador conectado la app es de solo lectura y transporte
+    /// (`product-guidelines.md`). Es un estado, no una carencia: no se abre
+    /// ninguna vía táctil para suplirlo.
+    var isReadOnly: Bool { !sourceSelection.hasEndpoint }
+    var canPlay: Bool { selection.hasEndpoint && transport != nil }
 
     init() {
         do {
             let output = try CoreMIDIOutput()
             self.output = output
 
-            let watcher = MIDIDestinationWatcher(enumerating: output.availableDestinations)
+            let watcher = MIDIEndpointWatcher(.destination, enumerating: output.availableDestinations)
             self.watcher = watcher
             selection = watcher.selection
 
@@ -101,9 +120,9 @@ final class TransportModel {
 
             transport = Transport(
                 configuration: SchedulerConfiguration(
-                    timeline: MusicalTimeline(tempo: Self.tempo, division: shape.division)
+                    timeline: MusicalTimeline(tempo: Self.tempo, division: track.shape.division)
                 ),
-                track: Track(shape: shape),
+                track: track,
                 emitter: Self.provisionalVoice
             ) { [output, activeDestination] message, hostTime in
                 Self.send(message, at: hostTime, through: output, to: activeDestination)
@@ -113,6 +132,64 @@ final class TransportModel {
         } catch {
             outputUnavailable = "MIDI output unavailable"
         }
+
+        connectControlInput()
+    }
+
+    /// Cablea la entrada de control: los giros publican por el transporte, que
+    /// es quien tiene el handoff que lee el scheduler.
+    private func connectControlInput() {
+        guard let transport else { return }
+
+        let controlInput = ControlInput(
+            track: track,
+            publish: { [weak transport] updated in transport?.publish(updated) }
+        )
+        self.controlInput = controlInput
+
+        do {
+            let input = try CoreMIDIInput { [weak self] message in
+                // El callback llega desde el hilo de recepción de CoreMIDI. El
+                // salto al principal es obligado: aquí se muta estado observable
+                // que lee la interfaz. No está en el camino de timing, así que
+                // el coste del salto es irrelevante — lo que tiene que ser
+                // rápido es el scheduler, no esto.
+                Task { @MainActor in self?.apply(message) }
+            }
+            self.input = input
+
+            let sourceWatcher = MIDIEndpointWatcher(.source, enumerating: input.availableSources)
+            self.sourceWatcher = sourceWatcher
+            sourceSelection = sourceWatcher.selection
+            connectToSelectedSource()
+
+            sourceWatcher.onChange = { [weak self] selection in
+                self?.sourceSelection = selection
+                self?.connectToSelectedSource()
+            }
+            input.onSetupChanged = { [weak sourceWatcher] in sourceWatcher?.setupChanged() }
+        } catch {
+            // Sin entrada, la app se queda en solo lectura y transporte. Es un
+            // estado previsto, no un fallo que haya que anunciar.
+            input = nil
+        }
+    }
+
+    private func connectToSelectedSource() {
+        guard let endpoint = sourceSelection.selected?.endpoint else { return }
+        input?.connect(to: endpoint)
+    }
+
+    /// Aplica un mensaje entrante. Corre en el hilo principal.
+    private func apply(_ message: MIDIMessage) {
+        guard let controlInput, controlInput.receive(message) else { return }
+        track = controlInput.track
+    }
+
+    /// Elige otra fuente de entrada.
+    func selectSource(_ endpoint: MIDIEndpointInfo) {
+        sourceSelection = sourceSelection.selecting(endpoint)
+        connectToSelectedSource()
     }
 
     func play() {
@@ -126,7 +203,7 @@ final class TransportModel {
         isPlaying = false
     }
 
-    private func destinationsChanged(to selection: MIDIDestinationSelection) {
+    private func destinationsChanged(to selection: MIDIEndpointSelection) {
         self.selection = selection
         activeDestination.value = UInt64(selection.selected?.endpoint ?? 0)
         // Perder el destino no para el reloj: el transporte sigue corriendo y
@@ -139,9 +216,13 @@ final class TransportModel {
     /// Es `static` para que el cierre del scheduler no capture el modelo: nada
     /// de este camino puede tocar estado observable.
     ///
+    /// `nonisolated` es obligado y correcto: esto corre en el hilo del
+    /// scheduler, no en el principal. No toca estado del modelo — por eso es
+    /// `static` y recibe todo lo que necesita.
+    ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
-    private static func send(
+    private nonisolated static func send(
         _ message: MIDIMessage,
         at hostTime: UInt64,
         through output: CoreMIDIOutput,
@@ -157,7 +238,7 @@ extension TransportModel {
 
     /// Elige otro destino. Es lo único que la pantalla puede cambiar, junto con
     /// el transporte: los parámetros generativos no se tocan en esta rebanada.
-    func select(_ destination: MIDIDestination) {
+    func select(_ destination: MIDIEndpointInfo) {
         selection = selection.selecting(destination)
         activeDestination.value = UInt64(selection.selected?.endpoint ?? 0)
     }

@@ -6,18 +6,23 @@ La prioridad del proyecto. Sin app no hay nada que arreglar.
 
 ---
 
-*Sin tracks abiertos.* La rebanada 1 está cerrada y archivada: Torax H-0 suena.
-El siguiente paso natural es la **entrada de control** —knobs relativos,
-controlador virtual de desarrollo, preset del BeatStep Pro, MIDI Learn—, que es
-lo que convierte la app de solo lectura en instrumento. El relevo de snapshot en
-caliente ya está hecho y probado, así que girar un knob será publicar un `Track`
-nuevo por un camino que ya existe.
+- [ ] **Track: MVP rebanada 2 — Entrada de control**
+  *Link: [conductor/tracks/mvp-control-input_20260827/index.md](./tracks/mvp-control-input_20260827/index.md)*
+
+  La app deja de ser de solo lectura. La rebanada 1 dejó el relevo de snapshot en caliente probado pero sin nadie que publicara; aquí se conecta un controlador MIDI a ese camino. Solo los cuatro parámetros de Shape, que son los únicos que existen. Sin preset del BeatStep Pro ni MIDI Learn: llegan después, junto con el anillo.
 
 ## Defectos conocidos
 
 Con la rebanada 1 del MVP cerrada, son lo siguiente en la cola junto con la
 entrada de control. La cadena tiene un orden forzado: `midi-test-flake` bloquea
 a `scheduler-lifecycle`, no al revés.
+
+---
+
+- [ ] **Track: La sesión MIDI de red monopoliza la entrada**
+  *Link: [conductor/tracks/network-session-source_20260828/index.md](./tracks/network-session-source_20260828/index.md)*
+
+  Encontrado el 2026-08-28 verificando la rebanada 2 en iPad. iPadOS publica siempre `Red Session 1` como fuente, así que la lista nunca está vacía: la app la autoselecciona, el estado `No MIDI input` de `product-guidelines.md` es **inalcanzable en el dispositivo de destino**, y el controlador real no se elige solo al conectarlo. No bloquea a nadie ni depende de la cadena de CoreMIDI.
 
 ---
 

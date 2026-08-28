@@ -228,6 +228,18 @@ cd Packages/MIDI && xcodebuild test -scheme MIDI -destination 'platform=macOS'
 ### Device Testing
 
 - Test on a real iPad with the BeatStep Pro connected. Simulator cannot validate the primary success criterion.
+- **Los encoders del BeatStep Pro tienen que estar en `Relative #2`.** Es el único
+  modo que `RelativeEncoding` decodifica hoy: complemento a dos (`0x01` = +1,
+  `0x7F` = −1). Se configura en MIDI Control Center.
+
+  > **Nota del 2026-08-28.** Descubierto verificando `mvp-control-input_20260827`
+  > en iPad. Con los encoders en otro modo, un solo clic se decodifica como un
+  > delta de ±63 y **todos los parámetros saltan a su extremo**: Steps, Pulses y
+  > Division quedan clavados en 1 o 16. Rotate parece funcionar porque es el
+  > único que envuelve módulo Steps en vez de acotar — y eso lo hace el peor
+  > testigo de los cuatro, no el mejor. Síntoma de configuración, no de código:
+  > el decodificador hace lo que declara. Los otros modos entran con el preset
+  > del BeatStep Pro, que es un track posterior.
 - Verify knob response: relative mode, no value jumps, change audible within the next step.
 - Verify legibility at ~1 metre: playhead and the transient parameter value.
 - Verify behavior with no controller connected: read-only and transport, per `product-guidelines.md`.
@@ -289,6 +301,19 @@ distingue nada.
 > se pierde ni un test — 14 + 111 = los mismos 125. Es una mitigación, no un
 > arreglo; la causa pertenece a `midi-test-flake_20260826`, que bloquea a
 > `scheduler-lifecycle_20260826`.
+>
+> **Efecto secundario: la cobertura de `MIDI` hay que medirla en un proceso.**
+> Cada mitad de la partición genera su propio `.profdata`, así que ejecutar los
+> dos pasos y leer cualquiera de los dos informes da una cifra falsamente baja
+> —los ficheros de la otra mitad cuentan como no cubiertos—. Medido el
+> 2026-08-28: la partición reporta 77,7% de líneas; la suite entera en un solo
+> proceso, 95,8%. Para verificar el umbral de `MIDI` usar siempre:
+>
+> ```bash
+> swift test --package-path Packages/MIDI --enable-code-coverage
+> ```
+>
+> La CI no mide cobertura, así que esto no afecta a ningún gate automático.
 
 ## Commit Guidelines
 

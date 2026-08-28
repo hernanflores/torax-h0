@@ -58,7 +58,47 @@ struct ContentView: View {
             }
 
             shape
+            input
         }
+    }
+
+    /// De dónde llegan los giros.
+    ///
+    /// Sin controlador conectado se dice el estado y **nada más**: la app es de
+    /// solo lectura y transporte, que es lo que `product-guidelines.md`
+    /// especifica. No se ofrece ninguna vía táctil para suplirlo.
+    private var input: some View {
+        HStack(spacing: 12) {
+            Text(model.sourceStatus)
+                .font(.body)
+                .foregroundStyle(model.isReadOnly ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.white))
+
+            if model.sourceSelection.available.count > 1 {
+                Picker("Input", selection: sourceBinding) {
+                    ForEach(model.sourceSelection.available, id: \.endpoint) { source in
+                        Text(source.displayName).tag(source.endpoint)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+
+            if model.isReadOnly {
+                Text("read-only")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var sourceBinding: Binding<MIDIEndpointRef> {
+        Binding(
+            get: { model.sourceSelection.selected?.endpoint ?? 0 },
+            set: { endpoint in
+                guard let chosen = model.sourceSelection.available.first(where: { $0.endpoint == endpoint })
+                else { return }
+                model.selectSource(chosen)
+            }
+        )
     }
 
     /// Estado y elección del destino. Sin destino se informa, no se pide perdón.
@@ -66,7 +106,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(model.outputUnavailable ?? model.destinationStatus)
                 .font(.title2)
-                .foregroundStyle(model.selection.hasDestination ? .white : .secondary)
+                .foregroundStyle(model.selection.hasEndpoint ? .white : .secondary)
 
             if model.selection.available.count > 1 {
                 Picker("Destination", selection: destinationBinding) {
