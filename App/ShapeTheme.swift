@@ -25,6 +25,15 @@ enum Palette {
     /// Separadores y bordes.
     static let border = Color(red: 0x3a / 255, green: 0x2c / 255, blue: 0x3d / 255)
 
+    /// Posiciones del anillo que **no** llevan Pulse.
+    ///
+    /// **No es el color de los bordes, aunque lo parezca.** Se probó con él y
+    /// las posiciones vacías desaparecían contra el panel: a un metro el anillo
+    /// se leía como cinco puntos sueltos en vez de como dieciséis posiciones de
+    /// las que cinco disparan. Que el reparto euclidiano se vea exige ver
+    /// también los huecos.
+    static let step = Color(red: 0x6b / 255, green: 0x5a / 255, blue: 0x6e / 255)
+
     /// Texto secundario: etiquetas y estado en reposo.
     static let muted = Color(red: 0x8a / 255, green: 0x7d / 255, blue: 0x8d / 255)
 

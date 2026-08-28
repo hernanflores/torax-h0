@@ -33,7 +33,7 @@ struct RingView: View {
                 )
                 context.fill(
                     Path(ellipseIn: box),
-                    with: .color(position.isPulse ? Palette.shape : Palette.border)
+                    with: .color(position.isPulse ? Palette.shape : Palette.step)
                 )
             }
 
