@@ -1,0 +1,46 @@
+Verificación de fase — Fase 3: Del pool a la nota que suena
+Track: mvp-tonal_20260828
+
+## Automático
+
+  swift test --package-path Packages/Engine
+    → 178 tests, 0 fallos (168 antes: +10 de PoolTraversalTests)
+
+  swift test --package-path Packages/MIDI (mitad sin CoreMIDI)
+    → 173 tests, 0 fallos
+
+  swift test --package-path Packages/MIDI --enable-code-coverage
+    → MIDI 90,80% líneas (umbral ≥80%). NoteEmitter 100%.
+    → 0 ocurrencias de `-50` en esa pasada.
+
+  Partición de CI, tests de CoreMIDI en su proceso: 0 de 2 pasadas.
+
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+
+## Revisión de tiempo real (NFR1)
+
+El camino de emisión cambió de forma por primera vez desde la rebanada 1.
+Lo que se añadió al hilo del scheduler:
+
+- `EuclideanRhythm.pulseOrdinal`: dos restas, una división entera, una máscara
+  y `nonzeroBitCount` — una instrucción.
+- `PoolTraversal.pitch`: un módulo y una lectura de byte dentro de un `UInt64`.
+- `PitchPool.pitch(at:)`: un desplazamiento y un truncado.
+
+Sin asignaciones, sin locks, sin `await`, sin logging. Todo lleva marcador
+`/// Realtime:`. **La afirmación no vale hasta la medición de la Fase 6**, que
+es lo que el plan dice y por eso esa fase existe.
+
+## Dos hallazgos fuera del plan
+
+1. **Parar tiene que apagar todo el pool.** Cualquier altura pudo ser la última
+   en sonar y desde el hilo de control no se sabe cuál. Hueco documentado: una
+   altura quitada del pool mientras sonaba no se apaga; dura lo que el gate
+   (25 ms). Revisar cuando Sustain permita gates largos.
+
+2. **Pool vacío = silencio, y todos los `Track` se construían sin pool.** La app
+   habría arrancado muda y cinco tests de `TransportTests` lo destaparon. Se le
+   da un pool de una altura, la misma que sonaba antes de Tonal.
+
+Checkpoint: e91688a
