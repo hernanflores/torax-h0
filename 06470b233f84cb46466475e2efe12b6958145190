@@ -1,0 +1,53 @@
+Task: Controlador virtual de desarrollo (Fase 3)
+
+`VirtualController` inyecta giros sin hardware, y `RelativeEncoding.value(for:)`
+es el inverso del decodificador que lo hace posible.
+
+Por qué existe
+--------------
+`product-guidelines.md` reserva los parámetros generativos a los knobs y deja la
+pantalla para configuración y transporte; sin controlador conectado la app es de
+solo lectura. Probar el motor sin hardware no puede hacerse abriendo una puerta
+de edición táctil, y el propio documento lo dice: "es una herramienta de test,
+excluida del build de producción; NO es un modo de edición táctil por la puerta
+de atrás".
+
+DECISIÓN: produce mensajes MIDI de verdad, no atajos
+------------------------------------------------------
+Codifica el giro con la misma convención que usaría el hardware y lo entrega por
+el mismo camino. Un inyector que llamara directamente a `Shape.applying` sería
+más corto y no probaría ni la decodificación ni el mapeo — es decir, no probaría
+el camino que corre en producción.
+
+Hay un test que lo fija: tres giros por el controlador virtual y tres por
+mensajes construidos a mano dan el MISMO Track y el mismo snapshot publicado.
+
+`value(for:)` devuelve nil para lo que no se puede representar —el cero y las
+magnitudes mayores que 63— en vez de truncar en silencio a un giro que nadie
+pidió. La ida y vuelta se verifica sobre los 126 desplazamientos codificables.
+
+VERIFICACIÓN DE QUE NO VIAJA EN RELEASE
+----------------------------------------
+El plan pedía verificarlo SOBRE EL BINARIO, no por inspección del código: es la
+misma clase de problema que `UIBackgroundModes`, que compila igual y solo se
+nota en el producto final.
+
+Primer intento, sobre el binario de la app: 0 símbolos en Release... y también 0
+en Debug. La comprobación era VACUA — la app todavía no referencia el tipo (el
+cableado es la Fase 4), así que no se enlaza en ninguna configuración.
+
+Repetida donde sí es concluyente hoy, sobre el paquete:
+
+  swift build -c debug    → VirtualController.swift.o con 131 símbolos
+  swift build -c release  → VirtualController.swift.o SIN un solo símbolo
+
+(El fichero objeto existe en ambas porque SwiftPM compila el fichero; el
+`#if DEBUG` lo deja vacío.)
+
+PENDIENTE: repetir la comprobación sobre el binario de la app en la Fase 4,
+cuando exista una referencia real. Es la que cuenta para lo que se distribuye.
+
+Verificación
+------------
+swift test --package-path Packages/MIDI (mitad sin CoreMIDI) → 161 tests, 0 fallos
+xcodebuild build -scheme ToraxH0 -configuration Release → SUCCEEDED
