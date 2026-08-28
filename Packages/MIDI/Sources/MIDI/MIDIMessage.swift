@@ -119,3 +119,51 @@ public enum MIDIMessage: Equatable, Sendable {
             | UInt32(data2)
     }
 }
+
+extension MIDIMessage {
+
+    /// Reconstruye un mensaje a partir de un Universal MIDI Packet de 32 bits.
+    ///
+    /// Es lo contrario de `universalPacketWord(group:)`, y hace falta porque la
+    /// entrada recibe lo que la salida emite: CoreMIDI entrega UMP, no los bytes
+    /// sueltos del MIDI 1.0 clásico.
+    ///
+    /// **Devuelve `nil` para todo lo que este producto no usa, y eso no es un
+    /// error.** Por el cable llegan relojes, SysEx, program change y mensajes de
+    /// tipos que la app no interpreta; descartarlos en silencio es el
+    /// comportamiento correcto, no un fallo del que informar.
+    ///
+    /// No es código de tiempo real: se llama desde el callback de recepción de
+    /// CoreMIDI, no desde el hilo del scheduler.
+    init?(universalPacketWord word: UInt32) {
+        // Tipo 0x2: mensaje de canal MIDI 1.0. El resto no se interpreta.
+        guard (word >> 28) & 0xF == 0x2 else { return nil }
+
+        let status = UInt8((word >> 16) & 0xFF)
+        let data1 = UInt8((word >> 8) & 0xFF)
+        let data2 = UInt8(word & 0xFF)
+
+        // El canal viaja 0-indexado en el nibble bajo del status y se presenta
+        // 1-indexado, como en el hardware y en la Pre Spec.
+        guard let channel = MIDIChannel(Int(status & 0x0F) + 1) else { return nil }
+
+        switch status & 0xF0 {
+        case 0x90:
+            guard let note = MIDINote(Int(data1)), let velocity = MIDIVelocity(Int(data2))
+            else { return nil }
+            self = .noteOn(channel: channel, note: note, velocity: velocity)
+
+        case 0x80:
+            guard let note = MIDINote(Int(data1)), let velocity = MIDIVelocity(Int(data2))
+            else { return nil }
+            self = .noteOff(channel: channel, note: note, velocity: velocity)
+
+        case 0xB0:
+            guard let controller = MIDIController(Int(data1)) else { return nil }
+            self = .controlChange(channel: channel, controller: controller, value: data2)
+
+        default:
+            return nil
+        }
+    }
+}

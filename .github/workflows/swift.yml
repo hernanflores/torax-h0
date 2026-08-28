@@ -35,7 +35,7 @@ jobs:
     # `midi-test-flake_20260826`; cuando se cierre, estos dos pasos vuelven a
     # ser uno solo.
     - name: Test MIDI (CoreMIDI)
-      run: swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests'
+      run: swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
 
     - name: Test MIDI (resto)
-      run: swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests
+      run: swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
