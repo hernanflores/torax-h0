@@ -11,7 +11,7 @@ una deuda que la siguiente necesita.
 
 | # | Rebanada | Estado |
 |---|---|---|
-| 3 | Anillo, playhead y valor transitorio | **abierta** |
+| 3 | Anillo, playhead y valor transitorio | **en curso** |
 | 4 | Tonal: pool, Scale y Root | por planificar |
 | 5 | Groove estático: Velocity, Sustain, Probability | por planificar |
 | 6 | Groove temporal: Timing y Delay | por planificar |
@@ -34,7 +34,7 @@ de eso, ninguno de los tres defectos abiertos bloquea nada.
 
 ---
 
-- [ ] **Track: MVP rebanada 3 — Anillo, playhead y valor transitorio**
+- [~] **Track: MVP rebanada 3 — Anillo, playhead y valor transitorio**
   *Link: [conductor/tracks/mvp-ring-feedback_20260828/index.md](./tracks/mvp-ring-feedback_20260828/index.md)*
 
   La pantalla deja de ser texto y pasa a ser el espejo que `product-guidelines.md` describe. No toca el motor: todo lo que necesita ya existe en `Engine`. Cierra la medición de jitter con carga visual que `product.md` dejó pendiente desde la rebanada 1.
