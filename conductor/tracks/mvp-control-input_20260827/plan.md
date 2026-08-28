@@ -28,12 +28,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > Toda esta fase se testea sin CoreMIDI y sin hardware.
 
-- [ ] Task: Decodificación de encoders relativos
-  - [ ] Tests (Red): complemento a dos — `0x01`→+1, `0x3F`→+63, `0x7F`→−1, `0x41`→−63
-  - [ ] Tests (Red): `0x00` y `0x40` no producen movimiento
-  - [ ] Tests (Red): determinismo — mismo mensaje, mismo delta
-  - [ ] Implementación (Green): la convención entra como parámetro, no cableada
-- [ ] Task: Mapeo de CC a parámetro de Shape
+- [x] Task: Decodificación de encoders relativos — `c5f8923`
+  - [x] Tests (Red): complemento a dos — `0x01`→+1, `0x3F`→+63, `0x7F`→−1, `0x41`→−63
+  - [x] Tests (Red): `0x00` y `0x40` no producen movimiento
+  - [x] Tests (Red): determinismo — mismo mensaje, mismo delta
+  - [x] Implementación (Green): la convención entra como parámetro, no cableada
+- [~] Task: Mapeo de CC a parámetro de Shape
   - [ ] Tests (Red): un CC mapeado mueve su parámetro y **solo** el suyo
   - [ ] Tests (Red): un CC sin mapear se ignora en silencio, no es error
   - [ ] Implementación (Green): tabla fija, **declarada provisional** en el código
