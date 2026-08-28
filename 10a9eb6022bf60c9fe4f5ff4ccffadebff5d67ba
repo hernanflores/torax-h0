@@ -1,0 +1,50 @@
+Task: Mapeo de CC a parámetro de Shape (Fase 2)
+
+Tres piezas: `ShapeParameter` en Engine, `MIDIMessage.controlChange` y
+`MIDIController` en MIDI, y `ControlMapping` que los une.
+
+Decisión: ShapeParameter vive en Engine, no en la capa de entrada
+------------------------------------------------------------------
+Nombra conceptos del dominio, no del transporte. QUÉ se puede ajustar es una
+propiedad del motor; POR DÓNDE llega la orden —un knob, un mensaje MIDI, un
+test— es otra cosa, y va a cambiar más veces que la lista de parámetros.
+
+Sus nombres son los términos de la Pre Spec en inglés, con un test que lo
+vigila: es el requisito de vocabulario de product-guidelines.md.
+
+Decisión: el valor del CC va como UInt8 desnudo
+------------------------------------------------
+El resto del fichero da tipos con rango a todo (MIDINote, MIDIVelocity,
+MIDIController). El valor de un control change en MODO RELATIVO se queda como
+UInt8 a propósito: no es una cantidad, es un desplazamiento codificado, y quien
+sabe interpretarlo es `RelativeEncoding`. Darle un tipo con rango sugeriría una
+semántica de posición que el producto explícitamente no usa —
+product-guidelines.md: "sin zona muerta de pickup, sin necesidad de alcanzar un
+valor".
+
+Decisión: los números de controlador son 70-73
+------------------------------------------------
+Del rango de propósito general (70-79), donde la especificación MIDI espera
+parámetros de síntesis sin significado fijo. No pisan volumen, paneo ni pedal,
+así que un controlador genérico no dispara efectos raros por accidente.
+
+La tabla es FIJA Y PROVISIONAL, y está declarada así: la sustituyen el preset
+del BeatStep Pro y MIDI Learn. Está en un solo sitio para que sustituirla sea
+cambiar un valor, no perseguir constantes por el código de recepción.
+
+Un CC sin asignar devuelve nil y se ignora: en una sesión real llegan mensajes
+de todo tipo y no es asunto del mapeo quejarse de ellos. Hay un test que barre
+los 124 controladores no asignados.
+
+Otros tests: ida y vuelta parámetro↔controlador para los cuatro, que no haya
+controladores duplicados —un knob movería dos cosas—, y que el control change
+se empaquete con status 0xB0.
+
+`MIDIController` es Hashable, no solo Equatable, porque la tabla lo usa como
+valor de comparación en un Set en tests.
+
+Verificación
+------------
+swift test --package-path Packages/Engine → 88 tests, 0 fallos
+swift test --package-path Packages/MIDI (sin los de CoreMIDI) → 118 tests, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
