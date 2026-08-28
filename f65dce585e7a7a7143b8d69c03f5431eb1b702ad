@@ -1,0 +1,47 @@
+Verificación de fase — Fase 5: El pool y el marco en pantalla
+Track: mvp-tonal_20260828
+
+## Automático
+
+  swift test --package-path Packages/Engine
+    → 184 tests, 0 fallos (178 antes: +6 de PitchNameTests)
+
+  swift test --package-path Packages/MIDI (mitad sin CoreMIDI)
+    → 188 tests, 0 fallos
+
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+
+## Manual, en simulador
+
+Captura con la app corriendo: sección Tonal con la rejilla de cinco escalas
+(Minor seleccionada), las doce clases de altura para el Root (C seleccionada) y
+el pool mostrando `C3` — que es MIDI 48, el pool inicial de una nota, con la
+convención Do central = C4.
+
+**Lo que el simulador no puede verificar:** no hay forma de tocar desde la línea
+de comandos, así que cambiar Scale y ver el pool reencuadrarse queda para la
+Fase 6. La lógica sí está cubierta por `FrameChangeTests` en `MIDI`.
+
+## Decisiones
+
+- **La vista no sabe que el anillo existe.** Pool y anillo son representaciones
+  paralelas; cruzarlas sugeriría alturas clavadas a posiciones.
+- **Táctil solo Scale y Root.** El pool es material generativo y lo editan los
+  pads. Aquí se ve, no se toca.
+- **Las alturas llevan octava.** Do3 y Do4 son entradas distintas del pool.
+- **Groove sigue sin acento** porque sigue sin parámetros. Un color suelto sin
+  familia detrás acabaría usado como decoración.
+
+## Desviación del handoff
+
+Su pantalla 2 asume una navegación de cinco pestañas que no existe. Tonal entra
+como sección de la pantalla única; construir la navegación sería chrome sin
+función para cuatro pantallas que no están.
+
+## Un desajuste corregido antes de commitear
+
+La documentación de la vista decía que los Roots fuera de la escala no eran
+elegibles. Es falso: el Root es la fundamental que **transpone** la Scale.
+
+Checkpoint: f65dce5
