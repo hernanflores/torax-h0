@@ -12,7 +12,7 @@ una deuda que la siguiente necesita.
 | # | Rebanada | Estado |
 |---|---|---|
 | 3 | Anillo, playhead y valor transitorio | cerrada |
-| 4 | Tonal: pool, Scale y Root | **abierta** |
+| 4 | Tonal: pool, Scale y Root | **en curso** |
 | 5 | Groove estático: Velocity, Sustain, Probability | por planificar |
 | 6 | Groove temporal: Timing y Delay | por planificar |
 | 7 | Preset del BeatStep Pro y MIDI Learn | por planificar |
@@ -42,7 +42,7 @@ camino de tiempo real y necesita tests que lo corran. Se toma antes de esa.
 
 ---
 
-- [ ] **Track: MVP rebanada 4 — Tonal: pool, Scale y Root**
+- [~] **Track: MVP rebanada 4 — Tonal: pool, Scale y Root**
   *Link: [conductor/tracks/mvp-tonal_20260828/index.md](./tracks/mvp-tonal_20260828/index.md)*
 
   El Track deja de sonar en una sola altura. Pool de hasta 8 pitches acotado por Scale y Root, los pads que lo editan y la pantalla que lo muestra. La más cara del roadmap: toca el camino de tiempo real, añade una superficie de entrada y una pantalla.
