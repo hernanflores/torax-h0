@@ -19,9 +19,9 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): invariante exhaustiva — `effectivePulses == min(pulses, steps)` para toda combinación
   - [x] Implementación (Green): `EuclideanRhythm` reparte `min(pulses, steps)`; `Shape.effectivePulses`
   - [x] Documentar la desviación de la Pre Spec con nota fechada (`workflow.md` paso 8)
-- [~] Task: Lista ordenada de Divisions
-  - [ ] Tests (Red): recorrer hacia arriba y hacia abajo se detiene en los extremos, no envuelve
-  - [ ] Implementación (Green): secuencia de valores musicales, no un entero libre
+- [x] Task: Lista ordenada de Divisions — `e2fb8ea`
+  - [x] Tests (Red): recorrer hacia arriba y hacia abajo se detiene en los extremos, no envuelve
+  - [x] Implementación (Green): secuencia de valores musicales, no un entero libre
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Del mensaje MIDI al Track publicado
