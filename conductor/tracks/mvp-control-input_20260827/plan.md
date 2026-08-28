@@ -45,7 +45,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Revisión explícita: decodificar y publicar corren en el hilo de control, nunca en el del scheduler
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: Entrada MIDI real y controlador virtual
+## Phase 3: Entrada MIDI real y controlador virtual [checkpoint: 06470b2]
 
 - [x] Task: Fuentes de entrada y selección — `2d7b155`
   - [x] Tests (Red): la lista refleja las fuentes del sistema; sin fuentes es un estado válido
@@ -60,7 +60,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): inyectar un giro produce el mismo efecto que un CC real
   - [x] Implementación (Green): inyector de eventos relativos, sin CoreMIDI
   - [~] **Verificar que el binario de Release no lo contiene** — verificado sobre el paquete (release: 0 símbolos; debug: 131). Sobre el binario de la app queda **pendiente de la Fase 4**: hoy la comprobación es vacua porque nada lo referencia todavía.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Integración y verificación en dispositivo
 
