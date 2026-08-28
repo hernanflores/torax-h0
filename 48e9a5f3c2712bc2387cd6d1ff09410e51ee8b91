@@ -1,0 +1,54 @@
+Task: Acotado no destructivo en el reparto (Fase 1)
+
+`EuclideanRhythm.effectivePulses` y `Shape.effectivePulses` exponen lo que
+suena; `pulses` sigue siendo lo que se pidió. El acotado ya lo hacía el reparto
+desde la tarea anterior; esta cierra el modelo y lo prueba.
+
+La propiedad que motiva todo el cambio
+---------------------------------------
+Girar Steps de 16 a 4 y volver a subirlo devuelve el patrón original. Hay un
+test que hace el barrido completo hacia abajo y hacia arriba y compara contra
+el punto de partida: sin pérdida.
+
+Sin esto, un giro largo de knob destruía la configuración de Pulses de forma
+irrecuperable, que es justo lo que `product-guidelines.md` prohíbe.
+
+Invariante exhaustiva
+---------------------
+Sobre las 256 combinaciones de (Steps 1–16 × Pulses 1–16), incluidas las 120
+que NO caben:
+  - `effectivePulses == min(pulses, steps)`
+  - el reparto produce exactamente `effectivePulses` disparos
+  - `pulses` conserva el valor pedido
+  - el primer Step sigue disparando
+
+Decisión: la pantalla muestra lo PRETENDIDO
+--------------------------------------------
+Con Steps 4 y Pulses 9, el texto dice "Pulses 9" aunque suenen 4.
+
+`product-guidelines.md` dice que el estado del software es la única fuente de
+verdad del knob y que la posición física es irrelevante: el valor del parámetro
+ES el pretendido, y mostrar otro haría que el knob y la pantalla discreparan.
+Que solo suenen 4 de 9 lo hará evidente el anillo cuando llegue; el texto plano
+no es el sitio donde desambiguarlo. Hay un test que lo fija para que no se
+cambie por accidente.
+
+Desviación documentada
+----------------------
+`tech-stack.md` recibe una enmienda fechada 2026-08-27, con el mismo formato que
+la de los endpoints virtuales: qué cambia, en qué se desvía de la Pre Spec, por
+qué, y por qué es coherente con lo que `Rotate` ya hacía.
+
+Ficheros
+--------
+Modificado: Packages/Engine/Sources/Engine/EuclideanRhythm.swift
+Modificado: Packages/Engine/Sources/Engine/Shape.swift
+Nuevo:      Packages/Engine/Tests/EngineTests/NonDestructiveClampTests.swift
+Modificado: conductor/tech-stack.md
+
+Verificación
+------------
+swift test --package-path Packages/Engine → 75 tests, 0 fallos
+swift test --package-path Packages/MIDI (sin los de CoreMIDI) → 111 tests, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+Cobertura Sources/Engine → 100% en los tres ficheros
