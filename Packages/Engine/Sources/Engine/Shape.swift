@@ -149,8 +149,20 @@ public struct Track: Equatable, Sendable {
 
     public let shape: Shape
 
-    public init(shape: Shape) {
+    /// De qué material se eligen las alturas.
+    ///
+    /// **Vive en `Track` y no fuera** porque el hilo del scheduler lo necesita
+    /// para decidir qué nota emitir, y lo único que ese hilo lee es el snapshot
+    /// publicado. Meterlo aquí es lo que obliga a que sea almacenamiento inline
+    /// —ver `PitchPool`— y lo que `_isPOD(Track.self)` vigila.
+    ///
+    /// Un pool vacío es un estado válido: el Track dispara sus Pulses y no tiene
+    /// material que emitir.
+    public let pool: PitchPool
+
+    public init(shape: Shape, pool: PitchPool = PitchPool()) {
         self.shape = shape
+        self.pool = pool
     }
 
     /// Indica si el Step dado dispara, combinando Shape y Rotate.
