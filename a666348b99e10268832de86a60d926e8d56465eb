@@ -1,0 +1,39 @@
+Tarea: Scale y Root · Qué alturas permite el marco
+Track: mvp-tonal_20260828 — Fase 1
+
+## Qué cambia
+
+Nuevo fichero `Packages/Engine/Sources/Engine/Tonal.swift` con cuatro tipos:
+`Pitch`, `Root`, `Scale` y `TonalFrame`. Tests en `TonalFrameTests.swift`.
+
+## Por qué así
+
+- **Los intervalos son registro canónico del proyecto.** La Pre Spec nombra las
+  escalas y no las escribe, igual que hizo con los patrones euclidianos. Los
+  tests son la referencia.
+- **Máscara de doce bits, no array.** Consultar la pertenencia es un
+  desplazamiento y una comparación. Lo va a consultar el hilo del scheduler.
+- **`Pitch` es de `Engine`.** El motor no importa plataforma y el compilador lo
+  garantiza; tomar `MIDINote` prestado rompería esa pureza.
+- **El desempate de `nearest(to:)` baja**, y está fijado por un test exhaustivo
+  sobre las 60 combinaciones de escala y Root: bajar conserva el registro, subir
+  puede empujar fuera del rango MIDI por arriba. No depende del orden de la
+  búsqueda.
+
+## Decisión abierta en la Pre Spec, cerrada aquí
+
+Nombra «Pentatonic» sin decir cuál. Se elige la menor (0-3-5-7-10): la menor sin
+sus dos semitonos. Nota fechada en el código.
+
+## Un error del test, no del código
+
+`testRootWrapsAroundTheOctave` esperaba [0,1,3,4,6,8,11] para Si mayor. Es
+[1,3,4,6,8,10,11] — B C# D# E F# G# A#. Corregida la expectativa.
+
+## Verificación
+
+  swift test --package-path Packages/Engine --enable-code-coverage
+    → 149 tests, 0 fallos (131 antes: +18)
+    → Tonal.swift 96,61% líneas · Engine 98,87% (umbral ≥90%)
+
+No toca el camino de tiempo real ni la capa MIDI.
