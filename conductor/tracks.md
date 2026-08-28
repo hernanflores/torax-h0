@@ -6,16 +6,16 @@ La prioridad del proyecto. Sin app no hay nada que arreglar.
 
 ---
 
-- [ ] **Track: MVP rebanada 2 — Entrada de control**
-  *Link: [conductor/tracks/mvp-control-input_20260827/index.md](./tracks/mvp-control-input_20260827/index.md)*
-
-  La app deja de ser de solo lectura. La rebanada 1 dejó el relevo de snapshot en caliente probado pero sin nadie que publicara; aquí se conecta un controlador MIDI a ese camino. Solo los cuatro parámetros de Shape, que son los únicos que existen. Sin preset del BeatStep Pro ni MIDI Learn: llegan después, junto con el anillo.
+*Sin track abierto.* La rebanada 2 cerró el 2026-08-28; la 3 no está planificada
+todavía. El [handoff de diseño](../design_handoff/README.md) es la entrada del
+track de UI cuando le toque.
 
 ## Defectos conocidos
 
-Con la rebanada 1 del MVP cerrada, son lo siguiente en la cola junto con la
-entrada de control. La cadena tiene un orden forzado: `midi-test-flake` bloquea
-a `scheduler-lifecycle`, no al revés.
+Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres
+están encadenados: `midi-test-flake` bloquea a `scheduler-lifecycle`, no al
+revés. `network-session-source` es independiente de esa cadena y se puede tomar
+en cualquier momento.
 
 ---
 
@@ -41,6 +41,9 @@ a `scheduler-lifecycle`, no al revés.
   La investigación del 2026-08-27 invirtió la dependencia. El ciclo de vida del scheduler no se puede cerrar sin entender antes por qué retrasar el desmontaje inutiliza la creación de endpoints virtuales de CoreMIDI.
 
 ## Archivados
+
+- [x] **Track: MVP rebanada 2 — Entrada de control** — verificada en iPad Air (4ª gen) con BeatStep Pro
+  *Link: [conductor/archive/mvp-control-input_20260827/index.md](./archive/mvp-control-input_20260827/index.md)*
 
 - [x] **Track: MVP rebanada 1 — Shape, transporte y primer sonido** — suena en hardware; jitter con carga máx 0,127 ms · σ 0,015 ms
   *Link: [conductor/archive/mvp-shape-transport_20260827/index.md](./archive/mvp-shape-transport_20260827/index.md)*
