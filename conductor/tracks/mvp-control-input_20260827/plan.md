@@ -6,7 +6,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 **Orden:** el motor primero, otra vez, porque el cambio de `Pulses` toca código ya entregado en la rebanada 1 y conviene estabilizarlo antes de construir encima. Luego la cadena completa mensaje→Track de forma determinista, y solo al final la plataforma y el dispositivo.
 
-## Phase 1: El modelo de Pulses en `Engine`
+## Phase 1: El modelo de Pulses en `Engine` [checkpoint: e2fb8ea]
 
 - [x] Task: `Pulses` se valida por sí solo — `709b40b`
   - [x] Tests (Red): `Pulses` acepta 1–16 sin conocer Steps; rechaza 0, negativos y mayores que 16
@@ -22,7 +22,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 - [x] Task: Lista ordenada de Divisions — `e2fb8ea`
   - [x] Tests (Red): recorrer hacia arriba y hacia abajo se detiene en los extremos, no envuelve
   - [x] Implementación (Green): secuencia de valores musicales, no un entero libre
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Del mensaje MIDI al Track publicado
 
