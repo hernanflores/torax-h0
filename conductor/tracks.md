@@ -11,8 +11,8 @@ una deuda que la siguiente necesita.
 
 | # | Rebanada | Estado |
 |---|---|---|
-| 3 | Anillo, playhead y valor transitorio | **en curso** |
-| 4 | Tonal: pool, Scale y Root | por planificar |
+| 3 | Anillo, playhead y valor transitorio | cerrada |
+| 4 | Tonal: pool, Scale y Root | **siguiente**, por planificar |
 | 5 | Groove estático: Velocity, Sustain, Probability | por planificar |
 | 6 | Groove temporal: Timing y Delay | por planificar |
 | 7 | Preset del BeatStep Pro y MIDI Learn | por planificar |
@@ -39,10 +39,8 @@ camino de tiempo real y necesita tests que lo corran. Se toma antes de esa.
 
 ---
 
-- [~] **Track: MVP rebanada 3 — Anillo, playhead y valor transitorio**
-  *Link: [conductor/tracks/mvp-ring-feedback_20260828/index.md](./tracks/mvp-ring-feedback_20260828/index.md)*
-
-  La pantalla deja de ser texto y pasa a ser el espejo que `product-guidelines.md` describe. No toca el motor: todo lo que necesita ya existe en `Engine`. Cierra la medición de jitter con carga visual que `product.md` dejó pendiente desde la rebanada 1.
+*Sin track abierto.* La rebanada 3 cerró el 2026-08-28; la 4 —Tonal— está en la
+cola de arriba, pendiente de planificar.
 
 ## Defectos conocidos
 
@@ -75,6 +73,9 @@ en cualquier momento.
   La investigación del 2026-08-27 invirtió la dependencia. El ciclo de vida del scheduler no se puede cerrar sin entender antes por qué retrasar el desmontaje inutiliza la creación de endpoints virtuales de CoreMIDI.
 
 ## Archivados
+
+- [x] **Track: MVP rebanada 3 — Anillo, playhead y valor transitorio** — jitter con carga visual: máx 0,134 ms · σ 0,020 ms
+  *Link: [conductor/archive/mvp-ring-feedback_20260828/index.md](./archive/mvp-ring-feedback_20260828/index.md)*
 
 - [x] **Track: MVP rebanada 2 — Entrada de control** — verificada en iPad Air (4ª gen) con BeatStep Pro
   *Link: [conductor/archive/mvp-control-input_20260827/index.md](./archive/mvp-control-input_20260827/index.md)*
