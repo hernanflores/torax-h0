@@ -159,11 +159,20 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 6: Verificación en dispositivo
 
-- [ ] Task: Jitter con Tonal activo — **requiere iPad**
-  - [ ] Medir con el anillo corriendo y un pool de varias notas
-  - [ ] Comparar contra la referencia de la rebanada 3: máx 0,134 ms · σ 0,020 ms
-  - [ ] **Registrar el número, cumpla o no**
-  - [ ] Si se degrada, el sospechoso es la elección de altura en el camino de emisión, no el scheduler
+- [x] Task: ~~Jitter con Tonal activo~~ — **retirado el 2026-08-28**
+
+  > La regla de `workflow.md` cambió: se mide cuando el cambio altera **cuándo**
+  > cae un evento, no cuánto trabajo se hace para producirlo. Esta rebanada
+  > añade al hilo del scheduler un módulo, una máscara y un `nonzeroBitCount`
+  > —nanosegundos contra una ventana de 20 ms— y no desplaza ningún instante.
+  >
+  > Tres mediciones previas dieron CUMPLE con 25× de margen o más sobre la σ. La
+  > próxima toca en la **rebanada 6**, Timing y Delay, donde la medición no es un
+  > chequeo de regresión sino la verificación del propio parámetro.
+  >
+  > Se acepta el coste: si aparece una regresión de timing, habrá que bisectarla
+  > con el arnés en vez de saber de qué rebanada vino.
+
 - [ ] Task: Verificación de uso — **requiere iPad y controlador**
   - [ ] Con varias notas en el pool, el Track arpegia en vez de repetir una altura
   - [ ] Todo lo que suena está dentro de la Scale y el Root elegidos
