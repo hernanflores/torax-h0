@@ -198,11 +198,24 @@ cd Packages/MIDI && xcodebuild test -scheme MIDI -destination 'platform=macOS'
 
 ### Notas del entorno
 
-- **No hay runtimes de simulador instalados.** No es bloqueante: los tests de
-  paquete corren en host y la medición de jitter debe correr en dispositivo real
-  (`workflow.md` → Timing Verification). Si en algún momento se necesita
-  simulador: `xcodebuild -downloadPlatform iOS` y añadir `-destination
-  'platform=iOS Simulator,name=<dispositivo>'`.
+- **Hay runtimes de simulador instalados** (iOS 26.3, desde el 2026-08-28; esta
+  nota decía lo contrario y era falsa). Sirven para **verificar la interfaz sin
+  hardware**, que es cómo se encontró que las posiciones vacías del anillo
+  desaparecían contra el panel:
+
+  ```bash
+  SIM=$(xcrun simctl list devices available | grep -m1 'iPad Pro 11-inch' | grep -oE '[0-9A-F-]{36}')
+  xcrun simctl boot "$SIM"
+  xcodebuild build -scheme ToraxH0 -destination "id=$SIM" -derivedDataPath /tmp/dd
+  xcrun simctl install "$SIM" /tmp/dd/Build/Products/Debug-iphonesimulator/ToraxH0.app
+  xcrun simctl launch "$SIM" com.toraxh0.ToraxH0
+  xcrun simctl io "$SIM" screenshot captura.png
+  ```
+
+  **Lo que el simulador no puede verificar:** no tiene destinos ni fuentes MIDI,
+  así que `canPlay` es falso y no se ve el transporte, ni el playhead corriendo,
+  ni nada que dependa de un knob. Y la medición de jitter sigue exigiendo
+  dispositivo real: el timing del simulador no es representativo.
 - **`DEVELOPMENT_TEAM` sí está fijado** (`QRPT98J2U2`), en Debug y en Release.
   Instalar en un iPad real no exige configurar nada más. *(Corregido el
   2026-08-27: esta nota decía lo contrario y era falsa.)*
