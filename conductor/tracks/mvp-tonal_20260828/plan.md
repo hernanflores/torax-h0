@@ -157,7 +157,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 6: Verificación en dispositivo
+## Phase 6: Verificación en dispositivo [checkpoint: f65dce5]
 
 - [x] Task: ~~Jitter con Tonal activo~~ — **retirado el 2026-08-28**
 
@@ -173,15 +173,16 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   > Se acepta el coste: si aparece una regresión de timing, habrá que bisectarla
   > con el arnés en vez de saber de qué rebanada vino.
 
-- [ ] Task: Verificación de uso — **requiere iPad y controlador**
-  - [ ] Con varias notas en el pool, el Track arpegia en vez de repetir una altura
-  - [ ] Todo lo que suena está dentro de la Scale y el Root elegidos
-  - [ ] Los pads meten y sacan notas del pool, y se ve en pantalla
-  - [ ] Cambiar Scale con el transporte corriendo reencuadra el pool sin cortar el sonido
-  - [ ] Un pool vacío no suena y se comunica como estado
-  - [ ] El anillo, el playhead y el valor transitorio siguen funcionando (`FR9`)
-- [ ] Task: Verificar cobertura — `Engine` ≥90%, `MIDI` ≥80%
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Verificación de uso — verificada el 2026-08-28 en iPad Air (4ª gen) con BeatStep Pro
+  - [x] Con varias notas en el pool, el Track arpegia en vez de repetir una altura
+  - [x] Todo lo que suena está dentro de la Scale y el Root elegidos
+  - [x] Los pads meten y sacan notas del pool, y se ve en pantalla
+  - [x] Cambiar Scale con el transporte corriendo reencuadra el pool sin cortar el sonido
+  - [x] Un pool vacío no suena y se comunica como estado
+  - [x] El anillo, el playhead y el valor transitorio siguen funcionando (`FR9`)
+  - [x] **Girar Pulses no borra el pool** — verifica en dispositivo el defecto encontrado en la Fase 4
+- [x] Task: Verificar cobertura — `Engine` 96,99% (≥90%), `MIDI` 91,15% (≥80%)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Notas de riesgo
 
