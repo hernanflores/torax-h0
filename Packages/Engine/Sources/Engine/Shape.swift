@@ -19,6 +19,13 @@ public struct Steps: Equatable, Sendable {
         guard Self.validRange.contains(count) else { return nil }
         self.count = count
     }
+
+    /// Vía interna para valores que ya se han acotado al rango, como los que
+    /// produce un giro de knob. Evita un `guard` inalcanzable en cada sitio de
+    /// uso. Mismo idioma que `Division.init(unchecked:)`.
+    init(unchecked count: Int) {
+        self.count = count
+    }
 }
 
 /// Número de Pulses repartidos sobre el anillo.
@@ -48,6 +55,11 @@ public struct Pulses: Equatable, Sendable {
     /// Devuelve `nil` si el número de Pulses cae fuera de `validRange`.
     public init?(_ count: Int) {
         guard Self.validRange.contains(count) else { return nil }
+        self.count = count
+    }
+
+    /// Vía interna para valores ya acotados. Ver `Steps.init(unchecked:)`.
+    init(unchecked count: Int) {
         self.count = count
     }
 }
@@ -201,13 +213,15 @@ extension Shape {
         switch parameter {
         case .steps:
             let clamped = min(max(steps.count + delta, Steps.validRange.lowerBound), Steps.validRange.upperBound)
-            guard let moved = Steps(clamped) else { return self }
-            return Shape(steps: moved, pulses: pulses, rotate: rotate, division: division)
+            return Shape(
+                steps: Steps(unchecked: clamped), pulses: pulses, rotate: rotate, division: division
+            )
 
         case .pulses:
             let clamped = min(max(pulses.count + delta, Pulses.validRange.lowerBound), Pulses.validRange.upperBound)
-            guard let moved = Pulses(clamped) else { return self }
-            return Shape(steps: steps, pulses: moved, rotate: rotate, division: division)
+            return Shape(
+                steps: steps, pulses: Pulses(unchecked: clamped), rotate: rotate, division: division
+            )
 
         case .rotate:
             // El resto puede ser negativo, así que se lleva al anillo antes de
