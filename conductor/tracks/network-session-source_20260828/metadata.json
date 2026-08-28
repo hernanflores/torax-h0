@@ -1,0 +1,23 @@
+{
+  "id": "network-session-source_20260828",
+  "title": "La sesión MIDI de red monopoliza la entrada",
+  "type": "bug",
+  "status": "new",
+  "created_at": "2026-08-28",
+  "updated_at": "2026-08-28",
+  "phases": 2,
+  "origin": {
+    "found_in": "device-verification",
+    "reviewed_track": "mvp-control-input_20260827",
+    "severity": "medium"
+  },
+  "defect": {
+    "summary": "iOS publica siempre 'Red Session 1' como fuente: se autoselecciona, el estado 'No MIDI input' es inalcanzable y el controlador real nunca se elige solo",
+    "device": "iPad Air (4ª gen), iPadOS",
+    "observed": [
+      "La línea de entrada dice 'Red Session 1' en lugar de 'No MIDI input'",
+      "El indicador 'read-only' no aparece nunca",
+      "Al conectar el BeatStep Pro hay que elegir la fuente a mano"
+    ]
+  }
+}

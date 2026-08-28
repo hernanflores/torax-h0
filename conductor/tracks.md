@@ -19,6 +19,13 @@ a `scheduler-lifecycle`, no al revés.
 
 ---
 
+- [ ] **Track: La sesión MIDI de red monopoliza la entrada**
+  *Link: [conductor/tracks/network-session-source_20260828/index.md](./tracks/network-session-source_20260828/index.md)*
+
+  Encontrado el 2026-08-28 verificando la rebanada 2 en iPad. iPadOS publica siempre `Red Session 1` como fuente, así que la lista nunca está vacía: la app la autoselecciona, el estado `No MIDI input` de `product-guidelines.md` es **inalcanzable en el dispositivo de destino**, y el controlador real no se elige solo al conectarlo. No bloquea a nadie ni depende de la cadena de CoreMIDI.
+
+---
+
 - [ ] **Track: Ciclo de vida del scheduler y desmontaje de CoreMIDI**
   *Link: [conductor/tracks/scheduler-lifecycle_20260826/index.md](./tracks/scheduler-lifecycle_20260826/index.md)*
 
