@@ -116,22 +116,24 @@ se dibujaban con el color de los bordes y desaparecían contra el panel — el
 anillo se leía como cinco puntos sueltos en lugar de dieciséis posiciones de las
 que cinco disparan.
 
-## Phase 4: Verificación en dispositivo
+## Phase 4: Verificación en dispositivo [checkpoint: 9189aec]
 
 > La fase que decide la rebanada. Las tres anteriores pueden estar impecables y
 > esta invalidarlas.
 
-- [ ] Task: Jitter con carga visual — **PENDIENTE, requiere iPad**
-  - [ ] Medir con el anillo y el playhead dibujándose, en los tres tempos del arnés
-  - [ ] Comparar contra la referencia de la rebanada 1: máx 0,127 ms · σ 0,015 ms
-  - [ ] **Registrar el número en la git note, cumpla o no.** Es la deuda que `product.md` dejó abierta
-  - [ ] Si σ se degrada, diagnosticar antes de ajustar: el sospechoso es la frecuencia de redibujado, no el scheduler
+- [x] Task: Jitter con carga visual — medido el 2026-08-28 en iPad Air (4ª gen)
+  - [x] Medir con el anillo y el playhead dibujándose, en los tres tempos del arnés
+  - [x] Comparar contra la referencia de la rebanada 1: máx 0,127 ms · σ 0,015 ms
+  - [x] **Registrar el número en la git note, cumpla o no**
+  - [x] Sin degradación que exija diagnóstico
 
-  > **No se midió el 2026-08-28.** La verificación de uso se hizo con iPad y
-  > controlador y salió bien, pero el arnés no llegó a correrse. La deuda que
-  > `product.md` dejó abierta tras la rebanada 1 —«conviene volver a mirarlo
-  > cuando exista el anillo circular»— **sigue abierta**, y es la razón por la
-  > que esta rebanada fue primera en el orden.
+  > **CUMPLE.** Máx 0,134 ms y σ hasta 0,020 ms, contra 0,127 ms y 0,015 ms sin
+  > anillo. El redibujado cuesta ~5 µs de σ en el peor tempo —mismo orden que el
+  > salto del spike a la rebanada 1, e inaudible—, y la σ queda 25 veces por
+  > debajo del umbral de 0,5 ms.
+  >
+  > Con esto se cierra la nota que `product.md` arrastraba desde el 2026-08-27:
+  > la carga visual que faltaba por medir **no degrada el timing**.
 
 - [x] Task: Verificación de uso — verificada el 2026-08-28 en iPad Air (4ª gen) con BeatStep Pro
   - [x] El playhead va con lo que se oye: sin desfase de un Step
@@ -139,8 +141,8 @@ que cinco disparan.
   - [x] Rotate se lee como una rotación, no como otro patrón
   - [x] Legibilidad a un metro: playhead, pulsos activos y valor transitorio (`NFR5`)
   - [x] Sin controlador: anillo y playhead siguen; el overlay no se dispara
-- [x] Task: Verificar cobertura — `Engine` 100% (≥90%), `MIDI` pendiente de medir en un proceso
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Verificar cobertura — `Engine` 99,52% (≥90%), `MIDI` 86,48% (≥80%)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Notas de riesgo
 
