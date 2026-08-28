@@ -1,0 +1,153 @@
+# Plan — MVP rebanada 1: Shape, transporte y primer sonido
+
+**Track ID:** `mvp-shape-transport_20260827`
+
+Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fallando primero (Red), implementación mínima (Green), refactor, verificación de cobertura y checkpoint de fase. El trabajo va en rama y se integra por Pull Request.
+
+**Orden:** el motor puro primero (Fase 1), porque se testea sin simulador y sin hardware y es donde vive la corrección musical. Solo después se conecta hacia abajo (Fase 2) y hacia fuera (Fases 3 y 4).
+
+## Phase 1: Shape en `Engine` [checkpoint: cff338e]
+
+- [x] Task: Tipos de Shape — `71d8bb8`
+  - [x] Tests (Red): `Steps` acepta 1–16 y rechaza fuera de rango; `Pulses` acepta 1..Steps
+  - [x] Tests (Red): `Rotate` admite valores negativos y mayores que Steps
+  - [x] Implementación (Green): validación en el inicializador, no en cada sitio de uso
+  - [x] Vocabulario de la Pre Spec, sin sinónimos (`steps`, `pulses`, `rotate`)
+- [x] Task: Reparto euclidiano — `b5a10fe`
+  - [x] Tests (Red): **16/4, 16/5 y 12/7 de la Pre Spec**, como casos literales
+  - [x] Tests (Red): bordes — Pulses = 1, Pulses = Steps, Steps = 1
+  - [x] Tests (Red): determinismo — mismo estado, misma salida
+  - [x] Implementación (Green): distribución euclidiana pura
+  - [x] Refactor y verificar cobertura de `Engine` ≥90%
+- [x] Task: Rotate — `d00e08f`
+  - [x] Tests (Red): Rotate 0 es la identidad; Rotate = Steps vuelve al patrón original
+  - [x] Tests (Red): Rotate negativo; Rotate mayor que Steps envuelve
+  - [x] Tests (Red): rotar no cambia el número de Pulses
+  - [x] Implementación (Green)
+- [x] Task: Estado del Track — `cff338e`
+  - [x] Tests (Red): un Track resuelve qué Steps disparan, combinando Shape y Rotate
+  - [x] Implementación (Green): valor inmutable y `Sendable`, con su `Division`
+  - [x] Sin `Int.random()` ni `.randomElement()` — no hay aleatorio en esta rebanada
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## Phase 2: Snapshot en caliente [checkpoint: 99c6673]
+
+> La pieza que el spike dejó pendiente y el mayor riesgo técnico que queda en pie.
+
+- [x] Task: Publicación atómica del snapshot — `cc3266e`
+  - [x] Decidir el mecanismo sin locks: doble búfer con índice atómico, o ampliar `CToraxAtomics` con un puntero atómico. Documentar el porqué de la elección
+  - [x] Tests (Red): el scheduler recoge un snapshot publicado a media reproducción, en la ventana siguiente
+  - [x] Tests (Red): al cambiar de snapshot no se duplica ni se omite ningún Step
+  - [x] Tests (Red): publicar desde otro hilo mientras el scheduler lee no corrompe el estado
+  - [x] Implementación (Green)
+  - [x] Revisión explícita: sin asignaciones, locks, `await`, logging ni SwiftUI en el camino del scheduler
+  - [x] Marcar las funciones nuevas del camino con `/// Realtime:`
+- [x] Task: Emisión de note-on y note-off — `99c6673`
+  - [x] Tests (Red): cada pulso produce el par, con el note-off en su propio timestamp futuro
+  - [x] Implementación (Green): gate de duración fija, declarado provisional en el código
+  - [x] Sin sleeps ni temporizadores — el note-off va sellado, como el note-on
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## Phase 3: Salida real, transporte y pantalla [checkpoint: a6e49fb]
+
+- [x] Task: Selección de destino MIDI — `da0edb3`
+  - [x] Tests (Red): la lista refleja los destinos del sistema; sin destinos es un estado válido
+  - [x] Implementación (Green): enumeración y selección
+  - [x] El endpoint de medición no aparece como destino elegible
+- [x] Task: Desconexión como estado esperado — `760fe8c`
+  - [x] Tests (Red): `onSetupChanged` provoca reconsulta de destinos
+  - [x] Implementación (Green): estado `No MIDI device`, sin lenguaje de error ni disculpa
+- [x] Task: Transporte — `b5dc634`
+  - [x] Tests (Red): play arranca el reloj, stop lo detiene y no quedan notas colgadas
+  - [x] Implementación (Green): play/stop con reloj interno
+  - [x] Al parar, enviar note-off de cualquier nota en curso
+- [x] Task: Pantalla mínima de estado — `a6e49fb`
+  - [x] Transporte, selección de destino y valores de Shape **en solo lectura**
+  - [x] Sin lenguaje visual del producto: ni anillo, ni overlay de valor, ni acentos por familia
+  - [x] Nada en pantalla debe sugerir una nota fija por paso — contradice el modelo de pool
+  - [x] Verificar cobertura de `App` ≥80% — **umbral retirado**: el proyecto no tiene target de test ni runtime de simulador. La lógica se movió a `Engine` y `MIDI`, donde sí se cubre. Ver la nota del 2026-08-27 en `workflow.md`.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## Phase 4: Primer sonido y lectura de jitter [checkpoint: a7c439d]
+
+- [x] Task: Primer sonido en dispositivo — **verificado en iPad el 2026-08-27** (sin commit: es verificación, no código)
+  - [x] Ejecutar en el iPad con un sintetizador conectado
+  - [x] Verificar los pulsos euclidianos audibles en las posiciones esperadas
+  - [x] Verificar que parar no deja notas colgadas
+  - [x] Verificar que desconectar a media reproducción se refleja como estado, no como caída
+  - [x] **Extra:** Play/Stop rápido **no** duplicó notas de forma audible — ver la nota de `a7c439d`
+- [x] Task: Lectura indicativa de jitter con carga — `a7c439d`
+  - [x] Barrido a 60, 120 y 174 BPM con el motor y la interfaz corriendo
+  - [x] Contrastar contra el umbral: máx < 2 ms, σ < 0,5 ms
+  - [x] Registrar los números en la git note del commit
+  - [x] Comparar contra la medición del spike: lo que interesa es la degradación al meter carga, no el valor absoluto
+  - [x] Si no se cumple: parar y reportar con datos. No iterar arquitecturas dentro de este track
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## Estado del track
+
+**COMPLETO — 2026-08-27.** Las cuatro fases cerradas con checkpoint. Torax H-0
+suena por primera vez en hardware.
+
+Criterio principal de aceptación, cumplido y verificado en iPad: pulsar Play
+produce los pulsos euclidianos de Shape 16/5 audibles en el sintetizador, y
+Stop detiene la emisión.
+
+### Lo que queda abierto, a conciencia
+
+1. **El check de CI puede fallar** ~1 de cada 6 pasadas con
+   `clientCreationFailed(-50)`. Relanzar. Alcance de
+   [`midi-test-flake_20260826`](../../tracks/midi-test-flake_20260826/index.md), que pasó
+   a ser el bloqueante de la cadena de defectos.
+2. **La carrera de `stop()`/`start()` sigue sin arreglar**, pero se acotó su
+   alcance real: `Transport.play()` construye un `SchedulerThread` nuevo en cada
+   arranque, así que el camino de producto es por construcción inmune. En el
+   iPad, Play/Stop rápido no duplicó notas. El defecto vive en la API de
+   `SchedulerThread` y en la suite de tests, no en el transporte.
+   Investigación completa en la rama `fix/scheduler-lifecycle`, sin integrar.
+3. **Division no cambia en caliente.** Steps, Pulses y Rotate sí. Llega con el
+   track de entrada de control, que es quien la puede provocar.
+4. **La medición de jitter es indicativa, no el veredicto.** Falta el anillo.
+   La σ subió de 8-9 µs a 12-15 µs y sube con el tempo: son 4-7 µs, inaudibles,
+   pero conviene volver a mirarlo en el track de UI.
+
+### Lo que este track deja listo para el siguiente
+
+`Engine` tiene Shape completo y puro. `MIDI` tiene el relevo de snapshot en
+caliente ya probado, que es lo que la entrada de control necesitaba encontrar
+hecho: girar un knob será publicar un `Track` nuevo, y el camino ya existe.
+
+## Notas de riesgo
+
+- **La Fase 2 concentra el riesgo.** Publicar un snapshot sin locks, en una plataforma donde la stdlib no da atómicos, es lo menos resuelto del track. Si aparece un lock en el camino del scheduler, el diseño está mal: revisarlo, no optimizarlo.
+- **La carrera de `stop()`/`start()` está abierta** (`scheduler-lifecycle_20260826`). La Fase 3 introduce transporte, que es justo el gesto que la dispara. Si parar y arrancar duplica notas de forma audible, es señal de subir la prioridad de aquel track — no de parchearlo aquí.
+- **La medición de la Fase 4 es indicativa.** Un resultado holgado no cierra la pregunta del timing bajo carga: falta el anillo. Un resultado malo, en cambio, sí es información dura y para el track.
+
+## Phase: Review Fixes
+
+Revisión del camino de tiempo real (`conductor-review`, 2026-08-27). Se revisaron
+`TrackHandoff`, `TrackScheduler`, `SchedulerThread`, `NoteEmitter` y `Transport`
+contra `swift.md`, `general.md` y `product-guidelines.md`.
+
+- [x] Task: Apply review suggestions — `9ad42d6`
+  - [x] **Medium** — el note-off de parada iba sellado en `0` («ahora»), así que
+        CoreMIDI lo emitía *antes* que cualquier note-on ya programado con
+        timestamp futuro: no podía apagar la nota que existía para apagar. Se
+        sella una ventana de look-ahead por delante. Verificado revirtiendo el
+        arreglo: el test falla sin él.
+  - [x] **Medium** — `Track?` significaba dos cosas incompatibles: `nil` era
+        «emite todos los Steps» en `TrackScheduler` y «descarta esta lectura» en
+        `TrackHandoff.load()`. Enchufados en `Transport.play()`, un descarte
+        habría sonado como una ráfaga a densidad máxima. Se separan con el enum
+        `SchedulerMaterial` (`.track` / `.everyStep`).
+
+### No arreglados, por decisión
+
+- **Low** — `Transport` se declara `@unchecked Sendable` con `var scheduler`
+  mutable sin sincronizar y sin contrato de hilo documentado, a diferencia de
+  `TrackHandoff`, que sí documenta su regla de un solo escritor. En la práctica
+  la app solo lo usa desde el hilo principal.
+- **Low, preexistente de `main`** — `SchedulerThread.swift:122`,
+  `UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))` **atrapa** si el
+  look-ahead supera ~8,6 s. No lo introduce este track. Se arregla con
+  `UInt32(clamping:)`.

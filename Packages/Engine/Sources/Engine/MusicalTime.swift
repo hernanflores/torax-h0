@@ -102,3 +102,12 @@ public struct MusicalTimeline: Equatable, Sendable {
         Int64((stepDurationNanoseconds * Double(step)).rounded())
     }
 }
+
+extension Division: CustomStringConvertible {
+
+    /// Se lee como la fracción que es: `1/16`.
+    ///
+    /// `product-guidelines.md` pide precisión, no conversación: el valor y nada
+    /// más.
+    public var description: String { "\(numerator)/\(denominator)" }
+}

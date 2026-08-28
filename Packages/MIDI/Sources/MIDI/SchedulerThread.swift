@@ -6,9 +6,12 @@ import Foundation
 ///
 /// El hilo del scheduler captura este valor al arrancar y no vuelve a leer
 /// estado compartido: no hay lock que tomar porque no hay nada mutable que
-/// proteger. Cambiar parámetros en caliente —girar un knob mientras suena—
-/// exigirá publicar un snapshot nuevo de forma atómica; eso llega con el
-/// producto, no con el spike.
+/// proteger.
+///
+/// Lo que sí cambia en caliente es el **Track**, y no viaja aquí: llega por
+/// `TrackHandoff`, que el hilo consulta una vez por ventana. Esto sigue siendo
+/// la configuración de la rejilla —tempo, división y tamaño de la ventana—, que
+/// se fija al arrancar el transporte.
 public struct SchedulerConfiguration: Sendable, Equatable {
 
     public let timeline: MusicalTimeline
@@ -51,12 +54,26 @@ public final class SchedulerThread: @unchecked Sendable {
     public typealias StepHandler = @Sendable (_ step: Int, _ hostTime: UInt64) -> Void
 
     private let configuration: SchedulerConfiguration
+    private let material: SchedulerMaterial
+    private let handoff: TrackHandoff?
     private let handler: StepHandler
     private let running = AtomicFlag(false)
     private var thread: Thread?
 
-    public init(configuration: SchedulerConfiguration, handler: @escaping StepHandler) {
+    /// - Parameters:
+    ///   - material: con qué arranca. Por defecto `.everyStep`, que es lo que
+    ///     quiere el arnés de medición.
+    ///   - handoff: por donde llegan los Tracks publicados mientras suena. `nil`
+    ///     deja el material fijo durante toda la reproducción.
+    public init(
+        configuration: SchedulerConfiguration,
+        material: SchedulerMaterial = .everyStep,
+        handoff: TrackHandoff? = nil,
+        handler: @escaping StepHandler
+    ) {
         self.configuration = configuration
+        self.material = material
+        self.handoff = handoff
         self.handler = handler
     }
 
@@ -66,8 +83,14 @@ public final class SchedulerThread: @unchecked Sendable {
         guard !running.value else { return }
         running.value = true
 
-        let thread = Thread { [configuration, handler, running] in
-            SchedulerThread.run(configuration: configuration, handler: handler, running: running)
+        let thread = Thread { [configuration, material, handoff, handler, running] in
+            SchedulerThread.run(
+                configuration: configuration,
+                material: material,
+                handoff: handoff,
+                handler: handler,
+                running: running
+            )
         }
         thread.name = "com.toraxh0.scheduler"
         // Prioridad máxima: el hilo compite con la interfaz por la CPU y el
@@ -89,10 +112,12 @@ public final class SchedulerThread: @unchecked Sendable {
     /// Sin asignaciones, sin locks, sin await.
     private static func run(
         configuration: SchedulerConfiguration,
+        material: SchedulerMaterial,
+        handoff: TrackHandoff?,
         handler: StepHandler,
         running: AtomicFlag
     ) {
-        var scheduler = LookAheadScheduler(timeline: configuration.timeline)
+        var scheduler = TrackScheduler(timeline: configuration.timeline, material: material)
         let startHostTicks = HostClock.now()
         let sleepNanoseconds = UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))
 
@@ -102,8 +127,7 @@ public final class SchedulerThread: @unchecked Sendable {
             )
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
 
-            for step in scheduler.advance(toHorizon: horizon) {
-                let offset = configuration.timeline.nanosecondOffset(forStep: step)
+            scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) { step, offset in
                 let hostTime = startHostTicks
                     &+ HostClock.hostTicks(fromNanoseconds: UInt64(max(0, offset)))
                 handler(step, hostTime)

@@ -21,5 +21,21 @@ jobs:
     - uses: actions/checkout@v4
     - name: Test Engine
       run: swift test --package-path Packages/Engine
-    - name: Test MIDI
-      run: swift test --package-path Packages/MIDI
+    # Los tests que crean clientes y endpoints de CoreMIDI van PRIMERO y en su
+    # propio proceso.
+    #
+    # Motivo: la suite arranca hilos de scheduler a prioridad máxima, y esa
+    # presión inutiliza la creación de endpoints virtuales para el resto del
+    # proceso. En el runner se manifiesta como `clientCreationFailed(-2)` de
+    # forma determinista; en macOS local, como `-50` intermitente. Medido: con
+    # todo en un proceso, `main` pasa y la rama del MVP falla siempre;
+    # corriendo estos tests antes de que exista ningún hilo, no se llega a dar.
+    #
+    # Es una MITIGACIÓN, no un arreglo. La causa está registrada en el track
+    # `midi-test-flake_20260826`; cuando se cierre, estos dos pasos vuelven a
+    # ser uno solo.
+    - name: Test MIDI (CoreMIDI)
+      run: swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests'
+
+    - name: Test MIDI (resto)
+      run: swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests

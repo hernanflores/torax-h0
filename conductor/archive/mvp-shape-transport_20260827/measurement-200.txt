@@ -1,0 +1,42 @@
+Torax H-0 — MVP rebanada 1: lectura indicativa de jitter con carga
+dispositivo: iPad · iPadOS 26.5
+eventos por tempo: 200
+umbral: máx < 2 ms · σ < 0,5 ms
+carga: motor generativo (Shape 16/5) e interfaz corriendo durante la medición
+
+60 BPM · n=200  máx=0.104 ms  media=+0.069 ms  σ=0.012 ms  → CUMPLE
+120 BPM · n=200  máx=0.127 ms  media=+0.069 ms  σ=0.013 ms  → CUMPLE
+174 BPM · n=200  máx=0.126 ms  media=+0.067 ms  σ=0.015 ms  → CUMPLE
+
+VEREDICTO: CUMPLE
+
+
+COMPARACIÓN CONTRA EL SPIKE (mismo iPad, mismo arnés, n=200)
+============================================================
+
+              máximo                σ                     media
+        spike → ahora         spike → ahora         spike → ahora
+ 60 BPM 0.115 → 0.104 ms      0.008 → 0.012 ms      +0.062 → +0.069 ms
+120 BPM 0.104 → 0.127 ms      0.009 → 0.013 ms      +0.062 → +0.069 ms
+174 BPM 0.101 → 0.126 ms      0.008 → 0.015 ms      +0.056 → +0.067 ms
+
+Lectura
+-------
+No hay degradación grosera, que es lo que esta medición tenía que detectar
+(FR6). Los máximos quedan 16x por debajo del umbral y la σ 33x por debajo.
+
+Pero la σ SUBE de forma consistente en los tres tempos, de 8-9 µs a 12-15 µs:
+un 50-90% relativo. Y sube CON el tempo (12 → 13 → 15 µs), que es coherente con
+que a más BPM haya más despertares del scheduler y más `Track.triggers()` por
+segundo. En absoluto son 4-7 µs, inaudibles; pero es una tendencia medida en
+tres puntos, no ruido.
+
+La media sube ~7 µs de forma uniforme en los tres tempos. Eso es sesgo constante
+del camino de medición, no jitter — el propio veredicto del spike lo explica.
+
+Qué NO cierra esta medición
+---------------------------
+Es indicativa, no el veredicto. Falta el anillo circular, que es la parte
+visualmente cara de la interfaz. La medición definitiva corresponde al track de
+UI, y es ahí donde hay que volver a mirar si la tendencia de la σ con el tempo
+se mantiene o se acentúa.
