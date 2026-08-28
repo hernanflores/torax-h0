@@ -1,0 +1,59 @@
+Task: Lista ordenada de Divisions (Fase 1)
+
+`Division.ordered` — de más lenta a más rápida: 1/1, 1/2, 1/4, 1/8, 1/16 — más
+`slowest`, `fastest` y `advanced(by:)`. Se añaden las constantes `whole` y
+`half`, que no existían.
+
+Cada valor dura la mitad que el anterior, así que girar el knob se percibe como
+duplicar o dividir la velocidad de la línea. Es lo que describe la Pre Spec:
+"cambia la velocidad sin cambiar la estructura".
+
+Decisión: los extremos frenan, no envuelven
+--------------------------------------------
+Un knob que saltara de 1/16 a 1/1 al pasarse convertiría un ajuste fino en un
+cambio brutal de velocidad. `product-guidelines.md` pide que girar produzca
+"siempre un cambio inmediato y proporcional", y un salto de 16x no lo es.
+
+Una Division que no esté en la lista se devuelve intacta: el tipo sigue
+admitiendo cualquier fracción positiva, y el recorrido no puede inventar un
+punto de partida que no existe.
+
+DECISIÓN: la lista se corta en 1/16, no sigue a 1/32
+-----------------------------------------------------
+No es arbitrario, sale de una cuenta. El note-off de cada pulso se sella un gate
+provisional por delante del note-on, y ese gate tiene que caber en el Step más
+corto que el producto pueda producir:
+
+  Division   Step a 300 BPM (tempo máximo)   ¿cabe el gate de 25 ms?
+  1/1              800.00 ms                  sí
+  1/2              400.00 ms                  sí
+  1/4              200.00 ms                  sí
+  1/8              100.00 ms                  sí
+  1/16              50.00 ms                  sí
+  1/32              25.00 ms                  NO — exactamente el gate
+
+Con 1/32 las notas empezarían a solaparse en la misma altura. La alternativa
+era acortar el gate a ~12 ms, pero eso lo vuelve muy staccato en los tempos
+lentos a cambio de un valor que Groove va a habilitar de todas formas: Sustain
+sustituye al gate y entonces 1/32 entra sin coste.
+
+El test del gate ahora DERIVA del dominio
+------------------------------------------
+`testProvisionalGateFitsInsideTheShortestPossibleStep` ya no tiene `.sixteenth`
+ni `300` cableados: lee `Division.fastest` y `Tempo.validRange.upperBound`. Si
+alguien añade una Division más rápida o sube el tempo máximo, el test falla en
+vez de dejar que las notas se solapen en silencio.
+
+Verificado: añadiendo 1/32 a la lista, falla; quitándolo, pasa.
+
+Ficheros
+--------
+Modificado: Packages/Engine/Sources/Engine/MusicalTime.swift
+Nuevo:      Packages/Engine/Tests/EngineTests/DivisionSequenceTests.swift
+Modificado: Packages/MIDI/Tests/MIDITests/NoteEmitterTests.swift
+
+Verificación
+------------
+swift test --package-path Packages/Engine → 86 tests, 0 fallos
+swift test --package-path Packages/MIDI (sin los de CoreMIDI) → 111 tests, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
