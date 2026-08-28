@@ -6,7 +6,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 **Orden:** lo testeable primero. La geometría y el camino de vuelta del playhead son las dos piezas con lógica, y las dos viven fuera de `App`; la vista se escribe cuando ya tiene qué dibujar. Deja para el final lo único que exige iPad, que es también lo que decide la rebanada: el jitter con carga visual.
 
-## Phase 1: La geometría vive en `Engine`
+## Phase 1: La geometría vive en `Engine` [checkpoint: 4d45046]
 
 > `workflow.md`: si algo en `App` merece un test, está en el sitio equivocado.
 > Toda esta fase se testea sin simulador, sin hardware y sin dibujar nada.
@@ -23,7 +23,9 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Implementación (Green): se reutiliza `EuclideanRhythm`, no se recalcula el reparto
 
   > Las dos tareas comparten SHA: son un solo tipo, y partirlo habría exigido publicar un `Ring` sin `isPulse` que ningún llamante puede usar.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+  > Validación visual **diferida a las Fases 3 y 4** por decisión del usuario: esta fase no toca `App/`. El checkpoint da por buena la geometría y sus invariantes, no cómo se ve dibujada.
 
 ## Phase 2: El camino de vuelta del playhead
 
