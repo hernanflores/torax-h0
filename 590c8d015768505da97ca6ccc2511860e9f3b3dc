@@ -1,0 +1,68 @@
+Task: Aplicar el delta y publicar (Fase 2)
+
+Dos piezas: `Shape.applying(_:to:)` en Engine —el motor decide qué significa un
+desplazamiento para cada parámetro— y `ControlInput` en MIDI, que cierra la
+cadena mensaje → Track publicado.
+
+Con esto, girar un knob y publicar un snapshot son la misma cosa. Lo único que
+falta para que sea un instrumento es de dónde llegan los mensajes: la Fase 3.
+
+DECISIÓN: cada parámetro se comporta según su naturaleza, no según una regla
+------------------------------------------------------------------------------
+Es lo más importante de la tarea, y podría haberse resuelto con un `clamp`
+uniforme. No se hizo porque los cuatro parámetros no son la misma clase de cosa:
+
+  steps, division  → SE FRENAN en sus extremos. Son escalas con principio y fin;
+                     envolver convertiría un ajuste fino en un salto brutal, y
+                     product-guidelines.md pide que girar produzca "siempre un
+                     cambio inmediato y proporcional". Saltar de 1/16 a 1/1 es
+                     un cambio de velocidad de 16x en un clic.
+
+  rotate           → ENVUELVE, porque es un giro sobre un anillo cerrado.
+                     Pasarse del último Step y aparecer en el primero es el
+                     comportamiento correcto, no un desbordamiento. Se normaliza
+                     dentro del anillo para que el valor mostrado siga
+                     significando algo tras muchos giros — un "Rotate 137" sería
+                     inútil en pantalla.
+
+  pulses           → se frena en SU PROPIO RANGO, no en Steps. Frenarlo en Steps
+                     sería el acotado destructivo que la Fase 1 eliminó.
+
+Hay tests para cada comportamiento, incluido uno que gira Steps 15 veces hacia
+abajo y 15 hacia arriba comprobando que Pulses sobrevive, y otro que da una
+vuelta completa de Rotate y verifica que se vuelve al patrón original.
+
+Decisión: no publicar cuando nada cambia
+-----------------------------------------
+`receive` devuelve si publicó. No publica ante: mensajes que no son de control,
+controladores sin mapear, giros nulos (0x00 y 0x40) y giros contra un extremo.
+
+Ninguno de los cuatro es un error del que informar — en una sesión real llegan
+mensajes de todo tipo. Publicar sin cambio, en cambio, sí sería trabajo y ruido
+para nada, y el scheduler recogería un snapshot idéntico.
+
+Decisión: ControlInput guarda su propio Track
+----------------------------------------------
+No relee del handoff porque `load()` puede descartar una lectura, y perder un
+giro por eso sería un knob que no responde.
+
+Revisión de tiempo real
+-----------------------
+`ControlInput.receive` NO corre en el hilo del scheduler y está documentado como
+tal: construir un Shape reparte los Pulses, y eso asigna memoria. Verificado que
+nadie lo llama desde el camino de timing — hoy nadie lo llama todavía, se cablea
+en la Fase 4. La separación es la misma que ya usa TrackHandoff: un solo
+escritor publica, el scheduler solo lee.
+
+Corrección durante el desarrollo
+---------------------------------
+Un test asumía que +1 siempre mueve, y falló con Division: el Shape por defecto
+arranca en 1/16, que ya es el extremo rápido. El test estaba mal, no el código —
+no moverse ahí ES lo correcto. Se corrigió el punto de partida y se añadió un
+test que comprueba explícitamente que en el extremo no se publica.
+
+Verificación
+------------
+swift test --package-path Packages/Engine → 101 tests, 0 fallos
+swift test --package-path Packages/MIDI (sin los de CoreMIDI) → 139 tests, 0 fallos
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
