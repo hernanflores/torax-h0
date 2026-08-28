@@ -100,6 +100,30 @@ final class TransportModel {
     /// (`product-guidelines.md`). Es un estado, no una carencia: no se abre
     /// ninguna vía táctil para suplirlo.
     var isReadOnly: Bool { !sourceSelection.hasEndpoint }
+
+    /// Cuánto se queda el valor grande tras el último giro.
+    ///
+    /// Lo bastante para leerlo de pie y a un metro sin que estorbe al anillo
+    /// después. No es un valor medido: se ajusta con la app en la mano.
+    private static let transientLifetime: Double = 1.6
+
+    /// El valor grande que se está mostrando, o `nil` si no hay ninguno.
+    private(set) var transientChange: ShapeChange?
+
+    private var transientDismissal: Task<Void, Never>?
+
+    /// El anillo del Track vigente: dónde cae cada Step y cuáles disparan.
+    var ring: Ring { Ring(shape: track.shape) }
+
+    /// Dónde está el playhead, o `nil` con el transporte parado.
+    ///
+    /// **No es estado observable y no debe serlo.** Se consulta al dibujar, y
+    /// cambia de forma continua: publicarlo como propiedad observada obligaría a
+    /// alguien a refrescarlo a 60 Hz y a invalidar la vista entera en cada
+    /// fotograma. Quien lo dibuje se redibuja solo —`TimelineView`— y pregunta
+    /// aquí; el valor que recibe deriva del reloj musical, no del temporizador
+    /// que provocó el redibujado.
+    var playhead: Playhead? { transport?.playhead }
     var canPlay: Bool { selection.hasEndpoint && transport != nil }
 
     init() {
@@ -182,8 +206,29 @@ final class TransportModel {
 
     /// Aplica un mensaje entrante. Corre en el hilo principal.
     private func apply(_ message: MIDIMessage) {
-        guard let controlInput, controlInput.receive(message) else { return }
+        guard let controlInput else { return }
+        let previous = track.shape
+        guard controlInput.receive(message) else { return }
         track = controlInput.track
+        announce(ShapeChange(from: previous, to: track.shape))
+    }
+
+    /// Muestra el valor grande y programa su desvanecimiento.
+    ///
+    /// **Cada giro reinicia la cuenta.** Girando sin parar el valor se queda
+    /// puesto, que es lo que se quiere: se desvanece «tras la inactividad»
+    /// (`product-guidelines.md`), no tras un tiempo fijo desde que apareció.
+    private func announce(_ change: ShapeChange?) {
+        guard let change else { return }
+        transientChange = change
+
+        transientDismissal?.cancel()
+        let dismissal = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(Self.transientLifetime))
+            guard !Task.isCancelled else { return }
+            self?.transientChange = nil
+        }
+        transientDismissal = dismissal
     }
 
     /// Elige otra fuente de entrada.

@@ -1,0 +1,34 @@
+{
+  "id": "mvp-ring-feedback_20260828",
+  "title": "MVP rebanada 3: Anillo, playhead y valor transitorio",
+  "type": "feature",
+  "status": "complete",
+  "created_at": "2026-08-28",
+  "updated_at": "2026-08-28",
+  "phases": 4,
+  "mvp_slice": 3,
+  "scope": {
+    "in": [
+      "Geometría del anillo en Engine: posiciones de Step y Pulses sobre el círculo",
+      "Posición del playhead publicada desde el scheduler sin coste en tiempo real",
+      "Anillo circular con playhead derivado del reloj musical",
+      "Overlay de valor grande transitorio, sobre el anillo y sin ocultarlo",
+      "Acento cromático de la familia Shape",
+      "Re-medición de jitter con la carga visual del anillo"
+    ],
+    "out": [
+      "Tonal: pool, Scale, Root — y su representación paralela",
+      "Groove: Velocity, Sustain, Timing, Delay, Probability",
+      "Las otras cuatro pantallas del handoff: Scale & Root, MIDI, Banks, Track×Pattern",
+      "Selector de Track y pestañas de familia: hay un solo Track y una sola familia",
+      "Anillos concéntricos: son 16 Tracks, y hay uno",
+      "Steps 17–64 y la densidad del anillo a valores altos",
+      "Persistencia y lenguaje visual final del producto"
+    ]
+  },
+  "inputs": {
+    "design_handoff": "design_handoff/README.md — pantalla 1, lofi",
+    "product_guidelines": "conductor/product-guidelines.md — Lenguaje visual, Legibilidad a distancia"
+  },
+  "completed_at": "2026-08-28"
+}
