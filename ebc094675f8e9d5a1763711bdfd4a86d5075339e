@@ -1,0 +1,34 @@
+Task: `Division` llega a 1/32
+Track: mvp-groove-static_20260829 — Fase 3
+Añadida el 2026-08-29 en el checkpoint de la Fase 1, a petición del usuario.
+
+Ficheros
+- Packages/Engine/Sources/Engine/MusicalTime.swift — .thirtySecond + la lista
+- Packages/Engine/Tests/EngineTests/DivisionSequenceTests.swift
+- Packages/Engine/Tests/EngineTests/GrooveTypesTests.swift — ShortestStepTests
+- Packages/Engine/Tests/EngineTests/ShapeAdjustmentTests.swift — extremo del dominio
+- Packages/MIDI/Tests/MIDITests/ControlInputTests.swift — extremo del dominio
+
+Red → Green
+Los tests de la lista fallaron primero por «type 'Division' has no member
+'thirtySecond'». Engine 225, MIDI 226 (0 fallos en 3 pasadas), App BUILD
+SUCCEEDED.
+
+El caso que bloqueaba 1/32, ahora fijado por un test
+ShortestStepTests comprueba que a 300 BPM con la Division más rápida, Sustain
+100% da un gate igual al Step exactamente, 99% menos y 101% más. Es decir: el
+solape empieza por encima del 100% y no antes. El test lee tempo y Division de
+sus extremos del dominio, así que sigue valiendo si mañana sube el tempo máximo.
+
+Dos tests frágiles, corregidos por la causa y no por el síntoma
+testDivisionStopsAtItsEnds y testAParameterAtItsEndDoesNotRespond escribían
+`.sixteenth` como «el extremo rápido». El comportamiento que probaban —frenar en
+el extremo, no publicar al girar contra él— no cambió; cambió cuál es el
+extremo. Se reescriben contra Division.fastest/.slowest, que es lo que de verdad
+querían decir. No se relajó ninguna aserción.
+
+Nota sobre el orden de trabajo
+Esta tarea no estaba en el plan original. Salió del checkpoint de la Fase 1: la
+documentación de Division.ordered había dejado escrita la condición para
+extenderla, y esta fase la cumple. Se registró como enmienda al plan antes de
+implementarla.
