@@ -81,8 +81,8 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): a 300 BPM un Step de 1/32 dura 25 ms, y con Sustain 100% el gate dura exactamente eso — el solape empieza por encima del 100%, no por debajo
   - [x] Implementación (Green): un valor más en la lista; el tipo ya admitía cualquier fracción positiva
   - [x] Se reescribe la nota de `Division.ordered` que explicaba por qué se cortaba en 1/16: **la condición que la ponía —«cuando Sustain sustituya al gate»— se cumple en esta fase**, y dejarla en pie diría algo falso
-- [~] Task: Verificar cobertura — `Engine` ≥90%, `MIDI` ≥80%
-  - [ ] `MIDI` se mide en **un solo proceso**, según la nota del 2026-08-28 de `workflow.md`
+- [x] Task: Verificar cobertura — `Engine` ≥90% (97,38%), `MIDI` ≥80% (87,21%)
+  - [x] `MIDI` se mide en **un solo proceso**, según la nota del 2026-08-28 de `workflow.md`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Un solo nombre para lo ajustable
