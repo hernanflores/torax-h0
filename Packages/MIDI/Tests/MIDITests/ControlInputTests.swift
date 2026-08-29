@@ -69,9 +69,15 @@ final class ControlInputTests: XCTestCase {
     }
 
     /// Y en el extremo, el mismo giro no publica.
-    func testAParameterAtItsEndDoesNotRespond() {
-        let (input, _) = makeInput(shape())
-        XCTAssertEqual(input.track.shape.division, .sixteenth, "1/16 es el extremo rápido")
+    ///
+    /// **El extremo se lee del dominio, no se escribe aquí.** Escrito como
+    /// `.sixteenth`, este test falló al añadir 1/32 en la rebanada 5 por un
+    /// comportamiento que no había cambiado: lo que cambió fue cuál es el
+    /// extremo.
+    func testAParameterAtItsEndDoesNotRespond() throws {
+        let fastest = try XCTUnwrap(Division.fastest)
+        let (input, _) = makeInput(shape(division: fastest))
+
         XCTAssertFalse(input.receive(turn(.division, by: 0x01)))
     }
 

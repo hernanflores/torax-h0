@@ -50,6 +50,7 @@ public struct Division: Equatable, Sendable {
     public static let quarter = Division(unchecked: 1, denominator: 4)
     public static let eighth = Division(unchecked: 1, denominator: 8)
     public static let sixteenth = Division(unchecked: 1, denominator: 16)
+    public static let thirtySecond = Division(unchecked: 1, denominator: 32)
 
     /// Los valores por los que recorre el knob, **de más lenta a más rápida**.
     ///
@@ -57,16 +58,24 @@ public struct Division: Equatable, Sendable {
     /// dividir la velocidad de la línea, que es lo que la Pre Spec describe —
     /// «cambia la velocidad sin cambiar la estructura».
     ///
-    /// **Por qué se corta en 1/16 y no sigue a 1/32.** El note-off de cada pulso
-    /// se sella un gate provisional por delante del note-on, y ese gate tiene
-    /// que caber dentro del Step más corto que el producto pueda producir. A 300
-    /// BPM —el tempo máximo— un Step de 1/32 dura exactamente 25 ms, que es el
-    /// gate: las notas empezarían a solaparse. Los valores más rápidos entran
-    /// cuando Sustain sustituya al gate, en Groove.
+    /// **Llega hasta 1/32 desde la rebanada 5, y antes no.** La lista se cortaba
+    /// en 1/16 porque el note-off se sellaba un gate constante de 25 ms por
+    /// delante del note-on, y a 300 BPM —el tempo máximo— un Step de 1/32 dura
+    /// exactamente esos 25 ms: las notas se habrían solapado sin que nadie lo
+    /// pidiera. Aquella nota dejaba escrita la condición para extenderla —«los
+    /// valores más rápidos entran cuando Sustain sustituya al gate, en
+    /// Groove»— y Sustain la cumple.
+    ///
+    /// Ahora el gate es un porcentaje del Step, así que el caso extremo se
+    /// comporta: con Sustain 100% el note-off cae justo donde empieza el
+    /// siguiente note-on, y el solape empieza por encima del 100%, que es donde
+    /// el usuario lo pide. Hay un test que lo fija.
     ///
     /// El tipo sigue admitiendo cualquier fracción positiva; esta lista es solo
     /// por dónde pasa el knob.
-    public static let ordered: [Division] = [whole, half, quarter, eighth, sixteenth]
+    public static let ordered: [Division] = [
+        whole, half, quarter, eighth, sixteenth, thirtySecond,
+    ]
 
     /// Extremos de la lista. Opcionales porque `ordered` es un array.
     public static var slowest: Division? { ordered.first }

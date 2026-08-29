@@ -14,7 +14,7 @@ final class DivisionSequenceTests: XCTestCase {
     func testOrderedRunsFromSlowestToFastest() {
         XCTAssertEqual(
             Division.ordered.map(\.description),
-            ["1/1", "1/2", "1/4", "1/8", "1/16"]
+            ["1/1", "1/2", "1/4", "1/8", "1/16", "1/32"]
         )
     }
 
@@ -25,7 +25,7 @@ final class DivisionSequenceTests: XCTestCase {
     func testSlowestAndFastestAreTheEnds() {
         XCTAssertEqual(Division.slowest, Division.ordered.first)
         XCTAssertEqual(Division.fastest, Division.ordered.last)
-        XCTAssertEqual(Division.fastest, .sixteenth)
+        XCTAssertEqual(Division.fastest, .thirtySecond)
     }
 
     /// Cada valor de la lista dura la mitad que el anterior: es lo que hace que
@@ -60,11 +60,16 @@ final class DivisionSequenceTests: XCTestCase {
 
     // MARK: - Los extremos frenan, no envuelven
 
-    /// **No envuelve a propósito.** Un knob que salta de 1/16 a 1/1 al pasarse
+    /// **No envuelve a propósito.** Un knob que salta de 1/32 a 1/1 al pasarse
     /// convertiría un giro de ajuste fino en un cambio brutal de velocidad.
     func testAdvancingPastTheFastestStops() {
-        XCTAssertEqual(Division.sixteenth.advanced(by: 1), .sixteenth)
-        XCTAssertEqual(Division.sixteenth.advanced(by: 99), .sixteenth)
+        XCTAssertEqual(Division.thirtySecond.advanced(by: 1), .thirtySecond)
+        XCTAssertEqual(Division.thirtySecond.advanced(by: 99), .thirtySecond)
+    }
+
+    /// El knob llega a 1/32 desde 1/16, que era el tope hasta la rebanada 5.
+    func testTheKnobReachesThirtySecondFromSixteenth() {
+        XCTAssertEqual(Division.sixteenth.advanced(by: 1), .thirtySecond)
     }
 
     func testAdvancingPastTheSlowestStops() {

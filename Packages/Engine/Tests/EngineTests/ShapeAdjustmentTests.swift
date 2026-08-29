@@ -115,10 +115,19 @@ final class ShapeAdjustmentTests: XCTestCase {
         XCTAssertEqual(shape(division: .quarter).applying(-1, to: .division).division, .half)
     }
 
-    /// Division **no** envuelve: saltar de 1/16 a 1/1 sería un cambio de
-    /// velocidad de 16x en un clic.
-    func testDivisionStopsAtItsEnds() {
-        XCTAssertEqual(shape(division: .sixteenth).applying(9, to: .division).division, .sixteenth)
-        XCTAssertEqual(shape(division: .whole).applying(-9, to: .division).division, .whole)
+    /// Division **no** envuelve: saltar del extremo rápido al lento sería un
+    /// cambio de velocidad brutal en un clic.
+    ///
+    /// **Los extremos se leen del dominio, no se escriben aquí.** Escribirlos
+    /// hizo que este test fallara al añadir 1/32 en la rebanada 5, por un
+    /// comportamiento que no había cambiado: lo que cambió fue cuál es el
+    /// extremo. Atado a `fastest` y `slowest`, el test sigue diciendo lo mismo
+    /// cuando la lista crezca.
+    func testDivisionStopsAtItsEnds() throws {
+        let fastest = try XCTUnwrap(Division.fastest)
+        let slowest = try XCTUnwrap(Division.slowest)
+
+        XCTAssertEqual(shape(division: fastest).applying(9, to: .division).division, fastest)
+        XCTAssertEqual(shape(division: slowest).applying(-9, to: .division).division, slowest)
     }
 }

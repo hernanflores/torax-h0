@@ -243,3 +243,36 @@ final class GrooveAdjustmentTests: XCTestCase {
         XCTAssertEqual(Probability(percent: 64)!.advanced(by: 0), Probability(percent: 64)!)
     }
 }
+
+/// Tests del Step más corto que el producto puede producir, ahora que existe.
+///
+/// Hasta la rebanada 5 la lista de Divisions se cortaba en 1/16, y su
+/// documentación decía por qué: a 300 BPM un Step de 1/32 dura 25 ms, que era
+/// exactamente el gate constante, así que las notas se habrían solapado. Con
+/// Sustain el gate ya no es constante y la condición se cumple.
+final class ShortestStepTests: XCTestCase {
+
+    /// **El caso que bloqueaba 1/32.** A 300 BPM el Step dura 25 ms; con Sustain
+    /// 100% el gate dura exactamente eso, así que el note-off cae justo en el
+    /// note-on del siguiente y no antes. El solape empieza **por encima** del
+    /// 100%, que es donde el usuario lo pide.
+    func testAtTheFastestDivisionAndHighestTempoFullSustainFillsTheStepExactly() throws {
+        let timeline = MusicalTimeline(
+            tempo: try XCTUnwrap(Tempo(beatsPerMinute: Tempo.validRange.upperBound)),
+            division: try XCTUnwrap(Division.fastest)
+        )
+        let step = Int64(timeline.stepDurationNanoseconds)
+
+        XCTAssertEqual(Sustain(percent: 100)!.gateNanoseconds(forStep: step), step)
+        XCTAssertLessThan(Sustain(percent: 99)!.gateNanoseconds(forStep: step), step)
+        XCTAssertGreaterThan(Sustain(percent: 101)!.gateNanoseconds(forStep: step), step)
+    }
+
+    func testTheShortestStepIsTwentyFiveMilliseconds() throws {
+        let timeline = MusicalTimeline(
+            tempo: try XCTUnwrap(Tempo(beatsPerMinute: 300)),
+            division: try XCTUnwrap(Division.fastest)
+        )
+        XCTAssertEqual(timeline.stepDurationNanoseconds, 25_000_000, accuracy: 1.0)
+    }
+}
