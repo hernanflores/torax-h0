@@ -48,3 +48,36 @@ Decisiones de forma
 - Los CC de Groove son 74, 75 y 76: bloque contiguo con los de Shape, en el
   mismo orden que TrackParameter, para que la fila de knobs se lea como la lista
   de parámetros. Un test comprueba que ningún CC mueve dos parámetros.
+
+---
+
+VERIFICACIÓN DE FASE — Fase 4: Un solo nombre para lo ajustable
+Checkpoint del 2026-08-29
+
+Comandos ejecutados
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado
+- Engine: 239 tests, 0 fallos. Cobertura 97,93% de líneas (umbral ≥90%).
+- MIDI: 235 tests, 0 fallos.
+- App: BUILD SUCCEEDED para iOS.
+
+Cobertura de los cambios de la fase
+TrackParameter → TrackParameterTests y TrackParameterNamesTests.
+ParameterChange → ParameterChangeTests y ParameterChangeShapeTests.
+ControlMapping → GrooveControlMappingTests. ControlInput → GrooveTurnsTests.
+
+Verificación manual propuesta
+Nada audible hasta la Fase 6. Se propuso confirmar dos decisiones de forma:
+1. Velocity se muestra sin signo de porcentaje (Velocity 65); Sustain y
+   Probability con él. Velocity vive en la unidad MIDI.
+2. Los CC de Groove son 74, 75 y 76 — bloque contiguo con Shape, en el orden de
+   TrackParameter. Un test comprueba que ningún CC mueve dos parámetros.
+
+Y se reportó el riesgo que estuvo a punto de materializarse: el borrado de los
+tests de Shape, revertido y adaptado sin cambiar aserciones.
+
+Confirmación del usuario
+«sí, sigue con la fase 5.» — 2026-08-29.
