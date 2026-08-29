@@ -112,6 +112,36 @@ public struct Probability: Equatable, Sendable {
     }
 }
 
+extension Probability {
+
+    /// Si este Pulse suena, tirando del generador.
+    ///
+    /// **En positivo y no como `omits`.** La Pre Spec habla de omisiones, pero
+    /// quien llama pregunta si emite: una forma negativa obligaría a un `!` en
+    /// el sitio de uso, que es donde los dobles negativos se leen mal.
+    ///
+    /// **Cada llamada consume exactamente una tirada, incluidos los extremos.**
+    /// Cortocircuitar el 100% sin tirar sería más barato y estaría mal: subir y
+    /// bajar el knob desplazaría la fase de la secuencia, y dos sesiones con los
+    /// mismos giros en distinto orden dejarían de coincidir. La reproducibilidad
+    /// que promete `tech-stack.md` depende de que un Pulse cueste una tirada,
+    /// pase lo que pase.
+    ///
+    /// El sesgo del resto —100 no divide a 2⁶⁴— es de una parte en 1,8·10¹⁷ y
+    /// no se corrige: sería trabajo en el camino de tiempo real para una
+    /// desviación que ninguna sesión musical puede alcanzar.
+    ///
+    /// Aritmética entera, sin coma flotante: esto corre en el hilo del
+    /// scheduler.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func sounds(drawingFrom generator: inout SeededRandom) -> Bool {
+        let draw = generator.next() % 100
+        return draw < UInt64(percent)
+    }
+}
+
 extension Velocity {
 
     /// Nivel resultante de desplazar el knob `delta` posiciones.
