@@ -1,19 +1,19 @@
+import Engine
 import SwiftUI
 
 /// Los colores de la interfaz, en un solo sitio.
 ///
 /// **El color codifica qué tipo de parámetro es; nunca decora.**
 /// `product-guidelines.md` asigna un acento por familia funcional —Shape, Groove
-/// y Tonal— consistente en toda la app. Hoy solo existe Shape, así que solo hay
-/// un acento poblado; los otros dos entran con sus parámetros y no antes, para
-/// que nadie los use como color suelto mientras tanto.
+/// y Tonal— consistente en toda la app.
 ///
 /// **Fondo oscuro y alto contraste son requisito de uso, no estética:** la
 /// pantalla se lee de reojo, en movimiento y a veces con poca luz.
 ///
-/// Groove sigue sin acento porque sigue sin parámetros. Poblarlo antes sería
-/// dejar un color suelto que alguien usaría como decoración, que es justo lo que
-/// la guía dice que el color no es.
+/// Las tres familias tienen ya su acento: Shape desde la rebanada 1, Tonal desde
+/// la 4 y Groove desde la 5. Ninguno se pobló antes de que existieran sus
+/// parámetros, para que no quedara un color suelto que alguien usara como
+/// decoración — que es justo lo que la guía dice que el color no es.
 ///
 /// Los valores salen del handoff de diseño, que se declara a sí mismo *lofi*:
 /// estructura e interacción son vinculantes, el color es ilustrativo. Están aquí
@@ -46,4 +46,23 @@ enum Palette {
 
     /// Acento de la familia **Tonal**.
     static let tonal = Color(red: 0x7c / 255, green: 0x5f / 255, blue: 0xd9 / 255)
+
+    /// Acento de la familia **Groove**.
+    ///
+    /// Ámbar cálido: se separa del verde de Shape y del violeta de Tonal por
+    /// tono, no solo por luminosidad, para que las tres sigan distinguiéndose de
+    /// reojo y con poca luz — el criterio de uso de `product-guidelines.md`.
+    static let groove = Color(red: 0xd9 / 255, green: 0x9a / 255, blue: 0x4e / 255)
+
+    /// El acento que le toca a una familia de parámetros.
+    ///
+    /// **La correspondencia vive aquí y la clasificación en `Engine`.** Qué tipo
+    /// de parámetro es lo dice el motor (`TrackParameter.family`); qué color le
+    /// toca es decisión de presentación y no sale del paquete.
+    static func accent(for family: ParameterFamily) -> Color {
+        switch family {
+        case .shape: shape
+        case .groove: groove
+        }
+    }
 }

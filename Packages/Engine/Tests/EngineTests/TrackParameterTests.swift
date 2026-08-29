@@ -91,3 +91,52 @@ final class TrackParameterTests: XCTestCase {
         }
     }
 }
+
+/// Tests de a qué familia pertenece cada parámetro.
+///
+/// **Es dominio, no presentación.** `product-guidelines.md` asigna un acento
+/// cromático por familia funcional y dice que «el color codifica qué tipo de
+/// parámetro es; nunca es decorativo». Qué tipo es lo sabe el motor; qué color
+/// le toca lo decide la vista. Si la vista tuviera que deducir la familia de una
+/// lista de casos, ese `switch` viviría donde no hay tests.
+final class ParameterFamilyTests: XCTestCase {
+
+    func testShapeParametersBelongToShape() {
+        for parameter in [TrackParameter.steps, .pulses, .rotate, .division] {
+            XCTAssertEqual(parameter.family, .shape, "\(parameter)")
+        }
+    }
+
+    func testGrooveParametersBelongToGroove() {
+        for parameter in [TrackParameter.velocity, .sustain, .probability] {
+            XCTAssertEqual(parameter.family, .groove, "\(parameter)")
+        }
+    }
+
+    /// Toda la lista está clasificada: un parámetro nuevo sin familia no
+    /// compilaría, pero uno mal clasificado sí, y esto lo separa por conteo.
+    func testEveryParameterHasAFamilyAndBothAreUsed() {
+        let families = Set(TrackParameter.allCases.map(\.family))
+        XCTAssertEqual(families, [.shape, .groove])
+    }
+}
+
+/// Tests de cómo se lee Groove en pantalla.
+final class GrooveDescriptionTests: XCTestCase {
+
+    /// Mismo formato que `Shape.description`: los términos de la Pre Spec en
+    /// inglés, el valor, y nada más. La app informa, no conversa.
+    func testGrooveReadsAsItsThreeParametersAndValues() {
+        let groove = Groove(
+            velocity: Velocity(100)!,
+            sustain: Sustain(percent: 100)!,
+            probability: Probability(percent: 75)!
+        )
+        XCTAssertEqual(groove.description, "Velocity 100 · Sustain 100% · Probability 75%")
+    }
+
+    /// El default de producto se lee sin sorpresas.
+    func testTheDefaultGrooveReads() {
+        XCTAssertEqual(Groove.default.description, "Velocity 100 · Sustain 100% · Probability 100%")
+    }
+}

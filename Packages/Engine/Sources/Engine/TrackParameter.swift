@@ -32,6 +32,37 @@ public enum TrackParameter: Equatable, Sendable, CaseIterable {
     case probability
 }
 
+/// A qué familia funcional pertenece un parámetro.
+///
+/// **Existe porque el color lo necesita, pero no es color.**
+/// `product-guidelines.md` da un acento cromático a cada familia y dice que «el
+/// color codifica *qué tipo de parámetro es*; nunca es decorativo». Qué tipo es
+/// lo sabe el motor; qué color le toca lo decide la vista. Poner el `switch`
+/// allí lo dejaría donde no hay tests, que es lo que `workflow.md` prohíbe.
+///
+/// **Tonal no está aquí.** Su acento existe y se usa, pero el pool no se ajusta
+/// con un delta sino con pads, así que no es un `TrackParameter` y no tiene por
+/// qué aparecer en esta clasificación.
+public enum ParameterFamily: Equatable, Sendable, CaseIterable {
+
+    /// Cuándo y con qué densidad ocurren los eventos.
+    case shape
+
+    /// Cómo se interpreta lo que ocurre.
+    case groove
+}
+
+extension TrackParameter {
+
+    /// La familia a la que pertenece.
+    public var family: ParameterFamily {
+        switch self {
+        case .steps, .pulses, .rotate, .division: .shape
+        case .velocity, .sustain, .probability: .groove
+        }
+    }
+}
+
 extension TrackParameter: CustomStringConvertible {
 
     /// Los términos de la Pre Spec, en inglés y sin traducir, como exige

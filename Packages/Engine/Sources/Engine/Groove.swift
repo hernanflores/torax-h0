@@ -249,3 +249,23 @@ public struct Groove: Equatable, Sendable {
         self.probability = probability
     }
 }
+
+extension Groove: CustomStringConvertible {
+
+    /// Cómo se lee Groove en pantalla:
+    /// `Velocity 100 · Sustain 100% · Probability 75%`.
+    ///
+    /// Mismo formato que `Shape.description`, y por la misma razón: el término
+    /// de la Pre Spec en inglés y el valor, sin prosa. `product-guidelines.md`
+    /// pide informar, no acompañar.
+    ///
+    /// **Vive en `Engine` y no en la vista** porque `workflow.md` dice que si
+    /// algo en `App` merece un test está en el sitio equivocado. Un formato es
+    /// exactamente eso.
+    ///
+    /// Velocity va sin signo de porcentaje: vive en la unidad MIDI, y ponérselo
+    /// diría que es un porcentaje de algo.
+    public var description: String {
+        "Velocity \(velocity.value) · Sustain \(sustain.percent)% · Probability \(probability.percent)%"
+    }
+}
