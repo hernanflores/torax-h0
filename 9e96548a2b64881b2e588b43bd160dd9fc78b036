@@ -1,0 +1,46 @@
+Task: El gate sale de Sustain y de la Division
+Track: mvp-groove-static_20260829 — Fase 3
+
+Ficheros
+- Packages/Engine/Sources/Engine/Groove.swift — Sustain.gateNanoseconds(forStep:)
+- Packages/MIDI/Sources/MIDI/NoteEmitter.swift — muere provisionalGateNanoseconds;
+  el emisor guarda la duración del Step
+- Packages/MIDI/Sources/MIDI/MIDIMessage.swift — MIDIController.allNotesOff
+- Packages/MIDI/Sources/MIDI/Transport.swift — stop() manda CC 123 + el barrido
+- App/TransportModel.swift — el emisor se construye con la timeline vigente
+- Tests: SustainGateTests (nuevo, 7 tests) + call sites
+
+Red → Green
+Los 5 tests del gate fallaron primero por «extra argument
+'stepDurationNanoseconds'». Engine 222, MIDI 220, App BUILD SUCCEEDED.
+
+El 100% se compara contra MusicalTimeline, no contra un literal
+Si el gate se calculara con otra idea de cuánto dura un Step, un número escrito
+a mano en el test no lo detectaría: coincidirían los dos errores. El test
+construye la duración esperada desde la misma timeline.
+
+El guardián de los 25 ms, retirado — y por qué
+testProvisionalGateFitsInsideTheShortestPossibleStep comprobaba que el gate
+cupiera en el Step más corto. Se retira con su constante, y el hueco queda
+documentado en el sitio donde vivía. La razón: el límite era «que el gate quepa
+en el Step», y con Sustain eso deja de ser una invariante del sistema para ser
+una elección del usuario — el rango llega al 200% precisamente para ligar sobre
+el Step siguiente. Un test que siguiera exigiendo lo contrario fallaría por
+hacer el producto lo que se le pide. Lo que sustituye a esa protección no es
+otro test sino una decisión escrita: el solape no se vigila, el tope del 200% lo
+acota a un vecino, y el síntoma está en el spec como limitación 1.
+
+El hueco de stop(), cerrado en la tarea que lo hizo audible
+Transport.stop() decía: «una altura que estuviera sonando y se hubiera quitado
+del pool antes de parar no se apaga aquí. Dura lo que el gate, hoy 25 ms, así
+que es inaudible; cuando Sustain permita gates largos hay que volver a mirarlo».
+Con Sustain 200% sobre Division 1/1 a 20 BPM son 24 segundos de nota colgada.
+Decidido con el usuario: CC 123 (All Notes Off) *además* del barrido de
+note-offs del pool. Los dos, no uno: el CC cubre las alturas que ya no están en
+el pool; el barrido cubre los sintetizadores que ignoran el CC 123. Se descartó
+llevar la cuenta de lo encendido en el hilo del scheduler — sería más preciso y
+metería estado mutable en el camino de tiempo real por un caso de parada.
+
+Verificado que el test falla sin la guarda
+Quitando el envío del CC 123, StopSilencesEverythingTests pasa de 0 a 1 fallo;
+reponiéndolo vuelve a 0. No es un test que pase por casualidad.
