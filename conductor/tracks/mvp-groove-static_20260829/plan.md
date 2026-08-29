@@ -76,12 +76,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): el snapshot se sigue recogiendo una vez por ventana, nunca a mitad
   - [x] Tests (Red): el modo `everyStep` del arnés de medición no pasa por Probability — mide la rejilla, no el material
   - [x] Implementación (Green): la omisión se decide donde ya se decide si el Step dispara; sin asignaciones, sin locks, con marcador `/// Realtime:`
-- [~] Task: `Division` llega a 1/32 — *añadida el 2026-08-29, en el checkpoint de la Fase 1*
-  - [ ] Tests (Red): `Division.ordered` incluye 1/32 y el knob llega hasta ella desde 1/16
-  - [ ] Tests (Red): a 300 BPM un Step de 1/32 dura 25 ms, y con Sustain 100% el gate dura exactamente eso — el solape empieza por encima del 100%, no por debajo
-  - [ ] Implementación (Green): un valor más en la lista; el tipo ya admitía cualquier fracción positiva
-  - [ ] Se reescribe la nota de `Division.ordered` que explicaba por qué se cortaba en 1/16: **la condición que la ponía —«cuando Sustain sustituya al gate»— se cumple en esta fase**, y dejarla en pie diría algo falso
-- [ ] Task: Verificar cobertura — `Engine` ≥90%, `MIDI` ≥80%
+- [x] Task: `Division` llega a 1/32 — `ebc0946` — *añadida el 2026-08-29, en el checkpoint de la Fase 1*
+  - [x] Tests (Red): `Division.ordered` incluye 1/32 y el knob llega hasta ella desde 1/16
+  - [x] Tests (Red): a 300 BPM un Step de 1/32 dura 25 ms, y con Sustain 100% el gate dura exactamente eso — el solape empieza por encima del 100%, no por debajo
+  - [x] Implementación (Green): un valor más en la lista; el tipo ya admitía cualquier fracción positiva
+  - [x] Se reescribe la nota de `Division.ordered` que explicaba por qué se cortaba en 1/16: **la condición que la ponía —«cuando Sustain sustituya al gate»— se cumple en esta fase**, y dejarla en pie diría algo falso
+- [~] Task: Verificar cobertura — `Engine` ≥90%, `MIDI` ≥80%
   - [ ] `MIDI` se mide en **un solo proceso**, según la nota del 2026-08-28 de `workflow.md`
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
