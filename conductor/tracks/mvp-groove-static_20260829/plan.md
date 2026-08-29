@@ -43,12 +43,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): la distribución no es degenerada sobre una muestra larga — no se cuelga en un valor ni alterna
   - [x] Tests (Red): el estado cabe en un entero y avanzar no asigna
   - [x] Implementación (Green): generador de estado entero, **nunca `Int.random()`**
-- [~] Task: La decisión de omisión
-  - [ ] Tests (Red): Probability 100% no omite **ningún** Pulse, con cualquier semilla
-  - [ ] Tests (Red): Probability 0% omite **todos**, con cualquier semilla
-  - [ ] Tests (Red): un valor intermedio se aproxima a su proporción sobre una muestra larga, con tolerancia declarada
-  - [ ] Tests (Red): la decisión es determinista dado el estado del generador — mismo estado, misma respuesta
-  - [ ] Implementación (Green): comparación entera contra el umbral; sin coma flotante en el camino que después corre en tiempo real
+- [x] Task: La decisión de omisión — `76780fc`
+  - [x] Tests (Red): Probability 100% no omite **ningún** Pulse, con cualquier semilla
+  - [x] Tests (Red): Probability 0% omite **todos**, con cualquier semilla
+  - [x] Tests (Red): un valor intermedio se aproxima a su proporción sobre una muestra larga, con tolerancia declarada
+  - [x] Tests (Red): la decisión es determinista dado el estado del generador — mismo estado, misma respuesta
+  - [x] Implementación (Green): comparación entera contra el umbral; sin coma flotante en el camino que después corre en tiempo real
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Que suene — el camino de emisión
