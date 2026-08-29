@@ -53,7 +53,7 @@ final class VirtualControllerTests: XCTestCase {
     }
 
     func testEveryParameterCanBeTurned() {
-        for parameter in ShapeParameter.allCases {
+        for parameter in TrackParameter.allCases {
             XCTAssertNotNil(controller.turn(parameter, by: 1), "\(parameter)")
         }
     }

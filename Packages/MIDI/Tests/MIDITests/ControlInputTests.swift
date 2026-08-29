@@ -15,7 +15,7 @@ final class ControlInputTests: XCTestCase {
         Shape(steps: Steps(steps)!, pulses: Pulses(pulses)!, division: division)
     }
 
-    private func turn(_ parameter: ShapeParameter, by value: UInt8) -> MIDIMessage {
+    private func turn(_ parameter: TrackParameter, by value: UInt8) -> MIDIMessage {
         .controlChange(
             channel: channel,
             controller: ControlMapping.provisional.controller(for: parameter)!,
@@ -58,11 +58,21 @@ final class ControlInputTests: XCTestCase {
     /// nada — el punto de partida se elige para probar que responde, no para
     /// tapar que frena.
     func testEveryParameterIsReachableFromItsController() {
-        for parameter in ShapeParameter.allCases {
+        for parameter in TrackParameter.allCases {
             let steps = Steps(8)!
             let roomy = Shape(steps: steps, pulses: Pulses(4)!, division: .quarter)
-            let handoff = TrackHandoff(Track(shape: roomy))
-            let input = ControlInput(track: Track(shape: roomy), publishingTo: handoff)
+            // **Groove también parte lejos de sus extremos.** Su default deja
+            // Probability en el 100%, que es su tope: un giro hacia arriba no
+            // movería nada y el test diría que el parámetro no responde cuando
+            // lo que pasa es que ya está donde puede estar.
+            let roomyGroove = Groove(
+                velocity: Velocity(64)!,
+                sustain: Sustain(percent: 100)!,
+                probability: Probability(percent: 50)!
+            )
+            let track = Track(shape: roomy, groove: roomyGroove)
+            let handoff = TrackHandoff(track)
+            let input = ControlInput(track: track, publishingTo: handoff)
 
             XCTAssertTrue(input.receive(turn(parameter, by: 0x01)), "\(parameter) no respondió")
         }

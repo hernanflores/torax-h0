@@ -255,8 +255,14 @@ extension Shape {
     ///
     /// No es código de tiempo real: construir un Shape reparte los Pulses, y eso
     /// asigna. Se llama desde el hilo de control, al recibir un giro.
-    public func applying(_ delta: Int, to parameter: ShapeParameter) -> Shape {
+    public func applying(_ delta: Int, to parameter: TrackParameter) -> Shape {
         switch parameter {
+        case .velocity, .sustain, .probability:
+            // No son suyos: los ajusta `Track.applying(_:to:)`, que es quien
+            // conoce las dos familias. Devolver el Shape intacto es la respuesta
+            // correcta y no un caso olvidado.
+            return self
+
         case .steps:
             let clamped = min(
                 max(steps.count + delta, Steps.validRange.lowerBound), Steps.validRange.upperBound)

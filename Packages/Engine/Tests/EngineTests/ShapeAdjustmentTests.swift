@@ -18,7 +18,7 @@ final class ShapeAdjustmentTests: XCTestCase {
 
     func testApplyingZeroChangesNothing() {
         let original = shape(steps: 12, pulses: 7, rotate: 3, division: .eighth)
-        for parameter in ShapeParameter.allCases {
+        for parameter in TrackParameter.allCases {
             XCTAssertEqual(original.applying(0, to: parameter), original, "\(parameter)")
         }
     }

@@ -148,7 +148,7 @@ final class TransportModel {
     private static let transientLifetime: Double = 1.6
 
     /// El valor grande que se está mostrando, o `nil` si no hay ninguno.
-    private(set) var transientChange: ShapeChange?
+    private(set) var transientChange: ParameterChange?
 
     private var transientDismissal: Task<Void, Never>?
 
@@ -248,10 +248,13 @@ final class TransportModel {
     /// Aplica un mensaje entrante. Corre en el hilo principal.
     private func apply(_ message: MIDIMessage) {
         guard let controlInput else { return }
-        let previous = track.shape
+        // El Track entero y no solo su Shape: Groove vive dentro, así que
+        // comparar Shapes dejaría a Velocity, Sustain y Probability sin poder
+        // anunciarse.
+        let previous = track
         guard controlInput.receive(message) else { return }
         track = controlInput.track
-        announce(ShapeChange(from: previous, to: track.shape))
+        announce(ParameterChange(from: previous, to: track))
     }
 
     /// Muestra el valor grande y programa su desvanecimiento.
@@ -259,7 +262,7 @@ final class TransportModel {
     /// **Cada giro reinicia la cuenta.** Girando sin parar el valor se queda
     /// puesto, que es lo que se quiere: se desvanece «tras la inactividad»
     /// (`product-guidelines.md`), no tras un tiempo fijo desde que apareció.
-    private func announce(_ change: ShapeChange?) {
+    private func announce(_ change: ParameterChange?) {
         guard let change else { return }
         transientChange = change
 

@@ -80,7 +80,7 @@ struct ContentView: View {
     ///
     /// Tipografía muy grande y jerarquía marcada porque el criterio es leerlo a
     /// un metro, de pie y delante del sintetizador — no el gusto.
-    private func transient(_ change: ShapeChange) -> some View {
+    private func transient(_ change: ParameterChange) -> some View {
         Text(change.description)
             .font(.system(size: 64, weight: .bold, design: .default))
             .minimumScaleFactor(0.4)

@@ -44,7 +44,7 @@ import Engine
         ///
         /// Devuelve `nil` si el parámetro no está mapeado o si el giro no se puede
         /// codificar — el cero y las magnitudes mayores que 63.
-        public func turn(_ parameter: ShapeParameter, by steps: Int) -> MIDIMessage? {
+        public func turn(_ parameter: TrackParameter, by steps: Int) -> MIDIMessage? {
             guard let controller = mapping.controller(for: parameter),
                 let value = encoding.value(for: steps)
             else { return nil }
