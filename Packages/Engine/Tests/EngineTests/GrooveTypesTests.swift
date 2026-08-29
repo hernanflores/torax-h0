@@ -91,3 +91,80 @@ final class GrooveTypesTests: XCTestCase {
         XCTAssertEqual(Probability.default.percent, 100)
     }
 }
+
+/// Tests de `Groove` como valor y de su entrada en `Track`.
+///
+/// **La restricción dura de esta fase es la trivialidad.** `Track` se copia en
+/// el hilo del scheduler y `tech-stack.md` lo exige POD; meter Groove dentro es
+/// la primera vez desde el pool que se puede romper.
+final class GrooveTests: XCTestCase {
+
+    // MARK: - Trivialidad
+
+    func testGrooveIsTrivial() {
+        XCTAssertTrue(_isPOD(Groove.self), "Groove dejó de ser trivial")
+        XCTAssertTrue(_isPOD(Velocity.self))
+        XCTAssertTrue(_isPOD(Sustain.self))
+        XCTAssertTrue(_isPOD(Probability.self))
+    }
+
+    func testTrackStaysTrivialWithGrooveInside() {
+        XCTAssertTrue(_isPOD(Track.self), "Track dejó de ser trivial al entrar Groove")
+    }
+
+    // MARK: - Groove como valor
+
+    func testGrooveDefaultCarriesTheProductDefaults() {
+        let groove = Groove.default
+
+        XCTAssertEqual(groove.velocity, .default)
+        XCTAssertEqual(groove.sustain, .default)
+        XCTAssertEqual(groove.probability, .default)
+    }
+
+    func testGrooveKeepsWhatItIsBuiltWith() {
+        let groove = Groove(
+            velocity: Velocity(64)!,
+            sustain: Sustain(percent: 25)!,
+            probability: Probability(percent: 50)!
+        )
+
+        XCTAssertEqual(groove.velocity.value, 64)
+        XCTAssertEqual(groove.sustain.percent, 25)
+        XCTAssertEqual(groove.probability.percent, 50)
+    }
+
+    // MARK: - Groove dentro de Track
+
+    /// **Ningún llamante existente cambia.** `Track` se construye en muchos
+    /// sitios que no saben nada de Groove; el default de producto es lo que les
+    /// permite seguir compilando y sonando igual.
+    func testTrackBuiltWithoutGrooveTakesTheProductDefault() {
+        let track = Track(shape: Shape(steps: Steps(16)!, pulses: Pulses(4)!))
+
+        XCTAssertEqual(track.groove, .default)
+    }
+
+    /// La regla de destructividad de `product-guidelines.md`: cambiar un
+    /// parámetro nunca destruye material. Aquí se comprueba en la dirección que
+    /// esta fase introduce — dar otro Groove no toca el Shape ni el pool.
+    func testGivingATrackAnotherGrooveKeepsItsShapeAndPool() {
+        var pool = PitchPool()
+        pool = pool.toggling(Pitch(60)!)
+        pool = pool.toggling(Pitch(64)!)
+        let shape = Shape(steps: Steps(12)!, pulses: Pulses(7)!, rotate: Rotate(3))
+
+        let track = Track(shape: shape, pool: pool)
+        let louder = Track(
+            shape: track.shape, pool: track.pool,
+            groove: Groove(
+                velocity: Velocity(127)!,
+                sustain: .default,
+                probability: .default
+            ))
+
+        XCTAssertEqual(louder.shape, shape)
+        XCTAssertEqual(louder.pool, pool)
+        XCTAssertEqual(louder.groove.velocity.value, 127)
+    }
+}

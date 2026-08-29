@@ -111,3 +111,39 @@ public struct Probability: Equatable, Sendable {
         self.percent = percent
     }
 }
+
+/// Groove — la familia que convierte la secuencia en interpretación.
+///
+/// La Pre Spec la sitúa tercera en el flujo del motor: «Shape decide *cuándo* y
+/// con qué densidad ocurren eventos» → Tonal elige las alturas → «Groove define
+/// dinámica, probabilidad, duración y desplazamiento temporal».
+///
+/// **Entra partida en dos, y el corte es por riesgo.** Los tres de aquí
+/// —Velocity, Sustain y Probability— cambian **qué** se envía. Timing y Delay
+/// cambian **cuándo**, que es el camino de jitter que costó validar, y llegan
+/// aparte para que una regresión de rejilla no se lleve por delante a estos
+/// tres. Accent y la forma de la variación quedan fuera de v1 por `product.md`.
+///
+/// Es un valor trivial a propósito: viaja dentro del `Track` que cruza al hilo
+/// del scheduler, y `_isPOD(Track.self)` lo vigila.
+public struct Groove: Equatable, Sendable {
+
+    /// Los defaults de producto: suena todo, a nivel medio-alto, durando una
+    /// Division completa. Es el Groove que no interpreta nada — el punto de
+    /// partida desde el que cada knob se aparta.
+    public static let `default` = Groove(
+        velocity: .default,
+        sustain: .default,
+        probability: .default
+    )
+
+    public let velocity: Velocity
+    public let sustain: Sustain
+    public let probability: Probability
+
+    public init(velocity: Velocity, sustain: Sustain, probability: Probability) {
+        self.velocity = velocity
+        self.sustain = sustain
+        self.probability = probability
+    }
+}
