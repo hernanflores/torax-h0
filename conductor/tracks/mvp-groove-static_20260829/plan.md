@@ -16,13 +16,13 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Nota fechada en `tech-stack.md`: Probability es unipolar en v1 porque no existen Repeats, y toda nota es un Pulse; la mitad counter-clockwise vuelve con ellos
   - [x] Nota fechada en `tech-stack.md`: «repetible en loop» se precisa a «repetible por arranque» — el PRNG avanza por Pulse, así que la secuencia varía entre vueltas y es la resiembra al pulsar Play la que la hace reproducible
   - [x] Ninguna de las dos se descubre a posteriori: se escriben con la razón, no solo con la regla
-- [ ] Task: `Velocity`, `Sustain` y `Probability` como tipos validados
-  - [ ] Tests (Red): `Velocity` admite 1–127 y rechaza 0 y 128 — el 0 es note-off en MIDI 1.0, no un nivel dinámico
-  - [ ] Tests (Red): `Sustain` admite 1–200 y rechaza 0 y 201; su default es 100
-  - [ ] Tests (Red): `Probability` admite 0–100; **los dos extremos son válidos**, no casos límite a rechazar
-  - [ ] Tests (Red): los defaults de producto son Velocity 100, Sustain 100%, Probability 100%
-  - [ ] Implementación (Green): validación en el inicializador y vía `init(unchecked:)` interna, mismo idioma que `Steps` y `Division`
-- [ ] Task: `Groove` agrupa los tres y entra en `Track`
+- [x] Task: `Velocity`, `Sustain` y `Probability` como tipos validados — `13e0b64`
+  - [x] Tests (Red): `Velocity` admite 1–127 y rechaza 0 y 128 — el 0 es note-off en MIDI 1.0, no un nivel dinámico
+  - [x] Tests (Red): `Sustain` admite 1–200 y rechaza 0 y 201; su default es 100
+  - [x] Tests (Red): `Probability` admite 0–100; **los dos extremos son válidos**, no casos límite a rechazar
+  - [x] Tests (Red): los defaults de producto son Velocity 100, Sustain 100%, Probability 100%
+  - [x] Implementación (Green): validación en el inicializador y vía `init(unchecked:)` interna, mismo idioma que `Steps` y `Division`
+- [~] Task: `Groove` agrupa los tres y entra en `Track`
   - [ ] Tests (Red): **`_isPOD(Groove.self)` y `_isPOD(Track.self)`** — el test que ya existe en `TrackHandoffTests` no se relaja ni se mueve
   - [ ] Tests (Red): `Track` construido sin Groove toma el default de producto, para que ningún llamante existente cambie
   - [ ] Tests (Red): el pool y el Shape sobreviven a construir un Track con otro Groove
