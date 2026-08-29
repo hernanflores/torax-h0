@@ -60,13 +60,15 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): el note-off sigue con velocity 0 — es la convención de apagado, no un parámetro
   - [x] Tests (Red): cambiar la Velocity del snapshot se refleja en la ventana siguiente
   - [x] Implementación (Green): `NoteEmitter` deja de llevar velocity propia; desaparece la constante que su documentación declaraba provisional
-- [~] Task: El gate sale de Sustain y de la Division
-  - [ ] Tests (Red): Sustain 100% da un gate de **exactamente una Division**, comparado contra `MusicalTimeline` y no contra un número escrito a mano
-  - [ ] Tests (Red): 1% da el extremo percusivo; 200% dura dos Divisions
-  - [ ] Tests (Red): el gate se expresa como offset de timestamp y el note-off sigue viajando sellado en la misma entrega que su note-on
-  - [ ] Tests (Red): **el test guardián de los 25 ms se retira con su constante**, y se documenta por qué deja de aplicar: el límite era «que quepa en el Step más corto», y con Sustain el solape es una elección del usuario
-  - [ ] Implementación (Green): el gate se deriva de la duración del Step vigente
-- [ ] Task: Probability decide en el scheduler, con el PRNG dentro
+- [x] Task: El gate sale de Sustain y de la Division — `9e96548`
+  - [x] Tests (Red): Sustain 100% da un gate de **exactamente una Division**, comparado contra `MusicalTimeline` y no contra un número escrito a mano
+  - [x] Tests (Red): 1% da el extremo percusivo; 200% dura dos Divisions
+  - [x] Tests (Red): el gate se expresa como offset de timestamp y el note-off sigue viajando sellado en la misma entrega que su note-on
+  - [x] Tests (Red): **el test guardián de los 25 ms se retira con su constante**, y se documenta por qué deja de aplicar: el límite era «que quepa en el Step más corto», y con Sustain el solape es una elección del usuario
+  - [x] Implementación (Green): el gate se deriva de la duración del Step vigente
+  - [x] **Añadido en curso:** `stop()` manda All Notes Off además del barrido del pool — el hueco que el propio `Transport` dejó anotado «cuando Sustain permita gates largos» se vuelve audible en esta tarea (24 s con Sustain 200% sobre 1/1 a 20 BPM). Decidido con el usuario el 2026-08-29.
+
+- [~] Task: Probability decide en el scheduler, con el PRNG dentro
   - [ ] Tests (Red): el PRNG vive en `TrackScheduler` y se siembra al construirlo — dos schedulers recién construidos omiten igual
   - [ ] Tests (Red): dos vueltas consecutivas del anillo **no** omiten los mismos Pulses
   - [ ] Tests (Red): un Pulse omitido no emite **nada** — ni note-on huérfano ni note-off suelto
