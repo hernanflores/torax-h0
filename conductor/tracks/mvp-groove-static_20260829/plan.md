@@ -37,13 +37,13 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > La deuda que `tech-stack.md` dejó escrita desde el primer commit y que la rebanada 4 aplazó explícitamente. Probability es su primer usuario.
 
-- [ ] Task: PRNG explícito y sembrado
-  - [ ] Tests (Red): misma semilla, misma secuencia — literal, sobre una secuencia escrita en el test
-  - [ ] Tests (Red): semillas distintas divergen
-  - [ ] Tests (Red): la distribución no es degenerada sobre una muestra larga — no se cuelga en un valor ni alterna
-  - [ ] Tests (Red): el estado cabe en un entero y avanzar no asigna
-  - [ ] Implementación (Green): generador de estado entero, **nunca `Int.random()`**
-- [ ] Task: La decisión de omisión
+- [x] Task: PRNG explícito y sembrado — `379b936`
+  - [x] Tests (Red): misma semilla, misma secuencia — literal, sobre una secuencia escrita en el test
+  - [x] Tests (Red): semillas distintas divergen
+  - [x] Tests (Red): la distribución no es degenerada sobre una muestra larga — no se cuelga en un valor ni alterna
+  - [x] Tests (Red): el estado cabe en un entero y avanzar no asigna
+  - [x] Implementación (Green): generador de estado entero, **nunca `Int.random()`**
+- [~] Task: La decisión de omisión
   - [ ] Tests (Red): Probability 100% no omite **ningún** Pulse, con cualquier semilla
   - [ ] Tests (Red): Probability 0% omite **todos**, con cualquier semilla
   - [ ] Tests (Red): un valor intermedio se aproxima a su proporción sobre una muestra larga, con tolerancia declarada
