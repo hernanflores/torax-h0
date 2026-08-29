@@ -1,0 +1,24 @@
+Task: Documentar las dos desviaciones antes de implementar
+Track: mvp-groove-static_20260829 — Fase 1
+
+Qué cambia
+- conductor/tech-stack.md: dos enmiendas fechadas el 2026-08-29, bajo «Motor
+  generativo», junto a la regla del PRNG sembrado que ambas precisan.
+
+1. «Repetible en loop» es repetible por arranque. El PRNG de Probability tiene
+   estado y avanza por Pulse, así que la secuencia varía entre vueltas del
+   anillo. Lo que la regla protegía —reproducibilidad, no caos— se conserva vía
+   semilla fija y resiembra al pulsar Play. La nota deja escrito además dónde
+   vive el estado (TrackScheduler, no Track) y por qué: el snapshot tiene que
+   seguir siendo trivial, y _isPOD(Track.self) lo vigila.
+
+2. Probability es unipolar en v1. La Pre Spec la define bipolar —clockwise todas
+   las notas, counter-clockwise solo los Pulses— pero sin Repeats toda nota es un
+   Pulse y los dos alcances son el mismo conjunto. Medio knob indistinguible del
+   otro medio, y sin forma de testear la diferencia. La nota fija la condición de
+   vuelta: con Repeats.
+
+Por qué antes y no después
+El paso 8 del Task Workflow lo exige: si la implementación se aparta de la Pre
+Spec, se para, se documenta con fecha y razón, y se reanuda. Escribirlo después
+convertiría una decisión en una justificación.
