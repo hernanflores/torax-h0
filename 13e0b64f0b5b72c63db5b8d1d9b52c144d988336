@@ -1,0 +1,31 @@
+Task: `Velocity`, `Sustain` y `Probability` como tipos validados
+Track: mvp-groove-static_20260829 — Fase 1
+
+Ficheros
+- Packages/Engine/Sources/Engine/Groove.swift (nuevo)
+- Packages/Engine/Tests/EngineTests/GrooveTypesTests.swift (nuevo)
+
+Red → Green
+12 tests escritos primero; fallaron por «cannot find 'Velocity' in scope», que
+es el fallo correcto para un tipo que no existe. Suite completa de Engine: 196
+tests en verde.
+
+Decisiones y su porqué
+- Velocity en 1–127 y no en 0–100%. Es la unidad del cable. Un porcentaje
+  obligaría a una conversión con pérdida (128 valores no caben en 101) y dejaría
+  dos escalas para el mismo dato entre pantalla y mensaje.
+- Velocity rechaza el 0. En MIDI 1.0 un note-on con velocity 0 es apagado, así
+  que admitirlo dejaría a un parámetro de dinámica producir silencio por la vía
+  que el resto del código lee como note-off. Para no sonar está Probability.
+- Sustain como porcentaje de la Division y no en milisegundos. La Division la
+  mueve un knob y el tempo lo fija el Bank; una duración absoluta dejaría de
+  significar lo mismo en cuanto se moviera cualquiera de los dos.
+- Sustain tope 200%: una nota liga sobre el Step siguiente y nunca alcanza el
+  tercero. El solape no se vigila, así que acotarlo aquí es lo que hace su
+  síntoma predecible en vez de arbitrario (limitación 1 del spec).
+- Probability admite los dos extremos. 0% es un Track que dispara y calla, el
+  mismo estado previsto que ya produce un pool vacío. Rechazarlos convertiría
+  dos estados válidos en errores.
+
+Validación en el inicializador, con init(unchecked:) interna para valores ya
+acotados: el idioma que ya siguen Steps, Pulses, Tempo y Division.
