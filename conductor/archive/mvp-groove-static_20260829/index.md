@@ -1,6 +1,6 @@
 # Track: MVP rebanada 5 — Groove estático: Velocity, Sustain, Probability
 
-**ID:** `mvp-groove-static_20260829` · **Type:** Feature · **Status:** new
+**ID:** `mvp-groove-static_20260829` · **Type:** Feature · **Status:** complete — cerrado el 2026-08-29
 
 La tercera capa del motor. Velocity, Sustain y Probability cambian **qué** se envía; Timing y Delay —que cambian **cuándo**— van aparte, en la rebanada 6. El corte es por riesgo, no por tamaño: aísla los tres parámetros que no tocan la rejilla temporal de los dos que sí.
 
@@ -11,6 +11,8 @@ Paga tres deudas que el código ya declaraba: la velocity constante de `NoteEmit
 -   [Specification](./spec.md)
 -   [Implementation Plan](./plan.md)
 -   [Metadata](./metadata.json)
+-   [Verificación en dispositivo](./device-verification.md) — ejecutada entera, CUMPLE
+-   [Captura del simulador](./simulator-groove.png)
 
 ## Project Context
 

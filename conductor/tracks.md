@@ -13,7 +13,7 @@ una deuda que la siguiente necesita.
 |---|---|---|
 | 3 | Anillo, playhead y valor transitorio | cerrada |
 | 4 | Tonal: pool, Scale y Root | cerrada |
-| 5 | Groove estático: Velocity, Sustain, Probability | **en curso** |
+| 5 | Groove estático: Velocity, Sustain, Probability | cerrada |
 | 6 | Groove temporal: Timing y Delay | **siguiente**, por planificar |
 | 7 | Preset del BeatStep Pro y MIDI Learn | por planificar |
 
@@ -42,22 +42,13 @@ camino de tiempo real y necesita tests que lo corran. Se toma antes de esa.
 
 ---
 
-- [~] **Track: MVP rebanada 5 — Groove estático: Velocity, Sustain, Probability**
-  *Link: [conductor/tracks/mvp-groove-static_20260829/index.md](./tracks/mvp-groove-static_20260829/index.md)*
+*Sin track abierto.* La rebanada 5 cerró el 2026-08-29; la 6 —Groove temporal:
+Timing y Delay— está en la cola de arriba, pendiente de planificar.
 
-  Abierto el 2026-08-29 sobre la rebanada 4 ya integrada. La tercera capa del
-  motor, partida por riesgo: estos tres cambian **qué** se envía y no tocan la
-  rejilla temporal, así que no llevan medición de jitter. Paga tres deudas que el
-  código ya declaraba provisionales —la velocity constante de `NoteEmitter`, el
-  gate de 25 ms— y una que `tech-stack.md` exige desde el primer commit: el PRNG
-  sembrado, del que Probability es el primer usuario.
-
-  **Dos decisiones que se apartan de la Pre Spec, documentadas antes de
-  implementar:** Probability es unipolar en v1 —sin Repeats, toda nota es un
-  Pulse y las dos mitades del knob serían indistinguibles— y «repetible en loop»
-  se precisa a «repetible por arranque», porque el PRNG avanza por Pulse.
-
-  6 fases, 28 tareas. Rama `feat/mvp-groove-static`.
+**Antes de la 6 hay que tomar `midi-test-flake`.** Deja de ser esquivable: la 6
+toca el camino de tiempo real y necesita tests que arranquen el bucle del
+scheduler. Esta rebanada lo evitó porque `TrackScheduler` se prueba dándole el
+horizonte a mano, sin hilo; Timing y Delay no van a tener esa salida.
 
 ## Defectos conocidos
 
@@ -90,6 +81,9 @@ en cualquier momento.
   La investigación del 2026-08-27 invirtió la dependencia. El ciclo de vida del scheduler no se puede cerrar sin entender antes por qué retrasar el desmontaje inutiliza la creación de endpoints virtuales de CoreMIDI.
 
 ## Archivados
+
+- [x] **Track: MVP rebanada 5 — Groove estático: Velocity, Sustain, Probability** — los tres suenan; verificado en iPad con BeatStep Pro
+  *Link: [conductor/archive/mvp-groove-static_20260829/index.md](./archive/mvp-groove-static_20260829/index.md)*
 
 - [x] **Track: MVP rebanada 4 — Tonal: pool, Scale y Root** — el Track arpegia sobre el pool, dentro del marco tonal
   *Link: [conductor/archive/mvp-tonal_20260828/index.md](./archive/mvp-tonal_20260828/index.md)*
