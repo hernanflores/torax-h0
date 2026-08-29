@@ -1,0 +1,47 @@
+Tasks: los encoders en Relative #2; escuchar los tres; lo entregado sigue en
+       pie; cobertura final y Pull Request
+Track: mvp-groove-static_20260829 — Fase 6
+
+VERIFICACIÓN DE FASE — Fase 6: Verificación en dispositivo
+Checkpoint del 2026-08-29
+
+Comandos ejecutados
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI --enable-code-coverage  (8 pasadas)
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado automático
+- Engine: 244 tests, 0 fallos. Cobertura 97,97% de líneas (umbral ≥90%).
+- MIDI: 235 tests. Cobertura 91,54% de líneas (umbral ≥80%), medida en un solo
+  proceso y excluyendo Engine/Sources del informe.
+- App: BUILD SUCCEEDED para iOS.
+
+El flake, caracterizado
+2 de 8 pasadas de MIDI fallaron, siempre con la misma firma: las 4 pruebas de
+VirtualLoopbackTests con clientCreationFailed(-50), y ningún otro test. Es
+midi-test-flake_20260826, no este cambio.
+
+Verificación manual en dispositivo
+Ejecutada por el usuario en iPad con BeatStep Pro y sintetizador, siguiendo
+device-verification.md. Los ocho bloques:
+0. Configuración previa — encoders en Relative #2, knobs en CC 70–76.
+1. Velocity — dinámica proporcional, sin saltos; el mínimo suena flojo y no
+   enmudece; valor grande en ámbar; audible en el Step siguiente.
+2. Sustain — percusivo abajo, un Step exacto al 100%, ligado hacia el 200%;
+   se comporta también con Division 1/32 y tempo alto.
+3. Probability — perfora la línea conservando la fase del arpegio; 0% da
+   silencio sin notas colgadas; dos vueltas seguidas no omiten lo mismo.
+4. Repetibilidad — parar y volver a Play reproduce la misma secuencia de
+   omisiones. Es la promesa de tech-stack.md tal como quedó precisada.
+5. Limitación 1 provocada — pool de una nota y Sustain 200%: se oye la nota
+   cortándose a sí misma, que es el síntoma previsto y no otro.
+6. Parar no deja nada sonando — el All Notes Off de la Fase 3 hace su trabajo.
+7. Lo entregado sigue en pie — transporte, anillo, playhead, pool, Scale y Root;
+   sin controlador, los tres se leen y no se editan.
+8. Legibilidad a un metro; las tres familias se distinguen por color.
+
+Resultado: CUMPLE. Ningún ajuste necesario.
+
+Confirmación del usuario
+«verificado en el iPad, los tres suenan bien» — 2026-08-29, y confirmado
+después que el alcance fue la guía entera y no solo los tres parámetros.
