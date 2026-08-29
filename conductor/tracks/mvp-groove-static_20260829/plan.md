@@ -147,7 +147,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 6: Verificación en dispositivo [checkpoint: PLACEHOLDER]
+## Phase 6: Verificación en dispositivo [checkpoint: 99a4a6f]
 
 > **Guía de ejecución:** [`device-verification.md`](./device-verification.md) —
 > ocho bloques de comprobación, la configuración previa que explica la mayoría
