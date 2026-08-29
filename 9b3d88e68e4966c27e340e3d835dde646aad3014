@@ -1,0 +1,34 @@
+Task: Probability decide en el scheduler, con el PRNG dentro
+Track: mvp-groove-static_20260829 — Fase 3
+
+Ficheros
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift — gana `random` y el `seed:`
+- Packages/MIDI/Tests/MIDITests/ProbabilityInSchedulerTests.swift (nuevo, 6 tests)
+
+Red → Green
+6 tests escritos primero; fallaron por «extra argument 'seed' in call».
+Engine 222, MIDI 226, App BUILD SUCCEEDED.
+
+Un fallo mío en el test, no en el código
+testConsecutiveRoundsSkipDifferentPulses partía las vueltas buscando un índice
+de Step que decreciera. No decrece: LookAheadScheduler entrega un contador
+absoluto y creciente, no una posición envuelta en el anillo. Corregido a
+cociente/resto. El código bajo prueba no cambió.
+
+El orden dentro del bucle, que es la decisión de la tarea
+  guard material.triggers(atStep: step)                     // ¿dispara?
+  guard groove.probability.sounds(drawingFrom: &random)     // ¿suena?
+Al revés, un Step vacío del reparto euclidiano consumiría una tirada, y entonces
+la secuencia de omisiones dependería del número de Pulses: girar ese knob
+cambiaría las omisiones de un patrón que no se tocó. Es el mismo criterio que ya
+rige en Probability.sounds — un Pulse cuesta una tirada, ni más ni menos.
+
+La altura no depende de la omisión
+Sale de pulseOrdinal(atStep:), función pura de la posición en el anillo. El test
+lo fija comparando altura por Step entre Probability 100% y 50%. Además de ser
+la decisión musical acordada, evita un contador mutable más en el hilo de tiempo
+real.
+
+El arnés no pasa por Probability: everyStep devuelve Groove.default, cuyo
+Probability es 100%, así que las 64 muestras del test salen enteras. Mide la
+rejilla, no el material.
