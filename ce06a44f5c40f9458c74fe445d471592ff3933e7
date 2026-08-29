@@ -1,0 +1,39 @@
+Tasks: el acento cromático de la familia Groove; los tres se leen en el estado
+       persistente; el valor grande transitorio cubre los siete; verificación en
+       simulador
+Track: mvp-groove-static_20260829 — Fase 5 (cuatro tareas en un commit)
+
+Ficheros
+- Engine: TrackParameter.swift — ParameterFamily y TrackParameter.family
+- Engine: Groove.swift — CustomStringConvertible
+- App: ShapeTheme.swift — Palette.groove y accent(for:)
+- App: ContentView.swift — el overlay toma el acento de la familia; la vista de
+  estado pasa de `shape` a `parameters` y muestra las dos líneas
+- App: TransportModel.swift — grooveSummary
+- Tests: ParameterFamilyTests, GrooveDescriptionTests
+
+Engine 244 tests, App BUILD SUCCEEDED (iOS y simulador).
+
+La decisión de reparto, que es la de la fase
+La vista necesitaba saber de qué familia es cada parámetro para elegir el
+acento. Deducirlo allí con un switch sobre los siete casos habría puesto lógica
+en App, que es lo que workflow.md prohíbe: «si algo en App merece un test, está
+en el sitio equivocado». Así que la clasificación es dominio
+(TrackParameter.family, con tests) y solo la correspondencia familia → color
+vive en la vista, que es presentación pura y no tiene nada que testear.
+
+Tonal no entra en ParameterFamily
+Su acento existe y se usa, pero el pool no se ajusta con un delta sino con pads:
+no es un TrackParameter y no tiene por qué aparecer en esa clasificación.
+Documentado en el tipo para que no parezca un olvido.
+
+Verificación en simulador
+Captura en conductor/tracks/mvp-groove-static_20260829/simulator-groove.png.
+Las tres familias conviven en pantalla y se distinguen por tono sobre el fondo
+oscuro: Shape verde, Groove ámbar, Tonal violeta. El estado de Groove se lee
+«Velocity 100 · Sustain 100% · Probability 100%».
+
+Lo que el simulador NO puede verificar, y queda para la Fase 6: no tiene
+destinos ni fuentes MIDI, así que canPlay es falso y no se ve el transporte, ni
+el playhead corriendo, ni el valor grande transitorio — que solo aparece al
+girar un knob real.
