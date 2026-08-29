@@ -11,10 +11,12 @@ import XCTest
 /// reintroduciría justo el jitter que la arquitectura evita.
 final class NoteEmitterTests: XCTestCase {
 
-    private func emitter(gateNanoseconds: Int64 = NoteEmitter.provisionalGateNanoseconds)
-        -> NoteEmitter
-    {
-        NoteEmitter(channel: MIDIChannel(1)!, gateNanoseconds: gateNanoseconds)
+    /// El gate sale de Sustain, así que un emisor con Step de 25 ms y el Groove
+    /// por defecto —Sustain 100%, una Division completa— produce exactamente el
+    /// gate de 25 ms contra el que estos tests ya comparaban. Las aserciones no
+    /// cambian; cambia de dónde sale el número.
+    private func emitter(stepDurationNanoseconds: Int64 = 25_000_000) -> NoteEmitter {
+        NoteEmitter(channel: MIDIChannel(1)!, stepDurationNanoseconds: stepDurationNanoseconds)
     }
 
     /// Recoge lo que el emisor entregaría al camino de envío.
@@ -51,7 +53,7 @@ final class NoteEmitterTests: XCTestCase {
     /// llamada que el note-on, no más tarde.
     func testSecondMessageIsNoteOffStampedAGateLater() {
         let gate: Int64 = 25_000_000
-        let sent = emitted(from: emitter(gateNanoseconds: gate), atHostTime: 5_000)
+        let sent = emitted(from: emitter(stepDurationNanoseconds: gate), atHostTime: 5_000)
 
         guard case .noteOff = sent[1].message else {
             return XCTFail("el segundo mensaje debería ser note-off, fue \(sent[1].message)")
@@ -83,28 +85,25 @@ final class NoteEmitterTests: XCTestCase {
 
     // MARK: - El gate provisional
 
-    /// El gate tiene que caber dentro del Step más corto que el producto puede
-    /// producir, o el note-off de un pulso llegaría después del note-on del
-    /// siguiente y se solaparían en la misma altura.
-    ///
-    /// **Los dos extremos se leen del dominio, no se escriben aquí.** Si algún
-    /// día se añade una Division más rápida o sube el tempo máximo, este test
-    /// falla en vez de dejar que las notas empiecen a solaparse en silencio.
-    func testProvisionalGateFitsInsideTheShortestPossibleStep() throws {
-        let fastestDivision = try XCTUnwrap(Division.fastest)
-        let highestTempo = try XCTUnwrap(Tempo(beatsPerMinute: Tempo.validRange.upperBound))
-        let shortestStep = MusicalTimeline(tempo: highestTempo, division: fastestDivision)
+    // MARK: - El guardián de los 25 ms, retirado
 
-        XCTAssertLessThan(
-            Double(NoteEmitter.provisionalGateNanoseconds),
-            shortestStep.stepDurationNanoseconds,
-            """
-            El gate (\(NoteEmitter.provisionalGateNanoseconds / 1_000_000) ms) no cabe en el \
-            Step más corto: \(fastestDivision) a \(Tempo.validRange.upperBound) BPM dura \
-            \(Int(shortestStep.stepDurationNanoseconds / 1_000_000)) ms. Las notas se solaparían.
-            """
-        )
-    }
+    // **Aquí vivía `testProvisionalGateFitsInsideTheShortestPossibleStep`.**
+    // Comprobaba que el gate constante cupiera en el Step más corto que el
+    // producto podía producir, para que el note-off de un pulso no llegara
+    // después del note-on del siguiente.
+    //
+    // Se retira con su constante en la rebanada 5. El límite que vigilaba era
+    // «que el gate quepa en el Step», y con Sustain eso deja de ser una
+    // invariante del sistema para pasar a ser **una elección del usuario**: el
+    // rango llega al 200% justamente para permitir ligar sobre el Step
+    // siguiente. Un test que siguiera exigiendo lo contrario fallaría por hacer
+    // el producto lo que se le pide.
+    //
+    // Lo que sustituye a esa protección no es otro test sino una decisión
+    // escrita: el solape no se vigila, el tope del 200% lo acota a un solo
+    // vecino, y el síntoma —una altura que se corta a sí misma con pool de una
+    // nota— está en el spec como limitación conocida y se verifica a propósito
+    // en dispositivo.
 
     /// El emisor no consulta el reloj: dado el mismo instante de pulso, produce
     /// siempre exactamente los mismos dos mensajes.

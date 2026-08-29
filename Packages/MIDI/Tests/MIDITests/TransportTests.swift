@@ -37,15 +37,19 @@ final class TransportTests: XCTestCase {
     /// Step dispare y el test no tenga que esperar al reparto euclidiano.
     private func makeTransport(_ recorder: Recorder) -> Transport {
         let steps = Steps(4)!
+        let timeline = MusicalTimeline(tempo: Tempo(beatsPerMinute: 300)!, division: .sixteenth)
         return Transport(
             configuration: SchedulerConfiguration(
-                timeline: MusicalTimeline(tempo: Tempo(beatsPerMinute: 300)!, division: .sixteenth),
+                timeline: timeline,
                 lookAheadNanoseconds: 20_000_000
             ),
             // Con el pool vacío el Track dispara y no emite nada, que es
             // comportamiento correcto y no lo que estos tests miden.
             track: Track(shape: Shape(steps: steps, pulses: Pulses(4)!), pool: voicePool),
-            emitter: NoteEmitter(channel: MIDIChannel(1)!),
+            emitter: NoteEmitter(
+                channel: MIDIChannel(1)!,
+                stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds)
+            ),
             send: recorder.record
         )
     }

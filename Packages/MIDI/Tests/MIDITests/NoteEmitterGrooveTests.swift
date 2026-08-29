@@ -11,7 +11,7 @@ import XCTest
 /// es lo que el hilo del scheduler lee del snapshot.
 final class NoteEmitterGrooveTests: XCTestCase {
 
-    private let emitter = NoteEmitter(channel: MIDIChannel(1)!)
+    private let emitter = NoteEmitter(channel: MIDIChannel(1)!, stepDurationNanoseconds: 25_000_000)
 
     private func emit(
         pitch: Pitch?,

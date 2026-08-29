@@ -61,6 +61,22 @@ public struct MIDIController: Hashable, Sendable {
         self.number = number
     }
 
+    /// Vía interna para números ya conocidos y válidos, como los de la sección
+    /// de Channel Mode de MIDI 1.0.
+    init(unchecked number: Int) {
+        self.number = number
+    }
+
+    /// All Notes Off — mensaje de Channel Mode de MIDI 1.0.
+    ///
+    /// **No es un parámetro: es una parada de emergencia.** El transporte lo
+    /// manda al parar, para apagar lo que su barrido de note-offs no conoce
+    /// —una altura que sonaba y ya salió del pool—. No todos los sintetizadores
+    /// lo honran, así que se manda *además* del barrido y no en su lugar.
+    ///
+    /// 123 es un literal dentro del rango 0–127, así que no puede fallar.
+    public static let allNotesOff = MIDIController(unchecked: 123)
+
     var wireValue: UInt8 { UInt8(number) }
 }
 

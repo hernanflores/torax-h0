@@ -81,7 +81,17 @@ final class TransportModel {
     ///
     /// Canal 6 es un literal dentro de su rango (1–16), así que el
     /// desempaquetado no puede fallar.
-    private static let voice = NoteEmitter(channel: MIDIChannel(6)!)
+    ///
+    /// **Se construye con la línea de tiempo vigente y no una sola vez.** El
+    /// gate sale de Sustain como porcentaje de la Division, así que el emisor
+    /// necesita saber cuánto dura un Step. La Division la elige el knob, y el
+    /// transporte ya se rehace en cada Play por la misma razón.
+    private static func voice(for timeline: MusicalTimeline) -> NoteEmitter {
+        NoteEmitter(
+            channel: MIDIChannel(6)!,
+            stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds)
+        )
+    }
 
     /// 120 BPM está dentro del rango válido de `Tempo`, así que no puede fallar.
     private static let tempo = Tempo(beatsPerMinute: 120)!
@@ -173,12 +183,11 @@ final class TransportModel {
             // entrega el cambio en el principal.
             output.onSetupChanged = { [weak watcher] in watcher?.setupChanged() }
 
+            let timeline = MusicalTimeline(tempo: Self.tempo, division: track.shape.division)
             transport = Transport(
-                configuration: SchedulerConfiguration(
-                    timeline: MusicalTimeline(tempo: Self.tempo, division: track.shape.division)
-                ),
+                configuration: SchedulerConfiguration(timeline: timeline),
                 track: track,
-                emitter: Self.voice
+                emitter: Self.voice(for: timeline)
             ) { [output, activeDestination] message, hostTime in
                 Self.send(message, at: hostTime, through: output, to: activeDestination)
             }

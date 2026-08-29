@@ -112,6 +112,26 @@ public struct Probability: Equatable, Sendable {
     }
 }
 
+extension Sustain {
+
+    /// Cuánto dura la nota, dado lo que dura un Step.
+    ///
+    /// **La aritmética vive en `Engine` y no en la capa MIDI** por la razón de
+    /// siempre: `workflow.md` dice que si algo merece un test está donde se
+    /// testea, y un porcentaje mal aplicado se oye como notas que se cortan o
+    /// que no se sueltan.
+    ///
+    /// Entera y en nanosegundos, sin coma flotante: esto acaba corriendo en el
+    /// hilo del scheduler. El orden —multiplicar antes de dividir— conserva la
+    /// precisión que dividir primero perdería.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func gateNanoseconds(forStep stepDurationNanoseconds: Int64) -> Int64 {
+        stepDurationNanoseconds * Int64(percent) / 100
+    }
+}
+
 extension Probability {
 
     /// Si este Pulse suena, tirando del generador.
