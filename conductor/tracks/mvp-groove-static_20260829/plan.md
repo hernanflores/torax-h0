@@ -55,12 +55,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > **La fase que toca el camino de tiempo real.** No mueve ningún note-on: la `MusicalTimeline`, el `LookAheadScheduler` y el `SchedulerThread` no se tocan.
 
-- [~] Task: La Velocity sale del snapshot
-  - [ ] Tests (Red): el note-on lleva la Velocity del Track, no una constante
-  - [ ] Tests (Red): el note-off sigue con velocity 0 — es la convención de apagado, no un parámetro
-  - [ ] Tests (Red): cambiar la Velocity del snapshot se refleja en la ventana siguiente
-  - [ ] Implementación (Green): `NoteEmitter` deja de llevar velocity propia; desaparece la constante que su documentación declaraba provisional
-- [ ] Task: El gate sale de Sustain y de la Division
+- [x] Task: La Velocity sale del snapshot — `f0b6773`
+  - [x] Tests (Red): el note-on lleva la Velocity del Track, no una constante
+  - [x] Tests (Red): el note-off sigue con velocity 0 — es la convención de apagado, no un parámetro
+  - [x] Tests (Red): cambiar la Velocity del snapshot se refleja en la ventana siguiente
+  - [x] Implementación (Green): `NoteEmitter` deja de llevar velocity propia; desaparece la constante que su documentación declaraba provisional
+- [~] Task: El gate sale de Sustain y de la Division
   - [ ] Tests (Red): Sustain 100% da un gate de **exactamente una Division**, comparado contra `MusicalTimeline` y no contra un número escrito a mano
   - [ ] Tests (Red): 1% da el extremo percusivo; 200% dura dos Divisions
   - [ ] Tests (Red): el gate se expresa como offset de timestamp y el note-off sigue viajando sellado en la misma entrega que su note-on
