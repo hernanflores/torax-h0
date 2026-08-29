@@ -168,3 +168,78 @@ final class GrooveTests: XCTestCase {
         XCTAssertEqual(louder.groove.velocity.value, 127)
     }
 }
+
+/// Tests del ajuste por delta de los tres parámetros de Groove.
+///
+/// **Los tres se frenan, ninguno envuelve.** Son escalas con principio y fin,
+/// como `Steps` y `Division` y a diferencia de `Rotate`, que gira sobre un
+/// anillo cerrado. `product-guidelines.md` pide que girar produzca «siempre un
+/// cambio inmediato y proporcional»; envolver convertiría un ajuste fino contra
+/// el extremo en un salto al otro lado del rango.
+final class GrooveAdjustmentTests: XCTestCase {
+
+    // MARK: - Velocity
+
+    func testVelocityMovesByTheDelta() {
+        XCTAssertEqual(Velocity(100)!.advanced(by: 1).value, 101)
+        XCTAssertEqual(Velocity(100)!.advanced(by: -1).value, 99)
+        XCTAssertEqual(Velocity(100)!.advanced(by: 20).value, 120)
+    }
+
+    func testVelocityStopsAtBothEnds() {
+        XCTAssertEqual(Velocity(127)!.advanced(by: 1).value, 127)
+        XCTAssertEqual(Velocity(1)!.advanced(by: -1).value, 1)
+        XCTAssertEqual(Velocity(100)!.advanced(by: 1000).value, 127)
+        XCTAssertEqual(Velocity(100)!.advanced(by: -1000).value, 1)
+    }
+
+    // MARK: - Sustain
+
+    func testSustainMovesByTheDelta() {
+        XCTAssertEqual(Sustain(percent: 100)!.advanced(by: 5).percent, 105)
+        XCTAssertEqual(Sustain(percent: 100)!.advanced(by: -5).percent, 95)
+    }
+
+    func testSustainStopsAtBothEnds() {
+        XCTAssertEqual(Sustain(percent: 200)!.advanced(by: 1).percent, 200)
+        XCTAssertEqual(Sustain(percent: 1)!.advanced(by: -1).percent, 1)
+        XCTAssertEqual(Sustain(percent: 100)!.advanced(by: 1000).percent, 200)
+        XCTAssertEqual(Sustain(percent: 100)!.advanced(by: -1000).percent, 1)
+    }
+
+    // MARK: - Probability
+
+    func testProbabilityMovesByTheDelta() {
+        XCTAssertEqual(Probability(percent: 50)!.advanced(by: 10).percent, 60)
+        XCTAssertEqual(Probability(percent: 50)!.advanced(by: -10).percent, 40)
+    }
+
+    /// El extremo inferior es el 0, no el 1: a diferencia de los otros dos,
+    /// «no suena nada» es un estado que el knob tiene que poder alcanzar.
+    func testProbabilityStopsAtBothEndsIncludingZero() {
+        XCTAssertEqual(Probability(percent: 100)!.advanced(by: 1).percent, 100)
+        XCTAssertEqual(Probability(percent: 0)!.advanced(by: -1).percent, 0)
+        XCTAssertEqual(Probability(percent: 50)!.advanced(by: -1000).percent, 0)
+        XCTAssertEqual(Probability(percent: 50)!.advanced(by: 1000).percent, 100)
+    }
+
+    // MARK: - Girar contra un extremo no mueve nada
+
+    /// **Es lo que después permite no publicar.** `ControlInput` compara el
+    /// valor ajustado con el vigente y solo publica si difieren; para que esa
+    /// comparación signifique algo, girar contra un tope tiene que devolver
+    /// exactamente el mismo valor.
+    func testTurningAgainstAnEndReturnsTheSameValue() {
+        XCTAssertEqual(Velocity(127)!.advanced(by: 5), Velocity(127)!)
+        XCTAssertEqual(Sustain(percent: 1)!.advanced(by: -5), Sustain(percent: 1)!)
+        XCTAssertEqual(Probability(percent: 0)!.advanced(by: -5), Probability(percent: 0)!)
+    }
+
+    /// Un delta de cero no es un caso especial que haya que interceptar antes:
+    /// el propio ajuste devuelve el mismo valor.
+    func testZeroDeltaChangesNothing() {
+        XCTAssertEqual(Velocity(64)!.advanced(by: 0), Velocity(64)!)
+        XCTAssertEqual(Sustain(percent: 64)!.advanced(by: 0), Sustain(percent: 64)!)
+        XCTAssertEqual(Probability(percent: 64)!.advanced(by: 0), Probability(percent: 64)!)
+    }
+}

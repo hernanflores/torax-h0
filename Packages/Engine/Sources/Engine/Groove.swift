@@ -112,6 +112,58 @@ public struct Probability: Equatable, Sendable {
     }
 }
 
+extension Velocity {
+
+    /// Nivel resultante de desplazar el knob `delta` posiciones.
+    ///
+    /// **Se frena en los extremos, no envuelve.** Ver `Sustain.advanced(by:)`
+    /// para el razonamiento, que es común a los tres.
+    public func advanced(by delta: Int) -> Velocity {
+        Velocity(unchecked: Self.validRange.clamping(value + delta))
+    }
+}
+
+extension Sustain {
+
+    /// Duración resultante de desplazar el knob `delta` posiciones.
+    ///
+    /// **Se frena en los extremos, no envuelve.** Es el criterio de `Steps` y
+    /// `Division`, y no el de `Rotate`: un knob que diera la vuelta al pasarse
+    /// del tope convertiría un ajuste fino en un salto al otro extremo del
+    /// rango, y `product-guidelines.md` pide que girar produzca «siempre un
+    /// cambio inmediato y proporcional».
+    ///
+    /// Girar contra un tope devuelve **el mismo valor**, que es lo que después
+    /// permite a `ControlInput` no publicar un snapshot idéntico.
+    public func advanced(by delta: Int) -> Sustain {
+        Sustain(unchecked: Self.validRange.clamping(percent + delta))
+    }
+}
+
+extension Probability {
+
+    /// Probabilidad resultante de desplazar el knob `delta` posiciones.
+    ///
+    /// **Se frena en los extremos, no envuelve.** Ver `Sustain.advanced(by:)`.
+    ///
+    /// Su extremo inferior es el 0 y no el 1: a diferencia de los otros dos,
+    /// «no suena nada» es un estado que el knob tiene que poder alcanzar.
+    public func advanced(by delta: Int) -> Probability {
+        Probability(unchecked: Self.validRange.clamping(percent + delta))
+    }
+}
+
+extension ClosedRange where Bound == Int {
+
+    /// El valor llevado dentro del rango.
+    ///
+    /// Existe para que los tres parámetros de Groove no repitan la misma pareja
+    /// de `min`/`max` anidados, que es donde un signo cambiado pasa inadvertido.
+    func clamping(_ value: Int) -> Int {
+        Swift.min(Swift.max(value, lowerBound), upperBound)
+    }
+}
+
 /// Groove — la familia que convierte la secuencia en interpretación.
 ///
 /// La Pre Spec la sitúa tercera en el flujo del motor: «Shape decide *cuándo* y
