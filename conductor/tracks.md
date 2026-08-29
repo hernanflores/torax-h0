@@ -42,7 +42,7 @@ camino de tiempo real y necesita tests que lo corran. Se toma antes de esa.
 
 ---
 
-- [ ] **Track: MVP rebanada 5 — Groove estático: Velocity, Sustain, Probability**
+- [~] **Track: MVP rebanada 5 — Groove estático: Velocity, Sustain, Probability**
   *Link: [conductor/tracks/mvp-groove-static_20260829/index.md](./tracks/mvp-groove-static_20260829/index.md)*
 
   Abierto el 2026-08-29 sobre la rebanada 4 ya integrada. La tercera capa del
