@@ -1,0 +1,33 @@
+Task: La decisión de omisión
+Track: mvp-groove-static_20260829 — Fase 2
+
+Ficheros
+- Packages/Engine/Sources/Engine/Groove.swift (extensión de Probability)
+- Packages/Engine/Tests/EngineTests/SeededRandomTests.swift (ProbabilityDecisionTests)
+
+Red → Green
+5 tests escritos primero; fallaron por «value of type 'Probability' has no
+member 'sounds'». Engine: 222 tests en verde.
+
+Los extremos, con cualquier semilla
+100% y 0% se comprueban sobre 50 semillas × 100 tiradas cada uno, no sobre una
+sola. Un error de comparación (<= en vez de <) pasaría desapercibido con una
+semilla afortunada.
+
+Cada decisión cuesta una tirada — el test que más importa
+testEveryDecisionConsumesExactlyOneDraw compara el estado del generador tras
+pasar por 100%, 0% y 50% contra el de tirar tres veces a pelo. Fija que los
+extremos NO cortocircuitan. Sin ese test, una optimización futura que devolviera
+true sin tirar en el 100% rompería la reproducibilidad de la sesión en silencio:
+la fase de la secuencia dependería del historial de giros del knob.
+
+Sesgo del resto, aceptado y documentado
+100 no divide a 2^64, así que el módulo tiene un sesgo de una parte en 1,8e17.
+No se corrige: sería trabajo en el camino de tiempo real para una desviación que
+ninguna sesión musical puede alcanzar. Escrito en la documentación del método
+para que la decisión no parezca un descuido.
+
+Reparto verificado sobre 10 000 tiradas en cinco valores (10, 25, 50, 75, 90)
+con tolerancia declarada de ±4 puntos. La tolerancia es holgada a propósito: el
+test vigila que el knob signifique algo, no la calidad estadística del
+generador, que ya tiene sus propios tests.
