@@ -1,0 +1,34 @@
+Task: `Groove` agrupa los tres y entra en `Track`
+Track: mvp-groove-static_20260829 — Fase 1
+
+Ficheros
+- Packages/Engine/Sources/Engine/Groove.swift (Groove añadido)
+- Packages/Engine/Sources/Engine/Shape.swift (Track gana el campo)
+- Packages/Engine/Tests/EngineTests/GrooveTypesTests.swift (GrooveTests añadido)
+
+Red → Green
+6 tests escritos primero; fallaron por «cannot find 'Groove' in scope».
+Engine: 202 tests en verde.
+
+La restricción dura no obligó a nada
+`_isPOD(Groove.self)` y `_isPOD(Track.self)` pasaron a la primera: tres enteros
+envueltos en structs siguen siendo triviales. El riesgo anotado en el plan
+—que Groove rompiera la trivialidad del snapshot— no se materializó. El test que
+ya existía en PitchPoolTests y TrackHandoffTests no se relajó ni se movió.
+
+Dónde vive cada cosa, y por qué
+- Groove en Track: la Velocity y el Sustain se leen en el hilo del scheduler
+  para construir los mensajes, y ese hilo solo lee el snapshot.
+- El PRNG NO en Track: tiene estado mutable. Va a TrackScheduler en la fase 3,
+  que es su único dueño. La separación es la misma que ya rige entre el estado
+  de edición y el snapshot.
+
+Default de producto como compatibilidad
+Track(shape:pool:) sigue existiendo con groove: .default, así que los llamantes
+de las rebanadas 1–4 compilan y suenan igual. Un test lo fija explícitamente en
+vez de dejarlo al azar del compilador.
+
+Suite de MIDI: 209 tests. La primera pasada dio 8 fallos y las cuatro
+siguientes 0. Es el flake conocido `clientCreationFailed(-50)`
+(midi-test-flake_20260826), no este cambio — comprobado con el número de
+pasadas que pide workflow.md.
