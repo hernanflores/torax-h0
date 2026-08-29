@@ -12,10 +12,10 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > `Engine` puro. Sin CoreMIDI, sin simulador, sin hardware.
 
-- [ ] Task: Documentar las dos desviaciones **antes** de implementar (paso 8 del Task Workflow)
-  - [ ] Nota fechada en `tech-stack.md`: Probability es unipolar en v1 porque no existen Repeats, y toda nota es un Pulse; la mitad counter-clockwise vuelve con ellos
-  - [ ] Nota fechada en `tech-stack.md`: «repetible en loop» se precisa a «repetible por arranque» — el PRNG avanza por Pulse, así que la secuencia varía entre vueltas y es la resiembra al pulsar Play la que la hace reproducible
-  - [ ] Ninguna de las dos se descubre a posteriori: se escriben con la razón, no solo con la regla
+- [x] Task: Documentar las dos desviaciones **antes** de implementar (paso 8 del Task Workflow) — `2407da8`
+  - [x] Nota fechada en `tech-stack.md`: Probability es unipolar en v1 porque no existen Repeats, y toda nota es un Pulse; la mitad counter-clockwise vuelve con ellos
+  - [x] Nota fechada en `tech-stack.md`: «repetible en loop» se precisa a «repetible por arranque» — el PRNG avanza por Pulse, así que la secuencia varía entre vueltas y es la resiembra al pulsar Play la que la hace reproducible
+  - [x] Ninguna de las dos se descubre a posteriori: se escriben con la razón, no solo con la regla
 - [ ] Task: `Velocity`, `Sustain` y `Probability` como tipos validados
   - [ ] Tests (Red): `Velocity` admite 1–127 y rechaza 0 y 128 — el 0 es note-off en MIDI 1.0, no un nivel dinámico
   - [ ] Tests (Red): `Sustain` admite 1–200 y rechaza 0 y 201; su default es 100
