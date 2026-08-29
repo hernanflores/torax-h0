@@ -31,3 +31,32 @@ Reparto verificado sobre 10 000 tiradas en cinco valores (10, 25, 50, 75, 90)
 con tolerancia declarada de ±4 puntos. La tolerancia es holgada a propósito: el
 test vigila que el knob signifique algo, no la calidad estadística del
 generador, que ya tiene sus propios tests.
+
+---
+
+VERIFICACIÓN DE FASE — Fase 2: El aleatorio sembrado
+Checkpoint del 2026-08-29
+
+Comando ejecutado
+  swift test --package-path Packages/Engine --enable-code-coverage
+
+Resultado
+Engine: 222 tests, 0 fallos. Cobertura 97,36% de líneas (umbral ≥90%).
+Groove.swift y SeededRandom.swift al 100%.
+
+Cobertura de los cambios de la fase
+SeededRandom.swift (nuevo) → SeededRandomTests. Extensión de Probability en
+Groove.swift → ProbabilityDecisionTests.
+
+Verificación manual propuesta
+Engine puro: nada audible hasta la fase 3. Se propuso revisar las dos decisiones
+fijadas en tests y difíciles de revertir después:
+1. Cada decisión consume una tirada, también en los extremos. Sin ese contrato,
+   la fase de la secuencia dependería del historial de giros del knob.
+2. La semilla cero se sustituye en el inicializador — modo de fallo clásico de
+   xorshift.
+Y una decisión aceptada a propósito: el sesgo del módulo (una parte en 1,8e17)
+no se corrige, para no meter un bucle de rechazo en el camino de tiempo real.
+
+Confirmación del usuario
+«sí, sigue con la fase 3» — 2026-08-29.
