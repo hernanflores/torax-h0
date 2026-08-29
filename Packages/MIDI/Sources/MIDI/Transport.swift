@@ -103,8 +103,8 @@ public final class Transport: @unchecked Sendable {
             material: .track(handoff.load() ?? lastPublishedTrack),
             handoff: handoff,
             playhead: playheadClock
-        ) { [emitter, send] _, pitch, hostTime in
-            emitter.emit(pitch: pitch, atHostTime: hostTime, send: send)
+        ) { [emitter, send] _, pitch, groove, hostTime in
+            emitter.emit(pitch: pitch, groove: groove, atHostTime: hostTime, send: send)
         }
         scheduler = thread
         thread.start()

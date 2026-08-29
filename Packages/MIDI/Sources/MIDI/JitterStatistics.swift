@@ -7,7 +7,7 @@ import Foundation
 public struct JitterStatistics: Equatable, Sendable {
 
     /// Umbral de aceptación del track `timing-spike_20260826`.
-    public static let maximumThresholdNanoseconds: Int64 = 2_000_000      // 2 ms
+    public static let maximumThresholdNanoseconds: Int64 = 2_000_000  // 2 ms
     public static let standardDeviationThresholdNanoseconds: Double = 500_000  // 0,5 ms
 
     public let sampleCount: Int
@@ -46,10 +46,11 @@ public struct JitterStatistics: Equatable, Sendable {
         let mean = deviations.reduce(0.0) { $0 + Double($1) } / Double(deviations.count)
         meanNanoseconds = mean
 
-        let variance = deviations.reduce(0.0) { partial, value in
-            let delta = Double(value) - mean
-            return partial + delta * delta
-        } / Double(deviations.count)
+        let variance =
+            deviations.reduce(0.0) { partial, value in
+                let delta = Double(value) - mean
+                return partial + delta * delta
+            } / Double(deviations.count)
         standardDeviationNanoseconds = variance.squareRoot()
     }
 

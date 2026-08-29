@@ -73,7 +73,8 @@ public struct LookAheadScheduler {
         // La estimación se pasó: retrocede mientras el Step anterior ya caiga
         // en el horizonte o después.
         while candidate > 0,
-              timeline.nanosecondOffset(forStep: candidate - 1) >= horizonNanoseconds {
+            timeline.nanosecondOffset(forStep: candidate - 1) >= horizonNanoseconds
+        {
             candidate -= 1
         }
 

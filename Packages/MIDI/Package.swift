@@ -14,10 +14,10 @@ let package = Package(
         .macOS(.v14),
     ],
     products: [
-        .library(name: "MIDI", targets: ["MIDI"]),
+        .library(name: "MIDI", targets: ["MIDI"])
     ],
     dependencies: [
-        .package(path: "../Engine"),
+        .package(path: "../Engine")
     ],
     targets: [
         // Atómicos sin lock. Target C propio, no una dependencia externa:

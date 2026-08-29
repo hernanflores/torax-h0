@@ -36,6 +36,22 @@ public enum SchedulerMaterial: Equatable, Sendable {
         }
     }
 
+    /// Cómo se interpreta lo que suena.
+    ///
+    /// **El arnés usa el default y no el suyo propio.** Mide la rejilla
+    /// temporal, no el material musical: le da igual con qué dinámica suene
+    /// mientras suene siempre. Darle un Groove propio sería inventarle un valor
+    /// musical a algo que no lo tiene.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    var groove: Groove {
+        switch self {
+        case .track(let track): track.groove
+        case .everyStep: .default
+        }
+    }
+
     /// Con qué altura suena el Step.
     ///
     /// **Quien conoce el material decide la altura.** Podría hacerlo el
@@ -96,16 +112,22 @@ public struct TrackScheduler {
     /// horizonte.
     ///
     /// `emit` recibe el índice de Step, la altura que le toca —`nil` con el pool
-    /// vacío— y su offset en nanosegundos respecto al origen de la línea de
-    /// tiempo. El cierre no escapa, así que no hay nada que asignar para
-    /// llamarlo.
+    /// vacío—, el Groove con que interpretarla y su offset en nanosegundos
+    /// respecto al origen de la línea de tiempo. El cierre no escapa, así que no
+    /// hay nada que asignar para llamarlo.
+    ///
+    /// **El Groove viaja por el mismo sitio que la altura, y no por otro.**
+    /// Quien emite necesita los dos para construir el par de mensajes, y los dos
+    /// tienen que venir del **mismo** snapshot: leerlos de sitios distintos
+    /// dejaría que una altura del Track nuevo sonara con la dinámica del viejo
+    /// en el borde de una ventana.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
     public mutating func advance(
         toHorizon horizonNanoseconds: Int64,
         refreshingFrom handoff: TrackHandoff?,
-        emit: (_ step: Int, _ pitch: Pitch?, _ offsetNanoseconds: Int64) -> Void
+        emit: (_ step: Int, _ pitch: Pitch?, _ groove: Groove, _ offsetNanoseconds: Int64) -> Void
     ) {
         if let published = handoff?.load() {
             material = .track(published)
@@ -116,6 +138,7 @@ public struct TrackScheduler {
             emit(
                 step,
                 material.pitch(atStep: step),
+                material.groove,
                 lookAhead.timeline.nanosecondOffset(forStep: step)
             )
         }

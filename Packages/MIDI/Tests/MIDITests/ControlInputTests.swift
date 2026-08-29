@@ -103,7 +103,8 @@ final class ControlInputTests: XCTestCase {
     /// mover Steps ni Pulses, igual que un knob de Shape no puede tocar el pool.
     func testNoteMessagesDoNotMoveTheShape() {
         let (input, _) = makeInput(shape(pulses: 4))
-        let note = MIDIMessage.noteOn(channel: channel, note: MIDINote(60)!, velocity: MIDIVelocity(100)!)
+        let note = MIDIMessage.noteOn(
+            channel: channel, note: MIDINote(60)!, velocity: MIDIVelocity(100)!)
         input.receive(note)
         XCTAssertEqual(input.track.shape.pulses.count, 4)
     }

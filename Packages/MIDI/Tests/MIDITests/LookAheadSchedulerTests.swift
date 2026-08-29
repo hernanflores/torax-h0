@@ -79,8 +79,9 @@ final class LookAheadSchedulerTests: XCTestCase {
         }
 
         XCTAssertFalse(emitted.isEmpty)
-        XCTAssertEqual(emitted, Array(0..<emitted.count),
-                       "Los Steps emitidos deben ser 0,1,2,... sin huecos ni duplicados")
+        XCTAssertEqual(
+            emitted, Array(0..<emitted.count),
+            "Los Steps emitidos deben ser 0,1,2,... sin huecos ni duplicados")
     }
 
     /// El limite superior de una ventana es el limite inferior de la siguiente.
@@ -91,8 +92,9 @@ final class LookAheadSchedulerTests: XCTestCase {
         for round in 1...50 {
             let range = scheduler.advance(toHorizon: Int64(round) * 90_000_000)
             if !range.isEmpty {
-                XCTAssertEqual(range.lowerBound, previousUpperBound,
-                               "Hueco o solape en la ronda \(round)")
+                XCTAssertEqual(
+                    range.lowerBound, previousUpperBound,
+                    "Hueco o solape en la ronda \(round)")
                 previousUpperBound = range.upperBound
             }
         }

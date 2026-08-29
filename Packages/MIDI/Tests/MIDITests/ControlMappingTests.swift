@@ -33,7 +33,8 @@ final class ControlMappingTests: XCTestCase {
     /// Un controlador sin asignar no es un error: en una sesión real llegan
     /// mensajes de todo tipo, y no es asunto del mapeo quejarse de ellos.
     func testUnmappedControllersAreIgnored() throws {
-        let assigned = Set(ShapeParameter.allCases.compactMap { mapping.controller(for: $0)?.number })
+        let assigned = Set(
+            ShapeParameter.allCases.compactMap { mapping.controller(for: $0)?.number })
         for number in 0...127 where !assigned.contains(number) {
             let controller = try XCTUnwrap(MIDIController(number))
             XCTAssertNil(mapping.parameter(for: controller), "CC \(number)")
@@ -48,7 +49,7 @@ final class ControlMappingTests: XCTestCase {
             controller: try XCTUnwrap(MIDIController(74)),
             value: 0x01
         )
-        guard case let .controlChange(_, controller, value) = message else {
+        guard case .controlChange(_, let controller, let value) = message else {
             return XCTFail("no es un control change")
         }
         XCTAssertEqual(controller.number, 74)

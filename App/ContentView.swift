@@ -125,7 +125,8 @@ struct ContentView: View {
         HStack(spacing: 12) {
             Text(model.sourceStatus)
                 .font(.body)
-                .foregroundStyle(model.isReadOnly ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.white))
+                .foregroundStyle(
+                    model.isReadOnly ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.white))
 
             if model.sourceSelection.available.count > 1 {
                 Picker("Input", selection: sourceBinding) {
@@ -148,7 +149,10 @@ struct ContentView: View {
         Binding(
             get: { model.sourceSelection.selected?.endpoint ?? 0 },
             set: { endpoint in
-                guard let chosen = model.sourceSelection.available.first(where: { $0.endpoint == endpoint })
+                guard
+                    let chosen = model.sourceSelection.available.first(where: {
+                        $0.endpoint == endpoint
+                    })
                 else { return }
                 model.selectSource(chosen)
             }
@@ -177,7 +181,8 @@ struct ContentView: View {
         Binding(
             get: { model.selection.selected?.endpoint ?? 0 },
             set: { endpoint in
-                guard let chosen = model.selection.available.first(where: { $0.endpoint == endpoint })
+                guard
+                    let chosen = model.selection.available.first(where: { $0.endpoint == endpoint })
                 else { return }
                 model.select(chosen)
             }

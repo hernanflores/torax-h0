@@ -50,8 +50,9 @@ final class CoreMIDIOutputTests: XCTestCase {
         )
 
         let result = output.send(message, to: MIDIEndpointRef(0), atHostTime: HostClock.now())
-        XCTAssertEqual(result, .sent,
-                       "CoreMIDI acepta envios a endpoints invalidos sin reportar error")
+        XCTAssertEqual(
+            result, .sent,
+            "CoreMIDI acepta envios a endpoints invalidos sin reportar error")
     }
 
     func testSetupChangeCallbackCanBeRegistered() throws {

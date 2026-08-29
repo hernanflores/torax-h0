@@ -35,7 +35,9 @@ final class JitterHarnessTests: XCTestCase {
         )
         XCTAssertEqual(measurements.count, 3)
         for measurement in measurements {
-            print("[jitter macOS \(Int(measurement.beatsPerMinute)) BPM] \(measurement.statistics.summary)")
+            print(
+                "[jitter macOS \(Int(measurement.beatsPerMinute)) BPM] \(measurement.statistics.summary)"
+            )
         }
     }
 
@@ -62,7 +64,7 @@ final class JitterHarnessTests: XCTestCase {
                 )
             )
         ) { error in
-            guard case let JitterHarnessError.timedOut(collected, expected) = error else {
+            guard case JitterHarnessError.timedOut(let collected, let expected) = error else {
                 return XCTFail("Se esperaba timedOut, llego \(error)")
             }
             XCTAssertEqual(expected, 10_000)

@@ -10,10 +10,7 @@ import XCTest
 /// parámetro y sale del pool.
 final class NoteEmitterPitchTests: XCTestCase {
 
-    private let emitter = NoteEmitter(
-        channel: MIDIChannel(1)!,
-        velocity: MIDIVelocity(100)!
-    )
+    private let emitter = NoteEmitter(channel: MIDIChannel(1)!)
 
     // MARK: - Emitir con la altura que le pasan
 
@@ -80,7 +77,7 @@ final class NoteEmitterPitchTests: XCTestCase {
         atHostTime hostTime: UInt64 = 0
     ) -> [(message: MIDIMessage, hostTime: UInt64)] {
         var captured: [(message: MIDIMessage, hostTime: UInt64)] = []
-        emitter.emit(pitch: pitch, atHostTime: hostTime) { message, time in
+        emitter.emit(pitch: pitch, groove: .default, atHostTime: hostTime) { message, time in
             captured.append((message, time))
         }
         return captured

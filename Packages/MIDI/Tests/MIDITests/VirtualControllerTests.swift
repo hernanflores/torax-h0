@@ -37,7 +37,7 @@ final class VirtualControllerTests: XCTestCase {
 
     func testTurningProducesAControlChangeOnTheMappedController() throws {
         let message = try XCTUnwrap(controller.turn(.pulses, by: 1))
-        guard case let .controlChange(_, cc, value) = message else {
+        guard case .controlChange(_, let cc, let value) = message else {
             return XCTFail("no produjo un control change")
         }
         XCTAssertEqual(cc, ControlMapping.provisional.controller(for: .pulses))
@@ -46,7 +46,7 @@ final class VirtualControllerTests: XCTestCase {
 
     func testTurningBackwardsEncodesANegativeDelta() throws {
         let message = try XCTUnwrap(controller.turn(.steps, by: -3))
-        guard case let .controlChange(_, _, value) = message else {
+        guard case .controlChange(_, _, let value) = message else {
             return XCTFail("no produjo un control change")
         }
         XCTAssertEqual(RelativeEncoding.twosComplement.delta(from: value), -3)

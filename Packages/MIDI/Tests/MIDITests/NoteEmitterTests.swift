@@ -11,12 +11,10 @@ import XCTest
 /// reintroduciría justo el jitter que la arquitectura evita.
 final class NoteEmitterTests: XCTestCase {
 
-    private func emitter(gateNanoseconds: Int64 = NoteEmitter.provisionalGateNanoseconds) -> NoteEmitter {
-        NoteEmitter(
-            channel: MIDIChannel(1)!,
-            velocity: MIDIVelocity(100)!,
-            gateNanoseconds: gateNanoseconds
-        )
+    private func emitter(gateNanoseconds: Int64 = NoteEmitter.provisionalGateNanoseconds)
+        -> NoteEmitter
+    {
+        NoteEmitter(channel: MIDIChannel(1)!, gateNanoseconds: gateNanoseconds)
     }
 
     /// Recoge lo que el emisor entregaría al camino de envío.
@@ -25,9 +23,10 @@ final class NoteEmitterTests: XCTestCase {
         atHostTime hostTime: UInt64
     ) -> [(message: MIDIMessage, hostTime: UInt64)] {
         var sent: [(MIDIMessage, UInt64)] = []
-        // La altura llega por parámetro desde que existe Tonal; estos tests
-        // miden el par de mensajes y su sellado, así que cualquiera sirve.
-        emitter.emit(pitch: Pitch(48)!, atHostTime: hostTime) { message, time in
+        // La altura llega por parámetro desde Tonal y el Groove desde esta
+        // rebanada; estos tests miden el par de mensajes y su sellado, así que
+        // cualquiera de los dos sirve.
+        emitter.emit(pitch: Pitch(48)!, groove: .default, atHostTime: hostTime) { message, time in
             sent.append((message, time))
         }
         return sent
@@ -66,8 +65,8 @@ final class NoteEmitterTests: XCTestCase {
     func testNoteOffMatchesTheNoteOnChannelAndNote() {
         let sent = emitted(from: emitter(), atHostTime: 0)
         guard
-            case let .noteOn(onChannel, onNote, _) = sent[0].message,
-            case let .noteOff(offChannel, offNote, _) = sent[1].message
+            case .noteOn(let onChannel, let onNote, _) = sent[0].message,
+            case .noteOff(let offChannel, let offNote, _) = sent[1].message
         else { return XCTFail("no se emitió el par note-on/note-off") }
 
         XCTAssertEqual(onChannel, offChannel)

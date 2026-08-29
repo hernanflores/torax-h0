@@ -27,25 +27,24 @@ public struct NoteEmitter: Equatable, Sendable {
     public static let provisionalGateNanoseconds: Int64 = 25_000_000
 
     public let channel: MIDIChannel
-    public let velocity: MIDIVelocity
     public let gateNanoseconds: Int64
 
     public init(
         channel: MIDIChannel,
-        velocity: MIDIVelocity,
         gateNanoseconds: Int64 = NoteEmitter.provisionalGateNanoseconds
     ) {
         self.channel = channel
-        self.velocity = velocity
         self.gateNanoseconds = gateNanoseconds
     }
 
     /// Entrega los dos mensajes del pulso, cada uno con su instante de emisión.
     ///
-    /// **La altura llega por parámetro y ya no es del emisor.** Hasta Tonal era
-    /// una constante que este tipo documentaba como provisional; ahora sale del
-    /// pool del Track, que es donde el modelo de la Pre Spec la pone. Canal y
-    /// velocity siguen siendo constantes hasta que llegue Groove.
+    /// **La altura y la Velocity llegan por parámetro y ya no son del emisor.**
+    /// Las dos fueron constantes que este tipo documentaba como provisionales:
+    /// la altura hasta Tonal, la Velocity hasta Groove. Ahora las dos salen del
+    /// `Track`, que es lo único que el hilo del scheduler lee. El canal sigue
+    /// siendo constante — es ajuste de Setup, no un parámetro generativo, y
+    /// llega con el preset del BeatStep Pro.
     ///
     /// **Sin altura no se emite nada.** Un pool vacío es un estado válido: el
     /// Track dispara sus Pulses y no tiene material. No se manda un note-on
@@ -62,6 +61,7 @@ public struct NoteEmitter: Equatable, Sendable {
     /// Sin asignaciones, sin locks, sin await.
     public func emit(
         pitch: Pitch?,
+        groove: Groove,
         atHostTime hostTime: UInt64,
         send: (_ message: MIDIMessage, _ hostTime: UInt64) -> Void
     ) {
@@ -72,6 +72,11 @@ public struct NoteEmitter: Equatable, Sendable {
         // capa que conoce los dos tipos: `Engine` no importa CoreMIDI y no
         // debería.
         let note = MIDINote(unchecked: UInt8(pitch.value))
+
+        // `Velocity` y `MIDIVelocity` comparten rango por construcción —el tipo
+        // del motor se validó contra el del protocolo—, así que la conversión no
+        // puede fallar. Se hace aquí, en la capa que conoce los dos tipos.
+        let velocity = MIDIVelocity(unchecked: UInt8(groove.velocity.value))
 
         send(.noteOn(channel: channel, note: note, velocity: velocity), hostTime)
 

@@ -100,10 +100,11 @@ public enum JitterHarness {
             velocity: MIDIVelocity(unchecked: 100)
         )
 
-        // La altura la ignora a propósito: el arnés mide la rejilla temporal,
-        // no el material musical, y manda siempre el mismo mensaje para que dos
-        // muestras solo se diferencien en cuándo salieron.
-        let thread = SchedulerThread(configuration: schedulerConfiguration) { _, _, hostTime in
+        // La altura y el Groove los ignora a propósito: el arnés mide la rejilla
+        // temporal, no el material musical, y manda siempre el mismo mensaje
+        // para que dos muestras solo se diferencien en cuándo salieron.
+        let thread = SchedulerThread(configuration: schedulerConfiguration) {
+            _, _, _, hostTime in
             // Realtime: hilo del scheduler.
             output.send(message, to: endpoint, atHostTime: hostTime)
         }

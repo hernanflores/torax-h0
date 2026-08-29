@@ -87,7 +87,8 @@ public final class CoreMIDIOutput: @unchecked Sendable {
 
     public init(clientName: String = "Torax H-0") throws {
         let box = notifications
-        let clientStatus = MIDIClientCreateWithBlock(clientName as CFString, &client) { notification in
+        let clientStatus = MIDIClientCreateWithBlock(clientName as CFString, &client) {
+            notification in
             if notification.pointee.messageID == .msgSetupChanged {
                 box.onSetupChanged?()
             }

@@ -49,7 +49,8 @@ final class JitterMeasurementModel {
         task = Task { [weak self] in
             for beatsPerMinute in Self.tempos {
                 if Task.isCancelled { break }
-                self?.statusMessage = "Midiendo \(Int(beatsPerMinute)) BPM · \(sampleCount) eventos…"
+                self?.statusMessage =
+                    "Midiendo \(Int(beatsPerMinute)) BPM · \(sampleCount) eventos…"
 
                 // La medición bloquea su hilo mientras espera los eventos, así
                 // que corre fuera del hilo principal: si lo bloqueara, la propia
@@ -65,12 +66,14 @@ final class JitterMeasurementModel {
 
                 guard let self else { return }
                 switch outcome {
-                case let .success(measurement):
+                case .success(let measurement):
                     self.measurements.append(measurement)
                     // A stdout para poder capturar la medicion desde
                     // `devicectl ... --console` sin depender de la pantalla.
-                    print("[jitter] \(Int(measurement.beatsPerMinute)) BPM · \(measurement.statistics.summary)")
-                case let .failure(message):
+                    print(
+                        "[jitter] \(Int(measurement.beatsPerMinute)) BPM · \(measurement.statistics.summary)"
+                    )
+                case .failure(let message):
                     UIApplication.shared.isIdleTimerDisabled = false
                     self.failureMessage = message
                     self.statusMessage = "Medición interrumpida"
@@ -106,7 +109,8 @@ final class JitterMeasurementModel {
         guard arguments.contains("--auto-measure") else { return }
 
         if let raw = arguments.first(where: { $0.hasPrefix("--samples=") }),
-           let parsed = Int(raw.dropFirst("--samples=".count)), parsed > 0 {
+            let parsed = Int(raw.dropFirst("--samples=".count)), parsed > 0
+        {
             sampleCount = parsed
         }
         print("[jitter] arranque automático · \(sampleCount) eventos por tempo")
@@ -130,9 +134,11 @@ final class JitterMeasurementModel {
     /// Se escribe en cada hito para poder reconstruir hasta dónde llegó la
     /// ejecución si la app termina inesperadamente.
     nonisolated func writeTrace(_ line: String) {
-        guard let directory = FileManager.default.urls(
-            for: .documentDirectory, in: .userDomainMask
-        ).first else { return }
+        guard
+            let directory = FileManager.default.urls(
+                for: .documentDirectory, in: .userDomainMask
+            ).first
+        else { return }
         let url = directory.appendingPathComponent("jitter-trace.txt")
         let stamped = "\(Date()) \(line)\n"
         if let handle = try? FileHandle(forWritingTo: url) {
@@ -151,24 +157,29 @@ final class JitterMeasurementModel {
     /// dispositivo y se recoge después. La medición sobrevive a cualquier corte
     /// de conexión.
     private func writeReport() {
-        guard let directory = FileManager.default.urls(
-            for: .documentDirectory, in: .userDomainMask
-        ).first else { return }
+        guard
+            let directory = FileManager.default.urls(
+                for: .documentDirectory, in: .userDomainMask
+            ).first
+        else { return }
 
         var lines: [String] = []
         lines.append("Torax H-0 — timing spike")
-        lines.append("dispositivo: \(UIDevice.current.model) · iPadOS \(UIDevice.current.systemVersion)")
+        lines.append(
+            "dispositivo: \(UIDevice.current.model) · iPadOS \(UIDevice.current.systemVersion)")
         lines.append("eventos por tempo: \(sampleCount)")
         lines.append("umbral: máx < 2 ms · σ < 0,5 ms")
         lines.append("")
         for measurement in measurements {
-            lines.append("\(Int(measurement.beatsPerMinute)) BPM · \(measurement.statistics.summary)")
+            lines.append(
+                "\(Int(measurement.beatsPerMinute)) BPM · \(measurement.statistics.summary)")
         }
         lines.append("")
         if let verdict = overallVerdict {
             lines.append("VEREDICTO: \(verdict ? "CUMPLE" : "NO CUMPLE")")
         } else {
-            lines.append("VEREDICTO: incompleto (\(measurements.count) de \(Self.tempos.count) tempos)")
+            lines.append(
+                "VEREDICTO: incompleto (\(measurements.count) de \(Self.tempos.count) tempos)")
         }
         if let failure = failureMessage { lines.append("fallo: \(failure)") }
 
@@ -197,9 +208,11 @@ final class JitterMeasurementModel {
                     timeoutSeconds: 300
                 )
             )
-            return .success(JitterMeasurement(beatsPerMinute: beatsPerMinute, statistics: statistics))
+            return .success(
+                JitterMeasurement(beatsPerMinute: beatsPerMinute, statistics: statistics))
         } catch let JitterHarnessError.timedOut(collected, expected) {
-            return .failure("Tiempo agotado a \(Int(beatsPerMinute)) BPM: \(collected) de \(expected) eventos")
+            return .failure(
+                "Tiempo agotado a \(Int(beatsPerMinute)) BPM: \(collected) de \(expected) eventos")
         } catch {
             return .failure("Fallo a \(Int(beatsPerMinute)) BPM: \(error)")
         }

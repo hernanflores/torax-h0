@@ -84,17 +84,17 @@ public enum MIDIMessage: Equatable, Sendable {
     /// Byte de status: nibble de tipo en la parte alta, canal en la baja.
     var statusByte: UInt8 {
         switch self {
-        case let .noteOn(channel, _, _): 0x90 | channel.wireValue
-        case let .noteOff(channel, _, _): 0x80 | channel.wireValue
-        case let .controlChange(channel, _, _): 0xB0 | channel.wireValue
+        case .noteOn(let channel, _, _): 0x90 | channel.wireValue
+        case .noteOff(let channel, _, _): 0x80 | channel.wireValue
+        case .controlChange(let channel, _, _): 0xB0 | channel.wireValue
         }
     }
 
     private var dataBytes: (UInt8, UInt8) {
         switch self {
-        case let .noteOn(_, note, velocity): (note.value, velocity.value)
-        case let .noteOff(_, note, velocity): (note.value, velocity.value)
-        case let .controlChange(_, controller, value): (controller.wireValue, value)
+        case .noteOn(_, let note, let velocity): (note.value, velocity.value)
+        case .noteOff(_, let note, let velocity): (note.value, velocity.value)
+        case .controlChange(_, let controller, let value): (controller.wireValue, value)
         }
     }
 

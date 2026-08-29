@@ -67,19 +67,21 @@ final class TransportModel {
 
     /// Altura, canal y velocity con los que suena el Track.
     ///
-    /// **La altura ya no está aquí: sale del pool del Track.** Lo que queda es
-    /// canal y velocity, todavía constantes, hasta que Groove traiga Velocity.
+    /// **Ni la altura ni la Velocity están ya aquí: salen del Track.** La
+    /// altura desde Tonal, la Velocity desde Groove. Lo único que queda es el
+    /// canal.
     ///
-    /// Esta constante vivía aquí y no en `Track` precisamente para que nada
-    /// consolidara la idea de una nota fija por paso mientras Tonal no
-    /// existiera. Ya existe.
+    /// Las dos constantes vivieron aquí y no en `Track` precisamente para que
+    /// nada consolidara un valor musical antes de que existiera el parámetro que
+    /// lo gobierna. Ya existen los dos.
     ///
-    /// Canal 6 y velocity 100 son literales dentro de sus rangos (1–16, 0–127),
-    /// así que el desempaquetado no puede fallar.
-    private static let provisionalVoice = NoteEmitter(
-        channel: MIDIChannel(6)!,
-        velocity: MIDIVelocity(100)!
-    )
+    /// **El canal se queda, y no es una deuda del mismo tipo.** No es un
+    /// parámetro generativo —no lo mueve un knob ni varía por Cycle— sino
+    /// ajuste de Setup, y llega con el preset del BeatStep Pro.
+    ///
+    /// Canal 6 es un literal dentro de su rango (1–16), así que el
+    /// desempaquetado no puede fallar.
+    private static let voice = NoteEmitter(channel: MIDIChannel(6)!)
 
     /// 120 BPM está dentro del rango válido de `Tempo`, así que no puede fallar.
     private static let tempo = Tempo(beatsPerMinute: 120)!
@@ -91,7 +93,8 @@ final class TransportModel {
     private(set) var sourceSelection = MIDIEndpointSelection(.source)
 
     /// Track vigente, con los giros ya aplicados.
-    private(set) var track = Track(shape: TransportModel.initialShape, pool: TransportModel.initialPool)
+    private(set) var track = Track(
+        shape: TransportModel.initialShape, pool: TransportModel.initialPool)
 
     /// Por qué la salida no está disponible, si no lo está.
     ///
@@ -158,7 +161,8 @@ final class TransportModel {
             let output = try CoreMIDIOutput()
             self.output = output
 
-            let watcher = MIDIEndpointWatcher(.destination, enumerating: output.availableDestinations)
+            let watcher = MIDIEndpointWatcher(
+                .destination, enumerating: output.availableDestinations)
             self.watcher = watcher
             selection = watcher.selection
 
@@ -174,7 +178,7 @@ final class TransportModel {
                     timeline: MusicalTimeline(tempo: Self.tempo, division: track.shape.division)
                 ),
                 track: track,
-                emitter: Self.provisionalVoice
+                emitter: Self.voice
             ) { [output, activeDestination] message, hostTime in
                 Self.send(message, at: hostTime, through: output, to: activeDestination)
             }

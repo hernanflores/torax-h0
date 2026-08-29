@@ -18,7 +18,9 @@ final class TrackSchedulerTests: XCTestCase {
     /// Un Step dura 125 ms a 120 BPM con Division 1/16.
     private var stepNanoseconds: Int64 { 125_000_000 }
 
-    private func track(steps stepCount: Int, pulses pulseCount: Int, rotate amount: Int = 0) -> Track {
+    private func track(steps stepCount: Int, pulses pulseCount: Int, rotate amount: Int = 0)
+        -> Track
+    {
         let steps = Steps(stepCount)!
         return Track(
             shape: Shape(
@@ -45,35 +47,39 @@ final class TrackSchedulerTests: XCTestCase {
         scheduler.advance(
             toHorizon: Int64(stepIndex) * stepNanoseconds,
             refreshingFrom: handoff
-        ) { step, _, _ in steps.append(step) }
+        ) { step, _, _, _ in steps.append(step) }
         return steps
     }
 
     // MARK: - Solo se emiten los Steps que disparan
 
     func testOnlyTriggeringStepsAreEmitted() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+        var scheduler = TrackScheduler(
+            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
         XCTAssertEqual(emit(&scheduler, upToStep: 16), [0, 4, 8, 12])
     }
 
     func testRotateShiftsWhichStepsAreEmitted() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track(steps: 16, pulses: 4, rotate: 1)))
+        var scheduler = TrackScheduler(
+            timeline: timeline, material: .track(track(steps: 16, pulses: 4, rotate: 1)))
         XCTAssertEqual(emit(&scheduler, upToStep: 16), [1, 5, 9, 13])
     }
 
     /// El anillo se recorre sin fin: la segunda vuelta repite las posiciones con
     /// índices de Step más altos.
     func testRingRepeatsOnTheSecondLap() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+        var scheduler = TrackScheduler(
+            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
         _ = emit(&scheduler, upToStep: 16)
         XCTAssertEqual(emit(&scheduler, upToStep: 32), [16, 20, 24, 28])
     }
 
     /// El offset que se entrega es el del Step, no el del horizonte.
     func testEmittedOffsetIsTheStepOffset() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+        var scheduler = TrackScheduler(
+            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
         var offsets: [Int64] = []
-        scheduler.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: nil) { _, _, offset in
+        scheduler.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: nil) { _, _, _, offset in
             offsets.append(offset)
         }
         XCTAssertEqual(offsets, [0, 4, 8, 12].map { Int64($0) * stepNanoseconds })
@@ -85,7 +91,8 @@ final class TrackSchedulerTests: XCTestCase {
     /// ventana siguiente, no en la actual ni tres ventanas después.
     func testSnapshotPublishedMidPlaybackIsPickedUpByTheNextWindow() {
         let handoff = TrackHandoff(track(steps: 16, pulses: 4))
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+        var scheduler = TrackScheduler(
+            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
 
         XCTAssertEqual(emit(&scheduler, upToStep: 16, from: handoff), [0, 4, 8, 12])
 
@@ -98,7 +105,8 @@ final class TrackSchedulerTests: XCTestCase {
     /// Sin publicar nada, el scheduler conserva el Track con el que arrancó.
     func testWithoutPublishingTheTrackIsUnchanged() {
         let handoff = TrackHandoff(track(steps: 16, pulses: 4))
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+        var scheduler = TrackScheduler(
+            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
         for lap in 1...4 {
             let expected = [0, 4, 8, 12].map { $0 + (lap - 1) * 16 }
             XCTAssertEqual(emit(&scheduler, upToStep: lap * 16, from: handoff), expected)
@@ -142,7 +150,8 @@ final class TrackSchedulerTests: XCTestCase {
     /// Si la lectura del snapshot se descarta, el scheduler sigue con el Track
     /// que ya tenía en vez de emitir cualquier cosa.
     func testDiscardedSnapshotReadKeepsThePreviousTrack() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+        var scheduler = TrackScheduler(
+            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
         // `nil` es exactamente lo que `TrackHandoff.load()` devuelve al
         // descartar, así que pasar nil reproduce ese caso.
         XCTAssertEqual(emit(&scheduler, upToStep: 16, from: nil), [0, 4, 8, 12])
@@ -218,7 +227,7 @@ final class SchedulerThreadSnapshotTests: XCTestCase {
             configuration: configuration(),
             material: .track(track(rotate: 0)),
             handoff: handoff
-        ) { step, _, _ in
+        ) { step, _, _, _ in
             if UInt64(step % 4) != expectedOffset.value { unexpectedPosition.value = true }
             emitted.increment()
         }
