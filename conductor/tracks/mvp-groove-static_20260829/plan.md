@@ -51,7 +51,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Implementación (Green): comparación entera contra el umbral; sin coma flotante en el camino que después corre en tiempo real
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: Que suene — el camino de emisión
+## Phase 3: Que suene — el camino de emisión [checkpoint: ebc0946]
 
 > **La fase que toca el camino de tiempo real.** No mueve ningún note-on: la `MusicalTimeline`, el `LookAheadScheduler` y el `SchedulerThread` no se tocan.
 
@@ -83,13 +83,13 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Se reescribe la nota de `Division.ordered` que explicaba por qué se cortaba en 1/16: **la condición que la ponía —«cuando Sustain sustituya al gate»— se cumple en esta fase**, y dejarla en pie diría algo falso
 - [x] Task: Verificar cobertura — `Engine` ≥90% (97,38%), `MIDI` ≥80% (87,21%)
   - [x] `MIDI` se mide en **un solo proceso**, según la nota del 2026-08-28 de `workflow.md`
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Un solo nombre para lo ajustable
 
 > Renombrado con casos nuevos. **El comportamiento existente no cambia**, y los tests de Shape lo demuestran sin reescribirse.
 
-- [ ] Task: `ShapeParameter` → `TrackParameter`
+- [~] Task: `ShapeParameter` → `TrackParameter`
   - [ ] Tests (Red): los siete casos, con los términos de la Pre Spec en inglés y sin traducir
   - [ ] Tests (Red): los tests de Shape existentes siguen pasando contra el tipo nuevo
   - [ ] Implementación (Green): un enum que nombra todo lo ajustable del Track; el ajuste por delta despacha a Shape o a Groove según el caso
