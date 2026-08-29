@@ -362,6 +362,26 @@ distingue nada.
 >
 > La CI no mide cobertura, así que esto no afecta a ningún gate automático.
 
+> **Ampliación del 2026-08-29 — al leer el informe, excluir `Engine/Sources`.**
+>
+> El binario de test de `MIDI` compila dentro las fuentes de `Engine`, así que
+> el informe las lista **a 0%**: las cubre la suite del otro paquete, no ésta.
+> Contarlas diluye la cifra de `MIDI` sin que nada esté peor cubierto —medido el
+> 2026-08-29: 86,68% con ellas dentro, **91,54%** sin ellas—.
+>
+> Para verificar el umbral de `MIDI`, filtrar el informe:
+>
+> ```bash
+> B=Packages/MIDI/.build/arm64-apple-macosx/debug
+> xcrun llvm-cov report \
+>   "$B/MIDIPackageTests.xctest/Contents/MacOS/MIDIPackageTests" \
+>   -instr-profile "$B/codecov/default.profdata" \
+>   -ignore-filename-regex='\.build|Tests|Engine/Sources'
+> ```
+>
+> Descubierto cerrando el track `mvp-groove-static_20260829`. La cifra que se
+> compara contra el umbral es la de **líneas**, no la de regiones.
+
 ## Commit Guidelines
 
 ### Message Format
