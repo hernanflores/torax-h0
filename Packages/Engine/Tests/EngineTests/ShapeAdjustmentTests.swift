@@ -9,7 +9,9 @@ final class ShapeAdjustmentTests: XCTestCase {
     private func shape(
         steps: Int = 16, pulses: Int = 4, rotate: Int = 0, division: Division = .sixteenth
     ) -> Shape {
-        Shape(steps: Steps(steps)!, pulses: Pulses(pulses)!, rotate: Rotate(rotate), division: division)
+        Shape(
+            steps: Steps(steps)!, pulses: Pulses(pulses)!, rotate: Rotate(rotate),
+            division: division)
     }
 
     // MARK: - Identidad y aislamiento

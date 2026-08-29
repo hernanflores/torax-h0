@@ -13,7 +13,7 @@ let package = Package(
         .macOS(.v14),
     ],
     products: [
-        .library(name: "Engine", targets: ["Engine"]),
+        .library(name: "Engine", targets: ["Engine"])
     ],
     targets: [
         .target(name: "Engine"),
