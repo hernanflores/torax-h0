@@ -1,0 +1,50 @@
+Tasks: `ShapeParameter` → `TrackParameter`; `ShapeChange` → `ParameterChange`;
+       el mapeo cubre los siete; los giros de Groove publican
+Track: mvp-groove-static_20260829 — Fase 4 (cuatro tareas en un commit)
+
+Ficheros
+- Engine: ShapeParameter.swift → TrackParameter.swift (+ Track.applying(_:to:))
+- Engine: ShapeChange.swift → ParameterChange.swift (compara Tracks)
+- Engine: Shape.swift — applying(_:to:) devuelve `self` para los de Groove
+- MIDI: ControlMapping.swift — un solo diccionario, CC 70–76
+- MIDI: ControlInput.swift — despacha por Track, no por Shape
+- MIDI: VirtualController.swift — renombrado
+- App: TransportModel.swift, ContentView.swift — ParameterChange
+- Tests: TrackParameterTests y ParameterChangeTests (nuevos);
+  ShapeParameterTests → TrackParameterNamesTests;
+  ShapeChangeTests → ParameterChangeShapeTests (conservados)
+
+Van juntas en un commit porque no se pueden separar: renombrar el enum rompe el
+mapeo, y el mapeo sin los giros no mueve nada. Partirlo daría dos commits que no
+compilan.
+
+Engine 239 tests, MIDI 235, App BUILD SUCCEEDED.
+
+El criterio de la fase, y cómo estuvo a punto de romperse
+«Los tests de Shape siguen pasando sin reescribirse.» Llegué a borrar
+ShapeParameterTests y ShapeChangeTests dándolos por sustituidos por los nuevos.
+No lo estaban: se habría perdido testEveryParameterIsDetectedAndOnlyItself
+—exhaustivo sobre parámetros × deltas— y el de Division como valor musical. Se
+restauraron y se adaptaron solo en el nombre del tipo y en el nivel de
+comparación, envolviendo cada Shape en un Track. Ninguna aserción cambió.
+
+Dos tests existentes sí necesitaron un cambio, y no de comportamiento
+- testEveryParameterIsReachableFromItsController partía del Groove por defecto,
+  que deja Probability en el 100%: su tope. El giro no movía nada y el test
+  decía «Probability no respondió» cuando lo cierto es que ya estaba donde podía
+  estar. Se le dan valores de partida con sitio, que es lo que el test ya hacía
+  para Shape.
+- testEditingThePoolAnnouncesNothing (nuevo) fallaba por un error mío: construía
+  el Track de comparación sin conservar el Groove, así que el cambio anunciado
+  era real. El código estaba bien.
+
+Decisiones de forma
+- Shape.applying(_:to:) devuelve `self` para los tres de Groove en vez de
+  hacerlos inalcanzables. Es la respuesta correcta —no son suyos— y deja el
+  switch exhaustivo sin un `default` que se tragaría un caso nuevo en silencio.
+- Velocity se muestra sin signo de porcentaje y Sustain/Probability con él.
+  Velocity vive en la unidad MIDI; ponerle el símbolo diría que es un porcentaje
+  de algo.
+- Los CC de Groove son 74, 75 y 76: bloque contiguo con los de Shape, en el
+  mismo orden que TrackParameter, para que la fila de knobs se lea como la lista
+  de parámetros. Un test comprueba que ningún CC mueve dos parámetros.
