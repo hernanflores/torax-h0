@@ -68,15 +68,15 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Implementación (Green): el gate se deriva de la duración del Step vigente
   - [x] **Añadido en curso:** `stop()` manda All Notes Off además del barrido del pool — el hueco que el propio `Transport` dejó anotado «cuando Sustain permita gates largos» se vuelve audible en esta tarea (24 s con Sustain 200% sobre 1/1 a 20 BPM). Decidido con el usuario el 2026-08-29.
 
-- [~] Task: Probability decide en el scheduler, con el PRNG dentro
-  - [ ] Tests (Red): el PRNG vive en `TrackScheduler` y se siembra al construirlo — dos schedulers recién construidos omiten igual
-  - [ ] Tests (Red): dos vueltas consecutivas del anillo **no** omiten los mismos Pulses
-  - [ ] Tests (Red): un Pulse omitido no emite **nada** — ni note-on huérfano ni note-off suelto
-  - [ ] Tests (Red): **omitir no descoloca el arpegio** — la altura de cada Step es la misma con Probability 100% y con Probability 50%
-  - [ ] Tests (Red): el snapshot se sigue recogiendo una vez por ventana, nunca a mitad
-  - [ ] Tests (Red): el modo `everyStep` del arnés de medición no pasa por Probability — mide la rejilla, no el material
-  - [ ] Implementación (Green): la omisión se decide donde ya se decide si el Step dispara; sin asignaciones, sin locks, con marcador `/// Realtime:`
-- [ ] Task: `Division` llega a 1/32 — *añadida el 2026-08-29, en el checkpoint de la Fase 1*
+- [x] Task: Probability decide en el scheduler, con el PRNG dentro — `9b3d88e`
+  - [x] Tests (Red): el PRNG vive en `TrackScheduler` y se siembra al construirlo — dos schedulers recién construidos omiten igual
+  - [x] Tests (Red): dos vueltas consecutivas del anillo **no** omiten los mismos Pulses
+  - [x] Tests (Red): un Pulse omitido no emite **nada** — ni note-on huérfano ni note-off suelto
+  - [x] Tests (Red): **omitir no descoloca el arpegio** — la altura de cada Step es la misma con Probability 100% y con Probability 50%
+  - [x] Tests (Red): el snapshot se sigue recogiendo una vez por ventana, nunca a mitad
+  - [x] Tests (Red): el modo `everyStep` del arnés de medición no pasa por Probability — mide la rejilla, no el material
+  - [x] Implementación (Green): la omisión se decide donde ya se decide si el Step dispara; sin asignaciones, sin locks, con marcador `/// Realtime:`
+- [~] Task: `Division` llega a 1/32 — *añadida el 2026-08-29, en el checkpoint de la Fase 1*
   - [ ] Tests (Red): `Division.ordered` incluye 1/32 y el knob llega hasta ella desde 1/16
   - [ ] Tests (Red): a 300 BPM un Step de 1/32 dura 25 ms, y con Sustain 100% el gate dura exactamente eso — el solape empieza por encima del 100%, no por debajo
   - [ ] Implementación (Green): un valor más en la lista; el tipo ya admitía cualquier fracción positiva
