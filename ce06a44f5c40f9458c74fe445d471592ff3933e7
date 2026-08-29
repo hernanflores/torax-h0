@@ -37,3 +37,38 @@ Lo que el simulador NO puede verificar, y queda para la Fase 6: no tiene
 destinos ni fuentes MIDI, así que canPlay es falso y no se ve el transporte, ni
 el playhead corriendo, ni el valor grande transitorio — que solo aparece al
 girar un knob real.
+
+---
+
+VERIFICACIÓN DE FASE — Fase 5: La pantalla
+Checkpoint del 2026-08-29
+
+Comandos ejecutados
+  swift test --package-path Packages/Engine
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  xcodebuild build -scheme ToraxH0 -destination "id=<iPad Pro 11-inch>"
+  xcrun simctl install / launch / io screenshot
+
+Resultado
+Engine 244 tests, 0 fallos. App BUILD SUCCEEDED para iOS y para simulador.
+Captura en conductor/tracks/mvp-groove-static_20260829/simulator-groove.png.
+
+Cobertura de los cambios de la fase
+ParameterFamily y Groove.description viven en Engine y están cubiertos
+(ParameterFamilyTests, GrooveDescriptionTests). Lo que queda en App es la
+correspondencia familia → color y dos vistas sin lógica, que por la regla de
+workflow.md no se mide.
+
+Verificación manual propuesta, sobre la captura
+1. Las tres familias conviven y se distinguen por tono y no solo por
+   luminosidad: Shape verde, Groove ámbar, Tonal violeta.
+2. El estado de Groove se lee «Velocity 100 · Sustain 100% · Probability 100%»,
+   con Velocity sin signo de porcentaje y los otros dos con él.
+3. El anillo sigue arriba y sin tapar.
+
+Lo que el simulador no puede verificar, y pasa a la Fase 6: no tiene MIDI, así
+que canPlay es falso — no se ve el transporte, ni el playhead corriendo, ni el
+valor grande transitorio, que solo aparece al girar un knob real.
+
+Confirmación del usuario
+«sí, prepara la fase de dispositivo» — 2026-08-29.
