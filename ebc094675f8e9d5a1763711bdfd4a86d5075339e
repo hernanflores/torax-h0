@@ -32,3 +32,44 @@ Esta tarea no estaba en el plan original. Salió del checkpoint de la Fase 1: la
 documentación de Division.ordered había dejado escrita la condición para
 extenderla, y esta fase la cumple. Se registró como enmienda al plan antes de
 implementarla.
+
+---
+
+VERIFICACIÓN DE FASE — Fase 3: Que suene, el camino de emisión
+Checkpoint del 2026-08-29
+
+Comandos ejecutados
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI    (3 pasadas + 1 con cobertura)
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado
+- Engine: 225 tests, 0 fallos. Cobertura 97,38% de líneas (umbral ≥90%).
+- MIDI: 226 tests, 0 fallos en 3 pasadas. Cobertura 87,21% (umbral ≥80%),
+  medida en un solo proceso según la nota del 2026-08-28 de workflow.md.
+  TrackScheduler.swift al 100%.
+- App: BUILD SUCCEEDED para iOS.
+
+Un error de medición mío, corregido durante el checkpoint
+Reporté antes «0 fallos en 3 pasadas» de MIDI cuando la suite no llegaba a
+compilar: una edición de ControlInputTests se había abortado por un fallo de
+comillas en el shell, y el contador que usé contaba líneas «' failed», que un
+fallo de compilación no produce. Corregido el helper y repetidas las tres
+pasadas de verdad.
+
+Cobertura de los cambios de la fase
+NoteEmitter → NoteEmitterGrooveTests, SustainGateTests. TrackScheduler →
+ProbabilityInSchedulerTests. Transport → StopSilencesEverythingTests.
+MusicalTime (1/32) → DivisionSequenceTests, ShortestStepTests.
+
+Verificación manual propuesta
+El simulador no tiene MIDI, así que lo audible espera a la Fase 6. Se propuso
+revisar las tres decisiones que cambian comportamiento:
+1. Se retira el test guardián de los 25 ms con su constante — el límite pasa de
+   invariante del sistema a elección del usuario.
+2. stop() manda All Notes Off además del barrido del pool. Verificado que el
+   test falla sin la guarda: 0 → 1 fallo al quitar el CC 123.
+3. Division llega a 1/32; dos tests que escribían el extremo se atan al dominio.
+
+Confirmación del usuario
+«sí, sigue con la fase 4» — 2026-08-29.
