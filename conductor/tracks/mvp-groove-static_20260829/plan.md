@@ -22,12 +22,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): `Probability` admite 0–100; **los dos extremos son válidos**, no casos límite a rechazar
   - [x] Tests (Red): los defaults de producto son Velocity 100, Sustain 100%, Probability 100%
   - [x] Implementación (Green): validación en el inicializador y vía `init(unchecked:)` interna, mismo idioma que `Steps` y `Division`
-- [~] Task: `Groove` agrupa los tres y entra en `Track`
-  - [ ] Tests (Red): **`_isPOD(Groove.self)` y `_isPOD(Track.self)`** — el test que ya existe en `TrackHandoffTests` no se relaja ni se mueve
-  - [ ] Tests (Red): `Track` construido sin Groove toma el default de producto, para que ningún llamante existente cambie
-  - [ ] Tests (Red): el pool y el Shape sobreviven a construir un Track con otro Groove
-  - [ ] Implementación (Green): `Groove` como valor trivial; `Track` gana el campo y `TrackHandoff` sigue publicándolo sin cambio de protocolo
-- [ ] Task: Ajuste por delta, con freno en los extremos
+- [x] Task: `Groove` agrupa los tres y entra en `Track` — `632ea4a`
+  - [x] Tests (Red): **`_isPOD(Groove.self)` y `_isPOD(Track.self)`** — el test que ya existe en `TrackHandoffTests` no se relaja ni se mueve
+  - [x] Tests (Red): `Track` construido sin Groove toma el default de producto, para que ningún llamante existente cambie
+  - [x] Tests (Red): el pool y el Shape sobreviven a construir un Track con otro Groove
+  - [x] Implementación (Green): `Groove` como valor trivial; `Track` gana el campo y `TrackHandoff` sigue publicándolo sin cambio de protocolo
+- [~] Task: Ajuste por delta, con freno en los extremos
   - [ ] Tests (Red): cada uno de los tres se frena en su extremo superior e inferior — no envuelven, como `Steps` y `Division` y a diferencia de `Rotate`
   - [ ] Tests (Red): girar contra un extremo devuelve el mismo valor, que es lo que después permite no publicar
   - [ ] Implementación (Green): acotado, no envoltura
