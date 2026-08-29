@@ -31,3 +31,39 @@ refactor no lo rompa en silencio.
 Helper `ClosedRange.clamping(_:)`
 Los tres parámetros repetían la misma pareja de min/max anidados, que es donde
 un signo cambiado pasa inadvertido. Interno al paquete, no público.
+
+---
+
+VERIFICACIÓN DE FASE — Fase 1: Los tres parámetros como valores
+Checkpoint del 2026-08-29
+
+Comando ejecutado
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI   (5 pasadas)
+
+Resultado
+- Engine: 210 tests, 0 fallos. Cobertura 97,28% de líneas (umbral ≥90%);
+  Groove.swift al 100%.
+- MIDI: 209 tests. 8 fallos en la primera pasada, 0 en las cuatro siguientes.
+  Es el flake conocido clientCreationFailed(-50) de midi-test-flake_20260826,
+  no este cambio: comprobado con el número de pasadas que exige workflow.md.
+
+Cobertura de los cambios de la fase
+Ficheros de código tocados: Groove.swift (nuevo) y Shape.swift (Track gana el
+campo). Los dos cubiertos por GrooveTypesTests.swift. tech-stack.md es
+documentación y queda fuera del criterio.
+
+Verificación manual propuesta
+La fase es Engine puro: no hay nada audible ni visible todavía, porque el camino
+de emisión no se toca hasta la fase 3. Lo verificable es que las decisiones
+quedaran escritas:
+1. Las dos enmiendas del 2026-08-29 en tech-stack.md — Probability unipolar y
+   «repetible por arranque» — con su razón y su condición de vuelta.
+2. Rangos y defaults en Groove.swift: Velocity 1–127/100, Sustain 1–200%/100%,
+   Probability 0–100%/100%.
+3. Los tres se frenan en sus extremos; Probability alcanza el 0.
+
+Confirmación del usuario
+«sí» — 2026-08-29. Confirmado además, sobre el hallazgo reportado en el
+checkpoint: añadir 1/32 a Division.ordered en la fase 3, cuando Sustain
+sustituya al gate provisional de 25 ms. Se incorpora al plan como tarea.
