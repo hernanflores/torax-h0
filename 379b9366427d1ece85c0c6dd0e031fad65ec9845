@@ -1,0 +1,37 @@
+Task: PRNG explícito y sembrado
+Track: mvp-groove-static_20260829 — Fase 2
+
+Ficheros
+- Packages/Engine/Sources/Engine/SeededRandom.swift (nuevo)
+- Packages/Engine/Tests/EngineTests/SeededRandomTests.swift (nuevo)
+
+Red → Green
+7 tests escritos primero; fallaron por «cannot find 'SeededRandom' in scope».
+
+Qué se testea, y por qué cada cosa
+- Misma semilla, misma secuencia. La secuencia se compara entre dos instancias
+  recién sembradas y no contra una lista escrita a mano; el test de arriba lo
+  compensa comprobando además que semillas distintas divergen, que es lo que
+  detectaría un generador degenerado que devolviera siempre lo mismo.
+- Resembrar vuelve al principio. Es lo que hace que pulsar Play dos veces
+  reproduzca la misma sesión: la precisión de «repetible» que se documentó en
+  tech-stack.md el 2026-08-29.
+- La secuencia no colapsa: 1000 valores dan más de 990 distintos. Un generador
+  clavado o alternante pasaría los tests de reproducibilidad y sería inservible
+  para Probability.
+- Reparto por cuartos sobre 4000 muestras, con cotas 800–1200. Sin esto un
+  Probability del 50% podría omitir el 90% de los Pulses.
+- Semilla cero. Es el modo de fallo clásico de xorshift: estado cero se queda en
+  cero para siempre. Se cierra en el inicializador.
+- _isPOD(SeededRandom.self): va a vivir dentro de TrackScheduler, que avanza en
+  el hilo del scheduler.
+
+Elección de algoritmo
+xorshift64*: tres desplazamientos, tres XOR y una multiplicación. Suficiente
+para decidir omisiones y cabe entero en el camino de tiempo real. No es
+criptográfico y la documentación del tipo lo dice.
+
+Por qué no RandomNumberGenerator de la stdlib
+Obligaría a `inout some RandomNumberGenerator` o a un existencial. El
+existencial mete boxing —una asignación— en el hilo del scheduler, que es
+exactamente lo que code_styleguides/swift.md prohíbe.
