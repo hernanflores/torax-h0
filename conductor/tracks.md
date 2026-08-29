@@ -13,8 +13,8 @@ una deuda que la siguiente necesita.
 |---|---|---|
 | 3 | Anillo, playhead y valor transitorio | cerrada |
 | 4 | Tonal: pool, Scale y Root | cerrada |
-| 5 | Groove estático: Velocity, Sustain, Probability | **siguiente**, por planificar |
-| 6 | Groove temporal: Timing y Delay | por planificar |
+| 5 | Groove estático: Velocity, Sustain, Probability | **en curso** |
+| 6 | Groove temporal: Timing y Delay | **siguiente**, por planificar |
 | 7 | Preset del BeatStep Pro y MIDI Learn | por planificar |
 
 **Por qué ese orden.** La 3 no toca el motor y salda la última carga de jitter
@@ -42,8 +42,22 @@ camino de tiempo real y necesita tests que lo corran. Se toma antes de esa.
 
 ---
 
-*Sin track abierto.* La rebanada 4 cerró el 2026-08-28; la 5 —Groove estático—
-está en la cola de arriba, pendiente de planificar.
+- [ ] **Track: MVP rebanada 5 — Groove estático: Velocity, Sustain, Probability**
+  *Link: [conductor/tracks/mvp-groove-static_20260829/index.md](./tracks/mvp-groove-static_20260829/index.md)*
+
+  Abierto el 2026-08-29 sobre la rebanada 4 ya integrada. La tercera capa del
+  motor, partida por riesgo: estos tres cambian **qué** se envía y no tocan la
+  rejilla temporal, así que no llevan medición de jitter. Paga tres deudas que el
+  código ya declaraba provisionales —la velocity constante de `NoteEmitter`, el
+  gate de 25 ms— y una que `tech-stack.md` exige desde el primer commit: el PRNG
+  sembrado, del que Probability es el primer usuario.
+
+  **Dos decisiones que se apartan de la Pre Spec, documentadas antes de
+  implementar:** Probability es unipolar en v1 —sin Repeats, toda nota es un
+  Pulse y las dos mitades del knob serían indistinguibles— y «repetible en loop»
+  se precisa a «repetible por arranque», porque el PRNG avanza por Pulse.
+
+  6 fases, 28 tareas. Rama `feat/mvp-groove-static`.
 
 ## Defectos conocidos
 
