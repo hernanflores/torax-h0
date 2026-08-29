@@ -1,0 +1,31 @@
+Task: La Velocity sale del snapshot
+Track: mvp-groove-static_20260829 — Fase 3
+
+Ficheros
+- Packages/MIDI/Sources/MIDI/NoteEmitter.swift — pierde la velocity almacenada;
+  emit() recibe el Groove
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift — SchedulerMaterial gana
+  `groove`; el cierre de advance() lo pasa
+- Packages/MIDI/Sources/MIDI/SchedulerThread.swift — StepHandler gana el Groove
+- Packages/MIDI/Sources/MIDI/Transport.swift, JitterHarness.swift — cierres
+- App/TransportModel.swift — provisionalVoice pasa a ser `voice`, solo canal
+- Tests: NoteEmitterGrooveTests (nuevo) + call sites de 5 ficheros existentes
+
+Red → Green
+6 tests escritos primero; fallaron por «missing argument for parameter 'groove'».
+MIDI: 214 tests. Engine: 222. App: BUILD SUCCEEDED para iOS.
+
+La decisión de diseño: el Groove viaja con la altura
+Podría haber llegado por otro sitio —el Transport tiene lastPublishedTrack— pero
+esa copia es del hilo de control y leerla desde el cierre del scheduler sería
+una carrera. El Groove tiene que salir del mismo snapshot que la altura, que es
+el que TrackScheduler recoge una vez por ventana. De ahí que el cierre gane un
+parámetro en vez de que alguien capture un valor.
+
+Coste: cambia la firma de StepHandler y con ella cinco ficheros de test. Es
+mecánico y ninguna aserción cambió — solo la aridad de los cierres.
+
+Por qué el arnés usa Groove.default
+SchedulerMaterial.everyStep devuelve el default en vez de un Groove propio: el
+arnés mide la rejilla temporal, no el material musical. Inventarle un valor
+musical a algo que no lo tiene sería peor que darle el neutro.
