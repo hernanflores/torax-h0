@@ -125,19 +125,26 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > `App` no se mide (`workflow.md`): si algo aquí merece un test, está en el sitio equivocado. Todo lo que tiene lógica ya quedó en `Engine` en las fases anteriores.
 
-- [~] Task: El acento cromático de la familia Groove
-  - [ ] Se declara junto al de Shape y el de Tonal, no suelto en la vista
-  - [ ] El color codifica **qué tipo de parámetro es**, nunca es decorativo (`product-guidelines.md`)
-- [ ] Task: Los tres se leen en el estado persistente
-  - [ ] Formato preciso y no conversacional, con los términos de la Pre Spec
-  - [ ] La descripción vive en `Engine`, como ya vive la de Shape
-- [ ] Task: El valor grande transitorio cubre los siete
-  - [ ] Girar cualquiera de los tres lo levanta, con el mismo desvanecimiento por inactividad
-  - [ ] **El anillo permanece visible debajo y nunca se oculta** — «nunca se sustituye el contexto por el detalle»
-- [ ] Task: Verificación en simulador
-  - [ ] Captura de pantalla con los tres parámetros presentes y el acento aplicado
-  - [ ] Contraste sobre fondo oscuro, legible como el resto — es como se encontró que las posiciones vacías del anillo desaparecían contra el panel
-  - [ ] Se registra la limitación: el simulador no tiene MIDI, así que no se ve el transporte ni un giro real
+- [x] Task: El acento cromático de la familia Groove — `ce06a44`
+  - [x] Se declara junto al de Shape y el de Tonal, no suelto en la vista
+  - [x] El color codifica **qué tipo de parámetro es**, nunca es decorativo (`product-guidelines.md`)
+- [x] Task: Los tres se leen en el estado persistente — `ce06a44`
+  - [x] Formato preciso y no conversacional, con los términos de la Pre Spec
+  - [x] La descripción vive en `Engine`, como ya vive la de Shape
+- [x] Task: El valor grande transitorio cubre los siete — `ce06a44`
+  - [x] Girar cualquiera de los tres lo levanta, con el mismo desvanecimiento por inactividad
+  - [x] **El anillo permanece visible debajo y nunca se oculta** — «nunca se sustituye el contexto por el detalle»
+- [x] Task: Verificación en simulador — `ce06a44`
+  - [x] Captura de pantalla con los tres parámetros presentes y el acento aplicado
+  - [x] Contraste sobre fondo oscuro, legible como el resto — es como se encontró que las posiciones vacías del anillo desaparecían contra el panel
+  - [x] Se registra la limitación: el simulador no tiene MIDI, así que no se ve el transporte ni un giro real
+
+  > **Las cuatro comparten SHA:** el acento sin quien lo use sería un color
+  > suelto, que es lo que `product-guidelines.md` dice que el color no es.
+
+  > **Captura:** [`simulator-groove.png`](./simulator-groove.png). Las tres
+  > familias conviven y se distinguen por tono sobre el fondo oscuro.
+
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 6: Verificación en dispositivo
