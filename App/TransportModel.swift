@@ -74,10 +74,10 @@ final class TransportModel {
     /// consolidara la idea de una nota fija por paso mientras Tonal no
     /// existiera. Ya existe.
     ///
-    /// Canal 1 y velocity 100 son literales dentro de sus rangos (1–16, 0–127),
+    /// Canal 6 y velocity 100 son literales dentro de sus rangos (1–16, 0–127),
     /// así que el desempaquetado no puede fallar.
     private static let provisionalVoice = NoteEmitter(
-        channel: MIDIChannel(1)!,
+        channel: MIDIChannel(6)!,
         velocity: MIDIVelocity(100)!
     )
 
