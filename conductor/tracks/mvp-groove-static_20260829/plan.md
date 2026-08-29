@@ -27,10 +27,10 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): `Track` construido sin Groove toma el default de producto, para que ningún llamante existente cambie
   - [x] Tests (Red): el pool y el Shape sobreviven a construir un Track con otro Groove
   - [x] Implementación (Green): `Groove` como valor trivial; `Track` gana el campo y `TrackHandoff` sigue publicándolo sin cambio de protocolo
-- [~] Task: Ajuste por delta, con freno en los extremos
-  - [ ] Tests (Red): cada uno de los tres se frena en su extremo superior e inferior — no envuelven, como `Steps` y `Division` y a diferencia de `Rotate`
-  - [ ] Tests (Red): girar contra un extremo devuelve el mismo valor, que es lo que después permite no publicar
-  - [ ] Implementación (Green): acotado, no envoltura
+- [x] Task: Ajuste por delta, con freno en los extremos — `c422e17`
+  - [x] Tests (Red): cada uno de los tres se frena en su extremo superior e inferior — no envuelven, como `Steps` y `Division` y a diferencia de `Rotate`
+  - [x] Tests (Red): girar contra un extremo devuelve el mismo valor, que es lo que después permite no publicar
+  - [x] Implementación (Green): acotado, no envoltura
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: El aleatorio sembrado
