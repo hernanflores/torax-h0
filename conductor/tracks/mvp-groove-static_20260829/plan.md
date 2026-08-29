@@ -85,7 +85,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] `MIDI` se mide en **un solo proceso**, según la nota del 2026-08-28 de `workflow.md`
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 4: Un solo nombre para lo ajustable
+## Phase 4: Un solo nombre para lo ajustable [checkpoint: d4c4021]
 
 > Renombrado con casos nuevos. **El comportamiento existente no cambia**, y los tests de Shape lo demuestran sin reescribirse.
 
@@ -119,13 +119,13 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   > deltas y el de Division como valor musical. Restaurados y adaptados solo en
   > el nombre del tipo y el nivel de comparación; ninguna aserción cambió.
 
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: La pantalla
 
 > `App` no se mide (`workflow.md`): si algo aquí merece un test, está en el sitio equivocado. Todo lo que tiene lógica ya quedó en `Engine` en las fases anteriores.
 
-- [ ] Task: El acento cromático de la familia Groove
+- [~] Task: El acento cromático de la familia Groove
   - [ ] Se declara junto al de Shape y el de Tonal, no suelto en la vista
   - [ ] El color codifica **qué tipo de parámetro es**, nunca es decorativo (`product-guidelines.md`)
 - [ ] Task: Los tres se leen en el estado persistente
