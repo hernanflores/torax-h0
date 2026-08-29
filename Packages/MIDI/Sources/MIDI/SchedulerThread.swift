@@ -51,7 +51,8 @@ public final class SchedulerThread: @unchecked Sendable {
     /// Recibe el índice de Step y el instante de emisión en ticks de host.
     /// Quien lo implemente hereda las reglas de tiempo real: sin asignaciones,
     /// sin locks, sin logging.
-    public typealias StepHandler = @Sendable (_ step: Int, _ hostTime: UInt64) -> Void
+    public typealias StepHandler =
+        @Sendable (_ step: Int, _ pitch: Pitch?, _ hostTime: UInt64) -> Void
 
     private let configuration: SchedulerConfiguration
     private let material: SchedulerMaterial
@@ -155,10 +156,11 @@ public final class SchedulerThread: @unchecked Sendable {
             )
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
 
-            scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) { step, offset in
-                let hostTime = startHostTicks
+            scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) { step, pitch, offset in
+                let hostTime =
+                    startHostTicks
                     &+ HostClock.hostTicks(fromNanoseconds: UInt64(max(0, offset)))
-                handler(step, hostTime)
+                handler(step, pitch, hostTime)
             }
 
             usleep(sleepNanoseconds / 1_000)

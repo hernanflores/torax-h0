@@ -103,8 +103,8 @@ public final class Transport: @unchecked Sendable {
             material: .track(handoff.load() ?? lastPublishedTrack),
             handoff: handoff,
             playhead: playheadClock
-        ) { [emitter, send] _, hostTime in
-            emitter.emit(atHostTime: hostTime, send: send)
+        ) { [emitter, send] _, pitch, hostTime in
+            emitter.emit(pitch: pitch, atHostTime: hostTime, send: send)
         }
         scheduler = thread
         thread.start()
@@ -118,6 +118,17 @@ public final class Transport: @unchecked Sendable {
     /// sonando en el sintetizador hasta que alguien la apague, y no hay nadie
     /// más que vaya a hacerlo: el hilo que la habría apagado es el que se acaba
     /// de detener.
+    ///
+    /// **Con Tonal ya no basta con una altura.** Se apagan todas las del pool
+    /// vigente, porque cualquiera de ellas pudo ser la última en sonar y desde
+    /// aquí no se sabe cuál fue — saberlo exigiría que el hilo del scheduler
+    /// publicara algo por cada pulso, y eso es trabajo en el camino de tiempo
+    /// real para resolver un caso de parada.
+    ///
+    /// Queda un hueco conocido: una altura que estuviera sonando y se hubiera
+    /// quitado del pool antes de parar no se apaga aquí. Dura lo que el gate,
+    /// hoy 25 ms, así que es inaudible; cuando Sustain permita gates largos hay
+    /// que volver a mirarlo.
     ///
     /// **Por qué no va sellado en «ahora».** CoreMIDI emite en orden de
     /// timestamp, así que un note-off a 0 saldría *antes* que cualquier note-on
@@ -133,11 +144,22 @@ public final class Transport: @unchecked Sendable {
         scheduler.stop()
         self.scheduler = nil
 
-        let silenceAt = HostClock.now()
-            &+ HostClock.hostTicks(fromNanoseconds: UInt64(max(0, configuration.lookAheadNanoseconds)))
-        send(
-            .noteOff(channel: emitter.channel, note: emitter.note, velocity: MIDIVelocity(unchecked: 0)),
-            silenceAt
-        )
+        let silenceAt =
+            HostClock.now()
+            &+ HostClock.hostTicks(
+                fromNanoseconds: UInt64(max(0, configuration.lookAheadNanoseconds)))
+
+        let pool = lastPublishedTrack.pool
+        for index in 0..<pool.count {
+            guard let pitch = pool.pitch(at: index) else { break }
+            send(
+                .noteOff(
+                    channel: emitter.channel,
+                    note: MIDINote(unchecked: UInt8(pitch.value)),
+                    velocity: MIDIVelocity(unchecked: 0)
+                ),
+                silenceAt
+            )
+        }
     }
 }

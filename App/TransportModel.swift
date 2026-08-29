@@ -38,19 +38,46 @@ final class TransportModel {
         return Shape(steps: steps, pulses: Pulses(5)!)
     }()
 
+    /// El marco tonal vigente. Configuración táctil, no de knob
+    /// (`product-guidelines.md`).
+    private(set) var frame = TonalFrame(scale: .minor, root: Root(0)!)
+
+    /// Cambia Scale o Root y reencuadra el pool.
+    ///
+    /// **Sigue disponible sin controlador conectado:** es configuración, no
+    /// material generativo, y la frontera de `product-guidelines.md` la pone del
+    /// lado de la pantalla.
+    func setFrame(_ updated: TonalFrame) {
+        frame = updated
+        guard let controlInput else { return }
+        controlInput.setFrame(updated)
+        track = controlInput.track
+    }
+
+    /// Con qué material arranca la app.
+    ///
+    /// **Una sola altura, que es la que sonaba antes de Tonal.** La Pre Spec
+    /// describe el pool de una nota como «centro estable», así que es un estado
+    /// legítimo y no un relleno.
+    ///
+    /// Arrancar con el pool vacío también sería válido —el Track dispara y no
+    /// tiene material— pero la app abriría muda, y averiguar que hay que pulsar
+    /// un pad para que suene no es algo que la pantalla comunique todavía.
+    static let initialPool = PitchPool().inserting(Pitch(48)!)
+
     /// Altura, canal y velocity con los que suena el Track.
     ///
-    /// **Constante provisional del camino MIDI, no estado del Track.** No hay
-    /// Tonal en esta rebanada, así que no hay pool de alturas del que elegir.
-    /// Vive aquí y no en `Track` para que nada consolide la idea de una nota
-    /// fija por paso, que `product-guidelines.md` advierte que contradice el
-    /// modelo de pool. Por la misma razón no se muestra en pantalla.
+    /// **La altura ya no está aquí: sale del pool del Track.** Lo que queda es
+    /// canal y velocity, todavía constantes, hasta que Groove traiga Velocity.
     ///
-    /// Canal 1, altura 48 y velocity 100 son literales dentro de sus rangos
-    /// (1–16, 0–127, 0–127), así que el desempaquetado no puede fallar.
+    /// Esta constante vivía aquí y no en `Track` precisamente para que nada
+    /// consolidara la idea de una nota fija por paso mientras Tonal no
+    /// existiera. Ya existe.
+    ///
+    /// Canal 6 y velocity 100 son literales dentro de sus rangos (1–16, 0–127),
+    /// así que el desempaquetado no puede fallar.
     private static let provisionalVoice = NoteEmitter(
-        channel: MIDIChannel(1)!,
-        note: MIDINote(48)!,
+        channel: MIDIChannel(6)!,
         velocity: MIDIVelocity(100)!
     )
 
@@ -64,7 +91,7 @@ final class TransportModel {
     private(set) var sourceSelection = MIDIEndpointSelection(.source)
 
     /// Track vigente, con los giros ya aplicados.
-    private(set) var track = Track(shape: TransportModel.initialShape)
+    private(set) var track = Track(shape: TransportModel.initialShape, pool: TransportModel.initialPool)
 
     /// Por qué la salida no está disponible, si no lo está.
     ///
@@ -167,6 +194,7 @@ final class TransportModel {
 
         let controlInput = ControlInput(
             track: track,
+            frame: frame,
             publish: { [weak transport] updated in transport?.publish(updated) }
         )
         self.controlInput = controlInput

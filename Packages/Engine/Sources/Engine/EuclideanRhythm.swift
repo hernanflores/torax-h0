@@ -40,7 +40,7 @@ public struct EuclideanRhythm: Equatable, Sendable {
     /// una consulta distinta: aplicarlo una vez aquí deja `triggers(atStep:)`
     /// como un único desplazamiento de bits, que es lo que el camino del
     /// scheduler necesita.
-    private let pattern: UInt16
+    let pattern: UInt16
 
     /// Reparte los Pulses sobre el anillo y lo gira.
     ///
@@ -76,6 +76,36 @@ public struct EuclideanRhythm: Equatable, Sendable {
         let remainder = index % steps.count
         let position = remainder < 0 ? remainder + steps.count : remainder
         return (pattern >> UInt16(position)) & 1 == 1
+    }
+
+    /// Cuántos Pulses dispararon antes que el Step dado.
+    ///
+    /// **Sin estado y sin acumular.** Es la misma disciplina que
+    /// `MusicalTimeline`: el offset de un Step se calcula multiplicando su
+    /// índice, nunca sumando paso a paso. Un contador de Pulses que avanzara
+    /// solo derivaría en cuanto se descartara una lectura del snapshot o se
+    /// reiniciara el transporte, y esa deriva no se vería hasta oírla.
+    ///
+    /// **Sigue contando al dar la vuelta.** El anillo se cierra pero los Pulses
+    /// no vuelven a empezar: que la vuelta siguiente continúe el arpegio en vez
+    /// de reiniciarlo es lo que hace que un pool de tres notas sobre un anillo
+    /// de ocho no repita siempre la misma altura en la misma posición.
+    ///
+    /// El índice se descompone en vueltas completas más el resto, así que el
+    /// coste es constante aunque el Step esté muy lejos del origen.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func pulseOrdinal(atStep index: Int) -> Int {
+        let count = steps.count
+        let remainder = index % count
+        let position = remainder < 0 ? remainder + count : remainder
+        let laps = (index - position) / count
+
+        // Bits encendidos por debajo de la posición: los Pulses de esta vuelta
+        // que ya dispararon. `nonzeroBitCount` es una instrucción.
+        let mask: UInt16 = position == 0 ? 0 : (1 << UInt16(position)) - 1
+        return laps * effectivePulses + (pattern & mask).nonzeroBitCount
     }
 
     /// Algoritmo de Bjorklund.

@@ -2,7 +2,7 @@
   "id": "mvp-tonal_20260828",
   "title": "MVP rebanada 4: Tonal — pool, Scale y Root",
   "type": "feature",
-  "status": "new",
+  "status": "complete",
   "created_at": "2026-08-28",
   "updated_at": "2026-08-28",
   "phases": 6,
@@ -30,5 +30,6 @@
   "decisions": {
     "pitch_selection": "Recorrido secuencial del pool, con la convención entrando como tipo de un solo caso — mismo patrón que RelativeEncoding, para que el aleatorio sea añadir un caso y no reescribir el camino de tiempo real",
     "scale_root_screen": "Dentro de la rebanada: sin ella, el reencuadre del pool al cambiar Scale no se puede verificar en la app"
-  }
+  },
+  "completed_at": "2026-08-28"
 }

@@ -81,12 +81,12 @@ final class SchedulerThreadTests: XCTestCase {
     }
 
     func testThreadIsNotRunningBeforeStart() {
-        let thread = SchedulerThread(configuration: makeConfiguration()) { _, _ in }
+        let thread = SchedulerThread(configuration: makeConfiguration()) { _, _, _ in }
         XCTAssertFalse(thread.isRunning)
     }
 
     func testStartThenStopLeavesThreadStopped() {
-        let thread = SchedulerThread(configuration: makeConfiguration()) { _, _ in }
+        let thread = SchedulerThread(configuration: makeConfiguration()) { _, _, _ in }
         thread.start()
         XCTAssertTrue(thread.isRunning)
         thread.stop()
@@ -100,7 +100,7 @@ final class SchedulerThreadTests: XCTestCase {
         let outOfOrder = AtomicFlag(false)
         let lastStep = AtomicCounter()
 
-        let thread = SchedulerThread(configuration: makeConfiguration()) { step, _ in
+        let thread = SchedulerThread(configuration: makeConfiguration()) { step, _, _ in
             if step > 0 && UInt64(step) != lastStep.value + 1 { outOfOrder.value = true }
             lastStep.value = UInt64(step)
             emitted.increment()
@@ -116,7 +116,7 @@ final class SchedulerThreadTests: XCTestCase {
     }
 
     func testStoppingTwiceIsHarmless() {
-        let thread = SchedulerThread(configuration: makeConfiguration()) { _, _ in }
+        let thread = SchedulerThread(configuration: makeConfiguration()) { _, _, _ in }
         thread.start()
         thread.stop()
         thread.stop()

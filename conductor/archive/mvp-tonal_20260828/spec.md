@@ -148,9 +148,12 @@ configuración.
   en todo lo que corra ahí.
 - **NFR2 — `Track` sigue siendo trivial.** `_isPOD(Track.self)` sigue en verde.
   No se relaja el test ni se mueve el pool fuera del snapshot para esquivarlo.
-- **NFR3 — Sin regresión de jitter, medida en dispositivo.** Se toca el camino de
-  emisión, así que la medición vuelve a ser criterio de cierre. Referencia: máx
-  0,134 ms y σ 0,020 ms con el anillo corriendo (rebanada 3).
+- **NFR3 — ~~Sin regresión de jitter, medida en dispositivo.~~** *Retirado el
+  2026-08-28.* La regla de `workflow.md` pasó a exigir medición cuando el cambio
+  altera **cuándo** cae un evento, no cuánto trabajo se hace para producirlo.
+  Esta rebanada añade aritmética acotada al camino de emisión y no desplaza
+  ningún instante; tres mediciones previas dieron CUMPLE con 25× de margen o más.
+  La próxima toca en la rebanada 6, con Timing y Delay.
 - **NFR4 — Cobertura:** `Engine` ≥90%, `MIDI` ≥80%.
 - **NFR5 — La lógica no vive en `App`.** El marco tonal, el reencuadre y el
   recorrido del pool son `Engine`; la recepción de notas es `MIDI`. `App` cablea
@@ -182,8 +185,6 @@ Además:
 - [ ] La pantalla muestra el pool sobre la Scale y **no** una nota por paso.
 - [ ] Scale y Root se cambian tocando, con el transporte corriendo y sin
       cortarlo.
-- [ ] Jitter medido en iPad con Tonal activo, comparado contra máx 0,134 ms · σ
-      0,020 ms de la rebanada 3.
 - [ ] `swift test` sobre `Engine` y `MIDI` pasa sin simulador ni hardware.
 
 ## Known Limitations

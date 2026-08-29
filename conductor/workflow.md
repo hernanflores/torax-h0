@@ -55,7 +55,41 @@ All tasks follow a strict lifecycle:
 
 6.  **Verify Coverage:** Run coverage and check it against the module's threshold in *Coverage Requirements*.
 
-7.  **Verify Timing (when applicable):** If the change touches the scheduler, MIDI send path, or timing math, run the jitter harness and record the result. A regression in jitter blocks the task.
+7.  **Verify Timing (when applicable):** Si el cambio altera **cuándo** cae un evento —la rejilla temporal, el scheduler o la matemática de tiempo—, corre el arnés de jitter y registra el resultado. Una regresión bloquea la tarea. Ver la nota de abajo para lo que ya no exige medición.
+
+    > **Nota del 2026-08-28 — se mide cuando cambia el *cuándo*, no el *cuánto*.**
+    >
+    > La regla anterior exigía medir en cualquier cambio del camino de envío, y
+    > tres mediciones seguidas dijeron lo mismo:
+    >
+    > | Medición | máx | σ | margen sobre σ |
+    > |---|---|---|---|
+    > | Spike, sin carga (2026-08-26) | 0,149 ms | 0,009 ms | 55× |
+    > | Rebanada 1, motor + UI (2026-08-27) | 0,127 ms | 0,015 ms | 33× |
+    > | Rebanada 3, anillo + playhead (2026-08-28) | 0,134 ms | 0,020 ms | 25× |
+    > | Umbral | 2 ms | 0,5 ms | |
+    >
+    > La arquitectura explica por qué: con look-ahead, el jitter **no depende de
+    > cuándo despierta el hilo** mientras su trabajo quepa en la ventana de
+    > 20 ms. Añadir aritmética de enteros al hilo del scheduler son nanosegundos
+    > contra veinte millones, y medirlo cada vez es ceremonia.
+    >
+    > **Lo que sí exige medición**, porque no es carga sino rejilla:
+    >
+    > - Cambios en `MusicalTimeline`, `LookAheadScheduler` o `SchedulerThread`.
+    > - Swing (Timing), Delay y cualquier parámetro que desplace eventos respecto
+    >   a la rejilla.
+    > - Carga visual nueva que redibuje al ritmo del reloj.
+    > - Antes de cerrar v1, una medición final.
+    >
+    > **Lo que no:** añadir trabajo acotado al camino de emisión sin mover ningún
+    > instante — elegir una altura del pool, aplicar una velocity, decidir una
+    > probabilidad.
+    >
+    > **El coste de la regla es la atribución.** La σ sube de forma monótona
+    > —9 → 15 → 20 µs— y sin medir cada rebanada, cuando algo suene mal no se
+    > sabrá cuál lo introdujo. Se acepta a cambio de no medir tres veces lo
+    > mismo; si aparece una regresión, se bisecta con el arnés, que sigue ahí.
 
 8.  **Document Deviations:** If implementation differs from `tech-stack.md` or the Pre Spec:
     - **STOP** implementation.

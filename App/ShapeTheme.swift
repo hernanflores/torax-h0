@@ -11,6 +11,10 @@ import SwiftUI
 /// **Fondo oscuro y alto contraste son requisito de uso, no estética:** la
 /// pantalla se lee de reojo, en movimiento y a veces con poca luz.
 ///
+/// Groove sigue sin acento porque sigue sin parámetros. Poblarlo antes sería
+/// dejar un color suelto que alguien usaría como decoración, que es justo lo que
+/// la guía dice que el color no es.
+///
 /// Los valores salen del handoff de diseño, que se declara a sí mismo *lofi*:
 /// estructura e interacción son vinculantes, el color es ilustrativo. Están aquí
 /// para poder cambiarlos en un sitio cuando el lenguaje visual se cierre.
@@ -39,4 +43,7 @@ enum Palette {
 
     /// Acento de la familia **Shape**.
     static let shape = Color(red: 0x9a / 255, green: 0xab / 255, blue: 0x79 / 255)
+
+    /// Acento de la familia **Tonal**.
+    static let tonal = Color(red: 0x7c / 255, green: 0x5f / 255, blue: 0xd9 / 255)
 }

@@ -19,6 +19,12 @@ public final class ControlInput: @unchecked Sendable {
     /// una lectura, y perder un giro por eso sería un knob que no responde.
     public private(set) var track: Track
 
+    /// El marco tonal vigente: qué alturas admiten los pads.
+    ///
+    /// Se puede cambiar en caliente porque Scale y Root son configuración
+    /// táctil, y cambiarlas **reencuadra el pool** en vez de vaciarlo.
+    public private(set) var frame: TonalFrame
+
     private let publish: @Sendable (Track) -> Void
     private let mapping: ControlMapping
     private let encoding: RelativeEncoding
@@ -30,11 +36,13 @@ public final class ControlInput: @unchecked Sendable {
     ///   scheduler leyera de un sitio y los knobs escribieran en otro.
     public init(
         track: Track,
+        frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publish: @escaping @Sendable (Track) -> Void,
         mapping: ControlMapping = .provisional,
         encoding: RelativeEncoding = .twosComplement
     ) {
         self.track = track
+        self.frame = frame
         self.publish = publish
         self.mapping = mapping
         self.encoding = encoding
@@ -44,12 +52,14 @@ public final class ControlInput: @unchecked Sendable {
     /// tenga un transporte de por medio.
     public convenience init(
         track: Track,
+        frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publishingTo handoff: TrackHandoff,
         mapping: ControlMapping = .provisional,
         encoding: RelativeEncoding = .twosComplement
     ) {
         self.init(
             track: track,
+            frame: frame,
             publish: { handoff.publish($0) },
             mapping: mapping,
             encoding: encoding
@@ -67,9 +77,23 @@ public final class ControlInput: @unchecked Sendable {
     /// No es código de tiempo real. Se llama desde el hilo de control.
     @discardableResult
     public func receive(_ message: MIDIMessage) -> Bool {
-        guard case let .controlChange(_, controller, value) = message,
-              let parameter = mapping.parameter(for: controller)
-        else { return false }
+        switch message {
+        case .controlChange(_, let controller, let value):
+            return turn(controller, by: value)
+        case .noteOn(_, let note, let velocity):
+            // Velocity cero es la convención de apagado de muchos
+            // controladores. Alternar en la pulsación **y** en la soltada sería
+            // no alternar: cada pad dejaría el pool como estaba.
+            guard velocity.value > 0 else { return false }
+            return toggle(note)
+        case .noteOff:
+            return false
+        }
+    }
+
+    /// Un giro de knob mueve un parámetro de Shape.
+    private func turn(_ controller: MIDIController, by value: UInt8) -> Bool {
+        guard let parameter = mapping.parameter(for: controller) else { return false }
 
         let delta = encoding.delta(from: value)
         guard delta != 0 else { return false }
@@ -78,7 +102,47 @@ public final class ControlInput: @unchecked Sendable {
         // Girar contra un extremo no mueve nada: el valor ya estaba ahí.
         guard adjusted != track.shape else { return false }
 
-        track = Track(shape: adjusted)
+        // **El pool se conserva.** Shape y pool son dos partes del mismo Track:
+        // reconstruirlo sin el pool borraría el material tonal al girar un knob,
+        // que es exactamente la destrucción que `product-guidelines.md` prohíbe.
+        track = Track(shape: adjusted, pool: track.pool)
+        publish(track)
+        return true
+    }
+
+    /// Un pad alterna la pertenencia de una altura al pool.
+    ///
+    /// **Fuera del marco tonal se ignora en silencio**, igual que un CC sin
+    /// mapear: en una sesión real llegan mensajes de todo tipo y no es asunto de
+    /// la entrada quejarse de ellos. La Pre Spec lo pide así — «solo están
+    /// disponibles las notas permitidas por la Scale actual».
+    private func toggle(_ note: MIDINote) -> Bool {
+        // `MIDINote` y `Pitch` comparten el rango 0–127 por definición del
+        // protocolo, así que la conversión no puede fallar.
+        guard let pitch = Pitch(Int(note.value)), frame.allows(pitch) else { return false }
+
+        let adjusted = track.pool.toggling(pitch)
+        // El pool lleno rechaza la novena: no cambió nada que publicar.
+        guard adjusted != track.pool else { return false }
+
+        track = Track(shape: track.shape, pool: adjusted)
+        publish(track)
+        return true
+    }
+
+    /// Cambia el marco tonal y reencuadra el pool.
+    ///
+    /// **Reencuadra, no vacía** (`product-guidelines.md`). Publicar solo si algo
+    /// cambió evita mandar un snapshot idéntico cuando el pool ya estaba dentro
+    /// del marco nuevo.
+    @discardableResult
+    public func setFrame(_ frame: TonalFrame) -> Bool {
+        self.frame = frame
+
+        let adjusted = track.pool.reframed(to: frame)
+        guard adjusted != track.pool else { return false }
+
+        track = Track(shape: track.shape, pool: adjusted)
         publish(track)
         return true
     }

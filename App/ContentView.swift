@@ -31,6 +31,12 @@ struct ContentView: View {
                 pattern
                 transport
                 Divider().overlay(Palette.border)
+                TonalView(
+                    frame: model.frame,
+                    pool: model.track.pool,
+                    onFrameChange: { model.setFrame($0) }
+                )
+                Divider().overlay(Palette.border)
                 measurement
             }
             .padding(32)
