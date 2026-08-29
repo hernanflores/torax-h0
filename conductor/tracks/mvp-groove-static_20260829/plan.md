@@ -121,7 +121,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 5: La pantalla
+## Phase 5: La pantalla [checkpoint: ce06a44]
 
 > `App` no se mide (`workflow.md`): si algo aquí merece un test, está en el sitio equivocado. Todo lo que tiene lógica ya quedó en `Engine` en las fases anteriores.
 
@@ -145,7 +145,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   > **Captura:** [`simulator-groove.png`](./simulator-groove.png). Las tres
   > familias conviven y se distinguen por tono sobre el fondo oscuro.
 
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 6: Verificación en dispositivo
 
