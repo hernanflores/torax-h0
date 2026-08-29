@@ -1,0 +1,33 @@
+Task: Ajuste por delta, con freno en los extremos
+Track: mvp-groove-static_20260829 — Fase 1
+
+Ficheros
+- Packages/Engine/Sources/Engine/Groove.swift (tres extensiones + helper)
+- Packages/Engine/Tests/EngineTests/GrooveTypesTests.swift (GrooveAdjustmentTests)
+
+Red → Green
+8 tests escritos primero; fallaron por «value of type 'Velocity' has no member
+'advanced'». Engine: 210 tests en verde.
+
+Forma elegida
+`advanced(by:)` en cada tipo, que es el idioma que ya siguen Division y Scale.
+La alternativa —un único método en Groove que reciba qué parámetro mover—
+esperaría a TrackParameter, que llega en la fase 4; hacerlo ahora obligaría a
+inventar un enum provisional que después habría que borrar.
+
+Freno y no envoltura
+Criterio de Steps y Division, no el de Rotate. Rotate envuelve porque es un giro
+sobre un anillo cerrado y pasarse del último Step para aparecer en el primero es
+correcto. Aquí no hay anillo: pasar de Velocity 127 a 1 sería un salto brutal
+justo cuando el usuario está afinando contra el tope.
+
+Girar contra un extremo devuelve el mismo valor
+Escrito como test propio porque es una precondición de otra pieza:
+ControlInput compara el valor ajustado con el vigente y solo publica si
+difieren. Si el ajuste devolviera un valor nuevo pero igual, la comparación
+seguiría funcionando por Equatable; el test fija el contrato para que un
+refactor no lo rompa en silencio.
+
+Helper `ClosedRange.clamping(_:)`
+Los tres parámetros repetían la misma pareja de min/max anidados, que es donde
+un signo cambiado pasa inadvertido. Interno al paquete, no público.
