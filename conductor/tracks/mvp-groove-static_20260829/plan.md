@@ -147,7 +147,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 6: Verificación en dispositivo
+## Phase 6: Verificación en dispositivo [checkpoint: PLACEHOLDER]
 
 > **Guía de ejecución:** [`device-verification.md`](./device-verification.md) —
 > ocho bloques de comprobación, la configuración previa que explica la mayoría
@@ -155,26 +155,26 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > **Requiere iPad, BeatStep Pro y un sintetizador.** Los tres parámetros son audibles y ninguna suite los puede escuchar.
 
-- [ ] Task: Los encoders en `Relative #2` antes de empezar
-  - [ ] Sin eso, un clic se decodifica como ±63 y todo salta a su extremo — nota del 2026-08-28 en `workflow.md`
-- [ ] Task: Escuchar los tres
-  - [ ] **Velocity:** girar cambia la dinámica de forma audible y proporcional, sin saltos
-  - [ ] **Sustain:** el recorrido va de percusivo a ligado; al 100% la nota dura un Step
-  - [ ] **Probability:** bajar perfora la línea; **el arpegio conserva su fase**, no se ralentiza
-  - [ ] Los tres se oyen dentro del Step siguiente al giro
-  - [ ] Volver a pulsar Play reproduce la misma secuencia de omisiones
-  - [ ] La limitación 1 se observa a propósito: pool de una nota y Sustain 200%, para ver el corte y confirmar que es el síntoma previsto y no otro
-- [ ] Task: Lo entregado sigue en pie
-  - [ ] Transporte, anillo, playhead, pool, Scale y Root siguen funcionando
-  - [ ] Sin controlador conectado: los tres se leen pero no se editan; Scale y Root sí, que son configuración
-- [~] Task: Cobertura final y Pull Request
+- [x] Task: Los encoders en `Relative #2` antes de empezar
+  - [x] Sin eso, un clic se decodifica como ±63 y todo salta a su extremo — nota del 2026-08-28 en `workflow.md`
+- [x] Task: Escuchar los tres
+  - [x] **Velocity:** girar cambia la dinámica de forma audible y proporcional, sin saltos
+  - [x] **Sustain:** el recorrido va de percusivo a ligado; al 100% la nota dura un Step
+  - [x] **Probability:** bajar perfora la línea; **el arpegio conserva su fase**, no se ralentiza
+  - [x] Los tres se oyen dentro del Step siguiente al giro
+  - [x] Volver a pulsar Play reproduce la misma secuencia de omisiones
+  - [x] La limitación 1 se observa a propósito: pool de una nota y Sustain 200%, para ver el corte y confirmar que es el síntoma previsto y no otro
+- [x] Task: Lo entregado sigue en pie
+  - [x] Transporte, anillo, playhead, pool, Scale y Root siguen funcionando
+  - [x] Sin controlador conectado: los tres se leen pero no se editan; Scale y Root sí, que son configuración
+- [x] Task: Cobertura final y Pull Request
   > **Cobertura medida el 2026-08-29:** `Engine` **97,97%** y `MIDI` **91,54%**
   > de líneas, esta última filtrando `Engine/Sources` del informe — el binario de
   > test de `MIDI` las compila dentro y aparecen a 0% porque las cubre la otra
   > suite. Ampliación añadida a `workflow.md`.
   - [x] `Engine` ≥90% y `MIDI` ≥80%, esta última medida en un solo proceso
-  - [ ] Si la CI falla con `clientCreationFailed(-50)`, correr la suite 3–4 veces y comparar contra `main` antes de atribuirlo al cambio
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Si la CI falla con `clientCreationFailed(-50)`, correr la suite 3–4 veces y comparar contra `main` antes de atribuirlo al cambio
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Enmiendas al plan
 
