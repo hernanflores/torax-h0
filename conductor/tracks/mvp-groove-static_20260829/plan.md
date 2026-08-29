@@ -149,6 +149,10 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 ## Phase 6: Verificación en dispositivo
 
+> **Guía de ejecución:** [`device-verification.md`](./device-verification.md) —
+> ocho bloques de comprobación, la configuración previa que explica la mayoría
+> de los síntomas raros, y los dos casos a provocar a propósito.
+
 > **Requiere iPad, BeatStep Pro y un sintetizador.** Los tres parámetros son audibles y ninguna suite los puede escuchar.
 
 - [ ] Task: Los encoders en `Relative #2` antes de empezar
@@ -163,8 +167,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 - [ ] Task: Lo entregado sigue en pie
   - [ ] Transporte, anillo, playhead, pool, Scale y Root siguen funcionando
   - [ ] Sin controlador conectado: los tres se leen pero no se editan; Scale y Root sí, que son configuración
-- [ ] Task: Cobertura final y Pull Request
-  - [ ] `Engine` ≥90% y `MIDI` ≥80%, esta última medida en un solo proceso
+- [~] Task: Cobertura final y Pull Request
+  > **Cobertura medida el 2026-08-29:** `Engine` **97,97%** y `MIDI` **91,54%**
+  > de líneas, esta última filtrando `Engine/Sources` del informe — el binario de
+  > test de `MIDI` las compila dentro y aparecen a 0% porque las cubre la otra
+  > suite. Ampliación añadida a `workflow.md`.
+  - [x] `Engine` ≥90% y `MIDI` ≥80%, esta última medida en un solo proceso
   - [ ] Si la CI falla con `clientCreationFailed(-50)`, correr la suite 3–4 veces y comparar contra `main` antes de atribuirlo al cambio
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
