@@ -11,8 +11,8 @@ final class ControlInputTests: XCTestCase {
 
     private let channel = MIDIChannel(1)!
 
-    private func shape(steps: Int = 16, pulses: Int = 4) -> Shape {
-        Shape(steps: Steps(steps)!, pulses: Pulses(pulses)!)
+    private func shape(steps: Int = 16, pulses: Int = 4, division: Division = .sixteenth) -> Shape {
+        Shape(steps: Steps(steps)!, pulses: Pulses(pulses)!, division: division)
     }
 
     private func turn(_ parameter: ShapeParameter, by value: UInt8) -> MIDIMessage {
