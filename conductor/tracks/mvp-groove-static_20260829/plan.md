@@ -89,25 +89,36 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > Renombrado con casos nuevos. **El comportamiento existente no cambia**, y los tests de Shape lo demuestran sin reescribirse.
 
-- [~] Task: `ShapeParameter` → `TrackParameter`
-  - [ ] Tests (Red): los siete casos, con los términos de la Pre Spec en inglés y sin traducir
-  - [ ] Tests (Red): los tests de Shape existentes siguen pasando contra el tipo nuevo
-  - [ ] Implementación (Green): un enum que nombra todo lo ajustable del Track; el ajuste por delta despacha a Shape o a Groove según el caso
-- [ ] Task: `ShapeChange` → `ParameterChange`
-  - [ ] Tests (Red): compara dos **Tracks**, no dos Shapes — Groove vive en `Track`, así que la comparación sube un nivel
-  - [ ] Tests (Red): sigue anunciando solo el primero que difiera, y `nil` cuando no se movió nada
-  - [ ] Tests (Red): los tres nuevos producen su descripción legible (`Velocity 100`, `Sustain 100%`, `Probability 75%`)
-  - [ ] Tests (Red): los casos de Shape ya cubiertos dan exactamente la misma descripción que antes
-  - [ ] Implementación (Green): el orden de comparación se declara, no se hereda del azar
-- [ ] Task: El mapeo cubre los siete
-  - [ ] Tests (Red): los tres CC nuevos —74, 75, 76— resuelven a su parámetro y no pisan a los cuatro existentes
-  - [ ] Tests (Red): un CC sin asignar se sigue ignorando en silencio, que no es un error
-  - [ ] Implementación (Green): `ControlMapping` pasa a estar tecleado por `TrackParameter`, con un solo diccionario
-- [ ] Task: Los giros de Groove publican
-  - [ ] Tests (Red): girar cada uno de los tres publica un Track nuevo
-  - [ ] Tests (Red): girar contra un extremo **no** publica — el valor ya estaba ahí
-  - [ ] Tests (Red): girar un parámetro de Groove **conserva el Shape y el pool**, y al revés — la regla de destructividad de `product-guidelines.md`
-  - [ ] Implementación (Green): `ControlInput` aplica el delta al parámetro que le toca, sea de la familia que sea
+- [x] Task: `ShapeParameter` → `TrackParameter` — `d4c4021`
+  - [x] Tests (Red): los siete casos, con los términos de la Pre Spec en inglés y sin traducir
+  - [x] Tests (Red): los tests de Shape existentes siguen pasando contra el tipo nuevo
+  - [x] Implementación (Green): un enum que nombra todo lo ajustable del Track; el ajuste por delta despacha a Shape o a Groove según el caso
+- [x] Task: `ShapeChange` → `ParameterChange` — `d4c4021`
+  - [x] Tests (Red): compara dos **Tracks**, no dos Shapes — Groove vive en `Track`, así que la comparación sube un nivel
+  - [x] Tests (Red): sigue anunciando solo el primero que difiera, y `nil` cuando no se movió nada
+  - [x] Tests (Red): los tres nuevos producen su descripción legible (`Velocity 100`, `Sustain 100%`, `Probability 75%`)
+  - [x] Tests (Red): los casos de Shape ya cubiertos dan exactamente la misma descripción que antes
+  - [x] Implementación (Green): el orden de comparación se declara, no se hereda del azar
+- [x] Task: El mapeo cubre los siete — `d4c4021`
+  - [x] Tests (Red): los tres CC nuevos —74, 75, 76— resuelven a su parámetro y no pisan a los cuatro existentes
+  - [x] Tests (Red): un CC sin asignar se sigue ignorando en silencio, que no es un error
+  - [x] Implementación (Green): `ControlMapping` pasa a estar tecleado por `TrackParameter`, con un solo diccionario
+- [x] Task: Los giros de Groove publican — `d4c4021`
+  - [x] Tests (Red): girar cada uno de los tres publica un Track nuevo
+  - [x] Tests (Red): girar contra un extremo **no** publica — el valor ya estaba ahí
+  - [x] Tests (Red): girar un parámetro de Groove **conserva el Shape y el pool**, y al revés — la regla de destructividad de `product-guidelines.md`
+  - [x] Implementación (Green): `ControlInput` aplica el delta al parámetro que le toca, sea de la familia que sea
+
+  > **Las cuatro comparten SHA.** No se pueden separar: renombrar el enum rompe
+  > el mapeo, y el mapeo sin los giros no mueve nada. Partirlo daría commits que
+  > no compilan.
+
+  > **El criterio de la fase estuvo a punto de romperse.** Llegué a borrar
+  > `ShapeParameterTests` y `ShapeChangeTests` dándolos por sustituidos por los
+  > nuevos. No lo estaban: se habría perdido el exhaustivo sobre parámetros ×
+  > deltas y el de Division como valor musical. Restaurados y adaptados solo en
+  > el nombre del tipo y el nivel de comparación; ninguna aserción cambió.
+
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: La pantalla
