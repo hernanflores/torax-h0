@@ -33,7 +33,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Implementación (Green): acotado, no envoltura
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: El aleatorio sembrado
+## Phase 2: El aleatorio sembrado [checkpoint: 76780fc]
 
 > La deuda que `tech-stack.md` dejó escrita desde el primer commit y que la rebanada 4 aplazó explícitamente. Probability es su primer usuario.
 
@@ -49,13 +49,13 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): un valor intermedio se aproxima a su proporción sobre una muestra larga, con tolerancia declarada
   - [x] Tests (Red): la decisión es determinista dado el estado del generador — mismo estado, misma respuesta
   - [x] Implementación (Green): comparación entera contra el umbral; sin coma flotante en el camino que después corre en tiempo real
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Que suene — el camino de emisión
 
 > **La fase que toca el camino de tiempo real.** No mueve ningún note-on: la `MusicalTimeline`, el `LookAheadScheduler` y el `SchedulerThread` no se tocan.
 
-- [ ] Task: La Velocity sale del snapshot
+- [~] Task: La Velocity sale del snapshot
   - [ ] Tests (Red): el note-on lleva la Velocity del Track, no una constante
   - [ ] Tests (Red): el note-off sigue con velocity 0 — es la convención de apagado, no un parámetro
   - [ ] Tests (Red): cambiar la Velocity del snapshot se refleja en la ventana siguiente
