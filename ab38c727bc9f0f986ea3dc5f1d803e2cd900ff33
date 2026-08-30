@@ -1,0 +1,42 @@
+Task: Ajuste por delta, con freno en los extremos (Fase 1, rebanada 6)
+
+QUÉ SE HIZO
+advanced(by:) para Timing y para Delay, reutilizando el clamping que ya
+existía para los tres parámetros de la rebanada 5. Acotado, no envoltura.
+
+POR QUÉ SE FRENAN
+Es el criterio de Steps, Division y los tres de Groove estático, y no el
+de Rotate, que gira sobre un anillo cerrado. product-guidelines.md pide
+que girar produzca 'siempre un cambio inmediato y proporcional'.
+
+En Timing pesa más que en los demás: su recorrido son 26 posiciones —50 a
+75—, así que los topes se alcanzan enseguida. Envolver haría que pasarse
+del swing máximo devolviera la rejilla recta de golpe, que es el peor
+salto posible en un parámetro de groove.
+
+EL CERO DE DELAY NO ES UN CASO ESPECIAL
+Delay es el único parámetro del motor cuyo rango cruza el cero. El knob
+lo atraviesa como atraviesa cualquier otro valor: adelantar y atrasar son
+el mismo gesto en distinto sentido. Tratar el paso por la rejilla como un
+punto de parada sería un enganche que nadie pidió, y el test lo fija en
+las dos direcciones.
+
+GIRAR CONTRA UN TOPE DEVUELVE EL MISMO VALOR
+No es cosmético: ControlInput compara el valor ajustado con el vigente y
+solo publica si difieren. Sin esa igualdad, girar contra un extremo
+publicaría un snapshot idéntico en cada mensaje del knob.
+
+TESTS (Red primero)
+Red confirmado: 'value of type Timing has no member advanced'.
+  · Movimiento por delta de los dos
+  · Freno en los dos extremos, con deltas grandes
+  · Delay cruza el cero en las dos direcciones
+  · Girar contra un extremo devuelve el mismo valor (los dos añadidos al
+    test que ya cubría los tres anteriores)
+  · Delta cero no cambia nada
+
+Verde: 262 tests de Engine, 0 fallos.
+
+FICHEROS
+  M Packages/Engine/Sources/Engine/Groove.swift
+  M Packages/Engine/Tests/EngineTests/GrooveTypesTests.swift
