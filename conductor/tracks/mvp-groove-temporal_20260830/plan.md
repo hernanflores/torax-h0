@@ -74,7 +74,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: El scheduler entrega el desplazamiento
+## Phase 3: El scheduler entrega el desplazamiento [checkpoint: 4b32fc8]
 
 > **La fase que toca el camino de tiempo real.** Es la primera desde la rebanada 3 que mueve instantes, y la que la medición de la fase 6 tiene que absolver.
 
@@ -120,7 +120,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 - [x] Task: Verificar cobertura — `Engine` ≥90% (98,11%), `MIDI` ≥80% (**91,57%**)
   - [x] `MIDI` se mide en **un solo proceso** y **filtrando `Engine/Sources`**, según las dos ampliaciones de `workflow.md`
   - [x] El `.profdata` hubo que fusionarlo a mano (`llvm-profdata merge`): SwiftPM no lo fusiona cuando la pasada falla, y en un proceso la pasada falla por el flake
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Los nueve parámetros
 
@@ -204,6 +204,16 @@ Step —0,9 ms a 1/16 y 120 BPM—, por debajo de lo audible; la alternativa era
 décimo de porcentaje, que da exactitud a cambio de diez veces más recorrido de
 knob para el mismo tramo. El criterio del test de la Fase 2 pasa de igualdad
 exacta a **tolerancia declarada**. Queda documentado en el propio tipo.
+
+**2026-08-30, checkpoint de la Fase 3 — el flake deja de ser intermitente.** Los
+tests del origen arrancan el bucle del scheduler cuatro veces más, y con eso la
+suite de `MIDI` **en un solo proceso** pasa a fallar siempre: 4 de 4 pasadas
+contra 0 de 2 en `main`, con la firma de siempre —las 4 de
+`VirtualLoopbackTests`, ningún otro test—. Con la partición de CI pasa entera.
+Decidido con el usuario: **se acepta y se documenta**, por la decisión del
+2026-08-29 de aplazar `midi-test-flake_20260826`. Ampliación fechada en
+`workflow.md` (`2f0b94c`) con cómo correr `MIDI` en local y el paso extra que la
+cobertura necesita —SwiftPM no fusiona el `.profdata` cuando la pasada falla—.
 
 ## Notas de riesgo
 
