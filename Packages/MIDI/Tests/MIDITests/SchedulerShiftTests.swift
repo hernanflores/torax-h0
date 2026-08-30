@@ -203,3 +203,210 @@ final class SchedulerShiftTests: XCTestCase {
         }
     }
 }
+
+/// Recolector de eventos seguro entre hilos.
+///
+/// El handler del scheduler corre en su propio hilo, así que acumular en un
+/// `var` capturado no compila —ni debería—. Esto es infraestructura de test, no
+/// código de tiempo real: aquí un lock es exactamente lo correcto.
+private final class EmittedEvents: @unchecked Sendable {
+
+    private let lock = NSLock()
+    private var times: [UInt64] = []
+    private var steps: [Int] = []
+    private var elapsed: [Int64?] = []
+
+    /// La lectura del playhead se toma **dentro** del handler, mientras el
+    /// transporte corre. Leerla después de `stop()` daría siempre `nil`: parar
+    /// deja el reloj quieto, que es justo lo que `PlayheadClock` promete.
+    func record(step: Int, hostTime: UInt64, playheadElapsed: Int64?) {
+        lock.lock()
+        defer { lock.unlock() }
+        times.append(hostTime)
+        steps.append(step)
+        elapsed.append(playheadElapsed)
+    }
+
+    var count: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return times.count
+    }
+
+    var snapshot: (times: [UInt64], steps: [Int], elapsed: [Int64?]) {
+        lock.lock()
+        defer { lock.unlock() }
+        return (times, steps, elapsed)
+    }
+}
+
+/// Tests del origen de la rejilla — la segunda pieza del presupuesto de
+/// adelanto.
+///
+/// **Estos sí arrancan el bucle del scheduler**, y no hay forma de evitarlo: el
+/// origen lo fija `SchedulerThread` al arrancar el hilo, así que dándole el
+/// horizonte a mano no se puede observar. Es el punto que el plan de la rebanada
+/// 6 anticipó, y la decisión ya está tomada —`midi-test-flake_20260826` queda
+/// aplazado a después de la v2, por decisión del 2026-08-29—: se escriben los
+/// tests y se convive con el ruido. Un fallo `clientCreationFailed(-50)` en
+/// `VirtualLoopbackTests` se descarta comparando 3–4 pasadas contra `main`.
+final class SchedulerOriginTests: XCTestCase {
+
+    private let stepDuration: Int64 = 125_000_000
+
+    private let timeline = MusicalTimeline(
+        tempo: Tempo(beatsPerMinute: 120)!,
+        division: .sixteenth
+    )
+
+    private var configuration: SchedulerConfiguration {
+        SchedulerConfiguration(timeline: timeline, lookAheadNanoseconds: 20_000_000)
+    }
+
+    private func track(timing: Int = 50, delay: Int = 0) -> Track {
+        Track(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!),
+            pool: PitchPool().toggling(Pitch(60)!),
+            groove: Groove(
+                velocity: .default,
+                sustain: .default,
+                probability: .default,
+                timing: Timing(percent: timing)!,
+                delay: Delay(percent: delay)!
+            )
+        )
+    }
+
+    /// Corre el hilo hasta reunir `count` eventos y devuelve sus instantes de
+    /// emisión, junto al instante en que se pidió arrancar.
+    private func run(
+        untilEmitted count: Int,
+        material track: Track,
+        playhead: PlayheadClock? = nil,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> (start: UInt64, times: [UInt64], steps: [Int], elapsed: [Int64?]) {
+        let events = EmittedEvents()
+
+        let thread = SchedulerThread(
+            configuration: configuration,
+            material: .track(track),
+            playhead: playhead
+        ) { step, _, _, hostTime in
+            events.record(
+                step: step,
+                hostTime: hostTime,
+                playheadElapsed: playhead?.elapsedNanoseconds(now: hostTime)
+            )
+        }
+
+        let start = HostClock.now()
+        thread.start()
+        let deadline = Date().addingTimeInterval(3)
+        while events.count < count && Date() < deadline { usleep(2_000) }
+        thread.stop()
+
+        let collected = events.snapshot
+        XCTAssertGreaterThanOrEqual(
+            collected.times.count, count, "el hilo no emitió lo suficiente", file: file, line: line)
+        return (start, collected.times, collected.steps, collected.elapsed)
+    }
+
+    /// **El criterio de aceptación FR4, visto desde el hilo.** Con Delay −100%
+    /// ningún evento se pide para un instante anterior al arranque del
+    /// transporte: el origen de la rejilla es `Play + presupuesto`, así que el
+    /// Step 0 adelantado un Step entero cae justo en el arranque y no antes.
+    ///
+    /// **Y la comprobación que de verdad distingue, en la misma pasada.**
+    /// «Ningún evento antes del arranque» lo cumple también un recorte al
+    /// presente —`max(0, offset)`—, que no adelanta nada: **aplasta** contra el
+    /// instante de Play todos los eventos que debían sonar antes, y dos Steps
+    /// distintos acaban pidiéndose para el mismo instante. Con el origen
+    /// desplazado no se aplasta ninguno: los instantes son estrictamente
+    /// crecientes y separados por una Division, exactamente como sin Delay. Lo
+    /// que el parámetro mueve es la voz entera, no la distancia entre sus notas.
+    ///
+    /// **Las dos comprobaciones comparten pasada a propósito.** Son el mismo
+    /// escenario, y cada arranque del bucle del scheduler es presión añadida
+    /// sobre `midi-test-flake_20260826`: partirlas costaría un hilo más a
+    /// prioridad máxima sin decir nada que esto no diga.
+    func testAFullyNegativeDelayLandsOnTheStartInsteadOfBeforeIt() {
+        let result = run(untilEmitted: 8, material: track(delay: -100))
+
+        for (index, hostTime) in result.times.enumerated() {
+            XCTAssertGreaterThanOrEqual(
+                hostTime, result.start,
+                "el evento \(index) se pidió para un instante anterior al arranque"
+            )
+        }
+
+        for (previous, current) in zip(result.times, result.times.dropFirst()) {
+            XCTAssertGreaterThan(
+                current, previous,
+                "dos Steps se pidieron para el mismo instante: se recortaron al presente"
+            )
+            let gap = Int64(HostClock.nanoseconds(fromHostTicks: current &- previous))
+            XCTAssertEqual(gap, stepDuration, accuracy: 1_000_000)
+        }
+    }
+
+    /// El swing no adelanta nada —solo atrasa— así que sumarlo al Delay más
+    /// negativo tampoco puede sacar ningún evento del arranque.
+    func testWithMaximumSwingNoEventIsScheduledBeforeTheTransportStarted() {
+        let result = run(untilEmitted: 8, material: track(timing: 75, delay: -100))
+
+        for hostTime in result.times {
+            XCTAssertGreaterThanOrEqual(hostTime, result.start)
+        }
+
+        for (previous, current) in zip(result.times, result.times.dropFirst()) {
+            XCTAssertGreaterThan(current, previous)
+        }
+    }
+
+    /// **Con Delay ≥ 0 el origen es el instante de Play, sin latencia añadida.**
+    /// El Step 0 cae prácticamente en el arranque; con presupuesto se habría
+    /// retrasado un Step entero, que a 1/16 y 120 BPM son 125 ms — muy por
+    /// encima de la tolerancia de este test.
+    func testWithANonNegativeDelayTheOriginIsPlayItself() {
+        let result = run(untilEmitted: 4, material: track())
+
+        guard let first = result.times.first, result.steps.first == 0 else {
+            return XCTFail("no se emitió el Step 0")
+        }
+        let latency = Int64(HostClock.nanoseconds(fromHostTicks: first &- result.start))
+
+        XCTAssertLessThan(
+            latency, 20_000_000,
+            "el arranque se retrasó sin que ningún Delay negativo lo pidiera"
+        )
+    }
+
+    /// **El playhead usa el mismo origen que sella los timestamps.** Si fueran
+    /// dos, el anillo y lo que suena discreparían —es lo que `SchedulerThread` ya
+    /// documenta—, y ahora que el origen se desplaza hay una forma de romperlo
+    /// que antes no existía.
+    ///
+    /// Se comprueba con swing, que es el caso donde el instante de emisión y el
+    /// de rejilla difieren: el tiempo que el playhead lleva contando en el
+    /// instante de cada evento es el offset **desplazado** de ese Step.
+    func testThePlayheadSharesTheOriginThatStampsTheTimestamps() {
+        let swung = track(timing: 75)
+        let result = run(untilEmitted: 6, material: swung, playhead: PlayheadClock())
+
+        for (reading, index) in zip(result.elapsed, result.steps) {
+            guard let elapsed = reading else {
+                return XCTFail("el playhead no estaba corriendo")
+            }
+            let expected =
+                timeline.nanosecondOffset(forStep: index)
+                + swung.groove.shiftNanoseconds(
+                    atStep: index, stepDurationNanoseconds: stepDuration)
+
+            XCTAssertEqual(
+                elapsed, expected, accuracy: 1_000_000,
+                "el playhead y el timestamp no comparten origen en el Step \(index)"
+            )
+        }
+    }
+}

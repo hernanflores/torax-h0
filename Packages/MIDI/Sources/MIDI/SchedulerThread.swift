@@ -155,22 +155,53 @@ public final class SchedulerThread: @unchecked Sendable {
         let startHostTicks = HostClock.now()
         let sleepNanoseconds = UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))
 
+        // **El origen de la rejilla no es el instante de Play, sino
+        // `Play + presupuesto`.** Con Delay negativo el Step 0 se pide un
+        // desplazamiento por delante de su rejilla, y sin este margen ese
+        // instante caería antes de que existiera el transporte. Reservarlo aquí
+        // es lo que convierte un evento imposible en uno que llega justo en el
+        // arranque.
+        //
+        // Se lee una vez, del material con el que se arranca, como se lee la
+        // `MusicalTimeline`. Con Delay ≥ 0 vale cero y el origen es Play, sin
+        // latencia añadida. Enmienda fechada del 2026-08-30 en `tech-stack.md`.
+        let budgetNanoseconds = scheduler.advanceBudgetNanoseconds
+        let gridOriginTicks =
+            startHostTicks &+ HostClock.hostTicks(fromNanoseconds: UInt64(budgetNanoseconds))
+
         // El mismo origen que sella los timestamps es el que ve la interfaz: si
         // fueran dos, el playhead y lo que suena podrían discrepar. Se publica
         // una vez, antes del bucle, y no se vuelve a tocar mientras suene.
-        playhead?.start(atHostTime: startHostTicks)
+        playhead?.start(atHostTime: gridOriginTicks)
 
         while running.value {
-            let elapsedNanoseconds = Int64(
-                HostClock.nanoseconds(fromHostTicks: HostClock.now() &- startHostTicks)
-            )
+            // El tiempo se mide contra el origen de la rejilla, que puede estar
+            // por delante del arranque: durante el presupuesto, `elapsed` es
+            // negativo. No es un caso especial —el horizonte sigue siendo
+            // positivo por el look-ahead— y es lo que hace que el Step 0
+            // adelantado se programe desde la primera vuelta.
+            let elapsedNanoseconds =
+                Int64(HostClock.nanoseconds(fromHostTicks: HostClock.now() &- startHostTicks))
+                - budgetNanoseconds
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
 
             scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) {
                 step, pitch, groove, offset in
+                // El offset es relativo al origen de la rejilla, y el
+                // presupuesto es lo que separa ese origen del arranque. Sumarlos
+                // deja la cuenta en positivo sin más conversiones.
+                //
+                // **El recorte a cero es una red de seguridad, y ya solo tiene
+                // un caso.** El desplazamiento nunca es más negativo que el
+                // presupuesto —hay un test exhaustivo que lo fija— así que la
+                // suma es positiva salvo que el Delay se baje a negativo
+                // *mientras suena*: entonces el presupuesto crece y el origen ya
+                // no puede acompañarlo, y una ventana de eventos se recorta una
+                // sola vez. Es la limitación 2 del spec del track.
                 let hostTime =
                     startHostTicks
-                    &+ HostClock.hostTicks(fromNanoseconds: UInt64(max(0, offset)))
+                    &+ HostClock.hostTicks(
+                        fromNanoseconds: UInt64(max(0, budgetNanoseconds + offset)))
                 handler(step, pitch, groove, hostTime)
             }
 
