@@ -1,0 +1,45 @@
+Task: Documentar la desviación antes de implementar (Fase 1, rebanada 6)
+
+QUÉ SE HIZO
+Enmienda fechada 2026-08-30 en conductor/tech-stack.md, sección
+'Arquitectura de timing', inmediatamente después de la viñeta que declara
+la ventana de look-ahead acotada por la latencia de knob.
+
+Registra dos cambios que la rebanada 6 va a introducir:
+  1. El horizonte de SELECCIÓN pasa a ser la ventana + un presupuesto de
+     adelanto, releído del snapshot una vez por ventana.
+  2. El ORIGEN de la rejilla pasa de ser el instante de Play a ser
+     Play + presupuesto, fijado al arrancar el transporte.
+
+presupuesto = max(0, −Delay en nanosegundos)
+
+POR QUÉ
+Delay negativo adelanta eventos, y un evento adelantado tiene que
+calcularse antes de su instante. Sin las dos piezas se pide la emisión
+para un momento que ya pasó: en régimen porque TrackScheduler selecciona
+por el instante de rejilla y calcularía el Step ~20 ms antes de ella,
+pidiéndolo hasta un Step antes de eso; en el arranque porque el Step 0
+caería antes del propio transporte.
+
+La alternativa —recortar Delay negativo a lo que cabe en los 20 ms de
+ventana— resuelve el problema técnico vaciando el parámetro: 20 ms son
+inaudibles como desplazamiento musical.
+
+QUÉ SE CONSERVA
+El presupuesto es dinámico y no el máximo del rango. Con Delay >= 0, donde
+vive el default, vale exactamente 0: mismo horizonte, mismo origen, misma
+latencia de knob. La frase que se enmienda sigue siendo cierta en esa
+mitad del rango. Fijarlo al máximo habría alargado el look-ahead un Step
+entero para todos, rompiendo 'un giro debe oírse en el step siguiente'
+para quien no usa el parámetro.
+
+LO QUE INTRODUCE
+Dos limitaciones conocidas, ya registradas en el spec del track: con Delay
+−100% Play tarda un Step en sonar; y bajar Delay a negativo mientras suena
+recorta una ventana de eventos una sola vez.
+
+FICHEROS
+  M conductor/tech-stack.md  (+43 líneas, una enmienda nueva)
+
+Sin código todavía: es el paso 8 del Task Workflow, que exige documentar
+la desviación ANTES de implementar.
