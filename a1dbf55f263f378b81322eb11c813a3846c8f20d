@@ -59,3 +59,32 @@ Verde: 282 tests de Engine, 0 fallos.
 FICHEROS
   A Packages/Engine/Sources/Engine/GrooveShift.swift
   A Packages/Engine/Tests/EngineTests/GrooveShiftTests.swift
+
+--- VERIFICACIÓN DE FASE 2 (2026-08-30) ---
+
+TESTS AUTOMÁTICOS
+  swift test --package-path Packages/Engine
+  282 tests, 0 fallos.
+
+COBERTURA
+  Engine 98,11% de líneas (umbral >=90%). GrooveShift.swift al 100%.
+
+COBERTURA DE LOS CAMBIOS DE LA FASE
+  Fichero de código nuevo: GrooveShift.swift.
+  Test correspondiente: GrooveShiftTests.swift. Sin huecos.
+
+QUÉ QUEDA FIJADO
+  · Fórmula del swing: (percent−50)/100 · 2 · duración de Step.
+  · Paridad por índice absoluto, fijada con un anillo de 5: los Steps 0
+    y 5 son la misma posición del anillo y el swing los trata distinto.
+  · Invariante de orden: barrido Timing 50..75 × Delay −100..100 sobre
+    65 Steps, monótona no decreciente. Pasó a la primera.
+  · Presupuesto cero en los 101 valores de Delay >= 0 y en los 26 de
+    Timing. La mitad positiva del rango no paga nada, verificado.
+
+VERIFICACIÓN MANUAL
+No la hay: sigue sin existir quien aplique el desplazamiento. Eso es la
+Fase 3.
+
+CONFIRMACIÓN DEL USUARIO
+Confirmado ('Vamos'), sin cambios pedidos.
