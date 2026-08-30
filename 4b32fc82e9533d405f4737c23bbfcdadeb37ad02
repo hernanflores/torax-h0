@@ -1,0 +1,69 @@
+Task: El origen de la rejilla es Play + presupuesto (Fase 3, rebanada 6)
+
+QUÉ SE HIZO
+SchedulerThread.run separa dos anclas que antes eran una:
+  startHostTicks   — el instante de Play.
+  gridOriginTicks  — startHostTicks + presupuesto de adelanto.
+
+El presupuesto se lee UNA VEZ, del material con el que se arranca, como
+se lee la MusicalTimeline. El playhead recibe el origen de la rejilla, no
+el de arranque. El tiempo transcurrido se mide contra el origen, así que
+durante el presupuesto es negativo — no es un caso especial: el horizonte
+sigue siendo positivo por el look-ahead, y el Step 0 adelantado se
+programa desde la primera vuelta.
+
+EL HALLAZGO QUE OBLIGÓ A REESCRIBIR EL TEST
+La primera versión comprobaba 'ningún evento se pide antes del arranque'
+y PASABA sin implementar nada. El recorte a cero —max(0, offset)— ya lo
+garantizaba, pero no adelantando: APLASTANDO contra el instante de Play
+todos los eventos que debían sonar antes. Con Delay −100%, los Steps 0 y
+1 se pedían para el mismo instante.
+
+La aserción que distingue es la separación: con el origen desplazado los
+instantes son estrictamente crecientes y separados por una Division,
+igual que sin Delay. Lo que el parámetro mueve es la voz entera, no la
+distancia entre sus notas. Red confirmado con esa versión: gap = 0.
+
+EL RECORTE SE CONSERVA, CON UN SOLO CASO
+Ya no es una salvaguarda genérica. El desplazamiento nunca es más
+negativo que el presupuesto —test exhaustivo de la Fase 2—, así que solo
+puede dispararse bajando el Delay a negativo MIENTRAS suena: el
+presupuesto crece y el origen ya no puede acompañarlo, y una ventana de
+eventos se recorta una vez. Es la limitación 2 del spec, y ahora está
+escrita en el código.
+
+PLAYHEADCLOCK.START YA TIENE TEST
+Su documentación decía que no lo tenía a propósito, por el flake. Esa
+razón no desapareció; lo que cambió es la decisión —midi-test-flake
+aplazado a después de la v2, 2026-08-29—. Y lo que hizo falta pagarlo fue
+el origen desplazado: desde que no es el instante de Play, hay una forma
+de que el playhead y los timestamps discrepen que antes no existía, y
+verificarla en dispositivo era verificarla tarde.
+
+EL FLAKE, MEDIDO
+Suite completa en un proceso:
+  rama  4 de 4 pasadas fallan, siempre las 4 de VirtualLoopbackTests
+        con clientCreationFailed(-50) y ningún otro test
+  main  0 de 2 pasadas
+Es determinista, no intermitente, y encaja con la ampliación del
+2026-08-27: el fallo deja de ser intermitente cuando la suite ha
+arrancado suficientes hilos de scheduler a prioridad máxima. Estos tests
+arrancan 4 más.
+
+Con la partición que usa la CI —los tests de CoreMIDI primero y en su
+propio proceso— la suite pasa entera: 21 + 230 tests, 0 fallos.
+
+Se consolidaron dos tests que compartían escenario para no gastar un
+arranque de más. No bastó para bajar del umbral; se conserva porque el
+test resultante es mejor.
+
+COBERTURA
+MIDI 91,57% de líneas (umbral >=80%), con TrackScheduler y
+SchedulerThread al 100%. El .profdata hubo que fusionarlo a mano
+(llvm-profdata merge) porque SwiftPM no lo fusiona cuando la pasada
+falla — consecuencia directa del flake, no de la cobertura.
+
+FICHEROS
+  M Packages/MIDI/Sources/MIDI/SchedulerThread.swift
+  M Packages/MIDI/Sources/MIDI/PlayheadClock.swift
+  M Packages/MIDI/Tests/MIDITests/SchedulerShiftTests.swift
