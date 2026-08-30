@@ -78,19 +78,31 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > **La fase que toca el camino de tiempo real.** Es la primera desde la rebanada 3 que mueve instantes, y la que la medición de la fase 6 tiene que absolver.
 
-- [ ] Task: `TrackScheduler` emite el instante desplazado
-  - [ ] Tests (Red): con el Groove default, **cada Step se emite en el mismo offset que hoy** — la rejilla recta no se toca
-  - [ ] Tests (Red): con Timing y con Delay, el offset emitido es el de la rejilla más el desplazamiento de la fase 2
-  - [ ] Tests (Red): el desplazamiento sale del **mismo snapshot** que la altura y el Groove, recogido una vez por ventana
-  - [ ] Tests (Red): cada Step se sigue emitiendo **exactamente una vez** — la invariante de `LookAheadScheduler` sobrevive al desplazamiento
-  - [ ] Tests (Red): el modo `everyStep` del arnés sigue usando el Groove default, que ahora es también la rejilla recta
-  - [ ] Implementación (Green): el desplazamiento se suma donde ya se calcula el offset; sin asignaciones, sin locks, `/// Realtime:`
-- [ ] Task: El horizonte de selección se amplía con el presupuesto
-  - [ ] Tests (Red): con Delay −100%, un Step se selecciona **antes** que con Delay 0 — lo bastante antes como para que su instante siga siendo futuro
-  - [ ] Tests (Red): con Delay ≥ 0 el horizonte es **idéntico** al de hoy, y los mismos Steps caen en la misma ventana
-  - [ ] Tests (Red): ampliar el horizonte no duplica ni salta Steps — la marca de agua sigue siendo monótona
-  - [ ] Tests (Red): el presupuesto se relee del snapshot una vez por ventana, no se fija al construir
-  - [ ] Implementación (Green): el horizonte que recibe `LookAheadScheduler` lleva el presupuesto vigente sumado
+- [x] Task: `TrackScheduler` emite el instante desplazado — `221bc90`
+  - [x] Tests (Red): con el Groove default, **cada Step se emite en el mismo offset que hoy** — la rejilla recta no se toca
+  - [x] Tests (Red): con Timing y con Delay, el offset emitido es el de la rejilla más el desplazamiento de la fase 2
+  - [x] Tests (Red): el desplazamiento sale del **mismo snapshot** que la altura y el Groove, recogido una vez por ventana
+  - [x] Tests (Red): cada Step se sigue emitiendo **exactamente una vez** — la invariante de `LookAheadScheduler` sobrevive al desplazamiento
+  - [x] Tests (Red): el modo `everyStep` del arnés sigue usando el Groove default, que ahora es también la rejilla recta
+  - [x] Implementación (Green): el desplazamiento se suma donde ya se calcula el offset; sin asignaciones, sin locks, `/// Realtime:`
+- [x] Task: El horizonte de selección se amplía con el presupuesto — `221bc90`
+  - [x] Tests (Red): con Delay −100%, un Step se selecciona **antes** que con Delay 0 — lo bastante antes como para que su instante siga siendo futuro
+  - [x] Tests (Red): con Delay ≥ 0 el horizonte es **idéntico** al de hoy, y los mismos Steps caen en la misma ventana
+  - [x] Tests (Red): ampliar el horizonte no duplica ni salta Steps — la marca de agua sigue siendo monótona
+  - [x] Tests (Red): el presupuesto se relee del snapshot una vez por ventana, no se fija al construir
+  - [x] Implementación (Green): el horizonte que recibe `LookAheadScheduler` lleva el presupuesto vigente sumado
+
+  > **Las dos comparten SHA.** Separarlas daría un commit con un defecto conocido
+  > dentro: emitir el instante desplazado sin ampliar el horizonte hace que un
+  > Step con Delay negativo se pida para un instante que ya pasó, en cada vuelta
+  > del anillo. Es lo que la fase existe para evitar.
+
+  > **Una corrección de test, no de código.** El test del presupuesto releído
+  > esperaba `[1, 2]` y salía `[1]`: el horizonte es exclusivo y la aritmética de
+  > la expectativa estaba mal. Se partió en dos para que el contraste sea
+  > explícito —sin presupuesto esa ventana no emite **nada**— y así un fallo diga
+  > cuál de las dos cosas se rompió.
+
 - [ ] Task: El origen de la rejilla es `Play + presupuesto`
   - [ ] Tests (Red): con Delay negativo, **ningún offset pedido cae por detrás del instante de arranque** — con Delay −100%, en los extremos de tempo y Division
   - [ ] Tests (Red): con Delay ≥ 0 el origen es el instante de Play, sin latencia añadida
