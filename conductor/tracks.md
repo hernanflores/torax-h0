@@ -48,7 +48,7 @@ veces sin que afectara a nada.
 
 ---
 
-- [ ] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay**
+- [~] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay**
   *Link: [conductor/tracks/mvp-groove-temporal_20260830/index.md](./tracks/mvp-groove-temporal_20260830/index.md)*
 
   Planificada el 2026-08-30. Cierra el Track generativo completo del MVP: Timing
