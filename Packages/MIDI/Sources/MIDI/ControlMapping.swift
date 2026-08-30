@@ -32,7 +32,10 @@ public struct ControlMapping: Equatable, Sendable {
         self.assignments = assignments
     }
 
-    /// Controlador asignado a un parámetro, si tiene uno.
+    /// Finds the MIDI controller assigned to a track parameter.
+    ///
+    /// - Parameter parameter: The track parameter whose controller assignment to find.
+    /// - Returns: The assigned MIDI controller, or `nil` if the parameter is unmapped or its assigned number is invalid.
     public func controller(for parameter: TrackParameter) -> MIDIController? {
         assignments[parameter].flatMap(MIDIController.init)
     }
@@ -41,7 +44,9 @@ public struct ControlMapping: Equatable, Sendable {
     ///
     /// Devuelve `nil` para lo que no esté asignado. **No es un error:** en una
     /// sesión real llegan mensajes de todo tipo, y no es asunto del mapeo
-    /// quejarse de ellos.
+    /// Finds the track parameter assigned to a MIDI controller.
+    /// - Parameter controller: The MIDI controller to look up.
+    /// - Returns: The assigned track parameter, or `nil` if the controller is unassigned.
     public func parameter(for controller: MIDIController) -> TrackParameter? {
         assignments.first { $0.value == controller.number }?.key
     }

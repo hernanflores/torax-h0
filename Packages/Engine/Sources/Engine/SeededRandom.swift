@@ -45,7 +45,8 @@ public struct SeededRandom: Equatable, Sendable {
     /// El siguiente valor de la secuencia.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
-    /// Sin asignaciones, sin locks, sin await.
+    /// Generates the next pseudo-random value in the sequence.
+    /// - Returns: The next `UInt64` value.
     public mutating func next() -> UInt64 {
         state ^= state >> 12
         state ^= state << 25

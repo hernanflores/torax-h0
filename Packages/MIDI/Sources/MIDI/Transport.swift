@@ -94,7 +94,7 @@ public final class Transport: @unchecked Sendable {
     ///
     /// El hilo se crea aquí y no en `init` para que la reproducción empiece
     /// siempre con un origen de tiempo recién tomado: reutilizar el hilo haría
-    /// que el segundo Play arrancara a mitad del anillo.
+    /// Starts playback using the currently published track. Subsequent scheduler events are emitted as MIDI notes.
     public func play() {
         guard !isPlaying else { return }
 
@@ -149,7 +149,9 @@ public final class Transport: @unchecked Sendable {
     /// puede estar programado más allá del look-ahead.
     ///
     /// El retraso es el de la ventana, unos milisegundos: por debajo de lo que
-    /// se percibe como respuesta al botón.
+    /// Stops playback and silences active notes.
+    /// - Sends an All Notes Off message and note-off messages for pitches in the last published track.
+    /// - Does nothing when playback is already stopped.
     public func stop() {
         guard let scheduler else { return }
         scheduler.stop()

@@ -85,7 +85,9 @@ final class TransportModel {
     /// **Se construye con la línea de tiempo vigente y no una sola vez.** El
     /// gate sale de Sustain como porcentaje de la Division, así que el emisor
     /// necesita saber cuánto dura un Step. La Division la elige el knob, y el
-    /// transporte ya se rehace en cada Play por la misma razón.
+    /// Creates a note emitter configured for the transport timeline's step duration.
+    /// - Parameter timeline: The timeline that determines the duration of each step.
+    /// - Returns: A note emitter configured for MIDI channel 6 and the timeline's step duration.
     private static func voice(for timeline: MusicalTimeline) -> NoteEmitter {
         NoteEmitter(
             channel: MIDIChannel(6)!,
@@ -249,7 +251,7 @@ final class TransportModel {
         input?.connect(to: endpoint)
     }
 
-    /// Aplica un mensaje entrante. Corre en el hilo principal.
+    /// Applies a MIDI message to the track and announces the resulting parameter change.
     private func apply(_ message: MIDIMessage) {
         guard let controlInput else { return }
         // El Track entero y no solo su Shape: Groove vive dentro, así que
@@ -265,7 +267,7 @@ final class TransportModel {
     ///
     /// **Cada giro reinicia la cuenta.** Girando sin parar el valor se queda
     /// puesto, que es lo que se quiere: se desvanece «tras la inactividad»
-    /// (`product-guidelines.md`), no tras un tiempo fijo desde que apareció.
+    /// Displays a parameter change temporarily before clearing it.
     private func announce(_ change: ParameterChange?) {
         guard let change else { return }
         transientChange = change

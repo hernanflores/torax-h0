@@ -74,7 +74,9 @@ public final class ControlInput: @unchecked Sendable {
     /// que informar. Publicar sin cambio, en cambio, sí sería trabajo y ruido
     /// para nada.
     ///
-    /// No es código de tiempo real. Se llama desde el hilo de control.
+    /// Processes a MIDI message and publishes the resulting track when it changes.
+    /// - Parameter message: The MIDI message to process.
+    /// - Returns: `true` if the message changes and publishes the track, `false` otherwise.
     @discardableResult
     public func receive(_ message: MIDIMessage) -> Bool {
         switch message {
@@ -97,7 +99,11 @@ public final class ControlInput: @unchecked Sendable {
     /// la rebanada 5 esto llamaba a `Shape.applying(_:to:)` y por tanto solo
     /// podía mover Shape; con Groove en el snapshot, el despacho lo hace
     /// `Track.applying(_:to:)`, que es quien conoce las dos. Añadir Timing y
-    /// Delay no tocará esta función.
+    /// Applies a MIDI controller adjustment to the corresponding track parameter.
+    /// - Parameters:
+    ///   - controller: The MIDI controller whose mapped parameter should change.
+    ///   - value: The controller value used to calculate the parameter adjustment.
+    /// - Returns: `true` if the track changed and was published, `false` otherwise.
     private func turn(_ controller: MIDIController, by value: UInt8) -> Bool {
         guard let parameter = mapping.parameter(for: controller) else { return false }
 

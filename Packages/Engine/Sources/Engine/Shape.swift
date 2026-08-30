@@ -254,7 +254,11 @@ extension Shape {
     ///   es la intención y `effectivePulses` es lo que suena.
     ///
     /// No es código de tiempo real: construir un Shape reparte los Pulses, y eso
-    /// asigna. Se llama desde el hilo de control, al recibir un giro.
+    /// Applies a control delta to the selected shape parameter.
+    /// - Parameters:
+    ///   - delta: The amount by which to adjust the parameter.
+    ///   - parameter: The track parameter to adjust.
+    /// - Returns: An updated shape with steps, pulses, and division constrained to their valid ranges, rotation wrapped to the step count, or the original shape for track-level parameters.
     public func applying(_ delta: Int, to parameter: TrackParameter) -> Shape {
         switch parameter {
         case .velocity, .sustain, .probability:

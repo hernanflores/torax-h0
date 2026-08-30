@@ -65,7 +65,12 @@ public struct NoteEmitter: Equatable, Sendable {
     /// MIDI 1.0 para el apagado, y la que entienden todos los sintetizadores.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
-    /// Sin asignaciones, sin locks, sin await.
+    /// Emits a MIDI note-on and its sustain-derived note-off for a pitch.
+    /// - Parameters:
+    ///   - pitch: The pitch to emit, or `nil` to emit nothing.
+    ///   - groove: The velocity and sustain settings for the note.
+    ///   - hostTime: The host clock time for the note-on.
+    ///   - send: A callback that receives each MIDI message and its host clock time.
     public func emit(
         pitch: Pitch?,
         groove: Groove,

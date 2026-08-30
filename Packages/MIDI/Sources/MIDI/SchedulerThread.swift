@@ -135,7 +135,14 @@ public final class SchedulerThread: @unchecked Sendable {
     /// Bucle del scheduler.
     ///
     /// Realtime: este es el hilo del scheduler.
-    /// Sin asignaciones, sin locks, sin await.
+    /// Runs the scheduler loop and emits steps within the configured look-ahead window.
+    /// - Parameters:
+    ///   - configuration: The timeline and look-ahead duration used for scheduling.
+    ///   - material: The musical material provided to the scheduler.
+    ///   - handoff: An optional source for refreshed track data.
+    ///   - playhead: An optional clock started at the scheduler's host-time origin.
+    ///   - handler: Receives each scheduled step, its pitch, groove, and host timestamp.
+    ///   - running: The flag that controls whether scheduling continues.
     private static func run(
         configuration: SchedulerConfiguration,
         material: SchedulerMaterial,

@@ -28,7 +28,9 @@ public enum SchedulerMaterial: Equatable, Sendable {
     static let measurementPitch = Pitch(48)!
 
     /// Realtime: llamado desde el hilo del scheduler.
-    /// Sin asignaciones, sin locks, sin await.
+    /// Determines whether the material triggers at the specified step.
+    /// - Parameter index: The step index to evaluate.
+    /// - Returns: `true` if the material triggers at the step, `false` otherwise.
     func triggers(atStep index: Int) -> Bool {
         switch self {
         case .track(let track): track.triggers(atStep: index)
@@ -147,7 +149,13 @@ public struct TrackScheduler {
     /// en el borde de una ventana.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
-    /// Sin asignaciones, sin locks, sin await.
+    /// Advances the scheduler through the requested horizon and emits steps that trigger and pass the material's probability.
+    /// - Parameters:
+    ///   - horizon: The timeline horizon, in nanoseconds.
+    ///   - handoff: An optional pending track snapshot to apply before processing the horizon.
+    ///   - emit: A closure called with each emitted step, its pitch, groove, and timeline-relative offset.
+    /// 
+    /// Steps that do not trigger do not consume a probability draw.
     public mutating func advance(
         toHorizon horizonNanoseconds: Int64,
         refreshingFrom handoff: TrackHandoff?,
