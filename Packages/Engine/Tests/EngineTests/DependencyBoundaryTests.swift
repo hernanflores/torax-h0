@@ -28,9 +28,9 @@ final class DependencyBoundaryTests: XCTestCase {
 
     private var sourcesDirectory: URL {
         URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()   // EngineTests
-            .deletingLastPathComponent()   // Tests
-            .deletingLastPathComponent()   // Engine
+            .deletingLastPathComponent()  // EngineTests
+            .deletingLastPathComponent()  // Tests
+            .deletingLastPathComponent()  // Engine
             .appendingPathComponent("Sources/Engine")
     }
 
@@ -40,11 +40,14 @@ final class DependencyBoundaryTests: XCTestCase {
 
         for file in files {
             let source = try String(contentsOf: file, encoding: .utf8)
-            for (index, line) in source.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
+            for (index, line) in source.split(separator: "\n", omittingEmptySubsequences: false)
+                .enumerated()
+            {
                 let trimmed = line.trimmingCharacters(in: .whitespaces)
                 guard trimmed.hasPrefix("import ") else { continue }
 
-                let module = trimmed
+                let module =
+                    trimmed
                     .dropFirst("import ".count)
                     .trimmingCharacters(in: .whitespaces)
                     .split(separator: ".").first
@@ -63,7 +66,8 @@ final class DependencyBoundaryTests: XCTestCase {
     }
 
     func testEnginePackageManifestDeclaresNoDependencies() throws {
-        let manifest = sourcesDirectory
+        let manifest =
+            sourcesDirectory
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .appendingPathComponent("Package.swift")
@@ -76,12 +80,15 @@ final class DependencyBoundaryTests: XCTestCase {
     }
 
     private func swiftFiles(in directory: URL) throws -> [URL] {
-        guard let enumerator = FileManager.default.enumerator(
-            at: directory,
-            includingPropertiesForKeys: nil
-        ) else { return [] }
+        guard
+            let enumerator = FileManager.default.enumerator(
+                at: directory,
+                includingPropertiesForKeys: nil
+            )
+        else { return [] }
 
-        return enumerator
+        return
+            enumerator
             .compactMap { $0 as? URL }
             .filter { $0.pathExtension == "swift" }
     }

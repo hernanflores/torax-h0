@@ -20,7 +20,10 @@ final class TransportTests: XCTestCase {
         private var messages: [MIDIMessage] = []
 
         func record(_ message: MIDIMessage, _ hostTime: UInt64) {
-            lock.withLock { messages.append(message); times.append(hostTime) }
+            lock.withLock {
+                messages.append(message)
+                times.append(hostTime)
+            }
         }
 
         private var times: [UInt64] = []
@@ -34,9 +37,10 @@ final class TransportTests: XCTestCase {
     /// Step dispare y el test no tenga que esperar al reparto euclidiano.
     private func makeTransport(_ recorder: Recorder) -> Transport {
         let steps = Steps(4)!
+        let timeline = MusicalTimeline(tempo: Tempo(beatsPerMinute: 300)!, division: .sixteenth)
         return Transport(
             configuration: SchedulerConfiguration(
-                timeline: MusicalTimeline(tempo: Tempo(beatsPerMinute: 300)!, division: .sixteenth),
+                timeline: timeline,
                 lookAheadNanoseconds: 20_000_000
             ),
             // Con el pool vacío el Track dispara y no emite nada, que es
@@ -44,7 +48,7 @@ final class TransportTests: XCTestCase {
             track: Track(shape: Shape(steps: steps, pulses: Pulses(4)!), pool: voicePool),
             emitter: NoteEmitter(
                 channel: MIDIChannel(1)!,
-                velocity: MIDIVelocity(100)!
+                stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds)
             ),
             send: recorder.record
         )
@@ -135,7 +139,7 @@ final class TransportTests: XCTestCase {
         transport.stop()
         XCTAssertGreaterThan(recorder.all.count, before, "parar no mandó nada")
 
-        guard case let .noteOff(channel, note, _) = recorder.all.last else {
+        guard case .noteOff(let channel, let note, _) = recorder.all.last else {
             return XCTFail("el último mensaje al parar debería ser note-off")
         }
         XCTAssertEqual(channel, MIDIChannel(1)!, "apagó otro canal")

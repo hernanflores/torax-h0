@@ -61,6 +61,22 @@ public struct MIDIController: Hashable, Sendable {
         self.number = number
     }
 
+    /// Vía interna para números ya conocidos y válidos, como los de la sección
+    /// de Channel Mode de MIDI 1.0.
+    init(unchecked number: Int) {
+        self.number = number
+    }
+
+    /// All Notes Off — mensaje de Channel Mode de MIDI 1.0.
+    ///
+    /// **No es un parámetro: es una parada de emergencia.** El transporte lo
+    /// manda al parar, para apagar lo que su barrido de note-offs no conoce
+    /// —una altura que sonaba y ya salió del pool—. No todos los sintetizadores
+    /// lo honran, así que se manda *además* del barrido y no en su lugar.
+    ///
+    /// 123 es un literal dentro del rango 0–127, así que no puede fallar.
+    public static let allNotesOff = MIDIController(unchecked: 123)
+
     var wireValue: UInt8 { UInt8(number) }
 }
 
@@ -84,17 +100,17 @@ public enum MIDIMessage: Equatable, Sendable {
     /// Byte de status: nibble de tipo en la parte alta, canal en la baja.
     var statusByte: UInt8 {
         switch self {
-        case let .noteOn(channel, _, _): 0x90 | channel.wireValue
-        case let .noteOff(channel, _, _): 0x80 | channel.wireValue
-        case let .controlChange(channel, _, _): 0xB0 | channel.wireValue
+        case .noteOn(let channel, _, _): 0x90 | channel.wireValue
+        case .noteOff(let channel, _, _): 0x80 | channel.wireValue
+        case .controlChange(let channel, _, _): 0xB0 | channel.wireValue
         }
     }
 
     private var dataBytes: (UInt8, UInt8) {
         switch self {
-        case let .noteOn(_, note, velocity): (note.value, velocity.value)
-        case let .noteOff(_, note, velocity): (note.value, velocity.value)
-        case let .controlChange(_, controller, value): (controller.wireValue, value)
+        case .noteOn(_, let note, let velocity): (note.value, velocity.value)
+        case .noteOff(_, let note, let velocity): (note.value, velocity.value)
+        case .controlChange(_, let controller, let value): (controller.wireValue, value)
         }
     }
 

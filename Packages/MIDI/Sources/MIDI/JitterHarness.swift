@@ -67,7 +67,12 @@ public enum JitterHarness {
     /// Ejecuta una medición y devuelve su estadística.
     ///
     /// Bloquea el hilo llamante hasta reunir las muestras o agotar el plazo, así
-    /// que no debe invocarse desde el hilo principal.
+    /// Measures MIDI timing jitter using the specified configuration.
+    ///
+    /// The measurement sends an identical note-on message for each sample, ignoring pitch and groove so that only event timing affects the result. This method must not be called from the main thread.
+    /// - Parameter configuration: The tempo, rhythmic division, sample count, look-ahead interval, and timeout for the measurement.
+    /// - Returns: The computed jitter statistics.
+    /// - Throws: `JitterHarnessError.timedOut` if the requested samples are not collected before the timeout.
     public static func measure(
         _ configuration: JitterMeasurementConfiguration
     ) throws -> JitterStatistics {
@@ -100,10 +105,11 @@ public enum JitterHarness {
             velocity: MIDIVelocity(unchecked: 100)
         )
 
-        // La altura la ignora a propósito: el arnés mide la rejilla temporal,
-        // no el material musical, y manda siempre el mismo mensaje para que dos
-        // muestras solo se diferencien en cuándo salieron.
-        let thread = SchedulerThread(configuration: schedulerConfiguration) { _, _, hostTime in
+        // La altura y el Groove los ignora a propósito: el arnés mide la rejilla
+        // temporal, no el material musical, y manda siempre el mismo mensaje
+        // para que dos muestras solo se diferencien en cuándo salieron.
+        let thread = SchedulerThread(configuration: schedulerConfiguration) {
+            _, _, _, hostTime in
             // Realtime: hilo del scheduler.
             output.send(message, to: endpoint, atHostTime: hostTime)
         }

@@ -22,7 +22,8 @@ public final class VirtualLoopback: @unchecked Sendable {
     /// **Corre en el hilo de alta prioridad de CoreMIDI.** Quien lo implemente
     /// hereda las reglas de tiempo real: sin asignaciones, sin locks, sin
     /// logging. Cualquier trabajo pesado degrada justo lo que se está midiendo.
-    public typealias ReceiveHandler = @Sendable (_ scheduledHostTime: UInt64, _ actualHostTime: UInt64) -> Void
+    public typealias ReceiveHandler =
+        @Sendable (_ scheduledHostTime: UInt64, _ actualHostTime: UInt64) -> Void
 
     private var client = MIDIClientRef()
     private var destination = MIDIEndpointRef()
@@ -38,7 +39,9 @@ public final class VirtualLoopback: @unchecked Sendable {
     /// Endpoint al que hay que enviar para cerrar el bucle.
     public var endpoint: MIDIEndpointRef { destination }
 
-    public init(name: String = VirtualLoopback.defaultName, onReceive handler: @escaping ReceiveHandler) throws {
+    public init(
+        name: String = VirtualLoopback.defaultName, onReceive handler: @escaping ReceiveHandler
+    ) throws {
         let clientStatus = MIDIClientCreateWithBlock(name as CFString, &client, nil)
         guard clientStatus == noErr else {
             throw MIDIOutputError.clientCreationFailed(clientStatus)

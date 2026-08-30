@@ -63,7 +63,8 @@ final class MIDIEndpointSelectionTests: XCTestCase {
     /// Un sistema en el que lo único presente es el medidor equivale a no tener
     /// nada conectado.
     func testOnlyTheMeasurementEndpointIsTheSameAsNoDevice() {
-        XCTAssertTrue(MIDIEndpointSelection(.destination, discovering: [loopback]).available.isEmpty)
+        XCTAssertTrue(
+            MIDIEndpointSelection(.destination, discovering: [loopback]).available.isEmpty)
     }
 
     // MARK: - Selección
@@ -71,11 +72,13 @@ final class MIDIEndpointSelectionTests: XCTestCase {
     /// Con algo conectado se elige solo, para que pulsar Play suene sin tener
     /// que tocar antes un selector.
     func testFirstDestinationIsSelectedAutomatically() {
-        XCTAssertEqual(MIDIEndpointSelection(.destination, discovering: [synth, drums]).selected, synth)
+        XCTAssertEqual(
+            MIDIEndpointSelection(.destination, discovering: [synth, drums]).selected, synth)
     }
 
     func testSelectingChoosesAnotherDestination() {
-        let selection = MIDIEndpointSelection(.destination, discovering: [synth, drums]).selecting(drums)
+        let selection = MIDIEndpointSelection(.destination, discovering: [synth, drums]).selecting(
+            drums)
         XCTAssertEqual(selection.selected, drums)
     }
 

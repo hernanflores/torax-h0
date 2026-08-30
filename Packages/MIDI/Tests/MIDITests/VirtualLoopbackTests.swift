@@ -67,7 +67,8 @@ final class VirtualLoopbackTests: XCTestCase {
         let deltaBits = AtomicCounter()
 
         let loopback = try VirtualLoopback(name: "Torax H0 Loopback Early") { scheduled, actual in
-            let delta = Int64(HostClock.nanoseconds(fromHostTicks: actual))
+            let delta =
+                Int64(HostClock.nanoseconds(fromHostTicks: actual))
                 - Int64(HostClock.nanoseconds(fromHostTicks: scheduled))
             deltaBits.value = UInt64(bitPattern: delta)
             received.fulfill()
@@ -84,7 +85,8 @@ final class VirtualLoopbackTests: XCTestCase {
         let deltaNanoseconds = Int64(bitPattern: deltaBits.value)
         // Margen generoso: aquí solo se comprueba que no llega ANTES, no la
         // precisión. Medir precisión es trabajo del arnés, en el iPad.
-        XCTAssertGreaterThan(deltaNanoseconds, -1_000_000,
-                             "El evento se entrego mas de 1 ms antes de su timestamp")
+        XCTAssertGreaterThan(
+            deltaNanoseconds, -1_000_000,
+            "El evento se entrego mas de 1 ms antes de su timestamp")
     }
 }

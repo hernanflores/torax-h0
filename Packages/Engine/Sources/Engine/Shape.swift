@@ -168,9 +168,24 @@ public struct Track: Equatable, Sendable {
     /// material que emitir.
     public let pool: PitchPool
 
-    public init(shape: Shape, pool: PitchPool = PitchPool()) {
+    /// Cómo se interpreta lo que el Shape dispara.
+    ///
+    /// **Vive en `Track` por la misma razón que el pool**: el hilo del scheduler
+    /// necesita la Velocity y el Sustain para construir los mensajes, y lo único
+    /// que ese hilo lee es el snapshot publicado. De ahí que tenga que ser un
+    /// valor trivial, y de ahí que `_isPOD(Track.self)` siga siendo la red.
+    ///
+    /// **Lo que no está aquí es el estado del aleatorio.** Probability dice
+    /// *cuánto* se omite, que es dato del Track; el generador que decide *qué*
+    /// Pulse concreto se omite tiene estado mutable y vive en el scheduler, que
+    /// es su único dueño. Meterlo aquí rompería la trivialidad y convertiría el
+    /// snapshot en algo que dos hilos mutan.
+    public let groove: Groove
+
+    public init(shape: Shape, pool: PitchPool = PitchPool(), groove: Groove = .default) {
         self.shape = shape
         self.pool = pool
+        self.groove = groove
     }
 
     /// Indica si el Step dado dispara, combinando Shape y Rotate.
@@ -239,9 +254,19 @@ extension Shape {
     ///   es la intención y `effectivePulses` es lo que suena.
     ///
     /// No es código de tiempo real: construir un Shape reparte los Pulses, y eso
-    /// asigna. Se llama desde el hilo de control, al recibir un giro.
-    public func applying(_ delta: Int, to parameter: ShapeParameter) -> Shape {
+    /// Applies a control delta to the selected shape parameter.
+    /// - Parameters:
+    ///   - delta: The amount by which to adjust the parameter.
+    ///   - parameter: The track parameter to adjust.
+    /// - Returns: An updated shape with steps, pulses, and division constrained to their valid ranges, rotation wrapped to the step count, or the original shape for track-level parameters.
+    public func applying(_ delta: Int, to parameter: TrackParameter) -> Shape {
         switch parameter {
+        case .velocity, .sustain, .probability:
+            // No son suyos: los ajusta `Track.applying(_:to:)`, que es quien
+            // conoce las dos familias. Devolver el Shape intacto es la respuesta
+            // correcta y no un caso olvidado.
+            return self
+
         case .steps:
             let clamped = min(
                 max(steps.count + delta, Steps.validRange.lowerBound), Steps.validRange.upperBound)

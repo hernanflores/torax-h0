@@ -74,7 +74,9 @@ public final class ControlInput: @unchecked Sendable {
     /// que informar. Publicar sin cambio, en cambio, sí sería trabajo y ruido
     /// para nada.
     ///
-    /// No es código de tiempo real. Se llama desde el hilo de control.
+    /// Processes a MIDI message and publishes the resulting track when it changes.
+    /// - Parameter message: The MIDI message to process.
+    /// - Returns: `true` if the message changes and publishes the track, `false` otherwise.
     @discardableResult
     public func receive(_ message: MIDIMessage) -> Bool {
         switch message {
@@ -91,21 +93,33 @@ public final class ControlInput: @unchecked Sendable {
         }
     }
 
-    /// Un giro de knob mueve un parámetro de Shape.
+    /// Un giro de knob mueve un parámetro del Track, sea de la familia que sea.
+    ///
+    /// **Aquí ya no se sabe a qué familia pertenece, y es el objetivo.** Hasta
+    /// la rebanada 5 esto llamaba a `Shape.applying(_:to:)` y por tanto solo
+    /// podía mover Shape; con Groove en el snapshot, el despacho lo hace
+    /// `Track.applying(_:to:)`, que es quien conoce las dos. Añadir Timing y
+    /// Applies a MIDI controller adjustment to the corresponding track parameter.
+    /// - Parameters:
+    ///   - controller: The MIDI controller whose mapped parameter should change.
+    ///   - value: The controller value used to calculate the parameter adjustment.
+    /// - Returns: `true` if the track changed and was published, `false` otherwise.
     private func turn(_ controller: MIDIController, by value: UInt8) -> Bool {
         guard let parameter = mapping.parameter(for: controller) else { return false }
 
         let delta = encoding.delta(from: value)
         guard delta != 0 else { return false }
 
-        let adjusted = track.shape.applying(delta, to: parameter)
-        // Girar contra un extremo no mueve nada: el valor ya estaba ahí.
-        guard adjusted != track.shape else { return false }
+        // **El resto del Track se conserva.** Shape, pool y Groove son partes
+        // del mismo valor: reconstruirlo sin alguna de ellas borraría material
+        // al girar un knob, que es exactamente la destrucción que
+        // `product-guidelines.md` prohíbe. `Track.applying(_:to:)` lo garantiza.
+        let adjusted = track.applying(delta, to: parameter)
 
-        // **El pool se conserva.** Shape y pool son dos partes del mismo Track:
-        // reconstruirlo sin el pool borraría el material tonal al girar un knob,
-        // que es exactamente la destrucción que `product-guidelines.md` prohíbe.
-        track = Track(shape: adjusted, pool: track.pool)
+        // Girar contra un extremo no mueve nada: el valor ya estaba ahí.
+        guard adjusted != track else { return false }
+
+        track = adjusted
         publish(track)
         return true
     }

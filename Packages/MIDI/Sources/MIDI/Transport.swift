@@ -94,7 +94,7 @@ public final class Transport: @unchecked Sendable {
     ///
     /// El hilo se crea aquí y no en `init` para que la reproducción empiece
     /// siempre con un origen de tiempo recién tomado: reutilizar el hilo haría
-    /// que el segundo Play arrancara a mitad del anillo.
+    /// Starts playback using the currently published track. Subsequent scheduler events are emitted as MIDI notes.
     public func play() {
         guard !isPlaying else { return }
 
@@ -103,8 +103,8 @@ public final class Transport: @unchecked Sendable {
             material: .track(handoff.load() ?? lastPublishedTrack),
             handoff: handoff,
             playhead: playheadClock
-        ) { [emitter, send] _, pitch, hostTime in
-            emitter.emit(pitch: pitch, atHostTime: hostTime, send: send)
+        ) { [emitter, send] _, pitch, groove, hostTime in
+            emitter.emit(pitch: pitch, groove: groove, atHostTime: hostTime, send: send)
         }
         scheduler = thread
         thread.start()
@@ -125,10 +125,21 @@ public final class Transport: @unchecked Sendable {
     /// publicara algo por cada pulso, y eso es trabajo en el camino de tiempo
     /// real para resolver un caso de parada.
     ///
-    /// Queda un hueco conocido: una altura que estuviera sonando y se hubiera
-    /// quitado del pool antes de parar no se apaga aquí. Dura lo que el gate,
-    /// hoy 25 ms, así que es inaudible; cuando Sustain permita gates largos hay
-    /// que volver a mirarlo.
+    /// **El hueco del pool se cierra con All Notes Off.** Una altura que
+    /// estuviera sonando y se hubiera quitado del pool antes de parar no aparece
+    /// en el barrido de arriba. Mientras el gate era de 25 ms eso era inaudible
+    /// y quedó anotado como pendiente «cuando Sustain permita gates largos».
+    /// Sustain llegó: con 200% sobre una Division 1/1 a 20 BPM la nota colgaría
+    /// veinticuatro segundos.
+    ///
+    /// Se manda además un CC 123 (All Notes Off), que apaga lo que el barrido no
+    /// conoce. **Los dos y no uno solo**: el CC 123 cubre las alturas que ya no
+    /// están en el pool, y el barrido cubre los sintetizadores que ignoran el CC
+    /// 123, que los hay. Ninguno de los dos hace redundante al otro.
+    ///
+    /// La alternativa —que el hilo del scheduler llevara la cuenta de lo que
+    /// encendió y no ha apagado— sería más precisa y metería estado mutable en
+    /// el camino de tiempo real para resolver un caso de parada. No se paga.
     ///
     /// **Por qué no va sellado en «ahora».** CoreMIDI emite en orden de
     /// timestamp, así que un note-off a 0 saldría *antes* que cualquier note-on
@@ -138,7 +149,9 @@ public final class Transport: @unchecked Sendable {
     /// puede estar programado más allá del look-ahead.
     ///
     /// El retraso es el de la ventana, unos milisegundos: por debajo de lo que
-    /// se percibe como respuesta al botón.
+    /// Stops playback and silences active notes.
+    /// - Sends an All Notes Off message and note-off messages for pitches in the last published track.
+    /// - Does nothing when playback is already stopped.
     public func stop() {
         guard let scheduler else { return }
         scheduler.stop()
@@ -148,6 +161,17 @@ public final class Transport: @unchecked Sendable {
             HostClock.now()
             &+ HostClock.hostTicks(
                 fromNanoseconds: UInt64(max(0, configuration.lookAheadNanoseconds)))
+
+        // Va primero: si el sintetizador lo honra, todo lo demás es
+        // confirmación; si no lo honra, no ha costado nada.
+        send(
+            .controlChange(
+                channel: emitter.channel,
+                controller: MIDIController.allNotesOff,
+                value: 0
+            ),
+            silenceAt
+        )
 
         let pool = lastPublishedTrack.pool
         for index in 0..<pool.count {

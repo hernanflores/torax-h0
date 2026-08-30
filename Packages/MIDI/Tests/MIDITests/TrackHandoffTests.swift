@@ -27,7 +27,9 @@ final class TrackHandoffTests: XCTestCase {
         )
     }
 
-    private func assertCorrelated(_ track: Track, file: StaticString = #filePath, line: UInt = #line) {
+    private func assertCorrelated(
+        _ track: Track, file: StaticString = #filePath, line: UInt = #line
+    ) {
         XCTAssertEqual(track.shape.pulses.count, track.shape.steps.count, file: file, line: line)
         XCTAssertEqual(track.shape.rotate.amount, track.shape.steps.count, file: file, line: line)
         // Pulses == Steps llena el anillo: todos los Steps disparan.

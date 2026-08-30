@@ -20,9 +20,10 @@ final class MusicalTimeTests: XCTestCase {
         let sixteenth = MusicalTimeline(tempo: tempo, division: .sixteenth)
         let quarter = MusicalTimeline(tempo: tempo, division: .quarter)
 
-        XCTAssertEqual(quarter.stepDurationNanoseconds,
-                       sixteenth.stepDurationNanoseconds * 4,
-                       accuracy: 1)
+        XCTAssertEqual(
+            quarter.stepDurationNanoseconds,
+            sixteenth.stepDurationNanoseconds * 4,
+            accuracy: 1)
     }
 
     // MARK: - Step duration
@@ -74,8 +75,9 @@ final class MusicalTimeTests: XCTestCase {
         for step in stride(from: 0, through: 1000, by: 1) {
             let expected = exactStep * Double(step)
             let actual = Double(timeline.nanosecondOffset(forStep: step))
-            XCTAssertEqual(actual, expected, accuracy: 1,
-                           "Deriva detectada en el step \(step)")
+            XCTAssertEqual(
+                actual, expected, accuracy: 1,
+                "Deriva detectada en el step \(step)")
         }
     }
 
@@ -86,10 +88,12 @@ final class MusicalTimeTests: XCTestCase {
         let nominal = timeline.stepDurationNanoseconds
 
         for step in 1...1000 {
-            let delta = Double(timeline.nanosecondOffset(forStep: step))
+            let delta =
+                Double(timeline.nanosecondOffset(forStep: step))
                 - Double(timeline.nanosecondOffset(forStep: step - 1))
-            XCTAssertEqual(delta, nominal, accuracy: 1,
-                           "Intervalo irregular entre los steps \(step - 1) y \(step)")
+            XCTAssertEqual(
+                delta, nominal, accuracy: 1,
+                "Intervalo irregular entre los steps \(step - 1) y \(step)")
         }
     }
 

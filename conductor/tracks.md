@@ -13,8 +13,8 @@ una deuda que la siguiente necesita.
 |---|---|---|
 | 3 | Anillo, playhead y valor transitorio | cerrada |
 | 4 | Tonal: pool, Scale y Root | cerrada |
-| 5 | Groove estático: Velocity, Sustain, Probability | **siguiente**, por planificar |
-| 6 | Groove temporal: Timing y Delay | por planificar |
+| 5 | Groove estático: Velocity, Sustain, Probability | cerrada |
+| 6 | Groove temporal: Timing y Delay | **siguiente**, por planificar |
 | 7 | Preset del BeatStep Pro y MIDI Learn | por planificar |
 
 **Por qué ese orden.** La 3 no toca el motor y salda la última carga de jitter
@@ -34,16 +34,26 @@ resto. La 7 va última porque hasta entonces la tabla fija de cuatro CC alcanza.
 **Cuándo se vuelve bloqueante un defecto.** `network-session-source` en la
 rebanada 7, cuando MIDI Learn tenga que escuchar la fuente correcta.
 
-`midi-test-flake` **ya lo es, desde el 2026-08-28**: cualquier test que arranque
-el bucle del scheduler lleva `VirtualLoopbackTests` a fallar 3 de 3 pasadas,
-contra 0 de 4 en `main`. La rebanada 3 lo esquiva dejando una línea sin test y
-verificándola en dispositivo, pero la 6 —Timing y Delay— no va a poder: toca el
-camino de tiempo real y necesita tests que lo corran. Se toma antes de esa.
+`midi-test-flake` **queda aplazado a después de la v2, por decisión del
+2026-08-29.** Lo había marcado como bloqueante de la rebanada 6 y ya no lo es:
+la v1 y la v2 se entregan con él dentro.
+
+Lo que eso significa en la práctica, para no volver a discutirlo cada vez:
+cuando la 6 necesite tests que arranquen el bucle del scheduler, se escriben y
+se convive con el ruido. La firma es reconocible —las 4 pruebas de
+`VirtualLoopbackTests` con `clientCreationFailed(-50)`, y ningún otro test— así
+que un fallo así se descarta comparando 3–4 pasadas contra `main`, como ya dice
+*Branching and Pull Requests* en `workflow.md`. La rebanada 5 lo vio 2 de 8
+veces sin que afectara a nada.
 
 ---
 
-*Sin track abierto.* La rebanada 4 cerró el 2026-08-28; la 5 —Groove estático—
-está en la cola de arriba, pendiente de planificar.
+*Sin track abierto.* La rebanada 5 cerró el 2026-08-29; la 6 —Groove temporal:
+Timing y Delay— está en la cola de arriba, pendiente de planificar.
+
+La 6 lleva medición de jitter: es la primera desde la 3 que mueve instantes, y
+la σ viene subiendo de forma monótona —9 → 15 → 20 µs— sin que las rebanadas 4
+y 5 la midieran. Si sale peor, ese es el intervalo a bisecar.
 
 ## Defectos conocidos
 
@@ -70,12 +80,19 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: Flake `clientCreationFailed(-50)` en MIDITests** — *ya no está bloqueado: es al revés*
+- [ ] **Track: Flake `clientCreationFailed(-50)` en MIDITests** — *aplazado a después de la v2 (2026-08-29)*
   *Link: [conductor/tracks/midi-test-flake_20260826/index.md](./tracks/midi-test-flake_20260826/index.md)*
 
   La investigación del 2026-08-27 invirtió la dependencia. El ciclo de vida del scheduler no se puede cerrar sin entender antes por qué retrasar el desmontaje inutiliza la creación de endpoints virtuales de CoreMIDI.
 
+  **Aplazado a después de la v2 el 2026-08-29.** No bloquea a ninguna rebanada del MVP: se convive con el ruido en CI y se descarta comparando pasadas. Sigue bloqueando a `scheduler-lifecycle`, que también espera.
+
+  Dato acumulado por si sirve al diagnóstico: en la rebanada 5 apareció en 2 de 8 pasadas y **siempre con la misma firma** —las 4 pruebas de `VirtualLoopbackTests`, ningún otro test—. El fallo está localizado en la creación de endpoints virtuales, no es difuso.
+
 ## Archivados
+
+- [x] **Track: MVP rebanada 5 — Groove estático: Velocity, Sustain, Probability** — los tres suenan; verificado en iPad con BeatStep Pro
+  *Link: [conductor/archive/mvp-groove-static_20260829/index.md](./archive/mvp-groove-static_20260829/index.md)*
 
 - [x] **Track: MVP rebanada 4 — Tonal: pool, Scale y Root** — el Track arpegia sobre el pool, dentro del marco tonal
   *Link: [conductor/archive/mvp-tonal_20260828/index.md](./archive/mvp-tonal_20260828/index.md)*

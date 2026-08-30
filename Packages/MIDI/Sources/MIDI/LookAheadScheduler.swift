@@ -58,7 +58,9 @@ public struct LookAheadScheduler {
     /// uno.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
-    /// Sin asignaciones, sin locks, sin await.
+    /// Finds the first step at or after the specified timeline horizon.
+    /// - Parameter horizonNanoseconds: The horizon in nanoseconds.
+    /// - Returns: The index of the first step whose offset is greater than or equal to the horizon, or `0` when the horizon is zero or negative.
     private func firstStep(atOrAfter horizonNanoseconds: Int64) -> Int {
         guard horizonNanoseconds > 0 else { return 0 }
 
@@ -73,7 +75,8 @@ public struct LookAheadScheduler {
         // La estimación se pasó: retrocede mientras el Step anterior ya caiga
         // en el horizonte o después.
         while candidate > 0,
-              timeline.nanosecondOffset(forStep: candidate - 1) >= horizonNanoseconds {
+            timeline.nanosecondOffset(forStep: candidate - 1) >= horizonNanoseconds
+        {
             candidate -= 1
         }
 

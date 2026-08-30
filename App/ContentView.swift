@@ -79,13 +79,19 @@ struct ContentView: View {
     /// El valor grande.
     ///
     /// Tipografía muy grande y jerarquía marcada porque el criterio es leerlo a
-    /// un metro, de pie y delante del sintetizador — no el gusto.
-    private func transient(_ change: ShapeChange) -> some View {
+    /// Displays the description of a parameter change with its family-specific accent color.
+    /// - Parameter change: The parameter change to display.
+    /// - Returns: A view showing the change description.
+    private func transient(_ change: ParameterChange) -> some View {
         Text(change.description)
             .font(.system(size: 64, weight: .bold, design: .default))
             .minimumScaleFactor(0.4)
             .lineLimit(1)
-            .foregroundStyle(Palette.shape)
+            // **El acento es el de la familia del parámetro que se movió**, no
+            // uno fijo: `product-guidelines.md` pide que el color codifique qué
+            // tipo de parámetro es. Girar Velocity y girar Steps tienen que
+            // leerse distinto sin necesidad de leer la palabra.
+            .foregroundStyle(Palette.accent(for: change.parameter.family))
             .padding(.horizontal, 24)
             .transition(.opacity)
             .animation(.easeOut(duration: 0.18), value: change)
@@ -111,7 +117,7 @@ struct ContentView: View {
                 destination
             }
 
-            shape
+            parameters
             input
         }
     }
@@ -125,7 +131,8 @@ struct ContentView: View {
         HStack(spacing: 12) {
             Text(model.sourceStatus)
                 .font(.body)
-                .foregroundStyle(model.isReadOnly ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.white))
+                .foregroundStyle(
+                    model.isReadOnly ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.white))
 
             if model.sourceSelection.available.count > 1 {
                 Picker("Input", selection: sourceBinding) {
@@ -148,7 +155,10 @@ struct ContentView: View {
         Binding(
             get: { model.sourceSelection.selected?.endpoint ?? 0 },
             set: { endpoint in
-                guard let chosen = model.sourceSelection.available.first(where: { $0.endpoint == endpoint })
+                guard
+                    let chosen = model.sourceSelection.available.first(where: {
+                        $0.endpoint == endpoint
+                    })
                 else { return }
                 model.selectSource(chosen)
             }
@@ -177,22 +187,31 @@ struct ContentView: View {
         Binding(
             get: { model.selection.selected?.endpoint ?? 0 },
             set: { endpoint in
-                guard let chosen = model.selection.available.first(where: { $0.endpoint == endpoint })
+                guard
+                    let chosen = model.selection.available.first(where: { $0.endpoint == endpoint })
                 else { return }
                 model.select(chosen)
             }
         )
     }
 
-    /// Los valores de Shape, en solo lectura.
+    /// Los valores de Shape y de Groove, en solo lectura.
     ///
-    /// No se muestra ninguna altura: la nota de esta rebanada es una constante
-    /// provisional del camino MIDI, y enseñarla sugeriría una nota fija por
-    /// paso, que contradice el modelo de pool de la Pre Spec.
-    private var shape: some View {
-        Text(model.shapeSummary)
-            .font(.title3.monospaced())
-            .foregroundStyle(Palette.muted)
+    /// **Cada familia con su acento**, para que el estado en reposo se lea con
+    /// el mismo código de color que el valor grande transitorio.
+    ///
+    /// No se muestra ninguna altura: el pool tiene su propia representación en
+    /// `TonalView`, y enseñar una nota por paso contradiría el modelo de pool de
+    /// la Pre Spec.
+    private var parameters: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(model.shapeSummary)
+                .font(.title3.monospaced())
+                .foregroundStyle(Palette.shape.opacity(0.85))
+            Text(model.grooveSummary)
+                .font(.title3.monospaced())
+                .foregroundStyle(Palette.groove.opacity(0.85))
+        }
     }
 
     // MARK: - Medición de jitter

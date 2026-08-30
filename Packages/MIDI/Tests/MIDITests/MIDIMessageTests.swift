@@ -33,19 +33,22 @@ final class MIDIMessageTests: XCTestCase {
     // MARK: - Status
 
     func testNoteOnStatusIsNineOnChannelOne() {
-        let message = MIDIMessage.noteOn(channel: MIDIChannel(1)!, note: MIDINote(60)!, velocity: MIDIVelocity(100)!)
+        let message = MIDIMessage.noteOn(
+            channel: MIDIChannel(1)!, note: MIDINote(60)!, velocity: MIDIVelocity(100)!)
         XCTAssertEqual(message.statusByte, 0x90)
     }
 
     func testNoteOffStatusIsEightOnChannelOne() {
-        let message = MIDIMessage.noteOff(channel: MIDIChannel(1)!, note: MIDINote(60)!, velocity: MIDIVelocity(0)!)
+        let message = MIDIMessage.noteOff(
+            channel: MIDIChannel(1)!, note: MIDINote(60)!, velocity: MIDIVelocity(0)!)
         XCTAssertEqual(message.statusByte, 0x80)
     }
 
     /// El canal viaja en el nibble bajo del status, y es 0-indexado en el cable
     /// aunque se presente 1-indexado al usuario.
     func testChannelSixteenOccupiesTheLowNibble() {
-        let message = MIDIMessage.noteOn(channel: MIDIChannel(16)!, note: MIDINote(60)!, velocity: MIDIVelocity(1)!)
+        let message = MIDIMessage.noteOn(
+            channel: MIDIChannel(16)!, note: MIDINote(60)!, velocity: MIDIVelocity(1)!)
         XCTAssertEqual(message.statusByte, 0x9F)
     }
 
@@ -55,7 +58,8 @@ final class MIDIMessageTests: XCTestCase {
     /// segundo nibble, el status completo en el tercer byte y los dos bytes de
     /// datos al final.
     func testUniversalPacketLayoutForNoteOn() {
-        let message = MIDIMessage.noteOn(channel: MIDIChannel(1)!, note: MIDINote(60)!, velocity: MIDIVelocity(100)!)
+        let message = MIDIMessage.noteOn(
+            channel: MIDIChannel(1)!, note: MIDINote(60)!, velocity: MIDIVelocity(100)!)
         let word = message.universalPacketWord(group: 0)
 
         XCTAssertEqual(word, 0x2090_3C64)
@@ -67,7 +71,8 @@ final class MIDIMessageTests: XCTestCase {
     }
 
     func testUniversalPacketLayoutForNoteOff() {
-        let message = MIDIMessage.noteOff(channel: MIDIChannel(10)!, note: MIDINote(36)!, velocity: MIDIVelocity(0)!)
+        let message = MIDIMessage.noteOff(
+            channel: MIDIChannel(10)!, note: MIDINote(36)!, velocity: MIDIVelocity(0)!)
         let word = message.universalPacketWord(group: 0)
 
         XCTAssertEqual((word >> 16) & 0xFF, 0x89, "Status note-off en canal 10")
@@ -76,14 +81,16 @@ final class MIDIMessageTests: XCTestCase {
     }
 
     func testGroupIsCarriedInTheSecondNibble() {
-        let message = MIDIMessage.noteOn(channel: MIDIChannel(1)!, note: MIDINote(60)!, velocity: MIDIVelocity(1)!)
+        let message = MIDIMessage.noteOn(
+            channel: MIDIChannel(1)!, note: MIDINote(60)!, velocity: MIDIVelocity(1)!)
         XCTAssertEqual((message.universalPacketWord(group: 5) >> 24) & 0xF, 5)
     }
 
     /// Ningún byte de datos puede desbordar a los vecinos: con todos los
     /// valores al máximo, cada campo debe seguir en su sitio.
     func testMaximumValuesDoNotBleedBetweenFields() {
-        let message = MIDIMessage.noteOn(channel: MIDIChannel(16)!, note: MIDINote(127)!, velocity: MIDIVelocity(127)!)
+        let message = MIDIMessage.noteOn(
+            channel: MIDIChannel(16)!, note: MIDINote(127)!, velocity: MIDIVelocity(127)!)
         let word = message.universalPacketWord(group: 15)
         XCTAssertEqual(word, 0x2F9F_7F7F)
     }

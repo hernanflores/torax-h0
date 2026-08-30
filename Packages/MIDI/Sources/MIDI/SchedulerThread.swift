@@ -48,11 +48,14 @@ public final class SchedulerThread: @unchecked Sendable {
 
     /// Se invoca por cada Step, desde el hilo del scheduler.
     ///
-    /// Recibe el índice de Step y el instante de emisión en ticks de host.
-    /// Quien lo implemente hereda las reglas de tiempo real: sin asignaciones,
-    /// sin locks, sin logging.
+    /// Recibe el índice de Step, la altura, el Groove con que interpretarla y
+    /// el instante de emisión en ticks de host. Quien lo implemente hereda las
+    /// reglas de tiempo real: sin asignaciones, sin locks, sin logging.
+    ///
+    /// Altura y Groove salen del **mismo** snapshot, recogido una vez por
+    /// ventana: no son dos lecturas que puedan discrepar.
     public typealias StepHandler =
-        @Sendable (_ step: Int, _ pitch: Pitch?, _ hostTime: UInt64) -> Void
+        @Sendable (_ step: Int, _ pitch: Pitch?, _ groove: Groove, _ hostTime: UInt64) -> Void
 
     private let configuration: SchedulerConfiguration
     private let material: SchedulerMaterial
@@ -132,7 +135,14 @@ public final class SchedulerThread: @unchecked Sendable {
     /// Bucle del scheduler.
     ///
     /// Realtime: este es el hilo del scheduler.
-    /// Sin asignaciones, sin locks, sin await.
+    /// Runs the scheduler loop and emits steps within the configured look-ahead window.
+    /// - Parameters:
+    ///   - configuration: The timeline and look-ahead duration used for scheduling.
+    ///   - material: The musical material provided to the scheduler.
+    ///   - handoff: An optional source for refreshed track data.
+    ///   - playhead: An optional clock started at the scheduler's host-time origin.
+    ///   - handler: Receives each scheduled step, its pitch, groove, and host timestamp.
+    ///   - running: The flag that controls whether scheduling continues.
     private static func run(
         configuration: SchedulerConfiguration,
         material: SchedulerMaterial,
@@ -156,11 +166,12 @@ public final class SchedulerThread: @unchecked Sendable {
             )
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
 
-            scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) { step, pitch, offset in
+            scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) {
+                step, pitch, groove, offset in
                 let hostTime =
                     startHostTicks
                     &+ HostClock.hostTicks(fromNanoseconds: UInt64(max(0, offset)))
-                handler(step, pitch, hostTime)
+                handler(step, pitch, groove, hostTime)
             }
 
             usleep(sleepNanoseconds / 1_000)

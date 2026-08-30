@@ -66,7 +66,8 @@ final class RotateTests: XCTestCase {
             for pulseCount in 1...stepCount {
                 let pulses = Pulses(pulseCount)!
                 for amount in -20...20 {
-                    let rhythm = EuclideanRhythm(steps: steps, pulses: pulses, rotate: Rotate(amount))
+                    let rhythm = EuclideanRhythm(
+                        steps: steps, pulses: pulses, rotate: Rotate(amount))
                     let triggering = (0..<stepCount).filter { rhythm.triggers(atStep: $0) }
                     XCTAssertEqual(
                         triggering.count,
@@ -117,7 +118,8 @@ final class RotateTests: XCTestCase {
 
     // MARK: - Helper
 
-    private func pattern(steps stepCount: Int, pulses pulseCount: Int, rotate amount: Int) -> String {
+    private func pattern(steps stepCount: Int, pulses pulseCount: Int, rotate amount: Int) -> String
+    {
         let steps = Steps(stepCount)!
         let rhythm = EuclideanRhythm(
             steps: steps,

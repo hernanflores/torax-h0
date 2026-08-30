@@ -32,6 +32,8 @@ final class JitterMeasurementModel {
         return measurements.allSatisfy(\.statistics.meetsTrackThreshold)
     }
 
+    /// Starts a jitter measurement for each configured tempo and updates the measurement state.
+    /// The measurement disables automatic screen locking while running and saves a report when it completes or fails.
     func start() {
         guard !isRunning else { return }
 
@@ -49,7 +51,8 @@ final class JitterMeasurementModel {
         task = Task { [weak self] in
             for beatsPerMinute in Self.tempos {
                 if Task.isCancelled { break }
-                self?.statusMessage = "Midiendo \(Int(beatsPerMinute)) BPM · \(sampleCount) eventos…"
+                self?.statusMessage =
+                    "Midiendo \(Int(beatsPerMinute)) BPM · \(sampleCount) eventos…"
 
                 // La medición bloquea su hilo mientras espera los eventos, así
                 // que corre fuera del hilo principal: si lo bloqueara, la propia
@@ -65,12 +68,14 @@ final class JitterMeasurementModel {
 
                 guard let self else { return }
                 switch outcome {
-                case let .success(measurement):
+                case .success(let measurement):
                     self.measurements.append(measurement)
                     // A stdout para poder capturar la medicion desde
                     // `devicectl ... --console` sin depender de la pantalla.
-                    print("[jitter] \(Int(measurement.beatsPerMinute)) BPM · \(measurement.statistics.summary)")
-                case let .failure(message):
+                    print(
+                        "[jitter] \(Int(measurement.beatsPerMinute)) BPM · \(measurement.statistics.summary)"
+                    )
+                case .failure(let message):
                     UIApplication.shared.isIdleTimerDisabled = false
                     self.failureMessage = message
                     self.statusMessage = "Medición interrumpida"
@@ -100,13 +105,15 @@ final class JitterMeasurementModel {
     /// el arnés de jitter es una herramienta permanente según `workflow.md`, no
     /// un experimento de una sola vez.
     ///
-    /// `--samples=<n>` fija el tamaño de muestra.
+    /// Starts a measurement automatically when the `--auto-measure` launch argument is present.
+    /// - Parameter: Launch arguments may include `--samples=<n>` to set a positive sample count before measurement begins.
     func startIfRequestedByLaunchArguments() {
         let arguments = ProcessInfo.processInfo.arguments
         guard arguments.contains("--auto-measure") else { return }
 
         if let raw = arguments.first(where: { $0.hasPrefix("--samples=") }),
-           let parsed = Int(raw.dropFirst("--samples=".count)), parsed > 0 {
+            let parsed = Int(raw.dropFirst("--samples=".count)), parsed > 0
+        {
             sampleCount = parsed
         }
         print("[jitter] arranque automático · \(sampleCount) eventos por tempo")
@@ -128,11 +135,14 @@ final class JitterMeasurementModel {
     /// Traza de progreso a `Documents/jitter-trace.txt`.
     ///
     /// Se escribe en cada hito para poder reconstruir hasta dónde llegó la
-    /// ejecución si la app termina inesperadamente.
+    /// Appends a timestamped line to the jitter trace file in the Documents directory.
+    /// - Parameter line: The trace message to record.
     nonisolated func writeTrace(_ line: String) {
-        guard let directory = FileManager.default.urls(
-            for: .documentDirectory, in: .userDomainMask
-        ).first else { return }
+        guard
+            let directory = FileManager.default.urls(
+                for: .documentDirectory, in: .userDomainMask
+            ).first
+        else { return }
         let url = directory.appendingPathComponent("jitter-trace.txt")
         let stamped = "\(Date()) \(line)\n"
         if let handle = try? FileHandle(forWritingTo: url) {
@@ -149,26 +159,31 @@ final class JitterMeasurementModel {
     /// El streaming de consola (`devicectl --console`) se invalida en
     /// mediciones de varios minutos, así que el resultado se persiste en el
     /// dispositivo y se recoge después. La medición sobrevive a cualquier corte
-    /// de conexión.
+    /// Writes a jitter measurement report to the device's Documents directory.
     private func writeReport() {
-        guard let directory = FileManager.default.urls(
-            for: .documentDirectory, in: .userDomainMask
-        ).first else { return }
+        guard
+            let directory = FileManager.default.urls(
+                for: .documentDirectory, in: .userDomainMask
+            ).first
+        else { return }
 
         var lines: [String] = []
         lines.append("Torax H-0 — timing spike")
-        lines.append("dispositivo: \(UIDevice.current.model) · iPadOS \(UIDevice.current.systemVersion)")
+        lines.append(
+            "dispositivo: \(UIDevice.current.model) · iPadOS \(UIDevice.current.systemVersion)")
         lines.append("eventos por tempo: \(sampleCount)")
         lines.append("umbral: máx < 2 ms · σ < 0,5 ms")
         lines.append("")
         for measurement in measurements {
-            lines.append("\(Int(measurement.beatsPerMinute)) BPM · \(measurement.statistics.summary)")
+            lines.append(
+                "\(Int(measurement.beatsPerMinute)) BPM · \(measurement.statistics.summary)")
         }
         lines.append("")
         if let verdict = overallVerdict {
             lines.append("VEREDICTO: \(verdict ? "CUMPLE" : "NO CUMPLE")")
         } else {
-            lines.append("VEREDICTO: incompleto (\(measurements.count) de \(Self.tempos.count) tempos)")
+            lines.append(
+                "VEREDICTO: incompleto (\(measurements.count) de \(Self.tempos.count) tempos)")
         }
         if let failure = failureMessage { lines.append("fallo: \(failure)") }
 
@@ -182,6 +197,11 @@ final class JitterMeasurementModel {
         case failure(String)
     }
 
+    /// Performs a jitter measurement for the specified tempo and sample count.
+    /// - Parameters:
+    ///   - beatsPerMinute: The tempo to measure, in beats per minute.
+    ///   - sampleCount: The number of events to collect.
+    /// - Returns: A successful measurement or a failure describing an invalid tempo, timeout, or measurement error.
     private nonisolated static func measure(
         beatsPerMinute: Double, sampleCount: Int, trace: @Sendable (String) -> Void = { _ in }
     ) -> Outcome {
@@ -197,9 +217,11 @@ final class JitterMeasurementModel {
                     timeoutSeconds: 300
                 )
             )
-            return .success(JitterMeasurement(beatsPerMinute: beatsPerMinute, statistics: statistics))
+            return .success(
+                JitterMeasurement(beatsPerMinute: beatsPerMinute, statistics: statistics))
         } catch let JitterHarnessError.timedOut(collected, expected) {
-            return .failure("Tiempo agotado a \(Int(beatsPerMinute)) BPM: \(collected) de \(expected) eventos")
+            return .failure(
+                "Tiempo agotado a \(Int(beatsPerMinute)) BPM: \(collected) de \(expected) eventos")
         } catch {
             return .failure("Fallo a \(Int(beatsPerMinute)) BPM: \(error)")
         }

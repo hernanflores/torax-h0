@@ -16,9 +16,14 @@ final class MIDIMessageParsingTests: XCTestCase {
     func testEveryMessageSurvivesARoundTrip() throws {
         let channel = try XCTUnwrap(MIDIChannel(3))
         let messages: [MIDIMessage] = [
-            .noteOn(channel: channel, note: try XCTUnwrap(MIDINote(60)), velocity: try XCTUnwrap(MIDIVelocity(100))),
-            .noteOff(channel: channel, note: try XCTUnwrap(MIDINote(60)), velocity: try XCTUnwrap(MIDIVelocity(0))),
-            .controlChange(channel: channel, controller: try XCTUnwrap(MIDIController(70)), value: 0x7F),
+            .noteOn(
+                channel: channel, note: try XCTUnwrap(MIDINote(60)),
+                velocity: try XCTUnwrap(MIDIVelocity(100))),
+            .noteOff(
+                channel: channel, note: try XCTUnwrap(MIDINote(60)),
+                velocity: try XCTUnwrap(MIDIVelocity(0))),
+            .controlChange(
+                channel: channel, controller: try XCTUnwrap(MIDIController(70)), value: 0x7F),
         ]
 
         for message in messages {
@@ -64,7 +69,8 @@ final class MIDIMessageParsingTests: XCTestCase {
     func testUnsupportedChannelMessagesAreDiscarded() {
         for status: UInt32 in [0xA0, 0xC0, 0xD0, 0xE0] {
             let word = (UInt32(0x2) << 28) | (status << 16) | (0x40 << 8) | 0x40
-            XCTAssertNil(MIDIMessage(universalPacketWord: word), "status 0x\(String(status, radix: 16))")
+            XCTAssertNil(
+                MIDIMessage(universalPacketWord: word), "status 0x\(String(status, radix: 16))")
         }
     }
 
@@ -74,7 +80,7 @@ final class MIDIMessageParsingTests: XCTestCase {
     /// hardware y en la Pre Spec.
     func testChannelIsPresentedOneIndexed() {
         let word = (UInt32(0x2) << 28) | (UInt32(0xB0) << 16) | (70 << 8) | 0x01
-        guard case let .controlChange(channel, _, _) = MIDIMessage(universalPacketWord: word) else {
+        guard case .controlChange(let channel, _, _) = MIDIMessage(universalPacketWord: word) else {
             return XCTFail("no se parseó el control change")
         }
         XCTAssertEqual(channel.number, 1, "el canal 0 del cable es el 1 del producto")
@@ -82,7 +88,7 @@ final class MIDIMessageParsingTests: XCTestCase {
 
     func testHighestChannelIsSixteen() {
         let word = (UInt32(0x2) << 28) | (UInt32(0xBF) << 16) | (70 << 8) | 0x01
-        guard case let .controlChange(channel, _, _) = MIDIMessage(universalPacketWord: word) else {
+        guard case .controlChange(let channel, _, _) = MIDIMessage(universalPacketWord: word) else {
             return XCTFail("no se parseó el control change")
         }
         XCTAssertEqual(channel.number, 16)

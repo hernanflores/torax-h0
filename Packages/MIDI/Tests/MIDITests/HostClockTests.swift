@@ -14,8 +14,9 @@ final class HostClockTests: XCTestCase {
         for nanoseconds in [0, 1_000, 125_000_000, 10_000_000_000] as [UInt64] {
             let ticks = HostClock.hostTicks(fromNanoseconds: nanoseconds)
             let recovered = HostClock.nanoseconds(fromHostTicks: ticks)
-            XCTAssertEqual(Double(recovered), Double(nanoseconds), accuracy: 1,
-                           "Round-trip perdió precisión en \(nanoseconds) ns")
+            XCTAssertEqual(
+                Double(recovered), Double(nanoseconds), accuracy: 1,
+                "Round-trip perdió precisión en \(nanoseconds) ns")
         }
     }
 
@@ -44,7 +45,8 @@ final class HostClockTests: XCTestCase {
     func testMusicalDurationSurvivesConversion() {
         let stepNanoseconds: UInt64 = 125_000_000
         let ticks = HostClock.hostTicks(fromNanoseconds: stepNanoseconds)
-        XCTAssertEqual(Double(HostClock.nanoseconds(fromHostTicks: ticks)),
-                       Double(stepNanoseconds), accuracy: 1)
+        XCTAssertEqual(
+            Double(HostClock.nanoseconds(fromHostTicks: ticks)),
+            Double(stepNanoseconds), accuracy: 1)
     }
 }

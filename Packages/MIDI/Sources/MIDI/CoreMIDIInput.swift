@@ -57,9 +57,12 @@ public final class CoreMIDIInput: @unchecked Sendable {
         set { notifications.onSetupChanged = newValue }
     }
 
-    public init(clientName: String = "Torax H-0 Input", onReceive handler: @escaping ReceiveHandler) throws {
+    public init(clientName: String = "Torax H-0 Input", onReceive handler: @escaping ReceiveHandler)
+        throws
+    {
         let box = notifications
-        let clientStatus = MIDIClientCreateWithBlock(clientName as CFString, &client) { notification in
+        let clientStatus = MIDIClientCreateWithBlock(clientName as CFString, &client) {
+            notification in
             if notification.pointee.messageID == .msgSetupChanged {
                 box.onSetupChanged?()
             }

@@ -9,14 +9,16 @@ final class ShapeAdjustmentTests: XCTestCase {
     private func shape(
         steps: Int = 16, pulses: Int = 4, rotate: Int = 0, division: Division = .sixteenth
     ) -> Shape {
-        Shape(steps: Steps(steps)!, pulses: Pulses(pulses)!, rotate: Rotate(rotate), division: division)
+        Shape(
+            steps: Steps(steps)!, pulses: Pulses(pulses)!, rotate: Rotate(rotate),
+            division: division)
     }
 
     // MARK: - Identidad y aislamiento
 
     func testApplyingZeroChangesNothing() {
         let original = shape(steps: 12, pulses: 7, rotate: 3, division: .eighth)
-        for parameter in ShapeParameter.allCases {
+        for parameter in TrackParameter.allCases {
             XCTAssertEqual(original.applying(0, to: parameter), original, "\(parameter)")
         }
     }
@@ -113,10 +115,19 @@ final class ShapeAdjustmentTests: XCTestCase {
         XCTAssertEqual(shape(division: .quarter).applying(-1, to: .division).division, .half)
     }
 
-    /// Division **no** envuelve: saltar de 1/16 a 1/1 sería un cambio de
-    /// velocidad de 16x en un clic.
-    func testDivisionStopsAtItsEnds() {
-        XCTAssertEqual(shape(division: .sixteenth).applying(9, to: .division).division, .sixteenth)
-        XCTAssertEqual(shape(division: .whole).applying(-9, to: .division).division, .whole)
+    /// Division **no** envuelve: saltar del extremo rápido al lento sería un
+    /// cambio de velocidad brutal en un clic.
+    ///
+    /// **Los extremos se leen del dominio, no se escriben aquí.** Escribirlos
+    /// hizo que este test fallara al añadir 1/32 en la rebanada 5, por un
+    /// comportamiento que no había cambiado: lo que cambió fue cuál es el
+    /// extremo. Atado a `fastest` y `slowest`, el test sigue diciendo lo mismo
+    /// cuando la lista crezca.
+    func testDivisionStopsAtItsEnds() throws {
+        let fastest = try XCTUnwrap(Division.fastest)
+        let slowest = try XCTUnwrap(Division.slowest)
+
+        XCTAssertEqual(shape(division: fastest).applying(9, to: .division).division, fastest)
+        XCTAssertEqual(shape(division: slowest).applying(-9, to: .division).division, slowest)
     }
 }

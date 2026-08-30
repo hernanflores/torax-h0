@@ -83,6 +83,48 @@ Es lo que hace testeable el criterio de éxito y lo que permite añadir después
 
 El aleatorio es **pseudoaleatorio con semilla**: la Pre Spec exige que sea repetible en loop, no caótico ("cambia, pero no es caos totalmente impredecible"). PRNG explícito y sembrado, nunca `Int.random()`.
 
+### Enmienda — 2026-08-29: «repetible en loop» es repetible por arranque
+
+**Qué cambia.** La frase de arriba dice «repetible en loop». Se precisa: la
+secuencia aleatoria se repite **por arranque del transporte**, no por vuelta del
+anillo. Pulsar Play dos veces reproduce exactamente las mismas decisiones; dos
+vueltas consecutivas dentro de una misma pasada, no.
+
+**Por qué.** El PRNG de Probability tiene estado y avanza por Pulse. La
+alternativa —una función pura indexada por Step— sí daría repetición por vuelta,
+pero entonces el patrón de omisiones sería idéntico vuelta tras vuelta hasta que
+alguien moviera la fase, que es justo el «patrón fijo con huecos fijos» que
+Probability existe para evitar. Se elige la variación dentro de la pasada.
+
+**Lo que se conserva de la regla.** Lo importante era que el aleatorio fuera
+reproducible y no caótico, y lo sigue siendo: semilla fija, resiembra al pulsar
+Play, y por tanto tests deterministas y sesiones repetibles. Lo que se abandona
+es una lectura literal de «en loop» que nadie había ejercido todavía.
+
+**Dónde vive el estado.** En `TrackScheduler`, no en `Track`. El snapshot tiene
+que seguir siendo trivial —`_isPOD(Track.self)` lo vigila— y `TrackScheduler` ya
+es un valor que solo el hilo del scheduler muta. El PRNG es un entero más ahí
+dentro: sin dueño compartido, sin lock, sin asignación.
+
+### Enmienda — 2026-08-29: Probability es unipolar en v1
+
+**Qué cambia.** La Pre Spec define Probability con knob bipolar: «clockwise
+afecta todas las notas; counter-clockwise sólo los Pulses». En v1 se implementa
+**unipolar, 0–100%**, aplicado a los Pulses.
+
+**Por qué.** La distinción presupone Repeats, que está fuera de v1. Sin Repeats
+no hay triggers extra por Pulse, así que **toda nota es un Pulse** y los dos
+alcances son el mismo conjunto. Entregar el eje completo daría medio knob cuyo
+efecto es indistinguible del otro medio y que ningún test puede separar.
+
+**Cuándo vuelve.** Con Repeats. Ahí la mitad counter-clockwise recupera su
+significado —omitir solo el trigger principal y no sus repeticiones— y el
+parámetro se amplía sin cambiar lo que ya hace.
+
+**Coherencia.** Mismo criterio que la enmienda de `Pulses` del 2026-08-27: el
+producto entrega el comportamiento que se puede distinguir y verificar hoy, y la
+desviación queda escrita con la condición de vuelta, no descubierta después.
+
 ## MIDI
 
 **Salida: solo a hardware externo en v1.** CoreMIDI a dispositivos físicos (USB / Camera Kit). Coherente con el MVP y con medir timing contra hardware real, que es lo que se quiere validar.

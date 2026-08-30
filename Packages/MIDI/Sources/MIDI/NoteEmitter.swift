@@ -6,6 +6,20 @@ import Engine
 /// sonar exige note-on y note-off. Sin el segundo la nota queda colgada en el
 /// sintetizador, que es lo que pasa si se entrega solo el disparo.
 ///
+/// **La duración sale de Sustain, no de una constante.** Hasta la rebanada 5 el
+/// gate era un valor fijo de 25 ms cuya razón era una restricción —que cupiera
+/// en el Step más corto— y no un criterio musical. Ahora es un porcentaje de la
+/// Division, que es lo que la Pre Spec pone en su sitio, y el solape deja de ser
+/// un accidente a evitar para pasar a ser algo que el usuario pide.
+///
+/// **El solape no se vigila.** Si una altura vuelve a dispararse antes de que
+/// termine su gate, los dos note-off llegan cuando les toca y el primero apaga
+/// la nota del segundo. Es una limitación conocida y acotada —el tope de 200%
+/// la limita a un solo vecino—, documentada en el spec del track
+/// `mvp-groove-static_20260829`. Rastrear notas pendientes exigiría estado
+/// mutable en el camino de tiempo real, y no se paga por un caso que solo
+/// aparece con un pool de una nota.
+///
 /// **El note-off va sellado, no programado.** Se entrega en la misma llamada que
 /// el note-on, con su propio instante de emisión futuro, y viaja por el mismo
 /// camino. La alternativa —un temporizador o un sleep que lo envíe más tarde—
@@ -13,39 +27,31 @@ import Engine
 /// evita: la precisión la da el timestamp, no el momento del envío.
 public struct NoteEmitter: Equatable, Sendable {
 
-    /// Duración del gate mientras no exista Sustain.
-    ///
-    /// **Es una constante provisional, no un valor musical.** Sustain es un
-    /// parámetro de Groove y está fuera de esta rebanada; cuando llegue,
-    /// sustituye a esto y su default es una Division completa (Pre Spec).
-    ///
-    /// El valor sale de una restricción, no de un criterio estético: el gate
-    /// tiene que caber dentro del Step más corto que el producto puede producir
-    /// —50 ms, a 300 BPM con Division 1/16— o el note-off de un pulso llegaría
-    /// después del note-on del siguiente y ambos se solaparían en la misma
-    /// altura. 25 ms deja la mitad de margen. Hay un test que lo vigila.
-    public static let provisionalGateNanoseconds: Int64 = 25_000_000
-
     public let channel: MIDIChannel
-    public let velocity: MIDIVelocity
-    public let gateNanoseconds: Int64
 
-    public init(
-        channel: MIDIChannel,
-        velocity: MIDIVelocity,
-        gateNanoseconds: Int64 = NoteEmitter.provisionalGateNanoseconds
-    ) {
+    /// Cuánto dura un Step, que es contra lo que Sustain se mide.
+    ///
+    /// **Se fija al construir y no llega por pulso.** La duración del Step
+    /// depende del tempo y de la Division, y ninguno de los dos puede cambiar
+    /// mientras suena: `TrackScheduler` documenta que la rejilla la fija la
+    /// `MusicalTimeline` con la que se construye y no se vuelve a leer. Pasarlo
+    /// en cada pulso sugeriría una flexibilidad que el resto del diseño no
+    /// tiene.
+    public let stepDurationNanoseconds: Int64
+
+    public init(channel: MIDIChannel, stepDurationNanoseconds: Int64) {
         self.channel = channel
-        self.velocity = velocity
-        self.gateNanoseconds = gateNanoseconds
+        self.stepDurationNanoseconds = stepDurationNanoseconds
     }
 
     /// Entrega los dos mensajes del pulso, cada uno con su instante de emisión.
     ///
-    /// **La altura llega por parámetro y ya no es del emisor.** Hasta Tonal era
-    /// una constante que este tipo documentaba como provisional; ahora sale del
-    /// pool del Track, que es donde el modelo de la Pre Spec la pone. Canal y
-    /// velocity siguen siendo constantes hasta que llegue Groove.
+    /// **La altura y la Velocity llegan por parámetro y ya no son del emisor.**
+    /// Las dos fueron constantes que este tipo documentaba como provisionales:
+    /// la altura hasta Tonal, la Velocity hasta Groove. Ahora las dos salen del
+    /// `Track`, que es lo único que el hilo del scheduler lee. El canal sigue
+    /// siendo constante — es ajuste de Setup, no un parámetro generativo, y
+    /// llega con el preset del BeatStep Pro.
     ///
     /// **Sin altura no se emite nada.** Un pool vacío es un estado válido: el
     /// Track dispara sus Pulses y no tiene material. No se manda un note-on
@@ -59,9 +65,15 @@ public struct NoteEmitter: Equatable, Sendable {
     /// MIDI 1.0 para el apagado, y la que entienden todos los sintetizadores.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
-    /// Sin asignaciones, sin locks, sin await.
+    /// Emits a MIDI note-on and its sustain-derived note-off for a pitch.
+    /// - Parameters:
+    ///   - pitch: The pitch to emit, or `nil` to emit nothing.
+    ///   - groove: The velocity and sustain settings for the note.
+    ///   - hostTime: The host clock time for the note-on.
+    ///   - send: A callback that receives each MIDI message and its host clock time.
     public func emit(
         pitch: Pitch?,
+        groove: Groove,
         atHostTime hostTime: UInt64,
         send: (_ message: MIDIMessage, _ hostTime: UInt64) -> Void
     ) {
@@ -73,9 +85,16 @@ public struct NoteEmitter: Equatable, Sendable {
         // debería.
         let note = MIDINote(unchecked: UInt8(pitch.value))
 
+        // `Velocity` y `MIDIVelocity` comparten rango por construcción —el tipo
+        // del motor se validó contra el del protocolo—, así que la conversión no
+        // puede fallar. Se hace aquí, en la capa que conoce los dos tipos.
+        let velocity = MIDIVelocity(unchecked: UInt8(groove.velocity.value))
+
         send(.noteOn(channel: channel, note: note, velocity: velocity), hostTime)
 
-        let gateTicks = HostClock.hostTicks(fromNanoseconds: UInt64(max(0, gateNanoseconds)))
+        let gateTicks = HostClock.hostTicks(
+            fromNanoseconds: UInt64(
+                max(0, groove.sustain.gateNanoseconds(forStep: stepDurationNanoseconds))))
         send(
             .noteOff(channel: channel, note: note, velocity: MIDIVelocity(unchecked: 0)),
             hostTime &+ gateTicks

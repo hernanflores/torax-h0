@@ -32,7 +32,8 @@ final class RelativeEncodingTests: XCTestCase {
     /// El rango entero, byte a byte.
     func testEveryValueDecodesToItsSignedDelta() {
         for value in 1...63 {
-            XCTAssertEqual(encoding.delta(from: UInt8(value)), value, "0x\(String(value, radix: 16))")
+            XCTAssertEqual(
+                encoding.delta(from: UInt8(value)), value, "0x\(String(value, radix: 16))")
         }
         for value in 65...127 {
             XCTAssertEqual(

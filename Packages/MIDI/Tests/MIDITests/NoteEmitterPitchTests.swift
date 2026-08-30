@@ -12,7 +12,7 @@ final class NoteEmitterPitchTests: XCTestCase {
 
     private let emitter = NoteEmitter(
         channel: MIDIChannel(1)!,
-        velocity: MIDIVelocity(100)!
+        stepDurationNanoseconds: 25_000_000
     )
 
     // MARK: - Emitir con la altura que le pasan
@@ -58,12 +58,12 @@ final class NoteEmitterPitchTests: XCTestCase {
 
     // MARK: - Lo que no cambia
 
-    /// El gate sigue siendo la constante provisional hasta que llegue Sustain,
-    /// y el note-off sigue yendo sellado un gate más tarde.
+    /// El note-off sigue yendo sellado un gate más tarde. El gate ya no es una
+    /// constante: con el Groove por defecto —Sustain 100%— dura exactamente un
+    /// Step, que aquí son los 25 ms con los que se construye el emisor.
     func testTheNoteOffIsStillStampedAGateLater() {
         let messages = emit(pitch: Pitch(60)!, atHostTime: 1_000)
-        let gate = HostClock.hostTicks(
-            fromNanoseconds: UInt64(NoteEmitter.provisionalGateNanoseconds))
+        let gate = HostClock.hostTicks(fromNanoseconds: 25_000_000)
         XCTAssertEqual(messages[1].hostTime, 1_000 &+ gate)
     }
 
@@ -80,7 +80,7 @@ final class NoteEmitterPitchTests: XCTestCase {
         atHostTime hostTime: UInt64 = 0
     ) -> [(message: MIDIMessage, hostTime: UInt64)] {
         var captured: [(message: MIDIMessage, hostTime: UInt64)] = []
-        emitter.emit(pitch: pitch, atHostTime: hostTime) { message, time in
+        emitter.emit(pitch: pitch, groove: .default, atHostTime: hostTime) { message, time in
             captured.append((message, time))
         }
         return captured

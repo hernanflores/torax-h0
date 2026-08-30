@@ -11,11 +11,11 @@ final class ControlInputTests: XCTestCase {
 
     private let channel = MIDIChannel(1)!
 
-    private func shape(steps: Int = 16, pulses: Int = 4) -> Shape {
-        Shape(steps: Steps(steps)!, pulses: Pulses(pulses)!)
+    private func shape(steps: Int = 16, pulses: Int = 4, division: Division = .sixteenth) -> Shape {
+        Shape(steps: Steps(steps)!, pulses: Pulses(pulses)!, division: division)
     }
 
-    private func turn(_ parameter: ShapeParameter, by value: UInt8) -> MIDIMessage {
+    private func turn(_ parameter: TrackParameter, by value: UInt8) -> MIDIMessage {
         .controlChange(
             channel: channel,
             controller: ControlMapping.provisional.controller(for: parameter)!,
@@ -58,20 +58,36 @@ final class ControlInputTests: XCTestCase {
     /// nada — el punto de partida se elige para probar que responde, no para
     /// tapar que frena.
     func testEveryParameterIsReachableFromItsController() {
-        for parameter in ShapeParameter.allCases {
+        for parameter in TrackParameter.allCases {
             let steps = Steps(8)!
             let roomy = Shape(steps: steps, pulses: Pulses(4)!, division: .quarter)
-            let handoff = TrackHandoff(Track(shape: roomy))
-            let input = ControlInput(track: Track(shape: roomy), publishingTo: handoff)
+            // **Groove también parte lejos de sus extremos.** Su default deja
+            // Probability en el 100%, que es su tope: un giro hacia arriba no
+            // movería nada y el test diría que el parámetro no responde cuando
+            // lo que pasa es que ya está donde puede estar.
+            let roomyGroove = Groove(
+                velocity: Velocity(64)!,
+                sustain: Sustain(percent: 100)!,
+                probability: Probability(percent: 50)!
+            )
+            let track = Track(shape: roomy, groove: roomyGroove)
+            let handoff = TrackHandoff(track)
+            let input = ControlInput(track: track, publishingTo: handoff)
 
             XCTAssertTrue(input.receive(turn(parameter, by: 0x01)), "\(parameter) no respondió")
         }
     }
 
     /// Y en el extremo, el mismo giro no publica.
-    func testAParameterAtItsEndDoesNotRespond() {
-        let (input, _) = makeInput(shape())
-        XCTAssertEqual(input.track.shape.division, .sixteenth, "1/16 es el extremo rápido")
+    ///
+    /// **El extremo se lee del dominio, no se escribe aquí.** Escrito como
+    /// `.sixteenth`, este test falló al añadir 1/32 en la rebanada 5 por un
+    /// comportamiento que no había cambiado: lo que cambió fue cuál es el
+    /// extremo.
+    func testAParameterAtItsEndDoesNotRespond() throws {
+        let fastest = try XCTUnwrap(Division.fastest)
+        let (input, _) = makeInput(shape(division: fastest))
+
         XCTAssertFalse(input.receive(turn(.division, by: 0x01)))
     }
 
@@ -103,7 +119,8 @@ final class ControlInputTests: XCTestCase {
     /// mover Steps ni Pulses, igual que un knob de Shape no puede tocar el pool.
     func testNoteMessagesDoNotMoveTheShape() {
         let (input, _) = makeInput(shape(pulses: 4))
-        let note = MIDIMessage.noteOn(channel: channel, note: MIDINote(60)!, velocity: MIDIVelocity(100)!)
+        let note = MIDIMessage.noteOn(
+            channel: channel, note: MIDINote(60)!, velocity: MIDIVelocity(100)!)
         input.receive(note)
         XCTAssertEqual(input.track.shape.pulses.count, 4)
     }

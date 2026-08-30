@@ -67,19 +67,33 @@ final class TransportModel {
 
     /// Altura, canal y velocity con los que suena el Track.
     ///
-    /// **La altura ya no está aquí: sale del pool del Track.** Lo que queda es
-    /// canal y velocity, todavía constantes, hasta que Groove traiga Velocity.
+    /// **Ni la altura ni la Velocity están ya aquí: salen del Track.** La
+    /// altura desde Tonal, la Velocity desde Groove. Lo único que queda es el
+    /// canal.
     ///
-    /// Esta constante vivía aquí y no en `Track` precisamente para que nada
-    /// consolidara la idea de una nota fija por paso mientras Tonal no
-    /// existiera. Ya existe.
+    /// Las dos constantes vivieron aquí y no en `Track` precisamente para que
+    /// nada consolidara un valor musical antes de que existiera el parámetro que
+    /// lo gobierna. Ya existen los dos.
     ///
-    /// Canal 6 y velocity 100 son literales dentro de sus rangos (1–16, 0–127),
-    /// así que el desempaquetado no puede fallar.
-    private static let provisionalVoice = NoteEmitter(
-        channel: MIDIChannel(6)!,
-        velocity: MIDIVelocity(100)!
-    )
+    /// **El canal se queda, y no es una deuda del mismo tipo.** No es un
+    /// parámetro generativo —no lo mueve un knob ni varía por Cycle— sino
+    /// ajuste de Setup, y llega con el preset del BeatStep Pro.
+    ///
+    /// Canal 6 es un literal dentro de su rango (1–16), así que el
+    /// desempaquetado no puede fallar.
+    ///
+    /// **Se construye con la línea de tiempo vigente y no una sola vez.** El
+    /// gate sale de Sustain como porcentaje de la Division, así que el emisor
+    /// necesita saber cuánto dura un Step. La Division la elige el knob, y el
+    /// Creates a note emitter configured for the transport timeline's step duration.
+    /// - Parameter timeline: The timeline that determines the duration of each step.
+    /// - Returns: A note emitter configured for MIDI channel 6 and the timeline's step duration.
+    private static func voice(for timeline: MusicalTimeline) -> NoteEmitter {
+        NoteEmitter(
+            channel: MIDIChannel(6)!,
+            stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds)
+        )
+    }
 
     /// 120 BPM está dentro del rango válido de `Tempo`, así que no puede fallar.
     private static let tempo = Tempo(beatsPerMinute: 120)!
@@ -91,7 +105,8 @@ final class TransportModel {
     private(set) var sourceSelection = MIDIEndpointSelection(.source)
 
     /// Track vigente, con los giros ya aplicados.
-    private(set) var track = Track(shape: TransportModel.initialShape, pool: TransportModel.initialPool)
+    private(set) var track = Track(
+        shape: TransportModel.initialShape, pool: TransportModel.initialPool)
 
     /// Por qué la salida no está disponible, si no lo está.
     ///
@@ -123,6 +138,10 @@ final class TransportModel {
     var sourceStatus: String { sourceSelection.statusDescription }
     var shapeSummary: String { track.shape.description }
 
+    /// Los tres parámetros de Groove, en reposo. El formato vive en `Engine`,
+    /// donde se testea.
+    var grooveSummary: String { track.groove.description }
+
     /// Sin controlador conectado la app es de solo lectura y transporte
     /// (`product-guidelines.md`). Es un estado, no una carencia: no se abre
     /// ninguna vía táctil para suplirlo.
@@ -135,7 +154,7 @@ final class TransportModel {
     private static let transientLifetime: Double = 1.6
 
     /// El valor grande que se está mostrando, o `nil` si no hay ninguno.
-    private(set) var transientChange: ShapeChange?
+    private(set) var transientChange: ParameterChange?
 
     private var transientDismissal: Task<Void, Never>?
 
@@ -158,7 +177,8 @@ final class TransportModel {
             let output = try CoreMIDIOutput()
             self.output = output
 
-            let watcher = MIDIEndpointWatcher(.destination, enumerating: output.availableDestinations)
+            let watcher = MIDIEndpointWatcher(
+                .destination, enumerating: output.availableDestinations)
             self.watcher = watcher
             selection = watcher.selection
 
@@ -169,12 +189,11 @@ final class TransportModel {
             // entrega el cambio en el principal.
             output.onSetupChanged = { [weak watcher] in watcher?.setupChanged() }
 
+            let timeline = MusicalTimeline(tempo: Self.tempo, division: track.shape.division)
             transport = Transport(
-                configuration: SchedulerConfiguration(
-                    timeline: MusicalTimeline(tempo: Self.tempo, division: track.shape.division)
-                ),
+                configuration: SchedulerConfiguration(timeline: timeline),
                 track: track,
-                emitter: Self.provisionalVoice
+                emitter: Self.voice(for: timeline)
             ) { [output, activeDestination] message, hostTime in
                 Self.send(message, at: hostTime, through: output, to: activeDestination)
             }
@@ -232,21 +251,24 @@ final class TransportModel {
         input?.connect(to: endpoint)
     }
 
-    /// Aplica un mensaje entrante. Corre en el hilo principal.
+    /// Applies a MIDI message to the track and announces the resulting parameter change.
     private func apply(_ message: MIDIMessage) {
         guard let controlInput else { return }
-        let previous = track.shape
+        // El Track entero y no solo su Shape: Groove vive dentro, así que
+        // comparar Shapes dejaría a Velocity, Sustain y Probability sin poder
+        // anunciarse.
+        let previous = track
         guard controlInput.receive(message) else { return }
         track = controlInput.track
-        announce(ShapeChange(from: previous, to: track.shape))
+        announce(ParameterChange(from: previous, to: track))
     }
 
     /// Muestra el valor grande y programa su desvanecimiento.
     ///
     /// **Cada giro reinicia la cuenta.** Girando sin parar el valor se queda
     /// puesto, que es lo que se quiere: se desvanece «tras la inactividad»
-    /// (`product-guidelines.md`), no tras un tiempo fijo desde que apareció.
-    private func announce(_ change: ShapeChange?) {
+    /// Displays a parameter change temporarily before clearing it.
+    private func announce(_ change: ParameterChange?) {
         guard let change else { return }
         transientChange = change
 
