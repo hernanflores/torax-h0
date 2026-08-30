@@ -1,0 +1,42 @@
+Task: Timing y Delay como tipos validados (Fase 1, rebanada 6)
+
+QUÉ SE HIZO
+Dos tipos nuevos en Packages/Engine/Sources/Engine/Groove.swift, con el
+mismo idioma que Velocity, Sustain y Probability: validación en el
+inicializador falible y vía init(unchecked:) interna para los valores ya
+acotados.
+
+  Timing  50...75, default 50 (.straight)
+  Delay  -100...100, default 0
+
+DECISIONES QUE FIJA
+· El porcentaje de Timing es la POSICIÓN del segundo Step del par dentro
+  del par, no la fracción desplazada: 50% recto, 66,7% tresillo, 75% medio
+  Step tarde. Es la convención del hardware que ya existe.
+· Por debajo de 50 no se admite: sería swing invertido, y para adelantar
+  está Delay —sobre el Track entero y con el presupuesto que eso exige.
+· El tope de 75 es corrección, no gusto: medio Step es el desplazamiento
+  máximo con el que un Step no alcanza al siguiente. Por encima, la
+  secuencia de emisión podría invertirse. Lo demuestra el barrido
+  exhaustivo de la Fase 2.
+· Delay es el único parámetro del motor con rango negativo, y el cero es
+  su centro, no un extremo. El knob lo cruza sin caso especial.
+· Los dos defaults dejan la rejilla intacta, que es lo que permite que la
+  medición de regresión de la Fase 6 no cambie de forma.
+
+LIMITACIÓN ANOTADA EN EL TIPO
+El tresillo exacto (66,67%) no es representable con porcentaje entero. El
+valor más cercano se separa menos del 0,7% de la duración del Step —a
+1/16 y 120 BPM, unos 0,9 ms—, por debajo de lo audible. Un décimo de
+porcentaje daría exactitud a cambio de diez veces más recorrido de knob.
+
+TESTS (Red primero)
+GrooveTypesTests.swift, +72 líneas: rango completo de los dos, rechazo de
+49/76 y de ±101, validRange declarado, y los defaults como rejilla recta.
+Red confirmado antes de implementar: 'cannot find Timing in scope'.
+
+Verde: 254 tests de Engine, 0 fallos.
+
+FICHEROS
+  M Packages/Engine/Sources/Engine/Groove.swift          (+95)
+  M Packages/Engine/Tests/EngineTests/GrooveTypesTests.swift (+72)
