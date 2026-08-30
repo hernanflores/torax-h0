@@ -382,6 +382,56 @@ distingue nada.
 > Descubierto cerrando el track `mvp-groove-static_20260829`. La cifra que se
 > compara contra el umbral es la de **líneas**, no la de regiones.
 
+> **Ampliación del 2026-08-30 — en un proceso la suite ya no pasa, y en local
+> hay que usar la partición.**
+>
+> La rebanada 6 necesita tests que arranquen el bucle del scheduler: el origen
+> de la rejilla lo fija `SchedulerThread` y no se observa dándole el horizonte a
+> mano. Con cuatro arranques más, el flake **deja de ser intermitente**. Medido
+> el 2026-08-30, suite completa en un solo proceso:
+>
+> | | pasadas con `-50` |
+> |---|---|
+> | `feat/mvp-groove-temporal` | **4 de 4** |
+> | `main` | 0 de 2 |
+> | cualquiera, con la partición de CI | **0 fallos** (21 + 230 tests) |
+>
+> Es el mecanismo que ya describe la ampliación del 2026-08-27, llevado hasta el
+> final: la creación de endpoints se rompe cuando la suite ha arrancado
+> suficientes hilos a prioridad máxima. La firma sigue siendo la misma —las 4
+> pruebas de `VirtualLoopbackTests`, ningún otro test—.
+>
+> **En local, correr `MIDI` como lo corre la CI:**
+>
+> ```bash
+> swift test --package-path Packages/MIDI \
+>   --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+> swift test --package-path Packages/MIDI \
+>   --skip VirtualLoopbackTests --skip JitterHarnessTests \
+>   --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+> ```
+>
+> **Y la cobertura de `MIDI` exige un paso más.** Sigue midiéndose en un solo
+> proceso —la partición da una cifra falsamente baja, ver arriba— pero esa
+> pasada ahora falla, y **SwiftPM no fusiona el `.profdata` cuando la pasada
+> falla**. Hay que fusionarlo a mano:
+>
+> ```bash
+> B=Packages/MIDI/.build/arm64-apple-macosx/debug
+> swift test --package-path Packages/MIDI --enable-code-coverage    # fallará: 4 de VirtualLoopbackTests
+> xcrun llvm-profdata merge -sparse "$B"/codecov/*.profraw -o "$B/codecov/manual.profdata"
+> xcrun llvm-cov report \
+>   "$B/MIDIPackageTests.xctest/Contents/MacOS/MIDIPackageTests" \
+>   -instr-profile "$B/codecov/manual.profdata" \
+>   -ignore-filename-regex='\.build|Tests|Engine/Sources'
+> ```
+>
+> **Se acepta a propósito**, por la decisión del 2026-08-29 de aplazar
+> `midi-test-flake_20260826` a después de la v2. El coste está acotado —la CI no
+> se ve afectada y la firma es reconocible— y la alternativa era dejar sin
+> cubrir la pieza más delicada de la rebanada: que ningún evento se pida para un
+> instante que ya pasó.
+
 ## Commit Guidelines
 
 ### Message Format
