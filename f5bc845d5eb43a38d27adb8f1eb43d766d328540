@@ -1,0 +1,51 @@
+Tasks de la Fase 5 — La pantalla (rebanada 6)
+
+QUÉ HIZO FALTA, Y QUÉ NO
+Casi nada: la vista ya consumía los parámetros de forma genérica desde la
+rebanada 5. El acento de Groove existe, el valor grande transitorio va
+por ParameterChange y el playhead no había que tocarlo. Lo único real fue
+un problema de legibilidad que solo se ve mirando.
+
+EL PROBLEMA, VISTO EN LA CAPTURA
+Con Timing y Delay dentro, la línea de Groove pasa de 3 a 5 parámetros y
+no cabe. SwiftUI la partía por donde se acababa el ancho y dejaba
+'Delay 0%' colgando solo en el renglón siguiente, detrás de un separador
+huérfano. El corte lo decidía el ancho, no el sentido.
+
+LA SOLUCIÓN
+Groove.descriptionLines: dos renglones que cortan por donde el dominio ya
+estaba cortado —qué se envía / cuándo se envía—, que es el mismo criterio
+con el que se separaron la rebanada 5 y la 6.
+
+  Velocity 100 · Sustain 100% · Probability 100%
+  Timing 50% · Delay 0%
+
+Las dos con el MISMO acento: el color codifica la familia funcional y
+Groove es una sola, leída en dos líneas. No se inventa una familia nueva
+ni un color nuevo.
+
+description sobrevive y es el joined de las dos con ' · ', así que sus
+tests pasan sin tocarse y ningún otro lector cambia. Hay un test que fija
+justamente eso: si las dos líneas y la línea entera divergieran, la
+pantalla mostraría un Groove distinto del que cualquier otro lector ve.
+
+EL PLAYHEAD SIGUE LA REJILLA
+No se tocó PlayheadClock ni RingView. Ninguna aritmética de Timing ni de
+Delay entra en el camino de dibujo, que es lo que evita una medición de
+jitter más por carga visual nueva (workflow.md).
+
+VERIFICACIÓN EN SIMULADOR
+Captura en conductor/tracks/mvp-groove-temporal_20260830/
+simulator-groove-temporal.png. Los tres renglones se distinguen por tono
+sobre el fondo oscuro: Shape en verde, las dos de Groove en ámbar.
+Limitación conocida: el simulador no tiene MIDI, así que no se ve el
+transporte ni un giro real. Eso es la Fase 6.
+
+Verde: Engine 289 tests, 0 fallos. BUILD SUCCEEDED para iOS.
+
+FICHEROS
+  M Packages/Engine/Sources/Engine/Groove.swift
+  M Packages/Engine/Tests/EngineTests/GrooveTypesTests.swift
+  M App/TransportModel.swift
+  M App/ContentView.swift
+  A conductor/tracks/.../simulator-groove-temporal.png
