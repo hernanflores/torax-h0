@@ -14,7 +14,7 @@ una deuda que la siguiente necesita.
 | 3 | Anillo, playhead y valor transitorio | cerrada |
 | 4 | Tonal: pool, Scale y Root | cerrada |
 | 5 | Groove estático: Velocity, Sustain, Probability | cerrada |
-| 6 | Groove temporal: Timing y Delay | **siguiente**, por planificar |
+| 6 | Groove temporal: Timing y Delay | **abierta**, planificada el 2026-08-30 |
 | 7 | Preset del BeatStep Pro y MIDI Learn | por planificar |
 
 **Por qué ese orden.** La 3 no toca el motor y salda la última carga de jitter
@@ -48,12 +48,33 @@ veces sin que afectara a nada.
 
 ---
 
-*Sin track abierto.* La rebanada 5 cerró el 2026-08-29; la 6 —Groove temporal:
-Timing y Delay— está en la cola de arriba, pendiente de planificar.
+- [ ] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay**
+  *Link: [conductor/tracks/mvp-groove-temporal_20260830/index.md](./tracks/mvp-groove-temporal_20260830/index.md)*
 
-La 6 lleva medición de jitter: es la primera desde la 3 que mueve instantes, y
-la σ viene subiendo de forma monótona —9 → 15 → 20 µs— sin que las rebanadas 4
-y 5 la midieran. Si sale peor, ese es el intervalo a bisecar.
+  Planificada el 2026-08-30. Cierra el Track generativo completo del MVP: Timing
+  desplaza cada segundo Step —swing, 50–75%— y Delay mueve la voz entera contra
+  la rejilla —±100% de la Division—.
+
+  **Su núcleo técnico es el presupuesto de adelanto.** Un evento con Delay
+  negativo tiene que calcularse antes de su instante o se pediría para un momento
+  que ya pasó, y eso ocurre en dos sitios: el arranque —el origen de la rejilla
+  pasa a ser `Play + presupuesto`— y el régimen —el horizonte de selección se
+  amplía en él—. Es dinámico, así que con Delay ≥ 0, donde vive el default, no
+  cuesta ni latencia de arranque ni respuesta de knob. Queda documentado como
+  desviación fechada en `tech-stack.md`, que hoy declara la ventana de look-ahead
+  como constante acotada por la latencia de knob.
+
+  **Lleva dos mediciones de jitter, y la primera salda una deuda ajena.** La
+  recta se compara contra la referencia de la rebanada 3 —máx 0,134 ms, σ
+  0,020 ms— y con ella cierra el intervalo sin medir que dejaron las rebanadas 4
+  y 5: la σ viene subiendo de forma monótona —9 → 15 → 20 µs— y si sale en línea
+  quedan absueltas sin bisecar. La desplazada es lo que la rebanada tiene que
+  demostrar: que un instante desplazado se entrega donde se pidió.
+
+  **Es la primera rebanada que se topa con `midi-test-flake` a propósito.** Su
+  fase 3 tiene que arrancar el bucle del scheduler para verificar el origen, y no
+  hay forma de esquivarlo como hizo la 5. La decisión del 2026-08-29 ya está
+  tomada: se convive con el ruido.
 
 ## Defectos conocidos
 
