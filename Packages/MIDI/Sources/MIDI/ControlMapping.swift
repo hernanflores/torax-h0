@@ -13,9 +13,14 @@ public struct ControlMapping: Equatable, Sendable {
     /// Los números salen del rango de controladores de propósito general
     /// (70–79), que es donde la especificación MIDI espera parámetros de
     /// síntesis sin significado fijo — no pisan volumen, paneo ni pedal.
-    /// Los cuatro de Shape y los tres de Groove, en el mismo bloque contiguo:
+    /// Los cuatro de Shape y los cinco de Groove, en el mismo bloque contiguo:
     /// el orden de los CC sigue al de `TrackParameter`, así que la fila de
     /// knobs se lee igual que la lista de parámetros.
+    ///
+    /// **Los nueve caben sin salir del rango.** Con Timing y Delay el bloque
+    /// llega al 78 y el rango de propósito general termina en el 79: no hay que
+    /// invadir controladores con significado asignado, que es lo que habría
+    /// obligado a repartir los knobs por criterios ajenos al dominio.
     public static let provisional = ControlMapping(assignments: [
         .steps: 70,
         .pulses: 71,
@@ -24,6 +29,8 @@ public struct ControlMapping: Equatable, Sendable {
         .velocity: 74,
         .sustain: 75,
         .probability: 76,
+        .timing: 77,
+        .delay: 78,
     ])
 
     private let assignments: [TrackParameter: Int]

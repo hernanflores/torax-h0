@@ -17,7 +17,7 @@ final class TrackParameterTests: XCTestCase {
             TrackParameter.allCases.map(\.description),
             [
                 "Steps", "Pulses", "Rotate", "Division",
-                "Velocity", "Sustain", "Probability",
+                "Velocity", "Sustain", "Probability", "Timing", "Delay",
             ]
         )
     }
@@ -28,6 +28,8 @@ final class TrackParameterTests: XCTestCase {
         XCTAssertEqual(TrackParameter.steps.description, "Steps")
         XCTAssertEqual(TrackParameter.velocity.description, "Velocity")
         XCTAssertEqual(TrackParameter.probability.description, "Probability")
+        XCTAssertEqual(TrackParameter.timing.description, "Timing")
+        XCTAssertEqual(TrackParameter.delay.description, "Delay")
     }
 
     // MARK: - Ajustar un Track entero
@@ -57,13 +59,15 @@ final class TrackParameterTests: XCTestCase {
 
     func testEveryParameterMovesSomething() {
         // Valores de partida lejos de todo extremo, para que un giro en
-        // cualquiera de los siete tenga sitio donde moverse.
+        // cualquiera de los nueve tenga sitio donde moverse.
         let track = Track(
             shape: Shape(steps: Steps(8)!, pulses: Pulses(4)!, division: .quarter),
             groove: Groove(
                 velocity: Velocity(64)!,
                 sustain: Sustain(percent: 100)!,
-                probability: Probability(percent: 50)!
+                probability: Probability(percent: 50)!,
+                timing: Timing(percent: 60)!,
+                delay: Delay(percent: 0)!
             )
         )
 
@@ -82,11 +86,15 @@ final class TrackParameterTests: XCTestCase {
             groove: Groove(
                 velocity: Velocity(127)!,
                 sustain: Sustain(percent: 200)!,
-                probability: Probability(percent: 100)!
+                probability: Probability(percent: 100)!,
+                timing: Timing(percent: 75)!,
+                delay: Delay(percent: 100)!
             )
         )
 
-        for parameter in [TrackParameter.velocity, .sustain, .probability, .steps, .pulses] {
+        for parameter in [
+            TrackParameter.velocity, .sustain, .probability, .timing, .delay, .steps, .pulses,
+        ] {
             XCTAssertEqual(track.applying(5, to: parameter), track, "\(parameter) se movió")
         }
     }
@@ -108,7 +116,7 @@ final class ParameterFamilyTests: XCTestCase {
     }
 
     func testGrooveParametersBelongToGroove() {
-        for parameter in [TrackParameter.velocity, .sustain, .probability] {
+        for parameter in [TrackParameter.velocity, .sustain, .probability, .timing, .delay] {
             XCTAssertEqual(parameter.family, .groove, "\(parameter)")
         }
     }

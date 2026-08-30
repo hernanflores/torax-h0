@@ -261,7 +261,7 @@ extension Shape {
     /// - Returns: An updated shape with steps, pulses, and division constrained to their valid ranges, rotation wrapped to the step count, or the original shape for track-level parameters.
     public func applying(_ delta: Int, to parameter: TrackParameter) -> Shape {
         switch parameter {
-        case .velocity, .sustain, .probability:
+        case .velocity, .sustain, .probability, .timing, .delay:
             // No son suyos: los ajusta `Track.applying(_:to:)`, que es quien
             // conoce las dos familias. Devolver el Shape intacto es la respuesta
             // correcta y no un caso olvidado.

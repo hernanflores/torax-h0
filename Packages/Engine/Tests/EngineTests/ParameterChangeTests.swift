@@ -101,3 +101,51 @@ final class ParameterChangeTests: XCTestCase {
         XCTAssertEqual(ParameterChange(from: track, to: other)?.parameter, .steps)
     }
 }
+
+/// Tests de los dos parámetros temporales en el valor grande transitorio.
+///
+/// Llegan con la rebanada 6, y con ellos el primer valor que puede ser negativo.
+final class TemporalParameterChangeTests: XCTestCase {
+
+    private func track(timing: Int = 50, delay: Int = 0) -> Track {
+        Track(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(4)!),
+            groove: Groove(
+                velocity: .default,
+                sustain: .default,
+                probability: .default,
+                timing: Timing(percent: timing)!,
+                delay: Delay(percent: delay)!
+            )
+        )
+    }
+
+    func testTimingAnnouncesItself() {
+        let change = ParameterChange(from: track(), to: track(timing: 67))
+
+        XCTAssertEqual(change?.parameter, .timing)
+        XCTAssertEqual(change?.description, "Timing 67%")
+    }
+
+    /// **El signo se ve.** Es el único parámetro que puede ser negativo, y
+    /// adelantar y atrasar no se distinguen por el contexto.
+    func testDelayAnnouncesItselfWithItsSign() {
+        XCTAssertEqual(
+            ParameterChange(from: track(), to: track(delay: -25))?.description, "Delay -25%")
+        XCTAssertEqual(
+            ParameterChange(from: track(), to: track(delay: 25))?.description, "Delay 25%")
+    }
+
+    /// El cero se anuncia como cero, sin signo: es la rejilla, no un
+    /// desplazamiento de cero unidades.
+    func testDelayBackOnTheGridReadsAsZero() {
+        XCTAssertEqual(
+            ParameterChange(from: track(delay: -25), to: track())?.description, "Delay 0%")
+    }
+
+    /// Un Track idéntico sigue sin anunciar nada, con los dos nuevos dentro.
+    func testAnIdenticalTrackStillAnnouncesNothing() {
+        XCTAssertNil(
+            ParameterChange(from: track(timing: 67, delay: -25), to: track(timing: 67, delay: -25)))
+    }
+}

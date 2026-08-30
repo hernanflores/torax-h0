@@ -5,8 +5,8 @@
 /// motor; *por dónde* llega la orden —un knob, un mensaje MIDI, un test— es
 /// otra cosa, y cambiará más veces que esta lista.
 ///
-/// **Se llamaba `ShapeParameter` y solo nombraba cuatro.** Con Groove son
-/// siete, y con Timing y Delay serán nueve. El nombre viejo obligaba a que la
+/// **Se llamaba `ShapeParameter` y solo nombraba cuatro.** Con Groove entero
+/// son nueve. El nombre viejo obligaba a que la
 /// pantalla y el mapeo de CC supieran a qué familia pertenece cada parámetro
 /// para poder moverlo, que es un acoplamiento sin ninguna razón de dominio
 /// detrás: quien gira un knob quiere mover *ese* parámetro, no consultar su
@@ -15,9 +15,8 @@
 /// El orden es el de las familias en el flujo del motor —Shape decide *cuándo*,
 /// Groove *cómo se interpreta*— y es el que ve la pantalla.
 ///
-/// Lo que falta: Timing y Delay llegan en la rebanada 6; el pool de Pitch no
-/// está aquí porque no se ajusta con un delta sino con pads, que es otra
-/// superficie.
+/// Lo que falta: el pool de Pitch no está aquí porque no se ajusta con un delta
+/// sino con pads, que es otra superficie.
 public enum TrackParameter: Equatable, Sendable, CaseIterable {
 
     // Shape — cuándo y con qué densidad ocurren los eventos.
@@ -30,6 +29,10 @@ public enum TrackParameter: Equatable, Sendable, CaseIterable {
     case velocity
     case sustain
     case probability
+
+    // Groove, en el tiempo — cuándo ocurre respecto a la rejilla.
+    case timing
+    case delay
 }
 
 /// A qué familia funcional pertenece un parámetro.
@@ -58,7 +61,7 @@ extension TrackParameter {
     public var family: ParameterFamily {
         switch self {
         case .steps, .pulses, .rotate, .division: .shape
-        case .velocity, .sustain, .probability: .groove
+        case .velocity, .sustain, .probability, .timing, .delay: .groove
         }
     }
 }
@@ -76,6 +79,8 @@ extension TrackParameter: CustomStringConvertible {
         case .velocity: "Velocity"
         case .sustain: "Sustain"
         case .probability: "Probability"
+        case .timing: "Timing"
+        case .delay: "Delay"
         }
     }
 }
@@ -114,7 +119,9 @@ extension Track {
                 Groove(
                     velocity: groove.velocity.advanced(by: delta),
                     sustain: groove.sustain,
-                    probability: groove.probability
+                    probability: groove.probability,
+                    timing: groove.timing,
+                    delay: groove.delay
                 ))
 
         case .sustain:
@@ -122,7 +129,9 @@ extension Track {
                 Groove(
                     velocity: groove.velocity,
                     sustain: groove.sustain.advanced(by: delta),
-                    probability: groove.probability
+                    probability: groove.probability,
+                    timing: groove.timing,
+                    delay: groove.delay
                 ))
 
         case .probability:
@@ -130,7 +139,29 @@ extension Track {
                 Groove(
                     velocity: groove.velocity,
                     sustain: groove.sustain,
-                    probability: groove.probability.advanced(by: delta)
+                    probability: groove.probability.advanced(by: delta),
+                    timing: groove.timing,
+                    delay: groove.delay
+                ))
+
+        case .timing:
+            return withGroove(
+                Groove(
+                    velocity: groove.velocity,
+                    sustain: groove.sustain,
+                    probability: groove.probability,
+                    timing: groove.timing.advanced(by: delta),
+                    delay: groove.delay
+                ))
+
+        case .delay:
+            return withGroove(
+                Groove(
+                    velocity: groove.velocity,
+                    sustain: groove.sustain,
+                    probability: groove.probability,
+                    timing: groove.timing,
+                    delay: groove.delay.advanced(by: delta)
                 ))
         }
     }
