@@ -1,0 +1,46 @@
+Task: Los dos entran en Groove sin romper el snapshot (Fase 1, rebanada 6)
+
+QUÉ SE HIZO
+Groove gana los campos timing y delay. El inicializador los toma con
+valor por defecto, así que ningún llamante existente cambia — Groove se
+construye en tests y en código anterior a la rebanada 6 que no sabe nada
+de ellos.
+
+Groove.description pasa de tres parámetros a cinco:
+  Velocity 100 · Sustain 100% · Probability 100% · Timing 50% · Delay 0%
+
+POR QUÉ IMPORTA QUE EL DEFAULT NO INTERPRETE NADA
+SchedulerMaterial.everyStep —el modo del arnés de medición— usa
+Groove.default. Con Timing recto y Delay cero, el arnés sigue midiendo la
+rejilla de MusicalTimeline y no una desplazada, que es lo que permite
+comparar la medición de la Fase 6 contra la referencia de la rebanada 3
+sin cambiar de forma. Queda documentado en el propio tipo para que no se
+rompa por descuido.
+
+EL SIGNO DE DELAY
+Se muestra. Es el único parámetro que puede ser negativo y adelantar y
+atrasar no se distinguen por el contexto: 'Delay 25%' sin signo sería
+ambiguo. La interpolación lo pone sola en el negativo y lo omite en el
+positivo — la convención que ya usa Rotate.
+
+TRIVIALIDAD
+_isPOD(Track.self) y _isPOD(Groove.self) siguen en verde, con Timing y
+Delay añadidos a la lista de tipos vigilados. No se relajó ni se movió
+ningún test.
+
+TESTS (Red primero)
+Red confirmado: 'value of type Groove has no member timing'.
+  · POD de los dos tipos nuevos
+  · Groove.default lleva los cinco defaults y deja la rejilla recta
+  · Groove construido sin los temporales toma sus defaults
+  · Groove conserva los temporales con que se construye
+  · description, incluidos los dos nuevos y el signo negativo
+Los dos tests de description existentes se actualizaron: el cambio de
+formato es deliberado, no una regresión.
+
+Verde: 258 tests de Engine, 0 fallos. MIDI compila sin tocar nada.
+
+FICHEROS
+  M Packages/Engine/Sources/Engine/Groove.swift
+  M Packages/Engine/Tests/EngineTests/GrooveTypesTests.swift
+  M Packages/Engine/Tests/EngineTests/TrackParameterTests.swift
