@@ -126,7 +126,9 @@ extension Sustain {
     /// precisión que dividir primero perdería.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
-    /// Sin asignaciones, sin locks, sin await.
+    /// Calculates the gate duration for a step using the sustain percentage.
+    /// - Parameter stepDurationNanoseconds: The step duration in nanoseconds.
+    /// - Returns: The gate duration in nanoseconds.
     public func gateNanoseconds(forStep stepDurationNanoseconds: Int64) -> Int64 {
         stepDurationNanoseconds * Int64(percent) / 100
     }
@@ -155,7 +157,9 @@ extension Probability {
     /// scheduler.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
-    /// Sin asignaciones, sin locks, sin await.
+    /// Determines whether the pulse sounds based on this probability and a random draw.
+    /// - Parameter generator: The random generator used to produce the draw.
+    /// - Returns: `true` if the draw is below the probability percentage, `false` otherwise.
     public func sounds(drawingFrom generator: inout SeededRandom) -> Bool {
         let draw = generator.next() % 100
         return draw < UInt64(percent)
@@ -167,7 +171,9 @@ extension Velocity {
     /// Nivel resultante de desplazar el knob `delta` posiciones.
     ///
     /// **Se frena en los extremos, no envuelve.** Ver `Sustain.advanced(by:)`
-    /// para el razonamiento, que es común a los tres.
+    /// Adjusts the MIDI velocity by the specified amount within its valid range.
+    /// - Parameter delta: The amount to add to the velocity.
+    /// - Returns: A velocity clamped between 1 and 127.
     public func advanced(by delta: Int) -> Velocity {
         Velocity(unchecked: Self.validRange.clamping(value + delta))
     }
@@ -184,7 +190,10 @@ extension Sustain {
     /// cambio inmediato y proporcional».
     ///
     /// Girar contra un tope devuelve **el mismo valor**, que es lo que después
-    /// permite a `ControlInput` no publicar un snapshot idéntico.
+    /// Adjusts the sustain percentage by the specified amount within its valid range.
+    ///
+    /// - Parameter delta: The amount to add to the sustain percentage.
+    /// - Returns: A sustain value clamped to the valid range.
     public func advanced(by delta: Int) -> Sustain {
         Sustain(unchecked: Self.validRange.clamping(percent + delta))
     }
@@ -197,7 +206,9 @@ extension Probability {
     /// **Se frena en los extremos, no envuelve.** Ver `Sustain.advanced(by:)`.
     ///
     /// Su extremo inferior es el 0 y no el 1: a diferencia de los otros dos,
-    /// «no suena nada» es un estado que el knob tiene que poder alcanzar.
+    /// Adjusts the probability by the specified amount while keeping it within the valid range.
+    /// - Parameter delta: The amount to add to the probability.
+    /// - Returns: The adjusted probability.
     public func advanced(by delta: Int) -> Probability {
         Probability(unchecked: Self.validRange.clamping(percent + delta))
     }
@@ -208,7 +219,9 @@ extension ClosedRange where Bound == Int {
     /// El valor llevado dentro del rango.
     ///
     /// Existe para que los tres parámetros de Groove no repitan la misma pareja
-    /// de `min`/`max` anidados, que es donde un signo cambiado pasa inadvertido.
+    /// Restricts a value to the bounds of the range.
+    /// - Parameter value: The value to restrict.
+    /// - Returns: The lower bound if the value is below the range, the upper bound if it is above the range, or the value itself otherwise.
     func clamping(_ value: Int) -> Int {
         Swift.min(Swift.max(value, lowerBound), upperBound)
     }

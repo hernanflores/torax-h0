@@ -32,6 +32,8 @@ final class JitterMeasurementModel {
         return measurements.allSatisfy(\.statistics.meetsTrackThreshold)
     }
 
+    /// Starts a jitter measurement for each configured tempo and updates the measurement state.
+    /// The measurement disables automatic screen locking while running and saves a report when it completes or fails.
     func start() {
         guard !isRunning else { return }
 
@@ -103,7 +105,8 @@ final class JitterMeasurementModel {
     /// el arnés de jitter es una herramienta permanente según `workflow.md`, no
     /// un experimento de una sola vez.
     ///
-    /// `--samples=<n>` fija el tamaño de muestra.
+    /// Starts a measurement automatically when the `--auto-measure` launch argument is present.
+    /// - Parameter: Launch arguments may include `--samples=<n>` to set a positive sample count before measurement begins.
     func startIfRequestedByLaunchArguments() {
         let arguments = ProcessInfo.processInfo.arguments
         guard arguments.contains("--auto-measure") else { return }
@@ -132,7 +135,8 @@ final class JitterMeasurementModel {
     /// Traza de progreso a `Documents/jitter-trace.txt`.
     ///
     /// Se escribe en cada hito para poder reconstruir hasta dónde llegó la
-    /// ejecución si la app termina inesperadamente.
+    /// Appends a timestamped line to the jitter trace file in the Documents directory.
+    /// - Parameter line: The trace message to record.
     nonisolated func writeTrace(_ line: String) {
         guard
             let directory = FileManager.default.urls(
@@ -155,7 +159,7 @@ final class JitterMeasurementModel {
     /// El streaming de consola (`devicectl --console`) se invalida en
     /// mediciones de varios minutos, así que el resultado se persiste en el
     /// dispositivo y se recoge después. La medición sobrevive a cualquier corte
-    /// de conexión.
+    /// Writes a jitter measurement report to the device's Documents directory.
     private func writeReport() {
         guard
             let directory = FileManager.default.urls(
@@ -193,6 +197,11 @@ final class JitterMeasurementModel {
         case failure(String)
     }
 
+    /// Performs a jitter measurement for the specified tempo and sample count.
+    /// - Parameters:
+    ///   - beatsPerMinute: The tempo to measure, in beats per minute.
+    ///   - sampleCount: The number of events to collect.
+    /// - Returns: A successful measurement or a failure describing an invalid tempo, timeout, or measurement error.
     private nonisolated static func measure(
         beatsPerMinute: Double, sampleCount: Int, trace: @Sendable (String) -> Void = { _ in }
     ) -> Outcome {

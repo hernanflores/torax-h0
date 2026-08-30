@@ -58,7 +58,9 @@ enum Palette {
     ///
     /// **La correspondencia vive aquí y la clasificación en `Engine`.** Qué tipo
     /// de parámetro es lo dice el motor (`TrackParameter.family`); qué color le
-    /// toca es decisión de presentación y no sale del paquete.
+    /// Selects the accent color for a parameter family.
+    /// - Parameter family: The parameter family whose accent color is needed.
+    /// - Returns: The corresponding accent color.
     static func accent(for family: ParameterFamily) -> Color {
         switch family {
         case .shape: shape

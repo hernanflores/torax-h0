@@ -43,7 +43,11 @@ import Engine
         /// El mensaje que mandaría un knob al girar `steps` posiciones.
         ///
         /// Devuelve `nil` si el parámetro no está mapeado o si el giro no se puede
-        /// codificar — el cero y las magnitudes mayores que 63.
+        /// Creates a MIDI control-change message for turning a track parameter.
+        /// - Parameters:
+        ///   - parameter: The track parameter to control.
+        ///   - steps: The number of relative steps to turn.
+        /// - Returns: A MIDI control-change message, or `nil` when the parameter has no mapped controller or the steps cannot be encoded.
         public func turn(_ parameter: TrackParameter, by steps: Int) -> MIDIMessage? {
             guard let controller = mapping.controller(for: parameter),
                 let value = encoding.value(for: steps)

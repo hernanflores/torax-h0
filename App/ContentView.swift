@@ -79,7 +79,9 @@ struct ContentView: View {
     /// El valor grande.
     ///
     /// Tipografía muy grande y jerarquía marcada porque el criterio es leerlo a
-    /// un metro, de pie y delante del sintetizador — no el gusto.
+    /// Displays the description of a parameter change with its family-specific accent color.
+    /// - Parameter change: The parameter change to display.
+    /// - Returns: A view showing the change description.
     private func transient(_ change: ParameterChange) -> some View {
         Text(change.description)
             .font(.system(size: 64, weight: .bold, design: .default))

@@ -95,7 +95,11 @@ extension Track {
     /// material»— aplicada a la estructura y no solo al pool tonal.
     ///
     /// No es código de tiempo real: construir un Shape reparte los Pulses, y eso
-    /// asigna. Se llama desde el hilo de control, al recibir un giro.
+    /// Applies a delta to the selected track parameter while preserving the other track values.
+    /// - Parameters:
+    ///   - delta: The amount by which to advance the parameter.
+    ///   - parameter: The track parameter to adjust.
+    /// - Returns: A new track with the selected parameter adjusted.
     public func applying(_ delta: Int, to parameter: TrackParameter) -> Track {
         switch parameter {
         case .steps, .pulses, .rotate, .division:
@@ -131,6 +135,9 @@ extension Track {
         }
     }
 
+    /// Creates a track with the specified groove while preserving its shape and pool.
+    /// - Parameter groove: The replacement groove.
+    /// - Returns: A track with the specified groove.
     private func withGroove(_ groove: Groove) -> Track {
         Track(shape: shape, pool: pool, groove: groove)
     }
