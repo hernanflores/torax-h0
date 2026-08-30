@@ -1,0 +1,48 @@
+Tasks: TrackParameter y ParameterChange cubren los nueve · El mapeo y los giros cubren los nueve (Fase 4, rebanada 6)
+
+LAS DOS COMPARTEN SHA, por la misma razón que en la rebanada 5: añadir
+los casos al enumerado rompe el mapeo hasta que el mapeo los cubre, y el
+mapeo sin los giros no mueve nada. Partirlo daría commits que no
+compilan.
+
+QUÉ SE HIZO
+  · TrackParameter: dos casos más, los dos en la familia .groove. Se
+    retiró la frase 'Timing y Delay llegan en la rebanada 6', que al
+    cumplirse pasaba a decir algo falso.
+  · Track.applying: dos ramas más. Las tres de Groove existentes tuvieron
+    que aprender a conservar los dos nuevos — es la regla de
+    destructividad: ajustar Velocity no puede perder el Timing.
+  · Shape.applying: el caso que devuelve self sin tocar nada se amplía a
+    los cinco de Groove. El compilador lo exigió, que es exactamente para
+    lo que sirve un switch exhaustivo sobre un enumerado del dominio.
+  · ParameterChange: los anuncia, Delay con su signo.
+  · ControlMapping: 77 para Timing, 78 para Delay.
+  · ControlInput: NO cambia. Recibe un parámetro y aplica el delta; es
+    justo lo que el renombrado de la rebanada 5 hizo posible, y que no
+    haya que tocarlo es la comprobación de que aquello valió la pena.
+
+LOS CC CABEN SIN FORZAR NADA
+El bloque contiguo llega al 78 y el rango de propósito general de la
+especificación MIDI termina en el 79. No hay que invadir controladores
+con significado asignado —volumen, paneo, pedal—, que habría obligado a
+repartir los knobs por criterios ajenos al dominio.
+
+UN TEST TOCADO, Y POR QUÉ
+testAnUnassignedControllerIsStillIgnored usaba el CC 77 como ejemplo de
+'sin asignar'. La rebanada 6 se lo dio a Timing, así que falló por un
+comportamiento que no había cambiado. Ahora busca el primer CC libre en
+el propio mapeo en vez de escribir un número: es la misma lección que
+ControlInputTests dejó anotada cuando llegó 1/32 —lo que cambia es el
+dominio, y el test tiene que leerlo de ahí—.
+
+Los demás tests de los siete parámetros anteriores pasan sin
+reescribirse, que era el criterio de la fase.
+
+Verde: Engine 286 tests, MIDI 229 (partición sin CoreMIDI), 0 fallos.
+
+FICHEROS
+  M Packages/Engine/Sources/Engine/TrackParameter.swift
+  M Packages/Engine/Sources/Engine/ParameterChange.swift
+  M Packages/Engine/Sources/Engine/Shape.swift
+  M Packages/MIDI/Sources/MIDI/ControlMapping.swift
+  M los tests de los cuatro
