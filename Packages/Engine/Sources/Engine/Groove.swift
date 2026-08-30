@@ -112,6 +112,101 @@ public struct Probability: Equatable, Sendable {
     }
 }
 
+/// Cuánto se desplaza cada segundo Step — el swing.
+///
+/// La Pre Spec lo describe como «desplaza cada segundo Step, creando
+/// swing/shuffle (rejilla no uniforme)». Este es el primero de los dos
+/// parámetros que cambian **cuándo** suena algo, y no qué.
+///
+/// **El porcentaje es la posición del segundo Step del par dentro del par**, no
+/// la fracción que se desplaza. Es la convención del hardware y del software que
+/// ya existe, y se lee sola: al 50% el par está partido por la mitad y la
+/// rejilla es recta; al 66,7% el par es un tresillo; al 75% el Step impar cae
+/// medio Step tarde.
+///
+/// **Por debajo del 50% no hay nada que ganar.** Sería swing invertido —el Step
+/// impar adelantado— y para adelantar está `Delay`, que además lo hace sobre el
+/// Track entero y con el presupuesto de adelanto que eso exige.
+///
+/// **El tope de 75% es una decisión de corrección, no de gusto.** Medio Step es
+/// el desplazamiento máximo con el que un Step nunca alcanza al siguiente:
+/// pasado ese punto la secuencia de emisión podría invertirse, y un evento que
+/// adelanta a su predecesor es una nota fuera de sitio, no un valor extremo.
+/// La invariante de orden está fijada por un test exhaustivo.
+///
+/// **El tresillo exacto cae entre dos valores del knob.** Con porcentaje entero,
+/// 2:1 sería 66,67% y el knob pasa por 66 y por 67; el más cercano se separa
+/// menos de un 0,7% de la duración del Step —a 1/16 y 120 BPM, unos 0,9 ms—, que
+/// está por debajo de lo que distingue el oído. Un décimo de porcentaje daría
+/// exactitud a cambio de diez veces más recorrido de knob para el mismo tramo.
+public struct Timing: Equatable, Sendable {
+
+    /// Rango admitido. El extremo inferior es la rejilla recta; el superior, el
+    /// límite que conserva el orden de emisión.
+    public static let validRange: ClosedRange<Int> = 50...75
+
+    /// La rejilla recta: ningún Step se mueve.
+    public static let straight = Timing(unchecked: 50)
+
+    /// Default del producto: recto. El swing es una decisión, no el punto de
+    /// partida — mismo criterio que `Probability.default`.
+    public static let `default` = straight
+
+    public let percent: Int
+
+    /// Devuelve `nil` si el porcentaje cae fuera de `validRange`.
+    public init?(percent: Int) {
+        guard Self.validRange.contains(percent) else { return nil }
+        self.percent = percent
+    }
+
+    /// Vía interna para valores ya acotados. Ver `Velocity.init(unchecked:)`.
+    init(unchecked percent: Int) {
+        self.percent = percent
+    }
+}
+
+/// Cuánto se desplaza el Track entero respecto a la rejilla.
+///
+/// La Pre Spec: «desplaza el Track entero hacia adelante o atrás respecto a la
+/// rejilla». A diferencia de `Timing`, se aplica a todos los Steps por igual.
+///
+/// **Porcentaje de la Division y no milisegundos**, por la misma razón que
+/// `Sustain`: expresado en tiempo absoluto dejaría de significar lo mismo en
+/// cuanto se moviera el tempo o la Division. «Medio Step antes» sigue siendo
+/// medio Step a cualquier velocidad.
+///
+/// **Es el único parámetro del motor con rango negativo**, y esa mitad es la que
+/// tiene coste. Un evento adelantado hay que calcularlo antes de su instante, o
+/// se pide su emisión para un momento que ya pasó; de ahí el *presupuesto de
+/// adelanto*, que desplaza el origen de la rejilla al arrancar y amplía el
+/// horizonte de selección mientras suena. Enmienda fechada del 2026-08-30 en
+/// `tech-stack.md`.
+///
+/// El cero no es un extremo sino el centro: el knob lo cruza sin caso especial.
+public struct Delay: Equatable, Sendable {
+
+    /// Rango admitido, en porcentaje de la Division. Simétrico: un Step entero
+    /// hacia cada lado.
+    public static let validRange: ClosedRange<Int> = -100...100
+
+    /// Default del producto: sobre la rejilla.
+    public static let `default` = Delay(unchecked: 0)
+
+    public let percent: Int
+
+    /// Devuelve `nil` si el porcentaje cae fuera de `validRange`.
+    public init?(percent: Int) {
+        guard Self.validRange.contains(percent) else { return nil }
+        self.percent = percent
+    }
+
+    /// Vía interna para valores ya acotados. Ver `Velocity.init(unchecked:)`.
+    init(unchecked percent: Int) {
+        self.percent = percent
+    }
+}
+
 extension Sustain {
 
     /// Cuánto dura la nota, dado lo que dura un Step.

@@ -81,6 +81,68 @@ final class GrooveTypesTests: XCTestCase {
         XCTAssertEqual(Probability.validRange, 0...100)
     }
 
+    // MARK: - Timing
+
+    func testTimingAcceptsTheWholeValidRange() {
+        for percent in 50...75 {
+            XCTAssertEqual(Timing(percent: percent)?.percent, percent)
+        }
+    }
+
+    /// **Por debajo del 50% no hay swing, hay swing invertido.** El porcentaje
+    /// es la posición del segundo Step del par dentro del par, así que un valor
+    /// menor que 50 adelantaría el Step impar en lugar de atrasarlo. Para
+    /// adelantar está Delay, que lo hace sobre el Track entero y con el
+    /// presupuesto que eso exige.
+    func testTimingRejectsValuesBelowStraight() {
+        XCTAssertNil(Timing(percent: 49))
+        XCTAssertNil(Timing(percent: 0))
+        XCTAssertNil(Timing(percent: -1))
+    }
+
+    /// **El tope de 75% es corrección, no gusto.** Es medio Step de retraso: un
+    /// Step desplazado llega justo antes del siguiente y nunca lo alcanza. Por
+    /// encima, la secuencia de emisión podría invertirse, que es una nota fuera
+    /// de sitio y no un valor extremo. Ver la invariante de orden del spec (FR3).
+    func testTimingRejectsValuesAboveTheOrderPreservingLimit() {
+        XCTAssertNil(Timing(percent: 76))
+        XCTAssertNil(Timing(percent: 100))
+    }
+
+    func testTimingValidRangeIsFiftyToSeventyFivePercent() {
+        XCTAssertEqual(Timing.validRange, 50...75)
+    }
+
+    /// El 50% no es un caso límite: es la rejilla recta, el punto de partida
+    /// desde el que el knob se aparta.
+    func testTimingAtFiftyPercentIsTheStraightGrid() {
+        XCTAssertEqual(Timing.default.percent, 50)
+        XCTAssertEqual(Timing.straight, Timing.default)
+    }
+
+    // MARK: - Delay
+
+    /// **El único parámetro del motor con rango negativo.** Adelantar es tan
+    /// válido como atrasar, y el cero no es un extremo sino el centro.
+    func testDelayAcceptsTheWholeValidRangeIncludingNegatives() {
+        for percent in -100...100 {
+            XCTAssertEqual(Delay(percent: percent)?.percent, percent)
+        }
+    }
+
+    func testDelayRejectsValuesOutsideTheRange() {
+        XCTAssertNil(Delay(percent: -101))
+        XCTAssertNil(Delay(percent: 101))
+    }
+
+    func testDelayValidRangeIsMinusOneHundredToOneHundredPercent() {
+        XCTAssertEqual(Delay.validRange, -100...100)
+    }
+
+    func testDelayDefaultIsOnTheGrid() {
+        XCTAssertEqual(Delay.default.percent, 0)
+    }
+
     // MARK: - Defaults de producto
 
     /// Los defaults salen del spec y de la Pre Spec: Sustain default es «una
@@ -89,6 +151,16 @@ final class GrooveTypesTests: XCTestCase {
         XCTAssertEqual(Velocity.default.value, 100)
         XCTAssertEqual(Sustain.default.percent, 100)
         XCTAssertEqual(Probability.default.percent, 100)
+    }
+
+    /// **Los dos que llegan con la rebanada 6 no interpretan nada por defecto.**
+    /// Timing 50% es la rejilla recta y Delay 0% no desplaza: el Groove default
+    /// sigue siendo el que deja los instantes exactamente donde los pone
+    /// `MusicalTimeline`, que es lo que permite que la medición de regresión no
+    /// cambie de forma.
+    func testTemporalProductDefaultsLeaveTheGridUntouched() {
+        XCTAssertEqual(Timing.default.percent, 50)
+        XCTAssertEqual(Delay.default.percent, 0)
     }
 }
 
