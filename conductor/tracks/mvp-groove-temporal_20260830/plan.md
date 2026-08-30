@@ -189,10 +189,18 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > **Requiere iPad, BeatStep Pro y un sintetizador.** Es la fase que decide si la rebanada entra: `workflow.md` nombra explícitamente a Timing y Delay entre lo que exige medir, y una regresión bloquea la tarea.
 
-- [ ] Task: El arnés puede correr desplazado
-  - [ ] Tests (Red): `JitterHarness` acepta el Groove con el que medir y conserva el default actual
-  - [ ] Tests (Red): sin Groove explícito, la medición es idéntica a la de hoy — la referencia de regresión no cambia de forma
-  - [ ] Implementación (Green): un parámetro más en la configuración; el arnés sigue comparando lo pedido contra lo entregado, sin saber que existe el desplazamiento
+> **Guía de ejecución:** [`device-verification.md`](./device-verification.md) — ocho bloques, la configuración previa que explica la mayoría de los síntomas raros, y las tres limitaciones a provocar a propósito.
+
+- [x] Task: El arnés puede correr desplazado — `a19fb23`
+  - [x] Tests: `JitterHarness` acepta el Groove con el que medir y conserva el default actual
+  - [x] Tests: sin Groove explícito, la medición recorre el modo `everyStep` de siempre — la referencia de regresión no cambia de forma
+  - [x] Implementación: un parámetro más en la configuración; el arnés sigue comparando lo pedido contra lo entregado, sin saber que existe el desplazamiento
+  - [x] **Añadido en curso:** selector de rejilla en la pantalla de medición —recta, Timing 67%, Delay ±50%— y **un informe por rejilla**: con nombre de fichero fijo, la medición de regresión la habría pisado cualquiera de las otras tres
+
+  > **Aquí el Red no fue previo, y conviene que conste.** La función que eligen
+  > los tests —`material(for:)`— se escribió junto a ellos, así que lo único que
+  > hubo fue el fallo de compilación por no existir. No cambia lo que cubren,
+  > pero no es el ciclo que `workflow.md` pide.
 - [ ] Task: Los encoders en `Relative #2` antes de empezar
   - [ ] Sin eso, un clic se decodifica como ±63 y todo salta a su extremo — nota del 2026-08-28 en `workflow.md`
 - [ ] Task: **Medición recta** — la regresión y la atribución
