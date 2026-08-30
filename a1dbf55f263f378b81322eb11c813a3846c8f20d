@@ -1,0 +1,61 @@
+Tasks: El desplazamiento de un Step · La invariante de orden · El presupuesto de adelanto (Fase 2, rebanada 6)
+
+LAS TRES COMPARTEN SHA
+No se pueden separar de forma que cada commit se sostenga: la invariante
+de orden no tiene implementación propia —es una propiedad del
+desplazamiento—, y el presupuesto está definido como función del mismo
+desplazamiento. El test que los une, testTheShiftIsNeverMoreNegativeThan
+TheBudget, no podría existir en ninguno de los dos por separado, y es la
+propiedad de la que depende toda la Fase 3.
+
+QUÉ SE HIZO
+Fichero nuevo: Packages/Engine/Sources/Engine/GrooveShift.swift.
+
+  shiftNanoseconds(atStep:stepDurationNanoseconds:)
+      swing(impares) + delay(todos). Positivo atrasa, negativo adelanta.
+  advanceBudgetNanoseconds(forStep:)
+      max(0, −delay). Cero cuando no se adelanta nada.
+
+La fórmula del swing sale de que el porcentaje es la POSICIÓN del segundo
+Step del par dentro del par:
+      (percent − 50) / 100 · 2 · duración de Step
+Al 50% da cero sin interceptar el caso; al 75%, medio Step.
+
+LA PARIDAD ES LA DEL ÍNDICE ABSOLUTO
+No la de la posición en el anillo. El swing es una propiedad del tiempo
+musical y no del patrón: con un número impar de Steps, el anillo y la
+rejilla del swing desfasan de una vuelta a la siguiente, que es lo que
+hace una caja de ritmos. Ligarlo al anillo produciría un swing que cambia
+de sentido al girar el knob de Steps. Hay un test que lo fija usando un
+anillo de 5: los Steps 0 y 5 son la misma posición y el swing los trata
+distinto.
+
+Los índices negativos siguen la misma paridad: en Swift el resto conserva
+el signo, así que −1 % 2 no es cero y el Step −1 es impar.
+
+LA INVARIANTE DE ORDEN
+Barrido exhaustivo de Timing 50..75 × Delay −100..100 sobre 65 Steps: la
+secuencia de instantes de emisión es monótona no decreciente. Es la razón
+declarada del tope de 75% —medio Step es el desplazamiento máximo con el
+que un Step no alcanza al siguiente— y pasa a la primera.
+
+EL PRESUPUESTO
+Exhaustivo sobre Timing × Delay: el desplazamiento nunca es más negativo
+que el presupuesto. Si pudiera serlo, habría un instante que ni el origen
+desplazado ni el horizonte ampliado cubrirían, y ese evento se pediría
+para un momento que ya pasó.
+Timing no consume presupuesto: solo atrasa. Verificado en todo su rango.
+
+UNA CORRECCIÓN DE TEST, NO DE CÓDIGO
+El test del tresillo falló en la primera pasada por tolerancia mal
+calibrada: la separación real al 67% es 0,833 ms y había puesto 0,825 ms.
+La cota correcta es medio clic de knob —cada clic mueve un 2% de la
+duración del Step, así que el error máximo a cualquier objetivo es un
+1%—, que además es general y no un número ajustado a este caso. Se añadió
+un test más: el tresillo cae ENTRE 66 y 67, el knob lo cruza.
+
+Verde: 282 tests de Engine, 0 fallos.
+
+FICHEROS
+  A Packages/Engine/Sources/Engine/GrooveShift.swift
+  A Packages/Engine/Tests/EngineTests/GrooveShiftTests.swift
