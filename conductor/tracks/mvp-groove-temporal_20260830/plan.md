@@ -122,23 +122,37 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] El `.profdata` hubo que fusionarlo a mano (`llvm-profdata merge`): SwiftPM no lo fusiona cuando la pasada falla, y en un proceso la pasada falla por el flake
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 4: Los nueve parámetros
+## Phase 4: Los nueve parámetros [checkpoint: 5cc5a60]
 
 > Dos casos más en tipos que la rebanada 5 dejó preparados exactamente para esto. **El comportamiento de los siete anteriores no cambia**, y sus tests lo demuestran sin reescribirse.
 
-- [ ] Task: `TrackParameter` y `ParameterChange` cubren los nueve
-  - [ ] Tests (Red): `.timing` y `.delay` existen, están en la familia `groove` y se leen `Timing` y `Delay` — términos de la Pre Spec, sin traducir y sin sinónimos
-  - [ ] Tests (Red): los dos producen su descripción legible (`Timing 67%`, `Delay -25%`), con el signo visible en el negativo
-  - [ ] Tests (Red): los siete casos anteriores dan **exactamente la misma descripción que antes**
-  - [ ] Tests (Red): el orden de comparación sigue declarado — Shape, después Groove
-  - [ ] Implementación (Green): dos casos más; el despacho por delta ya existe
-  - [ ] Se retira de `TrackParameter` la frase «Timing y Delay llegan en la rebanada 6»: se cumple aquí, y dejarla diría algo falso
-- [ ] Task: El mapeo y los giros cubren los nueve
-  - [ ] Tests (Red): los dos CC nuevos —77 y 78— resuelven a su parámetro y no pisan a los siete existentes
-  - [ ] Tests (Red): girar cada uno publica un Track nuevo; girar contra un extremo **no** publica
-  - [ ] Tests (Red): girar Timing o Delay **conserva el Shape, el pool y el resto del Groove**
-  - [ ] Implementación (Green): dos entradas más en el mapeo provisional; `ControlInput` no cambia
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: `TrackParameter` y `ParameterChange` cubren los nueve — `5cc5a60`
+  - [x] Tests (Red): `.timing` y `.delay` existen, están en la familia `groove` y se leen `Timing` y `Delay` — términos de la Pre Spec, sin traducir y sin sinónimos
+  - [x] Tests (Red): los dos producen su descripción legible (`Timing 67%`, `Delay -25%`), con el signo visible en el negativo
+  - [x] Tests (Red): los siete casos anteriores dan **exactamente la misma descripción que antes**
+  - [x] Tests (Red): el orden de comparación sigue declarado — Shape, después Groove
+  - [x] Implementación (Green): dos casos más; el despacho por delta ya existe
+  - [x] Se retira de `TrackParameter` la frase «Timing y Delay llegan en la rebanada 6»: se cumple aquí, y dejarla diría algo falso
+- [x] Task: El mapeo y los giros cubren los nueve — `5cc5a60`
+  - [x] Tests (Red): los dos CC nuevos —77 y 78— resuelven a su parámetro y no pisan a los siete existentes
+  - [x] Tests (Red): girar cada uno publica un Track nuevo; girar contra un extremo **no** publica
+  - [x] Tests (Red): girar Timing o Delay **conserva el Shape, el pool y el resto del Groove**
+  - [x] Implementación (Green): dos entradas más en el mapeo provisional; `ControlInput` no cambia
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+  > **Las dos comparten SHA**, por la razón de la rebanada 5: añadir los casos
+  > rompe el mapeo hasta que el mapeo los cubre, y el mapeo sin los giros no
+  > mueve nada.
+
+  > **`ControlInput` no cambia**, y eso es el resultado que la fase buscaba: el
+  > renombrado de la rebanada 5 dejó la entrada sin saber a qué familia pertenece
+  > cada parámetro, así que dos casos nuevos no le llegan.
+
+  > **Un test tocado.** Usaba el CC 77 como ejemplo de «sin asignar» y Timing se
+  > lo quedó: falló por un comportamiento que no había cambiado. Ahora busca el
+  > primer CC libre en el propio mapeo — la lección que `ControlInputTests` ya
+  > había anotado al llegar 1/32.
+
 
 ## Phase 5: La pantalla
 
