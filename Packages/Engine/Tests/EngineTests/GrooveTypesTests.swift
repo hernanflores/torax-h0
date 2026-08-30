@@ -178,6 +178,8 @@ final class GrooveTests: XCTestCase {
         XCTAssertTrue(_isPOD(Velocity.self))
         XCTAssertTrue(_isPOD(Sustain.self))
         XCTAssertTrue(_isPOD(Probability.self))
+        XCTAssertTrue(_isPOD(Timing.self))
+        XCTAssertTrue(_isPOD(Delay.self))
     }
 
     func testTrackStaysTrivialWithGrooveInside() {
@@ -192,6 +194,45 @@ final class GrooveTests: XCTestCase {
         XCTAssertEqual(groove.velocity, .default)
         XCTAssertEqual(groove.sustain, .default)
         XCTAssertEqual(groove.probability, .default)
+        XCTAssertEqual(groove.timing, .default)
+        XCTAssertEqual(groove.delay, .default)
+    }
+
+    /// **El Groove default sigue sin interpretar nada, ahora también en el
+    /// tiempo.** Es lo que hace que la rejilla recta siga siendo la de
+    /// `MusicalTimeline` y que el arnés de medición —que usa este valor— mida lo
+    /// mismo que medía antes de la rebanada 6.
+    func testTheDefaultGrooveLeavesTheGridStraight() {
+        XCTAssertEqual(Groove.default.timing, .straight)
+        XCTAssertEqual(Groove.default.delay.percent, 0)
+    }
+
+    /// **Ningún llamante existente cambia.** `Groove` se construye en tests y en
+    /// código que no sabe nada de Timing ni de Delay; los defaults son lo que
+    /// les permite seguir compilando y sonando igual.
+    func testGrooveBuiltWithoutTheTemporalParametersTakesTheirDefaults() {
+        let groove = Groove(
+            velocity: Velocity(64)!,
+            sustain: Sustain(percent: 25)!,
+            probability: Probability(percent: 50)!
+        )
+
+        XCTAssertEqual(groove.timing, .default)
+        XCTAssertEqual(groove.delay, .default)
+        XCTAssertEqual(groove.velocity.value, 64)
+    }
+
+    func testGrooveKeepsTheTemporalParametersItIsBuiltWith() {
+        let groove = Groove(
+            velocity: .default,
+            sustain: .default,
+            probability: .default,
+            timing: Timing(percent: 75)!,
+            delay: Delay(percent: -100)!
+        )
+
+        XCTAssertEqual(groove.timing.percent, 75)
+        XCTAssertEqual(groove.delay.percent, -100)
     }
 
     func testGrooveKeepsWhatItIsBuiltWith() {

@@ -339,8 +339,14 @@ extension ClosedRange where Bound == Int {
 public struct Groove: Equatable, Sendable {
 
     /// Los defaults de producto: suena todo, a nivel medio-alto, durando una
-    /// Division completa. Es el Groove que no interpreta nada — el punto de
-    /// partida desde el que cada knob se aparta.
+    /// Division completa, sobre la rejilla recta y sin desplazar. Es el Groove
+    /// que no interpreta nada — el punto de partida desde el que cada knob se
+    /// aparta.
+    ///
+    /// **Que no interprete nada en el tiempo es una propiedad de la que depende
+    /// el arnés de medición.** Su modo `everyStep` usa este valor, así que la
+    /// medición de regresión sigue midiendo la rejilla de `MusicalTimeline` y no
+    /// una desplazada.
     public static let `default` = Groove(
         velocity: .default,
         sustain: .default,
@@ -350,18 +356,34 @@ public struct Groove: Equatable, Sendable {
     public let velocity: Velocity
     public let sustain: Sustain
     public let probability: Probability
+    public let timing: Timing
+    public let delay: Delay
 
-    public init(velocity: Velocity, sustain: Sustain, probability: Probability) {
+    /// **Timing y Delay entran con valor por defecto.** `Groove` se construye en
+    /// sitios que no saben nada de ellos —tests, código anterior a la rebanada
+    /// 6— y los defaults son lo que les permite seguir compilando y sonando
+    /// igual. No es comodidad: es la regla de destructividad de
+    /// `product-guidelines.md` aplicada al código, un parámetro nuevo no cambia
+    /// lo que ya hacía quien no lo pide.
+    public init(
+        velocity: Velocity,
+        sustain: Sustain,
+        probability: Probability,
+        timing: Timing = .default,
+        delay: Delay = .default
+    ) {
         self.velocity = velocity
         self.sustain = sustain
         self.probability = probability
+        self.timing = timing
+        self.delay = delay
     }
 }
 
 extension Groove: CustomStringConvertible {
 
     /// Cómo se lee Groove en pantalla:
-    /// `Velocity 100 · Sustain 100% · Probability 75%`.
+    /// `Velocity 100 · Sustain 100% · Probability 75% · Timing 50% · Delay 0%`.
     ///
     /// Mismo formato que `Shape.description`, y por la misma razón: el término
     /// de la Pre Spec en inglés y el valor, sin prosa. `product-guidelines.md`
@@ -373,7 +395,15 @@ extension Groove: CustomStringConvertible {
     ///
     /// Velocity va sin signo de porcentaje: vive en la unidad MIDI, y ponérselo
     /// diría que es un porcentaje de algo.
+    ///
+    /// **El signo de Delay se ve, y no es adorno.** Es el único parámetro que
+    /// puede ser negativo, y adelantar y atrasar no se distinguen por el
+    /// contexto: sin el signo, `Delay 25%` sería ambiguo. La interpolación lo
+    /// pone sola en el negativo y lo omite en el positivo, que es la convención
+    /// que ya usa `Rotate`.
     public var description: String {
-        "Velocity \(velocity.value) · Sustain \(sustain.percent)% · Probability \(probability.percent)%"
+        "Velocity \(velocity.value) · Sustain \(sustain.percent)% · "
+            + "Probability \(probability.percent)% · Timing \(timing.percent)% · "
+            + "Delay \(delay.percent)%"
     }
 }
