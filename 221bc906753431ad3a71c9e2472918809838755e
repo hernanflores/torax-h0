@@ -1,0 +1,53 @@
+Tasks: TrackScheduler emite el instante desplazado · El horizonte de selección se amplía con el presupuesto (Fase 3, rebanada 6)
+
+LAS DOS COMPARTEN SHA
+Separarlas daría un commit con un defecto conocido dentro: emitir el
+instante desplazado SIN ampliar el horizonte hace que un Step con Delay
+negativo se calcule unos milisegundos antes de su rejilla y se pida su
+emisión hasta un Step antes de eso —en el pasado, y en cada vuelta del
+anillo—. Es exactamente lo que esta fase existe para evitar.
+
+QUÉ SE HIZO
+  · El offset emitido pasa a ser rejilla + desplazamiento, con el Groove
+    leído una sola vez y usado para las dos cosas.
+  · El horizonte que recibe LookAheadScheduler lleva sumado el
+    presupuesto de adelanto del material vigente.
+  · advanceBudgetNanoseconds se expone como propiedad: lo consultan el
+    propio advance() en cada ventana y SchedulerThread una vez al
+    arrancar, para desplazar el origen. Una sola fuente.
+  · stepDurationNanoseconds se calcula una vez al construir. La rejilla
+    no cambia mientras suena —está documentado en el propio tipo— así que
+    convertirla en cada ventana sería coma flotante repetida en el hilo
+    del scheduler para obtener siempre el mismo número.
+
+POR QUÉ EL PRESUPUESTO SE RELEE POR VENTANA
+Delay se gira mientras suena. Un presupuesto congelado al construir
+dejaría de cubrir el adelanto en cuanto el knob se moviera. Hay un test
+que publica un Delay negativo a mitad y comprueba que la ventana
+siguiente ya lo cubre.
+
+LO QUE NO CAMBIA
+Con Delay >= 0 el horizonte y los Steps por ventana son idénticos a los
+de antes de la rebanada 6 —verificado sobre 0, 25, 50 y 100%—, y el
+swing tampoco lo amplía porque solo atrasa. El modo everyStep del arnés
+sigue en la rejilla recta.
+La invariante de LookAheadScheduler sobrevive: barrido de 8 ventanas con
+Timing 75% y Delay −100%, Steps en orden y sin repetir.
+
+UNA CORRECCIÓN DE TEST, NO DE CÓDIGO
+testTheBudgetComesFromThePublishedSnapshot esperaba [1, 2] y salía [1]:
+el horizonte es exclusivo y mi aritmética estaba mal, la implementación
+no. Se corrigió la expectativa y se partió en dos tests para que el
+contraste sea explícito — sin presupuesto esa misma ventana no emite
+nada, con él alcanza el Step 1. Ahora, si falla, dice cuál de las dos
+cosas se rompió.
+
+TESTS (Red primero)
+Red confirmado con 4 fallos por la razón correcta: offsets sin
+desplazamiento y ventana sin ampliar.
+SchedulerShiftTests.swift, 11 tests. Suite completa de MIDI: 246 tests,
+1 saltado, 0 fallos. Sin flake -50 en esta pasada.
+
+FICHEROS
+  M Packages/MIDI/Sources/MIDI/TrackScheduler.swift
+  A Packages/MIDI/Tests/MIDITests/SchedulerShiftTests.swift
