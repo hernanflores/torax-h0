@@ -8,7 +8,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 **Lo que este orden evita.** Las fases 1 y 2 son `Engine` puro y no tocan CoreMIDI. La fase 3 sí toca `MIDI`, y a diferencia de la rebanada 5 **va a necesitar arrancar el bucle del scheduler**: el origen de la rejilla lo fija `SchedulerThread`, y eso no se prueba dándole el horizonte a mano. Ver *Notas de riesgo* — es el punto donde `midi-test-flake` se hace visible, y la decisión de convivir con él ya está tomada.
 
-## Phase 1: Los dos parámetros como valores
+## Phase 1: Los dos parámetros como valores [checkpoint: ab38c72]
 
 > `Engine` puro. Sin CoreMIDI, sin simulador, sin hardware.
 
@@ -41,7 +41,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 - [ ] Task: El desplazamiento de un Step
   - [ ] Tests (Red): con Timing 50% y Delay 0% el desplazamiento es **exactamente 0** para todos los Steps — la rejilla de hoy, verificada contra `MusicalTimeline` y no contra números escritos a mano
-  - [ ] Tests (Red): Timing 66,7% coloca el par en proporción 2:1; Timing 75% deja el Step impar medio Step tarde
+  - [ ] Tests (Red): Timing 67% coloca el par en proporción 2:1 **dentro de tolerancia declarada** —el tresillo exacto es 66,67% y el knob va de uno en uno— y Timing 75% deja el Step impar medio Step tarde
   - [ ] Tests (Red): **los Steps pares no se mueven nunca por Timing**, en todo el rango
   - [ ] Tests (Red): la paridad es la del **índice absoluto**, no la de la posición en el anillo — con Steps impares el swing desfasa de una vuelta a la siguiente, y el test lo fija como comportamiento querido
   - [ ] Tests (Red): Delay se aplica por igual a pares e impares, y se suma al de Timing
@@ -158,6 +158,16 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [ ] `Engine` ≥90% y `MIDI` ≥80%, esta última en un solo proceso y filtrando `Engine/Sources`
   - [ ] Si la CI falla con `clientCreationFailed(-50)`, correr la suite 3–4 veces y comparar contra `main` antes de atribuirlo al cambio
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## Enmiendas al plan
+
+**2026-08-30, checkpoint de la Fase 1 — el tresillo exacto no es representable.**
+`Timing` es un porcentaje entero, así que el knob pasa por 66 y por 67 y no por
+el 66,67% del tresillo 2:1. El más cercano se separa un 0,66% de la duración del
+Step —0,9 ms a 1/16 y 120 BPM—, por debajo de lo audible; la alternativa era un
+décimo de porcentaje, que da exactitud a cambio de diez veces más recorrido de
+knob para el mismo tramo. El criterio del test de la Fase 2 pasa de igualdad
+exacta a **tolerancia declarada**. Queda documentado en el propio tipo.
 
 ## Notas de riesgo
 
