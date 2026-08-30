@@ -39,24 +39,39 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > Sigue siendo `Engine` puro, y es donde vive la corrección del track. **Aritmética entera, en nanosegundos, sin coma flotante:** esto acaba corriendo en el hilo del scheduler.
 
-- [ ] Task: El desplazamiento de un Step
-  - [ ] Tests (Red): con Timing 50% y Delay 0% el desplazamiento es **exactamente 0** para todos los Steps — la rejilla de hoy, verificada contra `MusicalTimeline` y no contra números escritos a mano
-  - [ ] Tests (Red): Timing 67% coloca el par en proporción 2:1 **dentro de tolerancia declarada** —el tresillo exacto es 66,67% y el knob va de uno en uno— y Timing 75% deja el Step impar medio Step tarde
-  - [ ] Tests (Red): **los Steps pares no se mueven nunca por Timing**, en todo el rango
-  - [ ] Tests (Red): la paridad es la del **índice absoluto**, no la de la posición en el anillo — con Steps impares el swing desfasa de una vuelta a la siguiente, y el test lo fija como comportamiento querido
-  - [ ] Tests (Red): Delay se aplica por igual a pares e impares, y se suma al de Timing
-  - [ ] Tests (Red): Delay +100% atrasa un Step entero; −100% lo adelanta
-  - [ ] Tests (Red): índices negativos y el Step 0 se comportan igual que el resto
-  - [ ] Implementación (Green): función pura del índice, el Groove y la duración del Step; marcador `/// Realtime:`
-- [ ] Task: La invariante de orden
-  - [ ] Tests (Red): **barrido exhaustivo del rango de Timing × Delay**: la secuencia de instantes de emisión es monótona no decreciente sobre una vuelta larga del anillo
-  - [ ] Tests (Red): el caso extremo —Timing 75%— no invierte el orden, que es la razón declarada del tope
-  - [ ] Implementación (Green): si el barrido falla, **el tope de Timing está mal elegido y se corrige el rango**, no el test
-- [ ] Task: El presupuesto de adelanto
-  - [ ] Tests (Red): con Delay ≥ 0 el presupuesto es **exactamente 0** — es lo que garantiza que la mitad positiva del rango no paga nada
-  - [ ] Tests (Red): con Delay negativo el presupuesto es su valor absoluto en nanosegundos, contra la Division y el tempo vigentes
-  - [ ] Tests (Red): **el desplazamiento nunca es más negativo que el presupuesto**, sobre el barrido exhaustivo — es la propiedad de la que dependen las dos piezas de la fase 3
-  - [ ] Implementación (Green): función pura del Groove y la duración del Step; `/// Realtime:`
+- [x] Task: El desplazamiento de un Step — `a1dbf55`
+  - [x] Tests (Red): con Timing 50% y Delay 0% el desplazamiento es **exactamente 0** para todos los Steps — la rejilla de hoy, verificada contra `MusicalTimeline` y no contra números escritos a mano
+  - [x] Tests (Red): Timing 67% coloca el par en proporción 2:1 **dentro de tolerancia declarada** —el tresillo exacto es 66,67% y el knob va de uno en uno— y Timing 75% deja el Step impar medio Step tarde
+  - [x] Tests (Red): **los Steps pares no se mueven nunca por Timing**, en todo el rango
+  - [x] Tests (Red): la paridad es la del **índice absoluto**, no la de la posición en el anillo — con Steps impares el swing desfasa de una vuelta a la siguiente, y el test lo fija como comportamiento querido
+  - [x] Tests (Red): Delay se aplica por igual a pares e impares, y se suma al de Timing
+  - [x] Tests (Red): Delay +100% atrasa un Step entero; −100% lo adelanta
+  - [x] Tests (Red): índices negativos y el Step 0 se comportan igual que el resto
+  - [x] Implementación (Green): función pura del índice, el Groove y la duración del Step; marcador `/// Realtime:`
+- [x] Task: La invariante de orden — `a1dbf55`
+  - [x] Tests (Red): **barrido exhaustivo del rango de Timing × Delay**: la secuencia de instantes de emisión es monótona no decreciente sobre una vuelta larga del anillo
+  - [x] Tests (Red): el caso extremo —Timing 75%— no invierte el orden, que es la razón declarada del tope
+  - [x] Implementación (Green): si el barrido falla, **el tope de Timing está mal elegido y se corrige el rango**, no el test
+- [x] Task: El presupuesto de adelanto — `a1dbf55`
+  - [x] Tests (Red): con Delay ≥ 0 el presupuesto es **exactamente 0** — es lo que garantiza que la mitad positiva del rango no paga nada
+  - [x] Tests (Red): con Delay negativo el presupuesto es su valor absoluto en nanosegundos, contra la Division y el tempo vigentes
+  - [x] Tests (Red): **el desplazamiento nunca es más negativo que el presupuesto**, sobre el barrido exhaustivo — es la propiedad de la que dependen las dos piezas de la fase 3
+  - [x] Implementación (Green): función pura del Groove y la duración del Step; `/// Realtime:`
+
+  > **Las tres comparten SHA.** No se separan de forma que cada commit se
+  > sostenga: la invariante de orden no tiene implementación propia —es una
+  > propiedad del desplazamiento— y el presupuesto está definido como función
+  > del mismo desplazamiento. El test que los une —el desplazamiento nunca es
+  > más negativo que el presupuesto— no podría existir en ninguno por separado,
+  > y es la propiedad de la que depende toda la Fase 3.
+
+  > **Una corrección de test, no de código.** El test del tresillo falló en la
+  > primera pasada por tolerancia mal calibrada: la separación real al 67% es
+  > 0,833 ms y estaba puesta en 0,825 ms. La cota correcta es **medio clic de
+  > knob** —cada clic mueve un 2% de la duración del Step, así que el error
+  > máximo a cualquier objetivo es un 1%—, que además es general y no un número
+  > ajustado a este caso.
+
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: El scheduler entrega el desplazamiento
