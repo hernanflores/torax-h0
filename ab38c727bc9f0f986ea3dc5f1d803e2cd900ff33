@@ -40,3 +40,39 @@ Verde: 262 tests de Engine, 0 fallos.
 FICHEROS
   M Packages/Engine/Sources/Engine/Groove.swift
   M Packages/Engine/Tests/EngineTests/GrooveTypesTests.swift
+
+--- VERIFICACIÓN DE FASE 1 (2026-08-30) ---
+
+TESTS AUTOMÁTICOS
+  swift test --package-path Packages/Engine
+  262 tests, 0 fallos.
+
+COBERTURA
+  swift test --package-path Packages/Engine --enable-code-coverage
+  Engine 98,06% de líneas (umbral >=90%). Groove.swift dentro.
+  MIDI compila sin cambios.
+
+COBERTURA DE LOS CAMBIOS DE LA FASE
+  Ficheros de código tocados: Groove.swift.
+  Tests correspondientes: GrooveTypesTests.swift, TrackParameterTests.swift.
+  Sin huecos.
+
+VERIFICACIÓN MANUAL PROPUESTA
+La fase es Engine puro: no hay nada que oír ni que ver, los dos
+parámetros existen pero nadie los aplica todavía. Se revisó lo que fija
+decisiones difíciles de cambiar después:
+  1. La enmienda de tech-stack.md — horizonte de selección, origen de la
+     rejilla, presupuesto dinámico y su coste acotado.
+  2. Rangos y defaults: Timing 50-75 (default 50, recto);
+     Delay -100..+100 (default 0).
+  3. La lectura en pantalla, ahora de cinco parámetros en una línea.
+
+CONFIRMACIÓN DEL USUARIO
+Confirmado ('Avancemos'), sin cambios pedidos.
+
+ANOTADO EN EL CHECKPOINT
+El tresillo exacto (66,67%) no es representable con porcentaje entero. El
+knob pasa por 66 y 67; el más cercano se separa un 0,66% de la duración
+del Step —0,9 ms a 1/16 y 120 BPM—, inaudible. El criterio de la Fase 2
+pasa a ser tolerancia declarada en vez de igualdad exacta. Queda como
+enmienda al plan.
