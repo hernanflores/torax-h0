@@ -336,6 +336,42 @@ final class GrooveAdjustmentTests: XCTestCase {
         XCTAssertEqual(Probability(percent: 50)!.advanced(by: 1000).percent, 100)
     }
 
+    // MARK: - Timing
+
+    func testTimingMovesByTheDelta() {
+        XCTAssertEqual(Timing(percent: 50)!.advanced(by: 17).percent, 67)
+        XCTAssertEqual(Timing(percent: 67)!.advanced(by: -1).percent, 66)
+    }
+
+    /// El recorrido del knob es corto —26 posiciones— y los dos topes se
+    /// alcanzan enseguida. Que se frene y no envuelva es lo que evita que
+    /// pasarse del swing máximo devuelva la rejilla recta de golpe.
+    func testTimingStopsAtBothEnds() {
+        XCTAssertEqual(Timing(percent: 75)!.advanced(by: 1).percent, 75)
+        XCTAssertEqual(Timing(percent: 50)!.advanced(by: -1).percent, 50)
+        XCTAssertEqual(Timing(percent: 60)!.advanced(by: 1000).percent, 75)
+        XCTAssertEqual(Timing(percent: 60)!.advanced(by: -1000).percent, 50)
+    }
+
+    // MARK: - Delay
+
+    /// **El cero no es un caso especial.** Es el único parámetro del motor cuyo
+    /// rango cruza el cero, y el knob lo atraviesa como atraviesa cualquier otro
+    /// valor: adelantar y atrasar son el mismo gesto en distinto sentido.
+    func testDelayCrossesZeroWithoutASpecialCase() {
+        XCTAssertEqual(Delay(percent: 2)!.advanced(by: -4).percent, -2)
+        XCTAssertEqual(Delay(percent: -2)!.advanced(by: 4).percent, 2)
+        XCTAssertEqual(Delay(percent: 0)!.advanced(by: -1).percent, -1)
+        XCTAssertEqual(Delay(percent: 0)!.advanced(by: 1).percent, 1)
+    }
+
+    func testDelayStopsAtBothEnds() {
+        XCTAssertEqual(Delay(percent: 100)!.advanced(by: 1).percent, 100)
+        XCTAssertEqual(Delay(percent: -100)!.advanced(by: -1).percent, -100)
+        XCTAssertEqual(Delay(percent: 0)!.advanced(by: 1000).percent, 100)
+        XCTAssertEqual(Delay(percent: 0)!.advanced(by: -1000).percent, -100)
+    }
+
     // MARK: - Girar contra un extremo no mueve nada
 
     /// **Es lo que después permite no publicar.** `ControlInput` compara el
@@ -346,6 +382,8 @@ final class GrooveAdjustmentTests: XCTestCase {
         XCTAssertEqual(Velocity(127)!.advanced(by: 5), Velocity(127)!)
         XCTAssertEqual(Sustain(percent: 1)!.advanced(by: -5), Sustain(percent: 1)!)
         XCTAssertEqual(Probability(percent: 0)!.advanced(by: -5), Probability(percent: 0)!)
+        XCTAssertEqual(Timing(percent: 75)!.advanced(by: 5), Timing(percent: 75)!)
+        XCTAssertEqual(Delay(percent: -100)!.advanced(by: -5), Delay(percent: -100)!)
     }
 
     /// Un delta de cero no es un caso especial que haya que interceptar antes:
@@ -354,6 +392,8 @@ final class GrooveAdjustmentTests: XCTestCase {
         XCTAssertEqual(Velocity(64)!.advanced(by: 0), Velocity(64)!)
         XCTAssertEqual(Sustain(percent: 64)!.advanced(by: 0), Sustain(percent: 64)!)
         XCTAssertEqual(Probability(percent: 64)!.advanced(by: 0), Probability(percent: 64)!)
+        XCTAssertEqual(Timing(percent: 64)!.advanced(by: 0), Timing(percent: 64)!)
+        XCTAssertEqual(Delay(percent: -64)!.advanced(by: 0), Delay(percent: -64)!)
     }
 }
 

@@ -309,6 +309,41 @@ extension Probability {
     }
 }
 
+extension Timing {
+
+    /// Swing resultante de desplazar el knob `delta` posiciones.
+    ///
+    /// **Se frena en los extremos, no envuelve.** Ver `Sustain.advanced(by:)`.
+    /// Aquí importa más que en los otros: el recorrido son 26 posiciones, así
+    /// que los topes se alcanzan enseguida, y envolver haría que pasarse del
+    /// swing máximo devolviera la rejilla recta de golpe.
+    /// Adjusts the swing amount by the specified amount within its valid range.
+    /// - Parameter delta: The amount to add to the swing percentage.
+    /// - Returns: A timing clamped to the valid range.
+    public func advanced(by delta: Int) -> Timing {
+        Timing(unchecked: Self.validRange.clamping(percent + delta))
+    }
+}
+
+extension Delay {
+
+    /// Desplazamiento resultante de mover el knob `delta` posiciones.
+    ///
+    /// **Se frena en los extremos, no envuelve.** Ver `Sustain.advanced(by:)`.
+    ///
+    /// **El cero no es un caso especial.** Es el único parámetro del motor cuyo
+    /// rango lo cruza, y el knob lo atraviesa como atraviesa cualquier otro
+    /// valor: adelantar y atrasar son el mismo gesto en distinto sentido, y
+    /// tratar el paso por la rejilla como un punto de parada sería un enganche
+    /// que nadie pidió.
+    /// Adjusts the delay by the specified amount while keeping it within the valid range.
+    /// - Parameter delta: The amount to add to the delay percentage.
+    /// - Returns: A delay clamped to the valid range.
+    public func advanced(by delta: Int) -> Delay {
+        Delay(unchecked: Self.validRange.clamping(percent + delta))
+    }
+}
+
 extension ClosedRange where Bound == Int {
 
     /// El valor llevado dentro del rango.
