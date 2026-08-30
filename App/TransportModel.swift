@@ -138,9 +138,9 @@ final class TransportModel {
     var sourceStatus: String { sourceSelection.statusDescription }
     var shapeSummary: String { track.shape.description }
 
-    /// Los tres parámetros de Groove, en reposo. El formato vive en `Engine`,
-    /// donde se testea.
-    var grooveSummary: String { track.groove.description }
+    /// Los cinco parámetros de Groove, en reposo, partidos en dos renglones.
+    /// El formato y el corte viven en `Engine`, donde se testean.
+    var grooveSummaryLines: [String] { track.groove.descriptionLines }
 
     /// Sin controlador conectado la app es de solo lectura y transporte
     /// (`product-guidelines.md`). Es un estado, no una carencia: no se abre

@@ -429,3 +429,41 @@ final class ShortestStepTests: XCTestCase {
         XCTAssertEqual(timeline.stepDurationNanoseconds, 25_000_000, accuracy: 1.0)
     }
 }
+
+/// Tests de la lectura de Groove partida en dos renglones.
+///
+/// Con los cinco parámetros dentro, la línea no cabe y la pantalla la parte por
+/// donde se acaba el ancho. Estas dos cortan por donde el dominio ya estaba
+/// cortado.
+final class GrooveDescriptionLinesTests: XCTestCase {
+
+    func testTheFirstLineIsWhatIsSentAndTheSecondIsWhen() {
+        XCTAssertEqual(
+            Groove.default.descriptionLines,
+            ["Velocity 100 · Sustain 100% · Probability 100%", "Timing 50% · Delay 0%"]
+        )
+    }
+
+    /// **Las dos líneas y la línea entera dicen lo mismo.** Si divergieran, la
+    /// pantalla y cualquier otro lector de `description` mostrarían valores
+    /// distintos para el mismo Groove.
+    func testTheLinesJoinBackIntoTheFullDescription() {
+        let groove = Groove(
+            velocity: Velocity(64)!,
+            sustain: Sustain(percent: 25)!,
+            probability: Probability(percent: 50)!,
+            timing: Timing(percent: 67)!,
+            delay: Delay(percent: -25)!
+        )
+
+        XCTAssertEqual(groove.descriptionLines.joined(separator: " · "), groove.description)
+    }
+
+    /// Ningún renglón se queda vacío ni acumula los cinco: el corte es real.
+    func testBothLinesCarryParameters() {
+        XCTAssertEqual(Groove.default.descriptionLines.count, 2)
+        for line in Groove.default.descriptionLines {
+            XCTAssertFalse(line.isEmpty)
+        }
+    }
+}

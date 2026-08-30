@@ -208,9 +208,15 @@ struct ContentView: View {
             Text(model.shapeSummary)
                 .font(.title3.monospaced())
                 .foregroundStyle(Palette.shape.opacity(0.85))
-            Text(model.grooveSummary)
-                .font(.title3.monospaced())
-                .foregroundStyle(Palette.groove.opacity(0.85))
+            // Dos renglones, un solo acento: el color codifica la familia y
+            // Groove es una. El corte lo decide `Engine` —por lo que se envía y
+            // por cuándo se envía— y no el ancho de la pantalla, que dejaba
+            // `Delay 0%` colgando solo.
+            ForEach(model.grooveSummaryLines, id: \.self) { line in
+                Text(line)
+                    .font(.title3.monospaced())
+                    .foregroundStyle(Palette.groove.opacity(0.85))
+            }
         }
     }
 

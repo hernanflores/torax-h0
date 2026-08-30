@@ -437,8 +437,29 @@ extension Groove: CustomStringConvertible {
     /// pone sola en el negativo y lo omite en el positivo, que es la convención
     /// que ya usa `Rotate`.
     public var description: String {
-        "Velocity \(velocity.value) · Sustain \(sustain.percent)% · "
-            + "Probability \(probability.percent)% · Timing \(timing.percent)% · "
-            + "Delay \(delay.percent)%"
+        descriptionLines.joined(separator: " · ")
+    }
+
+    /// La misma lectura, partida por donde tiene sentido partirla.
+    ///
+    /// **Existe porque los cinco no caben en una línea.** Con Timing y Delay
+    /// dentro, la pantalla parte el texto por donde se acaba el ancho y deja
+    /// `Delay 0%` colgando solo — un corte que no significa nada. Estas dos
+    /// líneas cortan por donde el dominio ya está cortado: **qué** se envía y
+    /// **cuándo** se envía, que es el mismo criterio con el que la rebanada 5 y
+    /// la 6 se separaron.
+    ///
+    /// **Las dos siguen siendo Groove**, así que la vista las pinta con el mismo
+    /// acento: el color codifica la familia y aquí no hay dos familias, hay una
+    /// leída en dos renglones.
+    ///
+    /// Vive en `Engine` por la razón de siempre: un formato es exactamente lo
+    /// que `workflow.md` dice que no debe estar donde no hay tests.
+    public var descriptionLines: [String] {
+        [
+            "Velocity \(velocity.value) · Sustain \(sustain.percent)% · "
+                + "Probability \(probability.percent)%",
+            "Timing \(timing.percent)% · Delay \(delay.percent)%",
+        ]
     }
 }
