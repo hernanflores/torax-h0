@@ -17,11 +17,11 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] La misma nota: el origen de la rejilla deja de ser el instante de Play y pasa a ser `Play + presupuesto`
   - [x] La misma nota acota el coste: el presupuesto es **dinámico**, así que con Delay ≥ 0 —donde vive el default— la ventana y la latencia de knob no cambian
   - [x] Se escribe con la razón, no solo con la regla: la frase que enmienda es «esa latencia acota el tamaño de la ventana», y sigue siendo cierta en la mitad del rango donde no hay adelanto
-- [ ] Task: `Timing` y `Delay` como tipos validados
-  - [ ] Tests (Red): `Timing` admite 50–75 y rechaza 49 y 76; su default es 50 — la rejilla recta
-  - [ ] Tests (Red): `Delay` admite −100…+100 y rechaza −101 y 101; su default es 0
-  - [ ] Tests (Red): **el 50% de `Timing` y el 0% de `Delay` son estados válidos y son el punto de partida**, no casos límite
-  - [ ] Implementación (Green): validación en el inicializador y vía `init(unchecked:)` interna, mismo idioma que `Velocity`, `Sustain` y `Probability`
+- [x] Task: `Timing` y `Delay` como tipos validados — `42d2621`
+  - [x] Tests (Red): `Timing` admite 50–75 y rechaza 49 y 76; su default es 50 — la rejilla recta
+  - [x] Tests (Red): `Delay` admite −100…+100 y rechaza −101 y 101; su default es 0
+  - [x] Tests (Red): **el 50% de `Timing` y el 0% de `Delay` son estados válidos y son el punto de partida**, no casos límite
+  - [x] Implementación (Green): validación en el inicializador y vía `init(unchecked:)` interna, mismo idioma que `Velocity`, `Sustain` y `Probability`
 - [ ] Task: Los dos entran en `Groove` sin romper el snapshot
   - [ ] Tests (Red): **`_isPOD(Groove.self)` y `_isPOD(Track.self)`** — el test que ya existe no se relaja ni se mueve
   - [ ] Tests (Red): `Groove` construido sin ellos toma los defaults, para que ningún llamante existente cambie
