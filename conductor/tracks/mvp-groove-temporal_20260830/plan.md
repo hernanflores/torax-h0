@@ -103,14 +103,23 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   > explícito —sin presupuesto esa ventana no emite **nada**— y así un fallo diga
   > cuál de las dos cosas se rompió.
 
-- [ ] Task: El origen de la rejilla es `Play + presupuesto`
-  - [ ] Tests (Red): con Delay negativo, **ningún offset pedido cae por detrás del instante de arranque** — con Delay −100%, en los extremos de tempo y Division
-  - [ ] Tests (Red): con Delay ≥ 0 el origen es el instante de Play, sin latencia añadida
-  - [ ] Tests (Red): el playhead usa **el mismo origen** que sella los timestamps — si fueran dos, el anillo y lo que suena discreparían, que es lo que `SchedulerThread` ya documenta
-  - [ ] Implementación (Green): el presupuesto se lee al arrancar, como la `MusicalTimeline`, y desplaza el ancla
-  - [ ] La documentación de `max(0, offset)` en `SchedulerThread` pasa a decir cuál es el **único** caso que puede dispararlo: bajar el Delay a negativo mientras suena (limitación 2 del spec)
-- [ ] Task: Verificar cobertura — `Engine` ≥90%, `MIDI` ≥80%
-  - [ ] `MIDI` se mide en **un solo proceso** y **filtrando `Engine/Sources`**, según las dos ampliaciones de `workflow.md`
+- [x] Task: El origen de la rejilla es `Play + presupuesto` — `4b32fc8`
+  - [x] Tests (Red): con Delay negativo, **ningún offset pedido cae por detrás del instante de arranque** — con Delay −100%, en los extremos de tempo y Division
+  - [x] Tests (Red): con Delay ≥ 0 el origen es el instante de Play, sin latencia añadida
+  - [x] Tests (Red): el playhead usa **el mismo origen** que sella los timestamps — si fueran dos, el anillo y lo que suena discreparían, que es lo que `SchedulerThread` ya documenta
+  - [x] Implementación (Green): el presupuesto se lee al arrancar, como la `MusicalTimeline`, y desplaza el ancla
+  - [x] La documentación de `max(0, offset)` en `SchedulerThread` pasa a decir cuál es el **único** caso que puede dispararlo: bajar el Delay a negativo mientras suena (limitación 2 del spec)
+
+  > **El primer test pasaba sin implementar nada, y eso era el hallazgo.** El
+  > recorte a cero ya garantizaba «ningún evento antes del arranque», pero no
+  > adelantando: **aplastando** contra el instante de Play todos los que debían
+  > sonar antes —con Delay −100%, los Steps 0 y 1 se pedían para el mismo
+  > instante—. La aserción que distingue es la **separación**: los instantes
+  > siguen estrictamente crecientes y a una Division de distancia.
+
+- [x] Task: Verificar cobertura — `Engine` ≥90% (98,11%), `MIDI` ≥80% (**91,57%**)
+  - [x] `MIDI` se mide en **un solo proceso** y **filtrando `Engine/Sources`**, según las dos ampliaciones de `workflow.md`
+  - [x] El `.profdata` hubo que fusionarlo a mano (`llvm-profdata merge`): SwiftPM no lo fusiona cuando la pasada falla, y en un proceso la pasada falla por el flake
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: Los nueve parámetros
