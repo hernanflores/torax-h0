@@ -247,6 +247,18 @@ struct ContentView: View {
                 .frame(maxWidth: 320)
             }
 
+            // La rejilla con la que medir. La recta es la de siempre, y es la
+            // que se compara contra la referencia; las otras tres son las que la
+            // rebanada 6 tiene que demostrar.
+            Picker("Rejilla", selection: $jitter.grid) {
+                ForEach(JitterMeasurementModel.Grid.allCases) { grid in
+                    Text(grid.rawValue).tag(grid)
+                }
+            }
+            .pickerStyle(.segmented)
+            .disabled(jitter.isRunning)
+            .frame(maxWidth: 520)
+
             Text("Umbral: máx < 2 ms · σ < 0,5 ms")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
