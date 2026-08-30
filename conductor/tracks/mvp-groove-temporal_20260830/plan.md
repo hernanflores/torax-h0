@@ -12,11 +12,11 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 
 > `Engine` puro. Sin CoreMIDI, sin simulador, sin hardware.
 
-- [ ] Task: Documentar la desviación **antes** de implementar (paso 8 del Task Workflow)
-  - [ ] Nota fechada en `tech-stack.md`: el horizonte de look-ahead deja de ser constante — con Delay negativo, la selección se amplía en el presupuesto de adelanto, porque un evento adelantado tiene que calcularse antes de su instante
-  - [ ] La misma nota: el origen de la rejilla deja de ser el instante de Play y pasa a ser `Play + presupuesto`
-  - [ ] La misma nota acota el coste: el presupuesto es **dinámico**, así que con Delay ≥ 0 —donde vive el default— la ventana y la latencia de knob no cambian
-  - [ ] Se escribe con la razón, no solo con la regla: la frase que enmienda es «esa latencia acota el tamaño de la ventana», y sigue siendo cierta en la mitad del rango donde no hay adelanto
+- [x] Task: Documentar la desviación **antes** de implementar (paso 8 del Task Workflow) — `7ef9703`
+  - [x] Nota fechada en `tech-stack.md`: el horizonte de look-ahead deja de ser constante — con Delay negativo, la selección se amplía en el presupuesto de adelanto, porque un evento adelantado tiene que calcularse antes de su instante
+  - [x] La misma nota: el origen de la rejilla deja de ser el instante de Play y pasa a ser `Play + presupuesto`
+  - [x] La misma nota acota el coste: el presupuesto es **dinámico**, así que con Delay ≥ 0 —donde vive el default— la ventana y la latencia de knob no cambian
+  - [x] Se escribe con la razón, no solo con la regla: la frase que enmienda es «esa latencia acota el tamaño de la ventana», y sigue siendo cierta en la mitad del rango donde no hay adelanto
 - [ ] Task: `Timing` y `Delay` como tipos validados
   - [ ] Tests (Red): `Timing` admite 50–75 y rechaza 49 y 76; su default es 50 — la rejilla recta
   - [ ] Tests (Red): `Delay` admite −100…+100 y rechaza −101 y 101; su default es 0
