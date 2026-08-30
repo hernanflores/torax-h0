@@ -22,12 +22,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): `Delay` admite −100…+100 y rechaza −101 y 101; su default es 0
   - [x] Tests (Red): **el 50% de `Timing` y el 0% de `Delay` son estados válidos y son el punto de partida**, no casos límite
   - [x] Implementación (Green): validación en el inicializador y vía `init(unchecked:)` interna, mismo idioma que `Velocity`, `Sustain` y `Probability`
-- [ ] Task: Los dos entran en `Groove` sin romper el snapshot
-  - [ ] Tests (Red): **`_isPOD(Groove.self)` y `_isPOD(Track.self)`** — el test que ya existe no se relaja ni se mueve
-  - [ ] Tests (Red): `Groove` construido sin ellos toma los defaults, para que ningún llamante existente cambie
-  - [ ] Tests (Red): `Groove.default` sigue siendo el que no interpreta nada, ahora también en el tiempo
-  - [ ] Tests (Red): `Groove.description` los incluye con el formato de la Pre Spec (`Timing 67% · Delay -25%`)
-  - [ ] Implementación (Green): dos enteros más en un valor que sigue siendo trivial
+- [x] Task: Los dos entran en `Groove` sin romper el snapshot — `c743e37`
+  - [x] Tests (Red): **`_isPOD(Groove.self)` y `_isPOD(Track.self)`** — el test que ya existe no se relaja ni se mueve
+  - [x] Tests (Red): `Groove` construido sin ellos toma los defaults, para que ningún llamante existente cambie
+  - [x] Tests (Red): `Groove.default` sigue siendo el que no interpreta nada, ahora también en el tiempo
+  - [x] Tests (Red): `Groove.description` los incluye con el formato de la Pre Spec (`Timing 67% · Delay -25%`)
+  - [x] Implementación (Green): dos enteros más en un valor que sigue siendo trivial
 - [ ] Task: Ajuste por delta, con freno en los extremos
   - [ ] Tests (Red): los dos se frenan en sus extremos y no envuelven, como los cinco anteriores
   - [ ] Tests (Red): girar contra un extremo devuelve el mismo valor, que es lo que después permite no publicar
