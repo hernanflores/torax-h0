@@ -110,6 +110,16 @@ public struct TrackScheduler {
 
     private var lookAhead: LookAheadScheduler
 
+    /// Cuánto dura un Step, que es contra lo que se miden los dos parámetros
+    /// temporales.
+    ///
+    /// **Se calcula una vez, al construir.** La rejilla la fija la
+    /// `MusicalTimeline` con la que nace este valor y no se vuelve a leer —está
+    /// documentado arriba—, así que la duración tampoco cambia. Convertirla en
+    /// cada ventana sería aritmética de coma flotante repetida en el hilo del
+    /// scheduler para obtener siempre el mismo número.
+    private let stepDurationNanoseconds: Int64
+
     /// El generador que decide qué Pulse concreto se omite.
     ///
     /// **Vive aquí y no en `Track` porque tiene estado mutable.** El snapshot
@@ -132,6 +142,24 @@ public struct TrackScheduler {
         self.material = material
         self.lookAhead = LookAheadScheduler(timeline: timeline, startingAtStep: startingStep)
         self.random = SeededRandom(seed: seed)
+        self.stepDurationNanoseconds = Int64(timeline.stepDurationNanoseconds)
+    }
+
+    /// Cuánto tiempo hay que reservar por delante para que ningún evento
+    /// adelantado se pida para un instante que ya pasó.
+    ///
+    /// Es el presupuesto del material **vigente**, así que cambia cuando cambia
+    /// el snapshot. Lo consultan los dos sitios que lo necesitan: este valor,
+    /// para ampliar su horizonte de selección en cada ventana; y
+    /// `SchedulerThread`, una sola vez al arrancar, para desplazar el origen de
+    /// la rejilla.
+    ///
+    /// Con Delay ≥ 0 vale cero y nada cambia respecto a antes de la rebanada 6.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public var advanceBudgetNanoseconds: Int64 {
+        material.groove.advanceBudgetNanoseconds(forStep: stepDurationNanoseconds)
     }
 
     /// Recoge el snapshot pendiente y emite los Steps que disparan hasta el
@@ -154,7 +182,7 @@ public struct TrackScheduler {
     ///   - horizon: The timeline horizon, in nanoseconds.
     ///   - handoff: An optional pending track snapshot to apply before processing the horizon.
     ///   - emit: A closure called with each emitted step, its pitch, groove, and timeline-relative offset.
-    /// 
+    ///
     /// Steps that do not trigger do not consume a probability draw.
     public mutating func advance(
         toHorizon horizonNanoseconds: Int64,
@@ -165,7 +193,17 @@ public struct TrackScheduler {
             material = .track(published)
         }
 
-        for step in lookAhead.advance(toHorizon: horizonNanoseconds) {
+        // **El horizonte se amplía con el presupuesto de adelanto.** Sin esto,
+        // un Step con Delay negativo se calcularía unos milisegundos antes de su
+        // rejilla y se pediría su emisión hasta un Step antes de eso: en el
+        // pasado, y en cada vuelta del anillo. Se relee del snapshot aquí y no
+        // se fija al construir porque Delay se gira mientras suena.
+        //
+        // Con Delay ≥ 0 el presupuesto es cero y el horizonte es exactamente el
+        // de antes de la rebanada 6.
+        let budget = advanceBudgetNanoseconds
+
+        for step in lookAhead.advance(toHorizon: horizonNanoseconds + budget) {
             guard material.triggers(atStep: step) else { continue }
 
             // **El orden importa: primero dispara, después decide si suena.** Un
@@ -175,11 +213,18 @@ public struct TrackScheduler {
             // un patrón que nadie tocó.
             guard material.groove.probability.sounds(drawingFrom: &random) else { continue }
 
+            // El instante de emisión es el de la rejilla más lo que Groove lo
+            // aparta. Los dos salen del mismo snapshot, recogido una vez por
+            // ventana: leerlos de sitios distintos dejaría que un Step sonara
+            // con el desplazamiento de un Track que ya no está.
+            let groove = material.groove
             emit(
                 step,
                 material.pitch(atStep: step),
-                material.groove,
+                groove,
                 lookAhead.timeline.nanosecondOffset(forStep: step)
+                    + groove.shiftNanoseconds(
+                        atStep: step, stepDurationNanoseconds: stepDurationNanoseconds)
             )
         }
     }
