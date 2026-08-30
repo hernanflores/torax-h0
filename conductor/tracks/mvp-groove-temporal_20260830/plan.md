@@ -154,25 +154,36 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   > había anotado al llegar 1/32.
 
 
-## Phase 5: La pantalla
+## Phase 5: La pantalla [checkpoint: f5bc845]
 
 > `App` no se mide (`workflow.md`). Todo lo que tiene lógica quedó en `Engine` en las fases anteriores.
 
-- [ ] Task: Los dos se leen en el estado persistente
-  - [ ] Con el acento cromático de la familia Groove, que ya existe desde la rebanada 5
-  - [ ] Formato preciso y no conversacional; la descripción vive en `Engine`
-  - [ ] El signo de `Delay` se lee sin ambigüedad: adelantar y atrasar no se distinguen por el contexto
-- [ ] Task: El valor grande transitorio cubre los nueve
-  - [ ] Girar cualquiera de los dos lo levanta, con el mismo desvanecimiento por inactividad
-  - [ ] **El anillo permanece visible debajo y nunca se oculta**
-- [ ] Task: El playhead sigue la rejilla, y se comprueba
-  - [ ] Con Timing al máximo el playhead avanza **regular**: la pantalla es el reloj, el oído es el groove
-  - [ ] No entra aritmética de Timing ni de Delay en el camino de dibujo — es lo que evita una medición de jitter más por carga visual
-- [ ] Task: Verificación en simulador
-  - [ ] Captura con los nueve parámetros presentes y el acento aplicado
-  - [ ] Contraste sobre fondo oscuro, legible como el resto
-  - [ ] Se registra la limitación conocida: el simulador no tiene MIDI, así que no se ve el transporte ni un giro real
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Los dos se leen en el estado persistente — `f5bc845`
+  - [x] Con el acento cromático de la familia Groove, que ya existe desde la rebanada 5
+  - [x] Formato preciso y no conversacional; la descripción vive en `Engine`
+  - [x] El signo de `Delay` se lee sin ambigüedad: adelantar y atrasar no se distinguen por el contexto
+- [x] Task: El valor grande transitorio cubre los nueve — `f5bc845`
+  - [x] Girar cualquiera de los dos lo levanta, con el mismo desvanecimiento por inactividad
+  - [x] **El anillo permanece visible debajo y nunca se oculta**
+- [x] Task: El playhead sigue la rejilla, y se comprueba — `f5bc845`
+  - [x] Con Timing al máximo el playhead avanza **regular**: la pantalla es el reloj, el oído es el groove
+  - [x] No entra aritmética de Timing ni de Delay en el camino de dibujo — es lo que evita una medición de jitter más por carga visual
+- [x] Task: Verificación en simulador — `f5bc845`
+  - [x] Captura con los nueve parámetros presentes y el acento aplicado
+  - [x] Contraste sobre fondo oscuro, legible como el resto
+  - [x] Se registra la limitación conocida: el simulador no tiene MIDI, así que no se ve el transporte ni un giro real
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+  > **La línea de Groove no cabía, y el corte lo decidía el ancho.** Con cinco
+  > parámetros, SwiftUI dejaba `Delay 0%` colgando solo detrás de un separador
+  > huérfano. `Groove.descriptionLines` corta por donde el dominio ya estaba
+  > cortado —qué se envía / cuándo se envía— y las dos líneas llevan el mismo
+  > acento: Groove es una familia leída en dos renglones, no dos familias.
+  > `description` sigue siendo el `joined` de las dos, así que sus tests pasaron
+  > sin tocarse.
+
+  > **Captura:** [`simulator-groove-temporal.png`](./simulator-groove-temporal.png).
+
 
 ## Phase 6: Medición y verificación en dispositivo
 
