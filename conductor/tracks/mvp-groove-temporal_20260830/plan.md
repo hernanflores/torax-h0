@@ -33,9 +33,9 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): girar contra un extremo devuelve el mismo valor, que es lo que después permite no publicar
   - [x] Tests (Red): `Delay` cruza el cero sin caso especial — es el único parámetro del motor con rango negativo
   - [x] Implementación (Green): acotado, no envoltura; reutiliza el `clamping` que ya existe
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: La rejilla desplazada
+## Phase 2: La rejilla desplazada [checkpoint: a1dbf55]
 
 > Sigue siendo `Engine` puro, y es donde vive la corrección del track. **Aritmética entera, en nanosegundos, sin coma flotante:** esto acaba corriendo en el hilo del scheduler.
 
@@ -72,7 +72,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   > máximo a cualquier objetivo es un 1%—, que además es general y no un número
   > ajustado a este caso.
 
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: El scheduler entrega el desplazamiento
 
