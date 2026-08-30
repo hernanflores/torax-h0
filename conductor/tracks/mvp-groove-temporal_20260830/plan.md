@@ -28,11 +28,11 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] Tests (Red): `Groove.default` sigue siendo el que no interpreta nada, ahora también en el tiempo
   - [x] Tests (Red): `Groove.description` los incluye con el formato de la Pre Spec (`Timing 67% · Delay -25%`)
   - [x] Implementación (Green): dos enteros más en un valor que sigue siendo trivial
-- [ ] Task: Ajuste por delta, con freno en los extremos
-  - [ ] Tests (Red): los dos se frenan en sus extremos y no envuelven, como los cinco anteriores
-  - [ ] Tests (Red): girar contra un extremo devuelve el mismo valor, que es lo que después permite no publicar
-  - [ ] Tests (Red): `Delay` cruza el cero sin caso especial — es el único parámetro del motor con rango negativo
-  - [ ] Implementación (Green): acotado, no envoltura; reutiliza el `clamping` que ya existe
+- [x] Task: Ajuste por delta, con freno en los extremos — `ab38c72`
+  - [x] Tests (Red): los dos se frenan en sus extremos y no envuelven, como los cinco anteriores
+  - [x] Tests (Red): girar contra un extremo devuelve el mismo valor, que es lo que después permite no publicar
+  - [x] Tests (Red): `Delay` cruza el cero sin caso especial — es el único parámetro del motor con rango negativo
+  - [x] Implementación (Green): acotado, no envoltura; reutiliza el `clamping` que ya existe
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: La rejilla desplazada
