@@ -67,3 +67,42 @@ FICHEROS
   M Packages/MIDI/Sources/MIDI/SchedulerThread.swift
   M Packages/MIDI/Sources/MIDI/PlayheadClock.swift
   M Packages/MIDI/Tests/MIDITests/SchedulerShiftTests.swift
+
+--- VERIFICACIÓN DE FASE 3 (2026-08-30) ---
+
+TESTS AUTOMÁTICOS
+  swift test --package-path Packages/Engine
+    262 tests, 0 fallos.
+  swift test --package-path Packages/MIDI, con la partición de CI:
+    21 + 230 tests, 0 fallos.
+  swift test --package-path Packages/MIDI, un solo proceso:
+    4 fallos, las 4 de VirtualLoopbackTests con -50. Ver abajo.
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    BUILD SUCCEEDED.
+
+COBERTURA
+  Engine 98,11%. MIDI 91,57% de líneas, con TrackScheduler y
+  SchedulerThread al 100%. Fusionando el .profdata a mano.
+
+COBERTURA DE LOS CAMBIOS DE LA FASE
+  Ficheros tocados: TrackScheduler.swift, SchedulerThread.swift,
+  PlayheadClock.swift (solo documentación).
+  Test correspondiente: SchedulerShiftTests.swift. Sin huecos.
+
+EL FLAKE, DECIDIDO CON EL USUARIO
+Medido: rama 4 de 4 pasadas con -50, main 0 de 2, partición 0 fallos.
+Determinista, no intermitente, y con la firma de siempre. Es el
+mecanismo de la ampliación del 2026-08-27 llevado hasta el final.
+Opciones planteadas: aceptar y documentar / quitar los tests que
+arrancan el bucle / tomar midi-test-flake ahora.
+El usuario eligió ACEPTAR Y DOCUMENTAR. Ampliación fechada del
+2026-08-30 añadida a workflow.md en 2f0b94c, con cómo correr MIDI en
+local y el paso extra de llvm-profdata para la cobertura.
+
+VERIFICACIÓN MANUAL
+No procede todavía: los dos parámetros ya desplazan, pero no hay knob que
+los mueva —eso es la Fase 4— ni pantalla que los muestre. Lo audible se
+verifica entero en la Fase 6, con la medición.
+
+CONFIRMACIÓN DEL USUARIO
+Confirmada la decisión sobre el flake; sin cambios pedidos al código.
