@@ -1,0 +1,46 @@
+Task: Los knobs y los pads mueven el Track seleccionado (Fase 4, v2 rebanada 1)
+
+Que se hizo
+-----------
+ControlInput guarda un Pattern en vez de un Track. track sigue existiendo como
+lectura -el seleccionado- para que la App y los tests no cambien de forma de
+preguntar. Las cuatro mutaciones -knob, pad, octava, seleccion- escriben en el
+Track seleccionado y publican el Pattern entero.
+
+trackCount pasa de 1 a Pattern.trackCount. La costura de la rebanada 7 se usa por
+primera vez y el preset no se toca: los numeros del controlador ya significaban
+lo correcto.
+
+Ficheros
+--------
+- Packages/MIDI/Sources/MIDI/ControlInput.swift                    (modificado)
+- Packages/Engine/Sources/Engine/Shape.swift                       (Track.with(pool:))
+- Packages/MIDI/Tests/MIDITests/SelectedTrackEditingTests.swift    (nuevo, 6 tests)
+
+Dos puentes de la fase 2, retirados
+------------------------------------
+- ControlInput ya no envuelve el Track en un Pattern al publicar.
+- El cierre de publicacion recibe un Pattern, asi que la App publica los
+  dieciseis sin saberlo: su cierre solo reenvia.
+
+Queda el tercero -TrackScheduler leyendo el Track 1- ya sustituido de hecho por
+PatternScheduler en la fase 3.
+
+Los tests, y lo que miden de verdad
+------------------------------------
+La mitad facil es que el seleccionado cambie. La que importa es que los otros
+quince NO: cada test que edita comprueba los quince restantes contra su estado
+anterior. Y el caso de uso completo: editar el Track 1, pasar por el 6, el 10 y
+el 15 editando de paso, volver al 1 y encontrarlo como se dejo.
+
+Dos expectativas mias, corregidas
+----------------------------------
+1. Seleccionar el Track ya seleccionado no publica -no cambia nada-, asi que el
+   step button 1 sobre el arranque devuelve false. El test lo daba por publicado.
+2. Pulses se frena en Steps, asi que el Track 16 no llega a 17 Pulses. El test
+   esperaba una suma sin tope.
+En los dos casos el codigo hacia lo correcto.
+
+Verde
+-----
+MIDI 303 tests en la particion logica; BUILD SUCCEEDED.
