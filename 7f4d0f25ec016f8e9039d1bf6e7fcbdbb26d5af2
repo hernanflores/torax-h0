@@ -32,3 +32,42 @@ setFrame reencuadra en vez de vaciar, y no publica si el pool ya cabia.
 Verde
 -----
 MIDI 250 tests en la particion logica, sin fallos.
+
+Phase Verification & Checkpoint — Fase 2: El pad es un indice, no una altura
+===========================================================================
+
+Cobertura de los cambios
+------------------------
+Desde el checkpoint 7ad404a: ControlInput.swift, ControlMapping.swift y
+PadSurface.swift. Los tres tienen tests propios -PadIndexTests,
+PadOctaveShiftInputTests, PadPoolInputTests y FrameChangeTests-.
+
+Tests automaticos
+-----------------
+  swift test --package-path Packages/MIDI (particion logica de CI)  -> 250, 0 fallos
+  swift test --package-path Packages/MIDI (particion CoreMIDI)      ->  21, 0 fallos
+  swift test --package-path Packages/Engine                         -> 311, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS -> BUILD SUCCEEDED
+
+Cobertura MIDI, en un proceso y con el .profdata fusionado a mano segun
+workflow.md: 91,91% de lineas (umbral 80%). ControlInput.swift y
+ControlMapping.swift al 100%.
+
+El flake conocido, con su firma exacta
+--------------------------------------
+La pasada en un solo proceso fallo con las 4 pruebas de VirtualLoopbackTests y
+clientCreationFailed(-50), ningun otro test. Es lo previsto por la ampliacion del
+2026-08-30 de workflow.md y por la nota de riesgo 3 del plan. En las dos
+particiones de CI no falla nada. No se atribuye al cambio bajo prueba.
+
+Verificacion manual
+-------------------
+Propuesta con iPad y BeatStep Pro sin el preset cargado: pads 1-7 metiendo notas
+de la escala y no las que envia el pad, el pad 9 una octava sobre el 1, el pad 16
+con notas ya dentro dejando el pool quieto, el pad 8 hasta el tope, la
+pentatonica apagando cuatro pads, y un knob sin borrar el pool.
+
+Confirmacion del usuario
+------------------------
+2026-08-31: 'avancemos, luego comprobamos'. La comprobacion fisica se difiere a
+la fase 5, que la incluye entera y donde es obligatoria (NFR4).
