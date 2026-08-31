@@ -48,6 +48,46 @@ public struct PadSurface: Equatable, Sendable {
         self.octaveShift = octaveShift
     }
 
+    // MARK: - El desplazamiento de octava
+
+    /// Si el pad 16 puede subir el registro una octava más.
+    ///
+    /// La pantalla lo necesita: un pad que deja de responder sin explicación
+    /// visible es un defecto, no un tope.
+    public var canShiftUp: Bool { fits(octaveShift + 1) }
+
+    /// Si el pad 8 puede bajar el registro una octava más.
+    public var canShiftDown: Bool { fits(octaveShift - 1) }
+
+    /// La superficie una octava por encima, o la misma si ya no cabe.
+    public func shiftedUp() -> PadSurface { shifted(by: 1) }
+
+    /// La superficie una octava por debajo, o la misma si ya no cabe.
+    public func shiftedDown() -> PadSurface { shifted(by: -1) }
+
+    /// **Se admite mientras *todas* las alturas asignadas quepan en 0–127.**
+    ///
+    /// En el extremo no pasa nada: no envuelve —un salto de siete octavas en
+    /// vivo es una sorpresa que nadie pidió— y no recorta contra el borde, que
+    /// dejaría dos pads sonando la misma nota sin decirlo. Las dos cosas
+    /// romperían el alineamiento por octava.
+    private func shifted(by delta: Int) -> PadSurface {
+        guard fits(octaveShift + delta) else { return self }
+        return PadSurface(frame: frame, octaveShift: octaveShift + delta)
+    }
+
+    /// Si con ese desplazamiento la superficie entera cabe en el rango MIDI.
+    ///
+    /// Basta mirar los extremos: el grado más grave del bloque de abajo y el más
+    /// agudo del de arriba. Lo de en medio queda dentro por construcción.
+    private func fits(_ shift: Int) -> Bool {
+        let degrees = frame.scale.degrees
+        guard let lowest = degrees.first, let highest = degrees.last else { return false }
+        let base = Self.baseOctaveStart + 12 * shift + frame.root.pitchClass
+        return Pitch.validRange.contains(base + lowest)
+            && Pitch.validRange.contains(base + 12 + highest)
+    }
+
     /// La altura del pad, o `nil` si no tiene ninguna asignada.
     ///
     /// Devuelve `nil` para los pads de octava —el 8 y el 16, que desplazan en
