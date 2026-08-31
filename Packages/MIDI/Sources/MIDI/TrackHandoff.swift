@@ -29,11 +29,18 @@ import Engine
 ///
 /// **Qué pasa cuando crece el modelo.** El protocolo no depende del tamaño del
 /// snapshot: llegaron Tonal y Groove, y en la v2 la ranura pasó de un `Track` a
-/// un `Pattern` de dieciséis —de 104 a 1664 bytes— sin tocar una línea de la
-/// disciplina de ranura. Lo que cambia es la aritmética del riesgo: copiar
-/// dieciséis veces más deja al lector expuesto durante más tiempo, y por eso el
-/// test de concurrencia publica un Pattern con los dieciséis Tracks
-/// correlacionados, no solo con sus campos.
+/// un `Pattern` de dieciséis sin tocar una línea de la disciplina de ranura.
+///
+/// **Lo que cuesta, medido el 2026-08-31**: `Track` son 112 bytes y `Pattern`
+/// 1792, así que el anillo de cuatro ranuras ocupa 7 KB y cada `load()` copia
+/// 1,75 KB. Medido en `debug`, un `load()` completo —dos lecturas atómicas, la
+/// copia y la comprobación de generación— sale a **274 ns**, contra una ventana
+/// de 20 ms: el 0,0014% del presupuesto. No hay nada que decidir aquí, y por eso
+/// se copia entero en vez de publicar por Track.
+///
+/// Lo que sí cambia es la aritmética del riesgo: copiar dieciséis veces más deja
+/// al lector expuesto más tiempo, y por eso el test de concurrencia publica un
+/// Pattern con los dieciséis Tracks correlacionados, no solo con sus campos.
 /// Lo que sí hay que preservar es que `Track` siga siendo un tipo trivial —sin
 /// `Array` ni nada con conteo de referencias—, porque copiarlo ocurre en el hilo
 /// del scheduler y un `retain` ahí es una violación de las reglas de tiempo

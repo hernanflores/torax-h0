@@ -201,6 +201,11 @@ final class TrackHandoffTests: XCTestCase {
     /// tarde.
     func testTheSnapshotIsSixteenTracksWideAndNothingMore() {
         XCTAssertEqual(MemoryLayout<Pattern>.size, MemoryLayout<Track>.size * 16)
+        // Medido el 2026-08-31: Track 112 bytes, Pattern 1792, y un load()
+        // completo 274 ns contra una ventana de 20 ms. La cota no es un umbral
+        // de rendimiento sino un detector de cambio de orden: si el modelo
+        // crece hasta aquí, la decisión de copiar el Pattern entero por ventana
+        // hay que volver a tomarla.
         XCTAssertLessThan(MemoryLayout<Pattern>.size, 4_096, "el snapshot creció de orden")
     }
 }
