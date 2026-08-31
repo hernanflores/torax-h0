@@ -1,0 +1,39 @@
+Task: El canal MIDI es un dato del Track (Fase 1, v2 rebanada 1)
+
+Que se hizo
+-----------
+- Channel: 1-16, con nil fuera de rango y Channel.first como constante publica.
+- Track gana 'channel' y on(_:), que devuelve el mismo Track por otro canal.
+- Pattern() reparte: el Track N arranca en el canal N.
+
+Ficheros
+--------
+- Packages/Engine/Sources/Engine/Channel.swift                (nuevo)
+- Packages/Engine/Sources/Engine/Shape.swift                  (Track)
+- Packages/Engine/Sources/Engine/Pattern.swift                (reparto de canales)
+- Packages/Engine/Tests/EngineTests/TrackChannelTests.swift   (nuevo, 8 tests)
+
+La desviacion que NO lo era
+---------------------------
+El plan pedia documentar si el tipo de canal de Engine duplicaba al de MIDI.
+Duplica el rango, si, pero NO es una desviacion de tech-stack.md: es su
+aplicacion. El motor no importa nada de plataforma -lo garantiza el compilador- y
+la conversion vive en la capa que conoce ambos lados. El precedente es Pitch, que
+ya se pago una vez por la misma razon y esta documentado en su propio tipo. Se
+documenta igual en Channel, en el sitio donde alguien se preguntara por que hay
+dos.
+
+Por eso no se toco tech-stack.md. Lo que SI va a exigir enmendarlo es la fase 2:
+el documento describe el handoff como 'un anillo de cuatro Track preasignados', y
+pasan a ser cuatro Patterns de 1664 bytes.
+
+Numeracion
+----------
+Canales 1-16 como los numera el hardware, no 0-15 como los codifica el protocolo.
+La traduccion es de la capa MIDI, que es donde ya vive MIDIChannel.
+
+Dos Tracks pueden compartir canal, y hay un test que lo fija: no es un error que
+haya que impedir.
+
+Red confirmado: 'cannot find Channel in scope'. Verde despues, 334 tests de
+Engine; MIDI sigue compilando.
