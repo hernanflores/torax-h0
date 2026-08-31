@@ -228,6 +228,29 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [ ] Si la CI falla con `clientCreationFailed(-50)`, correr la suite 3–4 veces y comparar contra `main` antes de atribuirlo al cambio
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
+## Phase: Review Fixes
+
+> **Revisión del 2026-08-30, con las fases 1–5 cerradas y la 6 pendiente de
+> hardware.** Decidido: se anotan y se deciden **después** de la verificación en
+> dispositivo. Ninguno está arreglado.
+
+- [ ] Task: **[High]** `Stop` deja sonar notas después de silenciar, con Timing o Delay
+  - [ ] `Transport.stop()` sella el All Notes Off y el barrido del pool en `now + lookAhead`, un número elegido para caer **después** de todo lo ya entregado a CoreMIDI
+  - [ ] Esa cota la daba el look-ahead, y **esta rebanada la rompe**: un evento se calcula cuando su rejilla entra en el horizonte pero se emite en `rejilla + desplazamiento`, hasta **1,5 Steps** más tarde (Timing 75% + Delay +100%)
+  - [ ] Consecuencia: el silencio llega antes que esos note-on y suenan después de parar — a 1/1 y 20 BPM, hasta 18 s después. No quedan notas colgadas (su note-off también va sellado), pero **Stop deja de callar**
+  - [ ] Ningún test lo vio: la suite de `Transport` verifica *qué* manda `stop()`, no su instante relativo a lo pendiente
+  - [ ] Arreglo propuesto: **descartar lo pendiente en vez de intentar llegar después** — `MIDIFlushOutput` sobre el destino y silencio inmediato; el All Notes Off y el barrido del pool, que ya existen, cubren las notas cuyo note-off se acaba de descartar
+- [ ] Task: **[Medium]** La limitación 2 describe un síntoma que el código no produce
+  - [ ] `spec.md` y el comentario de `SchedulerThread` dicen que bajar Delay a negativo mientras suena «recorta una ventana de eventos» por el `max(0, ...)`. **Ese recorte es inalcanzable**: un Step solo se calcula cuando su rejilla entra en el horizonte ampliado, así que su instante nunca queda por detrás del presente — el límite se toca exactamente, nunca se cruza
+  - [ ] Lo que sí ocurre: la voz **salta hacia atrás un Step**, así que hasta una ventana de notas se apelotona en el instante del giro; y al revés, subir el Delay deja un hueco de un Step
+  - [ ] El `max(0, ...)` es una guarda defensiva **sin caso conocido**, y su comentario debe decir eso y no otra cosa
+  - [ ] **`device-verification.md` hereda el error:** su bloque 6 pide comprobar que «no suene una ráfaga amontonada», que es exactamente lo que sí va a pasar. Corregir antes de ejecutar la guía, o leerlo con esta nota delante
+- [ ] Task: **[Low]** `ForEach(id: \.self)` sobre las dos líneas de Groove en `ContentView`
+  - [ ] Identificar por contenido asume que las dos cadenas nunca son iguales; hoy no pueden serlo, pero la invariante vive lejos de donde se declara
+- [ ] Task: **[Low]** `Int64(timeline.stepDurationNanoseconds)` puede atrapar con una Division extrema
+  - [ ] `Division` admite cualquier fracción positiva por su inicializador público, no solo las seis de `ordered`; una muy lenta desborda al **construir** el scheduler
+  - [ ] Misma clase de trampa que ya tenía `nanosecondOffset(forStep:)`, un poco más temprana. Inalcanzable desde la interfaz actual — anotado para que conste
+
 ## Enmiendas al plan
 
 **2026-08-30, checkpoint de la Fase 1 — el tresillo exacto no es representable.**
