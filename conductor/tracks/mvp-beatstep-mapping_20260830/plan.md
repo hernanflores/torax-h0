@@ -72,13 +72,13 @@ la rebanada 8.
   - [x] Tests (Red): el bloque es un dato del mapeo, no una constante repartida por el código: cambiarlo mueve los dieciséis pads a la vez
   - [x] Tests (Red): **el número de transporte no es la altura musical.** Un test que fije explícitamente que el pad cuyo mensaje es la nota 36 puede producir la nota 48, para que la coincidencia numérica del bloque no se lea nunca como identidad
   - [x] Implementación (Green): resta contra la nota base del bloque, sin tabla
-- [ ] Task: Pulsar un pad alterna el pool por índice
-  - [ ] Tests (Red): los casos de `PadPoolInputTests` que siguen valiendo, **adaptados al índice y no reescritos**: un pad mete la altura, el mismo pad la saca, varios pads construyen un pool, el noveno se rechaza sin publicar, el note-off no alterna, el note-on de velocity cero no alterna
-  - [ ] Tests (Red): **un pad sin altura asignada no publica nada** — el 6 con `pentatonic`, y los 8 y 16 en cuanto a pool
-  - [ ] Tests (Red): el caso que desaparece: ya no existe «una altura fuera del marco tonal», porque toda altura de la superficie sale de la escala. El test viejo se sustituye por el que fija que **toda nota que un pad puede meter es admitida por el marco**, sobre las cinco escalas
-  - [ ] Tests (Red): girar un knob no borra el pool y pulsar un pad no borra el Shape — los dos tests de convivencia que ya existen siguen verdes
-  - [ ] Implementación (Green): `ControlInput` consulta la superficie y alterna; el resto del camino no cambia
-- [ ] Task: Los pads 8 y 16 desplazan sin tocar el pool
+- [x] Task: Pulsar un pad alterna el pool por índice — `6fefe6e`
+  - [x] Tests (Red): los casos de `PadPoolInputTests` que siguen valiendo, **adaptados al índice y no reescritos**: un pad mete la altura, el mismo pad la saca, varios pads construyen un pool, el noveno se rechaza sin publicar, el note-off no alterna, el note-on de velocity cero no alterna
+  - [x] Tests (Red): **un pad sin altura asignada no publica nada** — el 6 con `pentatonic`, y los 8 y 16 en cuanto a pool
+  - [x] Tests (Red): el caso que desaparece: ya no existe «una altura fuera del marco tonal», porque toda altura de la superficie sale de la escala. El test viejo se sustituye por el que fija que **toda nota que un pad puede meter es admitida por el marco**, sobre las cinco escalas
+  - [x] Tests (Red): girar un knob no borra el pool y pulsar un pad no borra el Shape — los dos tests de convivencia que ya existen siguen verdes
+  - [x] Implementación (Green): `ControlInput` consulta la superficie y alterna; el resto del camino no cambia
+- [x] Task: Los pads 8 y 16 desplazan sin tocar el pool
   - [ ] Tests (Red): **con notas dentro del pool, desplazar la octava deja el pool byte a byte idéntico.** Es `product-guidelines.md` —cambiar un parámetro nunca destruye material— y es la decisión 4 del spec
   - [ ] Tests (Red): bajar, meter dos graves, subir y meter dos agudas deja las cuatro en el pool — el caso de uso que justifica la superficie móvil
   - [ ] Tests (Red): en el tope, pulsar el pad no publica nada y no cambia el estado
