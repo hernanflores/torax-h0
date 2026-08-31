@@ -43,3 +43,25 @@ El máximo de 174 BPM, que había llegado transcrito como 0,0135 ms y se
 registró como 0,135 ms por imposibilidad aritmética, queda CONFIRMADO
 contra Documents/jitter-report-recta.txt: son 0,135 ms. Errata al copiar,
 no un dato anómalo. La medición recta no tiene ya nada pendiente.
+
+--- VERIFICACIÓN EN DISPOSITIVO (Fase 6, 2026-08-30) ---
+
+Bloques 4–8 de device-verification.md ejecutados en iPad con BeatStep Pro
+y sintetizador. Validados OK por el usuario.
+
+  4. Timing al oído — swing progresivo, tresillo reconocible al 67%,
+     extremo ordenado al 75%, pares sin moverse.
+  5. Delay al oído — arrastra y empuja la voz entera, el cero no engancha,
+     los dos parámetros se suman.
+  6. Las tres limitaciones, provocadas a propósito.
+  7. El playhead sigue la rejilla con Timing al máximo.
+  8. Lo entregado hasta la rebanada 5, en pie.
+
+Medición recta: CUMPLE (ver nota anterior).
+Medición desplazada: no ejecutada, por decisión fechada del 2026-08-30
+con la razón escrita en el plan.
+
+PENDIENTE, Y NO ESTÁ EN LA GUÍA
+La comprobación del hallazgo High de la revisión —con Delay positivo y
+Division lenta, si Stop deja sonar algo después— se propuso aparte y no
+consta reportada. Sigue abierta en la fase Review Fixes.
