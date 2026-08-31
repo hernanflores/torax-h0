@@ -91,7 +91,7 @@ la rebanada 8.
   - [x] Implementación (Green)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: El preset completo — knobs y step buttons
+## Phase 3: El preset completo — knobs y step buttons [checkpoint: 5a979d7]
 
 > `MIDI`. Aquí ya no hay cambio de modelo: es la tabla de números y lo que
 > deliberadamente no se asigna.
@@ -111,7 +111,7 @@ la rebanada 8.
   - [x] Tests (Red): un barrido de los 128 CC y las 128 notas sobre un `ControlInput` recién construido: **nada fuera de los bloques declarados publica**, y nada revienta
   - [x] Tests (Red): el canal MIDI no se filtra, y el test lo fija como decisión y no como olvido — el mismo mensaje en dos canales distintos hace lo mismo
   - [x] Implementación (Green): si el barrido encuentra un camino no declarado, se cierra
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: La octava en pantalla
 
