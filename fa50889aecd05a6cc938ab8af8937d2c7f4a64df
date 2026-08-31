@@ -1,0 +1,48 @@
+Task: TrackHandoff publica un Pattern (Fase 2, v2 rebanada 1)
+
+Que se hizo
+-----------
+La ranura del handoff pasa de Track a Pattern. El protocolo no cambia ni una
+linea: la disciplina de ranura nunca dependio del tamano del snapshot, y la
+documentacion del tipo ya lo anticipaba -'cuando lleguen Tonal y Groove, la
+ranura simplemente sera mayor'-. Ahora lo dice con el numero: de 104 a 1664
+bytes.
+
+Ficheros
+--------
+- Packages/MIDI/Sources/MIDI/TrackHandoff.swift           (ranura y API)
+- Packages/MIDI/Sources/MIDI/Transport.swift              (estado y puente)
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift         (lee el Track 1)
+- Packages/MIDI/Sources/MIDI/ControlInput.swift           (publica envolviendo)
+- Packages/MIDI/Tests/MIDITests/TrackHandoffTests.swift   (adaptado + 2 nuevos)
+- TrackSchedulerTests, SchedulerShiftTests, ControlInputTests, PadPoolInputTests
+  (adaptados a la firma nueva)
+
+El test que gana valor con el cambio
+------------------------------------
+El detector de lecturas mezcladas se amplia. Con un Track solo, la mezcla se veia
+entre sus campos -Steps, Pulses y Rotate correlacionados-; con dieciseis se ve
+tambien ENTRE Tracks: una lectura rota traeria el Track 3 de una publicacion y el
+11 de otra. correlatedPattern(_:) llena los dieciseis con el mismo valor y
+assertCorrelated comprueba las dos cosas.
+
+El escritor concurrente baja de 20.000 a 2.000 vueltas: cada publicacion copia
+dieciseis veces mas y lo que se mide es la mezcla, no el rendimiento.
+
+Tres puentes temporales, con fecha de retirada
+-----------------------------------------------
+1. TrackHandoff.init(_ track: Track) — envuelve en un Pattern.
+2. Transport.publish(_ track: Track) — sustituye el Track 1 CONSERVANDO los otros
+   quince, que es lo que hace que el puente no mienta: no reinicia nada.
+3. TrackScheduler lee el Track 1 del Pattern publicado.
+
+Los tres estan marcados en el codigo como puentes de la fase 2 y se retiran en la
+fase 4, cuando la entrada publique el Pattern entero. Se descarto un cuarto
+puente -TrackHandoff.publish(_ track:)- justamente porque no podia evitar mentir:
+para conservar los otros quince tendria que leerse a si mismo, y load() puede
+devolver nil.
+
+Verde
+-----
+MIDI 274 tests en la particion logica y 21 en la de CoreMIDI, sin fallos.
+xcodebuild build (generic/iOS): BUILD SUCCEEDED.
