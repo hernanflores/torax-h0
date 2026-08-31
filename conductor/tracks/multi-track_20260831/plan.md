@@ -48,12 +48,12 @@ regresión la bloquea.
 > depende del tamaño del snapshot: la ranura simplemente será mayor». Esta fase
 > lo cobra.
 
-- [~] Task: `TrackHandoff` publica un `Pattern`
-  - [ ] Tests (Red): publicar y leer devuelve los dieciséis Tracks intactos
-  - [ ] Tests (Red): los tests de disciplina de ranura que ya existen siguen valiendo **adaptados al valor nuevo, no reescritos**: el lector descarta si el escritor le da alcance, y nunca lee una ranura a medio escribir
-  - [ ] Tests (Red): el escritor concurrente y el lector en bucle no producen ningún `Pattern` mezclado —mitad de una publicación y mitad de otra—, que es el fallo que el anillo existe para evitar y que con un valor mayor es más fácil de provocar
-  - [ ] Implementación (Green): el tipo de la ranura, sin tocar el protocolo
-- [ ] Task: El coste de copiar el snapshot, medido y escrito
+- [x] Task: `TrackHandoff` publica un `Pattern` — `fa50889`
+  - [x] Tests (Red): publicar y leer devuelve los dieciséis Tracks intactos
+  - [x] Tests (Red): los tests de disciplina de ranura que ya existen siguen valiendo **adaptados al valor nuevo, no reescritos**: el lector descarta si el escritor le da alcance, y nunca lee una ranura a medio escribir
+  - [x] Tests (Red): el escritor concurrente y el lector en bucle no producen ningún `Pattern` mezclado —mitad de una publicación y mitad de otra—, que es el fallo que el anillo existe para evitar y que con un valor mayor es más fácil de provocar
+  - [x] Implementación (Green): el tipo de la ranura, sin tocar el protocolo
+- [~] Task: El coste de copiar el snapshot, medido y escrito
   - [ ] Comprobar el tamaño real de `Pattern` con `MemoryLayout` y **registrarlo en la git note**: es lo que el hilo del scheduler copia en cada ventana
   - [ ] Si el tamaño resulta desproporcionado para copiarlo por ventana, **parar y decidirlo explícitamente** en vez de seguir: la alternativa —leer solo lo que cambió— es otro diseño, no un ajuste
   - [ ] Dejar el número escrito en la documentación del handoff, que es donde alguien lo buscará
