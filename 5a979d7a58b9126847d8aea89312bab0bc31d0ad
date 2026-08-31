@@ -1,0 +1,32 @@
+Task: Todo lo no asignado se ignora en silencio, y esta probado (Fase 3, rebanada 7)
+
+Que se hizo
+-----------
+Solo tests: el barrido que convierte NFR7 de criterio escrito en comprobacion.
+
+  - los 128 CC: solo publican los nueve knobs asignados y los dieciseis step
+    buttons; el resto no publica y no toca el Track
+  - las 128 notas: solo publican las del bloque de pads; el resto no toca el pool
+  - los 128 note-off: ninguno publica
+  - el canal no se filtra: el mismo pad en los dieciseis canales mete la misma
+    nota, y el mismo CC en dos canales deja el Track identico
+
+Ficheros
+--------
+- Packages/MIDI/Tests/MIDITests/UnassignedInputTests.swift   (nuevo, 5 tests)
+
+Resultado
+---------
+El barrido NO encontro ningun camino sin declarar, asi que no hubo nada que
+cerrar. Se registra como resultado y no como silencio: la implementacion no
+cambio porque no hacia falta, no porque no se mirara.
+
+Sobre el canal
+--------------
+Queda fijado como decision. Exigir un canal concreto seria un modo de fallo
+silencioso -todo conectado, nada responde- y el BeatStep Pro puede estar en
+cualquiera. Un test lo dice para que nadie lo lea como un olvido y lo 'arregle'.
+
+Verde
+-----
+MIDI 272 tests en la particion logica, sin fallos.
