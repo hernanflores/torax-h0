@@ -33,6 +33,20 @@ public final class ControlInput: @unchecked Sendable {
     /// táctil, y cambiarlas **reencuadra el pool** en vez de vaciarlo.
     public var frame: TonalFrame { surface.frame }
 
+    /// Qué Track está seleccionado, 0 el primero.
+    ///
+    /// **La semántica final es la de v2** —el step button N selecciona el
+    /// Track N— y se implementa entera aquí, con un solo Track detrás en v1.
+    /// Es lo que evita que el preset haya que reescribirlo cuando los haya: los
+    /// números del controlador ya significan lo correcto.
+    public private(set) var selectedTrackIndex = 0
+
+    /// Cuántos Tracks hay detrás de los step buttons. **Uno en v1.**
+    ///
+    /// Es la costura por donde entra v2: los step buttons sin Track detrás se
+    /// ignoran en silencio, con el mismo criterio que un CC sin asignar.
+    private let trackCount: Int
+
     private let publish: @Sendable (Track) -> Void
     private let mapping: ControlMapping
     private let encoding: RelativeEncoding
@@ -47,13 +61,15 @@ public final class ControlInput: @unchecked Sendable {
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publish: @escaping @Sendable (Track) -> Void,
         mapping: ControlMapping = .beatStepPro,
-        encoding: RelativeEncoding = .twosComplement
+        encoding: RelativeEncoding = .twosComplement,
+        trackCount: Int = 1
     ) {
         self.track = track
         self.surface = PadSurface(frame: frame)
         self.publish = publish
         self.mapping = mapping
         self.encoding = encoding
+        self.trackCount = trackCount
     }
 
     /// Publica directamente en un handoff. Atajo para tests y para quien no
@@ -63,14 +79,16 @@ public final class ControlInput: @unchecked Sendable {
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publishingTo handoff: TrackHandoff,
         mapping: ControlMapping = .beatStepPro,
-        encoding: RelativeEncoding = .twosComplement
+        encoding: RelativeEncoding = .twosComplement,
+        trackCount: Int = 1
     ) {
         self.init(
             track: track,
             frame: frame,
             publish: { handoff.publish($0) },
             mapping: mapping,
-            encoding: encoding
+            encoding: encoding,
+            trackCount: trackCount
         )
     }
 
@@ -89,6 +107,12 @@ public final class ControlInput: @unchecked Sendable {
     public func receive(_ message: MIDIMessage) -> Bool {
         switch message {
         case .controlChange(_, let controller, let value):
+            // Un step button no es un knob: se despacha antes, y su soltada
+            // —valor cero— no hace nada, igual que el note-off de un pad.
+            if let index = mapping.stepButtonIndex(for: controller) {
+                guard value > 0 else { return false }
+                return selectTrack(index)
+            }
             return turn(controller, by: value)
         case .noteOn(_, let note, let velocity):
             // Velocity cero es la convención de apagado de muchos
@@ -161,6 +185,20 @@ public final class ControlInput: @unchecked Sendable {
         guard adjusted != track.pool else { return false }
 
         track = Track(shape: track.shape, pool: adjusted)
+        publish(track)
+        return true
+    }
+
+    /// Un step button selecciona el Track de su posición.
+    ///
+    /// **En v1 solo el primero tiene Track detrás**; los otros quince se ignoran
+    /// en silencio, con el mismo criterio que un CC sin asignar. Seleccionar el
+    /// que ya estaba tampoco publica: es una operación sin efecto, no un
+    /// reinicio.
+    private func selectTrack(_ index: Int) -> Bool {
+        guard index < trackCount, index != selectedTrackIndex else { return false }
+
+        selectedTrackIndex = index
         publish(track)
         return true
     }
