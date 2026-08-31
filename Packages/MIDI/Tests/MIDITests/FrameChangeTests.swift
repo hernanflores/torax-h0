@@ -10,7 +10,7 @@ final class FrameChangeTests: XCTestCase {
 
     func testChangingTheScaleReframesThePoolInsteadOfClearingIt() {
         let input = makeInput(scale: .major, root: 0)
-        for note in [60, 62, 64] { input.receive(pad(note)) }
+        for index in [0, 1, 2] { input.receive(pad(index)) }
         XCTAssertEqual(input.track.pool.count, 3)
 
         input.setFrame(TonalFrame(scale: .minor, root: Root(0)!))
@@ -23,7 +23,7 @@ final class FrameChangeTests: XCTestCase {
 
     func testChangingTheRootReframesToo() {
         let input = makeInput(scale: .major, root: 0)
-        for note in [60, 64, 67] { input.receive(pad(note)) }
+        for index in [0, 2, 4] { input.receive(pad(index)) }
 
         input.setFrame(TonalFrame(scale: .major, root: Root(6)!))
 
@@ -35,7 +35,7 @@ final class FrameChangeTests: XCTestCase {
     /// Cambiar el marco no toca el Shape: son capas distintas del motor.
     func testChangingTheFrameKeepsTheShape() {
         let input = makeInput(scale: .major, root: 0)
-        input.receive(pad(61 + 1))
+        input.receive(pad(1))
         let before = input.track.shape
 
         input.setFrame(TonalFrame(scale: .phrygian, root: Root(3)!))
@@ -46,18 +46,26 @@ final class FrameChangeTests: XCTestCase {
     /// snapshot idéntico es trabajo y ruido para nada.
     func testAFrameThatChangesNothingDoesNotPublish() {
         let input = makeInput(scale: .major, root: 0)
-        input.receive(pad(60))  // Do está en Do mayor y en Do menor
+        input.receive(pad(0))  // el pad 1 da Do, que está en Do mayor y en Do menor
         XCTAssertFalse(input.setFrame(TonalFrame(scale: .minor, root: Root(0)!)))
     }
 
-    /// Tras cambiar el marco, los pads admiten las notas nuevas y rechazan las
-    /// que se salieron.
+    /// **Tras cambiar el marco, el mismo pad da otra nota.** Ya no hay pads que
+    /// se acepten o se rechacen según la escala: el pad 2 es el grado 2, y el
+    /// grado 2 de Do mayor es Re y el de Do frigio es Do#.
     func testThePadsFollowTheNewFrame() {
         let input = makeInput(scale: .major, root: 0)
-        XCTAssertFalse(input.receive(pad(61)), "Do# no está en Do mayor")
+        XCTAssertTrue(input.receive(pad(1)))
+        XCTAssertTrue(input.track.pool.contains(Pitch(50)!), "grado 2 de Do mayor")
 
         input.setFrame(TonalFrame(scale: .phrygian, root: Root(0)!))
-        XCTAssertTrue(input.receive(pad(61)), "Do# sí está en Do frigio")
+        XCTAssertEqual(input.surface.pitch(at: 1)?.value, 49, "grado 2 de Do frigio")
+
+        // Sobre un input limpio, para no alternar la nota que el reencuadre ya
+        // movió: pulsar el pad 2 mete el grado 2 del marco nuevo.
+        let fresh = makeInput(scale: .phrygian, root: 0)
+        XCTAssertTrue(fresh.receive(pad(1)))
+        XCTAssertTrue(fresh.track.pool.contains(Pitch(49)!))
     }
 
     // MARK: - Helpers
@@ -70,7 +78,12 @@ final class FrameChangeTests: XCTestCase {
         )
     }
 
-    private func pad(_ note: Int) -> MIDIMessage {
-        .noteOn(channel: MIDIChannel(1)!, note: MIDINote(note)!, velocity: MIDIVelocity(100)!)
+    /// El pad `index` —0 es el primero—, no la nota `index`.
+    private func pad(_ index: Int) -> MIDIMessage {
+        .noteOn(
+            channel: MIDIChannel(1)!,
+            note: MIDINote(Int(ControlMapping.defaultPadBlock.value) + index)!,
+            velocity: MIDIVelocity(100)!
+        )
     }
 }

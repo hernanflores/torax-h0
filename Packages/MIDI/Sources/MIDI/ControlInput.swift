@@ -19,11 +19,19 @@ public final class ControlInput: @unchecked Sendable {
     /// una lectura, y perder un giro por eso sería un knob que no responde.
     public private(set) var track: Track
 
-    /// El marco tonal vigente: qué alturas admiten los pads.
+    /// La superficie de pads vigente: qué altura tiene cada uno de los
+    /// dieciséis.
+    ///
+    /// **Es lo que sustituye al filtro cromático.** Hasta la rebanada 7 el
+    /// número de nota entrante era la altura y el marco decidía si pasaba;
+    /// ahora el número solo dice qué pad se pulsó y la altura sale de aquí.
+    public private(set) var surface: PadSurface
+
+    /// El marco tonal vigente: de qué escala salen los grados de los pads.
     ///
     /// Se puede cambiar en caliente porque Scale y Root son configuración
     /// táctil, y cambiarlas **reencuadra el pool** en vez de vaciarlo.
-    public private(set) var frame: TonalFrame
+    public var frame: TonalFrame { surface.frame }
 
     private let publish: @Sendable (Track) -> Void
     private let mapping: ControlMapping
@@ -42,7 +50,7 @@ public final class ControlInput: @unchecked Sendable {
         encoding: RelativeEncoding = .twosComplement
     ) {
         self.track = track
-        self.frame = frame
+        self.surface = PadSurface(frame: frame)
         self.publish = publish
         self.mapping = mapping
         self.encoding = encoding
@@ -87,7 +95,7 @@ public final class ControlInput: @unchecked Sendable {
             // controladores. Alternar en la pulsación **y** en la soltada sería
             // no alternar: cada pad dejaría el pool como estaba.
             guard velocity.value > 0 else { return false }
-            return toggle(note)
+            return press(note)
         case .noteOff:
             return false
         }
@@ -124,16 +132,20 @@ public final class ControlInput: @unchecked Sendable {
         return true
     }
 
-    /// Un pad alterna la pertenencia de una altura al pool.
+    /// Un pad alterna la pertenencia de su altura al pool.
     ///
-    /// **Fuera del marco tonal se ignora en silencio**, igual que un CC sin
-    /// mapear: en una sesión real llegan mensajes de todo tipo y no es asunto de
-    /// la entrada quejarse de ellos. La Pre Spec lo pide así — «solo están
-    /// disponibles las notas permitidas por la Scale actual».
-    private func toggle(_ note: MIDINote) -> Bool {
-        // `MIDINote` y `Pitch` comparten el rango 0–127 por definición del
-        // protocolo, así que la conversión no puede fallar.
-        guard let pitch = Pitch(Int(note.value)), frame.allows(pitch) else { return false }
+    /// **El número de nota solo dice qué pad se pulsó.** La altura la pone la
+    /// superficie, así que ya no hay nada que filtrar: todo lo que un pad puede
+    /// meter en el pool sale de la escala por construcción.
+    ///
+    /// Se ignoran en silencio, con el mismo criterio que un CC sin asignar: una
+    /// nota fuera del bloque de pads, un pad sin grado —los que sobran cuando la
+    /// escala tiene menos de siete— y los pads de octava, que desplazan en vez
+    /// de sonar. Ninguno es un error: en una sesión real llegan mensajes de todo
+    /// tipo.
+    private func press(_ note: MIDINote) -> Bool {
+        guard let index = mapping.padIndex(for: note) else { return false }
+        guard let pitch = surface.pitch(at: index) else { return false }
 
         let adjusted = track.pool.toggling(pitch)
         // El pool lleno rechaza la novena: no cambió nada que publicar.
@@ -151,7 +163,7 @@ public final class ControlInput: @unchecked Sendable {
     /// del marco nuevo.
     @discardableResult
     public func setFrame(_ frame: TonalFrame) -> Bool {
-        self.frame = frame
+        surface = PadSurface(frame: frame, octaveShift: surface.octaveShift)
 
         let adjusted = track.pool.reframed(to: frame)
         guard adjusted != track.pool else { return false }
