@@ -22,14 +22,14 @@ regresión la bloquea.
 > el resto de la rebanada es posible: si el conjunto no es un valor trivial, no
 > puede cruzar al hilo del scheduler y hay que rehacer el enfoque.
 
-- [ ] Task: `Pattern` — los dieciséis Tracks como un solo valor
-  - [ ] Tests (Red): un `Pattern` recién construido tiene **dieciséis** Tracks y ninguno es opcional; no hay Tracks que crear ni destruir
-  - [ ] Tests (Red): **`_isPOD(Pattern.self)` es verdadero.** Es la red que ya vigila a `Track`, extendida al tipo que de verdad cruza al hilo de tiempo real
-  - [ ] Tests (Red): leer un índice fuera de 0–15 no revienta — mismo criterio que un pad fuera de la superficie
-  - [ ] Tests (Red): sustituir un Track devuelve un `Pattern` nuevo con **solo ese** cambiado, comprobado sobre los otros quince
-  - [ ] Implementación (Green): almacenamiento inline de tamaño fijo, por la misma razón que `PitchPool` lo es — un `Array` traería conteo de referencias y rompería la trivialidad
-  - [ ] **El nombre es `Pattern` y no una palabra nueva** (NFR6): la Pre Spec llama así al conjunto de los dieciséis Tracks. Que todavía no se pueda tener más de uno es una limitación, no otro concepto
-- [ ] Task: El Track por defecto y el arranque
+- [x] Task: `Pattern` — los dieciséis Tracks como un solo valor — `b0d16cd`
+  - [x] Tests (Red): un `Pattern` recién construido tiene **dieciséis** Tracks y ninguno es opcional; no hay Tracks que crear ni destruir
+  - [x] Tests (Red): **`_isPOD(Pattern.self)` es verdadero.** Es la red que ya vigila a `Track`, extendida al tipo que de verdad cruza al hilo de tiempo real
+  - [x] Tests (Red): leer un índice fuera de 0–15 no revienta — mismo criterio que un pad fuera de la superficie
+  - [x] Tests (Red): sustituir un Track devuelve un `Pattern` nuevo con **solo ese** cambiado, comprobado sobre los otros quince
+  - [x] Implementación (Green): almacenamiento inline de tamaño fijo, por la misma razón que `PitchPool` lo es — un `Array` traería conteo de referencias y rompería la trivialidad
+  - [x] **El nombre es `Pattern` y no una palabra nueva** (NFR6): la Pre Spec llama así al conjunto de los dieciséis Tracks. Que todavía no se pueda tener más de uno es una limitación, no otro concepto
+- [~] Task: El Track por defecto y el arranque
   - [ ] Tests (Red): el `Pattern` inicial tiene material **solo en el Track 1**, con el pool de una altura que la app ya usa; los otros quince están vacíos
   - [ ] Tests (Red): un Track vacío no dispara nada aunque su Shape tenga Pulses — el comportamiento de hoy, comprobado ahora sobre quince a la vez
   - [ ] Implementación (Green)
