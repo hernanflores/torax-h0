@@ -58,7 +58,7 @@ veces sin que afectara a nada.
 
 ---
 
-- [~] **Track: MVP rebanada 7 — Preset del BeatStep Pro: knobs, pads y step buttons**
+- [x] **Track: MVP rebanada 7 — Preset del BeatStep Pro: knobs, pads y step buttons** — los 48 controles verificados en iPad, sin discrepancias
   *Link: [conductor/tracks/mvp-beatstep-mapping_20260830/index.md](./tracks/mvp-beatstep-mapping_20260830/index.md)*
 
   Abierto el 2026-08-30. Sustituye el mapeo provisional por un preset declarado y
@@ -70,6 +70,13 @@ veces sin que afectara a nada.
   pool.
 
   No toca el motor y **no lleva medición de jitter** — no mueve ningún instante.
+
+  **Cerrado el 2026-08-31**, PR [#17](https://github.com/hernanflores/torax-h0/pull/17).
+  Las cinco fases con checkpoint, `Engine` al 98,36% y `MIDI` al 92,52%, y el
+  preset entregado como artefacto: `preset/Torax.beatsteppro` exportado desde
+  MIDI Control Center, con su README y la tabla de los 48 controles. La
+  verificación en dispositivo no encontró ninguna discrepancia, así que el número
+  del bloque de pads —la única suposición del track— resultó correcto.
 
 ---
 
