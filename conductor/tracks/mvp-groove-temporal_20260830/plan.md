@@ -185,7 +185,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   > **Captura:** [`simulator-groove-temporal.png`](./simulator-groove-temporal.png).
 
 
-## Phase 6: Medición y verificación en dispositivo
+## Phase 6: Medición y verificación en dispositivo [checkpoint: a19fb23]
 
 > **Requiere iPad, BeatStep Pro y un sintetizador.** Es la fase que decide si la rebanada entra: `workflow.md` nombra explícitamente a Timing y Delay entre lo que exige medir, y una regresión bloquea la tarea.
 
@@ -201,8 +201,8 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   > los tests —`material(for:)`— se escribió junto a ellos, así que lo único que
   > hubo fue el fallo de compilación por no existir. No cambia lo que cubren,
   > pero no es el ciclo que `workflow.md` pide.
-- [ ] Task: Los encoders en `Relative #2` antes de empezar
-  - [ ] Sin eso, un clic se decodifica como ±63 y todo salta a su extremo — nota del 2026-08-28 en `workflow.md`
+- [x] Task: Los encoders en `Relative #2` antes de empezar
+  - [x] Sin eso, un clic se decodifica como ±63 y todo salta a su extremo — nota del 2026-08-28 en `workflow.md`
 - [x] Task: **Medición recta** — la regresión y la atribución — **CUMPLE**, medida el 2026-08-30
   - [x] Con el Groove default, a 60, 120 y 174 BPM, 1000 eventos
 
@@ -227,20 +227,30 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] **Qué queda sin verificar en dispositivo.** El presupuesto de adelanto con números. Detrás quedan el barrido exhaustivo de la Fase 2 —el desplazamiento nunca es más negativo que el presupuesto— y los tests de origen y horizonte de la Fase 3, más el bloque 6 de la guía al oído.
   - [x] **Cuándo volver a ella.** Si aparece una regresión de timing, el arnés sigue ahí y ahora sabe correr desplazado (`a19fb23`): es el instrumento para bisecar, no trabajo perdido.
   - [ ] *(No ejecutada: `Timing 67%`, `Delay +50%`, `Delay −50%`.)*
-- [ ] Task: Escuchar los dos
-  - [ ] **Timing:** subirlo convierte la línea recta en swing; al 66,7% el tresillo es reconocible; al 75% es el extremo y sigue sonando ordenado
-  - [ ] **Delay:** adelanta y atrasa la voz entera contra el pulso, de forma audible y proporcional
-  - [ ] Los dos se oyen dentro del Step siguiente al giro, con Delay ≥ 0
-  - [ ] La limitación 1 se observa a propósito: Delay −100% en una Division lenta, para confirmar que el arranque tarda lo que tiene que tardar y que el síntoma es el previsto
-  - [ ] La limitación 3 se observa a propósito: Timing alto con Sustain largo, para confirmar que el corte es el de la rebanada 5 con otro umbral y no un defecto nuevo
-- [ ] Task: Lo entregado sigue en pie
-  - [ ] Transporte, anillo, playhead, pool, Scale, Root, Velocity, Sustain y Probability siguen funcionando
-  - [ ] El playhead avanza regular con Timing al máximo
-  - [ ] Sin controlador conectado: los nueve se leen pero no se editan; Scale y Root sí, que son configuración
-- [ ] Task: Cobertura final y Pull Request
-  - [ ] `Engine` ≥90% y `MIDI` ≥80%, esta última en un solo proceso y filtrando `Engine/Sources`
-  - [ ] Si la CI falla con `clientCreationFailed(-50)`, correr la suite 3–4 veces y comparar contra `main` antes de atribuirlo al cambio
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Escuchar los dos
+  - [x] **Timing:** subirlo convierte la línea recta en swing; al 66,7% el tresillo es reconocible; al 75% es el extremo y sigue sonando ordenado
+  - [x] **Delay:** adelanta y atrasa la voz entera contra el pulso, de forma audible y proporcional
+  - [x] Los dos se oyen dentro del Step siguiente al giro, con Delay ≥ 0
+  - [x] La limitación 1 se observa a propósito: Delay −100% en una Division lenta, para confirmar que el arranque tarda lo que tiene que tardar y que el síntoma es el previsto
+  - [x] La limitación 3 se observa a propósito: Timing alto con Sustain largo, para confirmar que el corte es el de la rebanada 5 con otro umbral y no un defecto nuevo
+- [x] Task: Lo entregado sigue en pie
+  - [x] Transporte, anillo, playhead, pool, Scale, Root, Velocity, Sustain y Probability siguen funcionando
+  - [x] El playhead avanza regular con Timing al máximo
+  - [x] Sin controlador conectado: los nueve se leen pero no se editan; Scale y Root sí, que son configuración
+- [x] Task: Cobertura final y Pull Request
+  - [x] `Engine` ≥90% y `MIDI` ≥80%, esta última en un solo proceso y filtrando `Engine/Sources`
+  - [x] Si la CI falla con `clientCreationFailed(-50)`, correr la suite 3–4 veces y comparar contra `main` antes de atribuirlo al cambio
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+  > **Verificación en dispositivo ejecutada y validada el 2026-08-30**, bloques
+  > 4–8 de [`device-verification.md`](./device-verification.md): Timing y Delay
+  > al oído, las tres limitaciones provocadas a propósito, el playhead regular
+  > con swing al máximo, y lo entregado hasta la rebanada 5 en pie.
+
+  > **La comprobación del hallazgo High no está en la guía** —se propuso aparte,
+  > después de la revisión— y no consta reportada: con Delay positivo y Division
+  > lenta, si `Stop` deja sonar algo después. Sigue abierta en *Review Fixes*.
+
 
 ## Phase: Review Fixes
 
