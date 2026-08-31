@@ -205,6 +205,15 @@ public struct Track: Equatable, Sendable {
         self.channel = channel
     }
 
+    /// El mismo Track con otro pool.
+    ///
+    /// Existe para que editar el material no obligue a repetir los otros tres
+    /// campos en cada sitio: repetirlos es como se acaba perdiendo uno al añadir
+    /// el quinto, que es la destrucción que `product-guidelines.md` prohíbe.
+    public func with(pool: PitchPool) -> Track {
+        Track(shape: shape, pool: pool, groove: groove, channel: channel)
+    }
+
     /// El mismo Track emitiendo por otro canal.
     ///
     /// Cambiar el canal no toca el material: es configuración, no contenido.

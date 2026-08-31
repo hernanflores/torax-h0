@@ -13,11 +13,19 @@ import Engine
 /// `PatternHandoff`: un solo escritor publica, el scheduler solo lee.
 public final class ControlInput: @unchecked Sendable {
 
-    /// Track vigente, con los giros ya aplicados.
+    /// Los dieciséis Tracks, con los giros ya aplicados.
     ///
-    /// Se guarda aquí y no se relee del handoff porque `load()` puede descartar
-    /// una lectura, y perder un giro por eso sería un knob que no responde.
-    public private(set) var track: Track
+    /// Se guardan aquí y no se releen del handoff porque `load()` puede
+    /// descartar una lectura, y perder un giro por eso sería un knob que no
+    /// responde.
+    public private(set) var pattern: Pattern
+
+    /// El Track que los knobs y los pads editan.
+    ///
+    /// **Editar es siempre editar el seleccionado.** Los otros quince siguen
+    /// donde estaban: seleccionar no es un modo, es elegir a quién escuchan los
+    /// controles.
+    public var track: Track { pattern.track(at: selectedTrackIndex)! }
 
     /// La superficie de pads vigente: qué altura tiene cada uno de los
     /// dieciséis.
@@ -47,24 +55,25 @@ public final class ControlInput: @unchecked Sendable {
     /// ignoran en silencio, con el mismo criterio que un CC sin asignar.
     private let trackCount: Int
 
-    private let publish: @Sendable (Track) -> Void
+    private let publish: @Sendable (Pattern) -> Void
     private let mapping: ControlMapping
     private let encoding: RelativeEncoding
 
-    /// - Parameter publish: dónde va el Track resultante de cada giro.
+    /// - Parameter publish: dónde van los dieciséis Tracks resultantes de cada
+    ///   giro.
     ///
     ///   Es un cierre y no un `PatternHandoff` porque quien publica en producto es
     ///   el transporte, que tiene el suyo propio: pasarle otro haría que el
     ///   scheduler leyera de un sitio y los knobs escribieran en otro.
     public init(
-        track: Track,
+        pattern: Pattern,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
-        publish: @escaping @Sendable (Track) -> Void,
+        publish: @escaping @Sendable (Pattern) -> Void,
         mapping: ControlMapping = .beatStepPro,
         encoding: RelativeEncoding = .twosComplement,
-        trackCount: Int = 1
+        trackCount: Int = Pattern.trackCount
     ) {
-        self.track = track
+        self.pattern = pattern
         self.surface = PadSurface(frame: frame)
         self.publish = publish
         self.mapping = mapping
@@ -72,22 +81,64 @@ public final class ControlInput: @unchecked Sendable {
         self.trackCount = trackCount
     }
 
+    /// Atajo para quien todavía piensa en un Track: lo pone en la primera
+    /// posición y deja los otros quince vacíos.
+    ///
+    /// Vive para los tests que miden un Track suelto —siguen siendo la mayoría—
+    /// y no para el producto, que publica el Pattern entero.
+    public convenience init(
+        track: Track,
+        frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
+        publish: @escaping @Sendable (Pattern) -> Void,
+        mapping: ControlMapping = .beatStepPro,
+        encoding: RelativeEncoding = .twosComplement,
+        trackCount: Int = Pattern.trackCount
+    ) {
+        self.init(
+            pattern: Pattern().replacing(track, at: 0),
+            frame: frame,
+            publish: publish,
+            mapping: mapping,
+            encoding: encoding,
+            trackCount: trackCount
+        )
+    }
+
     /// Publica directamente en un handoff. Atajo para tests y para quien no
     /// tenga un transporte de por medio.
+    /// Atajo para quien todavía piensa en un Track: lo pone en la primera
+    /// posición.
     public convenience init(
         track: Track,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publishingTo handoff: PatternHandoff,
         mapping: ControlMapping = .beatStepPro,
         encoding: RelativeEncoding = .twosComplement,
-        trackCount: Int = 1
+        trackCount: Int = Pattern.trackCount
     ) {
         self.init(
-            track: track,
+            pattern: Pattern().replacing(track, at: 0),
             frame: frame,
-            // Puente de la v2, fase 2: la entrada edita un Track y el handoff
-            // publica los dieciséis. La fase 4 le da el Pattern entero.
-            publish: { handoff.publish(Pattern().replacing($0, at: 0)) },
+            publishingTo: handoff,
+            mapping: mapping,
+            encoding: encoding,
+            trackCount: trackCount
+        )
+    }
+
+    /// Publica los dieciséis directamente en un handoff.
+    public convenience init(
+        pattern: Pattern,
+        frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
+        publishingTo handoff: PatternHandoff,
+        mapping: ControlMapping = .beatStepPro,
+        encoding: RelativeEncoding = .twosComplement,
+        trackCount: Int = Pattern.trackCount
+    ) {
+        self.init(
+            pattern: pattern,
+            frame: frame,
+            publish: { handoff.publish($0) },
             mapping: mapping,
             encoding: encoding,
             trackCount: trackCount
@@ -153,8 +204,8 @@ public final class ControlInput: @unchecked Sendable {
         // Girar contra un extremo no mueve nada: el valor ya estaba ahí.
         guard adjusted != track else { return false }
 
-        track = adjusted
-        publish(track)
+        pattern = pattern.replacing(adjusted, at: selectedTrackIndex)
+        publish(pattern)
         return true
     }
 
@@ -186,8 +237,8 @@ public final class ControlInput: @unchecked Sendable {
         // El pool lleno rechaza la novena: no cambió nada que publicar.
         guard adjusted != track.pool else { return false }
 
-        track = Track(shape: track.shape, pool: adjusted)
-        publish(track)
+        pattern = pattern.replacing(track.with(pool: adjusted), at: selectedTrackIndex)
+        publish(pattern)
         return true
     }
 
@@ -201,7 +252,7 @@ public final class ControlInput: @unchecked Sendable {
         guard index < trackCount, index != selectedTrackIndex else { return false }
 
         selectedTrackIndex = index
-        publish(track)
+        publish(pattern)
         return true
     }
 
@@ -222,7 +273,7 @@ public final class ControlInput: @unchecked Sendable {
         guard moved != surface else { return false }
 
         surface = moved
-        publish(track)
+        publish(pattern)
         return true
     }
 
@@ -238,8 +289,8 @@ public final class ControlInput: @unchecked Sendable {
         let adjusted = track.pool.reframed(to: frame)
         guard adjusted != track.pool else { return false }
 
-        track = Track(shape: track.shape, pool: adjusted)
-        publish(track)
+        pattern = pattern.replacing(track.with(pool: adjusted), at: selectedTrackIndex)
+        publish(pattern)
         return true
     }
 }
