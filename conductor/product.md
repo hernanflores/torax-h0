@@ -34,7 +34,7 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 
 ## Interaction Model
 
-- **Controlador MIDI = entrada primaria.** Knobs para parámetros continuos, pads como los 16 Value Buttons.
+- **Controlador MIDI = entrada primaria.** Knobs para parámetros continuos; pads para el pool tonal. **Un pad es un grado de la escala, no una altura fija**: los catorce primeros dan dos octavas alineadas de la escala vigente y dos mueven el registro entero, así que qué suena depende de Scale y Root y no del número que envía el controlador. Detalle en la nota del 2026-08-31 de la Pre Spec.
 - **Pantalla = feedback + edición secundaria.** Muestra estado (pasos activos, pool tonal, Cycle en curso) y expone lo que no cabe en knobs: Scale, guardado, mapeos.
 - **Mapeo:** preset listo para BeatStep Pro + **MIDI Learn** para reasignar a otro hardware.
 
@@ -50,7 +50,8 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 - Transporte (play/stop) y reloj interno.
 - Salida MIDI por CoreMIDI a dispositivo externo.
 - Mapeo del controlador + MIDI Learn. **Se parte en dos rebanadas** (ver la nota
-  de abajo): el preset del BeatStep Pro en la 7, MIDI Learn en la 8.
+  de abajo): el preset del BeatStep Pro, **entregado** (rebanada 7); MIDI Learn,
+  en la 8.
 - Pantalla de estado del Track.
 
 > **Nota del 2026-08-31 — «Mapeo del controlador + MIDI Learn» es una línea y
@@ -71,7 +72,10 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 >   iPad la sesión de red se autoselecciona.
 >
 > **Las dos siguen dentro de la v1**; lo que cambia es que se entregan por
-> separado. Hasta que cierre la 8, esta página promete un MIDI Learn que la app
+> separado. La 7 cerró el 2026-08-31: el preset vive en
+> [`preset/`](../preset/README.md) —tabla de los cuarenta y ocho controles y el
+> proyecto exportado desde MIDI Control Center—, verificado con el controlador en
+> la mano. Hasta que cierre la 8, esta página promete un MIDI Learn que la app
 > todavía no hace.
 
 **Fuera de v1:**
