@@ -1,0 +1,49 @@
+Task: El marco tonal deja de ser global (Fase 4, v2 rebanada 1)
+
+Que se hizo
+-----------
+Track gana frame: TonalFrame y padOctaveShift: Int. ControlInput deja de guardar
+una PadSurface y la CALCULA del Track seleccionado.
+
+  antes: surface guardada + frame en ControlInput, uno para toda la app
+  ahora: track.frame + track.padOctaveShift, uno por Track
+
+Ficheros
+--------
+- Packages/Engine/Sources/Engine/Shape.swift     (Track, with(frame:padOctaveShift:))
+- Packages/Engine/Sources/Engine/Tonal.swift     (Root.c)
+- Packages/MIDI/Sources/MIDI/ControlInput.swift  (surface calculada, setFrame)
+- Packages/MIDI/Sources/MIDI/PatternHandoff.swift, conductor/tech-stack.md (tamanos)
+- SelectedTrackEditingTests (3 tests nuevos), FrameChangeTests (expectativa nueva)
+
+Por que la superficie se calcula y no se guarda
+------------------------------------------------
+Guardarla dejaria dos sitios con la misma verdad: al cambiar de Track habria que
+acordarse de recalcularla, y olvidarlo deja la superficie del Track anterior
+decidiendo que nota mete un pad del nuevo. Calculada, ese fallo no se puede
+escribir.
+
+Por que padOctaveShift vive en Track
+-------------------------------------
+Es la unica concesion de Track a la superficie de control y esta documentada como
+tal. Va ahi porque tiene que sobrevivir a cambiar de Track: volver a uno y
+encontrarlo dos octavas mas abajo de donde se dejo seria perder trabajo. La
+altura de cada pad la sigue calculando PadSurface; esto es solo donde se dejo.
+
+Un test de la v1 cambia de expectativa, y la razon queda escrita
+-----------------------------------------------------------------
+testAFrameThatChangesNothingDoesNotPublish afirmaba que cambiar de escala sin
+mover el pool no publica. Era correcto cuando el marco vivia FUERA del Track: el
+snapshot quedaba identico. Ahora el marco es parte del snapshot y los pads pasan
+a dar otras notas, asi que publicar es lo correcto. El test se reescribe con esa
+razon y se anade el caso que sigue sin publicar: fijar el MISMO marco.
+
+El snapshot crece
+-----------------
+Track 112 -> 144 bytes; Pattern 1792 -> 2304; el anillo 7 -> 9 KB. Un 28% mas no
+cambia el orden de magnitud del load() medido (274 ns contra 20 ms). Anotado en
+el handoff y en tech-stack.md, que es donde alguien buscara el numero.
+
+Verde
+-----
+MIDI 307, Engine 334, BUILD SUCCEEDED.
