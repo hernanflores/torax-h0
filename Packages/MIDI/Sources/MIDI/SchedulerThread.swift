@@ -54,8 +54,12 @@ public final class SchedulerThread: @unchecked Sendable {
     ///
     /// Altura y Groove salen del **mismo** snapshot, recogido una vez por
     /// ventana: no son dos lecturas que puedan discrepar.
+    /// **Desde la v2 llega también el índice del Track**: quien emite necesita
+    /// saber por qué canal sale cada nota, y el canal es un dato del Track.
     public typealias StepHandler =
-        @Sendable (_ step: Int, _ pitch: Pitch?, _ groove: Groove, _ hostTime: UInt64) -> Void
+        @Sendable (
+            _ track: Int, _ step: Int, _ pitch: Pitch?, _ groove: Groove, _ hostTime: UInt64
+        ) -> Void
 
     private let configuration: SchedulerConfiguration
     private let material: SchedulerMaterial
@@ -151,7 +155,7 @@ public final class SchedulerThread: @unchecked Sendable {
         handler: StepHandler,
         running: AtomicFlag
     ) {
-        var scheduler = TrackScheduler(timeline: configuration.timeline, material: material)
+        let scheduler = PatternScheduler(timeline: configuration.timeline, material: material)
         let startHostTicks = HostClock.now()
         let sleepNanoseconds = UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))
 
@@ -186,7 +190,7 @@ public final class SchedulerThread: @unchecked Sendable {
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
 
             scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) {
-                step, pitch, groove, offset in
+                track, step, pitch, groove, offset in
                 // El offset es relativo al origen de la rejilla, y el
                 // presupuesto es lo que separa ese origen del arranque. Sumarlos
                 // deja la cuenta en positivo sin más conversiones.
@@ -202,7 +206,7 @@ public final class SchedulerThread: @unchecked Sendable {
                     startHostTicks
                     &+ HostClock.hostTicks(
                         fromNanoseconds: UInt64(max(0, budgetNanoseconds + offset)))
-                handler(step, pitch, groove, hostTime)
+                handler(track, step, pitch, groove, hostTime)
             }
 
             usleep(sleepNanoseconds / 1_000)

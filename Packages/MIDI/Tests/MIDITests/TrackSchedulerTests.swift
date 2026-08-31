@@ -18,6 +18,9 @@ final class TrackSchedulerTests: XCTestCase {
     /// Un Step dura 125 ms a 120 BPM con Division 1/16.
     private var stepNanoseconds: Int64 { 125_000_000 }
 
+    /// **Con pool desde la v2.** Un Track sin alturas no se programa —el coste
+    /// crece con los Tracks que suenan, no con dieciséis siempre— así que un
+    /// Track de prueba que quiera emitir necesita material.
     private func track(steps stepCount: Int, pulses pulseCount: Int, rotate amount: Int = 0)
         -> Track
     {
@@ -27,7 +30,8 @@ final class TrackSchedulerTests: XCTestCase {
                 steps: steps,
                 pulses: Pulses(pulseCount)!,
                 rotate: Rotate(amount)
-            )
+            ),
+            pool: PitchPool().inserting(Pitch(60)!)
         )
     }
 
@@ -209,10 +213,12 @@ final class SchedulerThreadSnapshotTests: XCTestCase {
         )
     }
 
+    /// Con pool: desde la v2 un Track sin alturas no se programa.
     private func track(rotate amount: Int) -> Track {
         let steps = Steps(16)!
         return Track(
-            shape: Shape(steps: steps, pulses: Pulses(4)!, rotate: Rotate(amount))
+            shape: Shape(steps: steps, pulses: Pulses(4)!, rotate: Rotate(amount)),
+            pool: PitchPool().inserting(Pitch(60)!)
         )
     }
 
@@ -227,7 +233,7 @@ final class SchedulerThreadSnapshotTests: XCTestCase {
             configuration: configuration(),
             material: .track(track(rotate: 0)),
             handoff: handoff
-        ) { step, _, _, _ in
+        ) { _, step, _, _, _ in
             if UInt64(step % 4) != expectedOffset.value { unexpectedPosition.value = true }
             emitted.increment()
         }

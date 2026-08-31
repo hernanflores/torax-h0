@@ -65,6 +65,28 @@ public final class PatternScheduler {
         }
     }
 
+    /// Un solo material sobre una rejilla dada, y quince Tracks vacíos.
+    ///
+    /// **Es la vía del arnés de medición**, que mide la rejilla temporal y no el
+    /// material musical: le hace falta `.everyStep` sobre una `MusicalTimeline`
+    /// concreta, no dieciséis Tracks. Comparte el recorrido con el camino normal
+    /// para que el arnés siga midiendo lo mismo que suena.
+    public convenience init(
+        timeline: MusicalTimeline,
+        material: SchedulerMaterial,
+        startingAtStep startingStep: Int = 0,
+        seed: UInt64 = SeededRandom.defaultSeed
+    ) {
+        self.init(
+            tempo: timeline.tempo, pattern: Pattern(), startingAtStep: startingStep, seed: seed)
+        schedulers[0] = TrackScheduler(
+            timeline: timeline,
+            material: material,
+            startingAtStep: startingStep,
+            seed: Self.seed(seed, forTrack: 0)
+        )
+    }
+
     deinit {
         schedulers.deinitialize(count: Pattern.trackCount)
         schedulers.deallocate()
@@ -134,11 +156,13 @@ public final class PatternScheduler {
         }
 
         for index in 0..<Pattern.trackCount {
-            let hasMaterial = !(pattern.track(at: index)?.pool.isEmpty ?? true)
+            // Se pregunta al material del scheduler y no al Pattern porque el
+            // arnés de medición no tiene Track detrás: mide la rejilla.
+            let emits = schedulers[index].material.emitsAnything
 
             schedulers[index].advance(toHorizon: horizonNanoseconds, refreshingFrom: nil) {
                 step, pitch, groove, offset in
-                guard hasMaterial else { return }
+                guard emits else { return }
                 emit(index, step, pitch, groove, offset)
             }
         }

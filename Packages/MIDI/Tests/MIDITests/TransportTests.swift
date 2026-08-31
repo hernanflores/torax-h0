@@ -46,10 +46,7 @@ final class TransportTests: XCTestCase {
             // Con el pool vacío el Track dispara y no emite nada, que es
             // comportamiento correcto y no lo que estos tests miden.
             track: Track(shape: Shape(steps: steps, pulses: Pulses(4)!), pool: voicePool),
-            emitter: NoteEmitter(
-                channel: MIDIChannel(1)!,
-                stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds)
-            ),
+            emitter: NoteEmitter(),
             send: recorder.record
         )
     }

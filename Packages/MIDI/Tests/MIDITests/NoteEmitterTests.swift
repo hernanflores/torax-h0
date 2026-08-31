@@ -11,24 +11,32 @@ import XCTest
 /// reintroduciría justo el jitter que la arquitectura evita.
 final class NoteEmitterTests: XCTestCase {
 
-    /// El gate sale de Sustain, así que un emisor con Step de 25 ms y el Groove
-    /// por defecto —Sustain 100%, una Division completa— produce exactamente el
-    /// gate de 25 ms contra el que estos tests ya comparaban. Las aserciones no
-    /// cambian; cambia de dónde sale el número.
+    /// El gate sale de Sustain, así que un Step de 25 ms con el Groove por
+    /// defecto —Sustain 100%, una Division completa— produce exactamente el gate
+    /// de 25 ms contra el que estos tests ya comparaban.
+    ///
+    /// **Desde la v2 la duración llega por llamada y no por construcción**: es de
+    /// cada Track, porque la Division lo es.
     private func emitter(stepDurationNanoseconds: Int64 = 25_000_000) -> NoteEmitter {
-        NoteEmitter(channel: MIDIChannel(1)!, stepDurationNanoseconds: stepDurationNanoseconds)
+        NoteEmitter()
     }
+
+    private let defaultStepNanoseconds: Int64 = 25_000_000
 
     /// Recoge lo que el emisor entregaría al camino de envío.
     private func emitted(
         from emitter: NoteEmitter,
+        stepDurationNanoseconds: Int64 = 25_000_000,
         atHostTime hostTime: UInt64
     ) -> [(message: MIDIMessage, hostTime: UInt64)] {
         var sent: [(MIDIMessage, UInt64)] = []
         // La altura llega por parámetro desde Tonal y el Groove desde esta
         // rebanada; estos tests miden el par de mensajes y su sellado, así que
         // cualquiera de los dos sirve.
-        emitter.emit(pitch: Pitch(48)!, groove: .default, atHostTime: hostTime) { message, time in
+        emitter.emit(
+            pitch: Pitch(48)!, groove: .default, on: MIDIChannel(1)!,
+            stepDurationNanoseconds: stepDurationNanoseconds, atHostTime: hostTime
+        ) { message, time in
             sent.append((message, time))
         }
         return sent

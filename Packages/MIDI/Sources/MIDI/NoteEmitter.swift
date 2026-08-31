@@ -27,31 +27,19 @@ import Engine
 /// evita: la precisión la da el timestamp, no el momento del envío.
 public struct NoteEmitter: Equatable, Sendable {
 
-    public let channel: MIDIChannel
-
-    /// Cuánto dura un Step, que es contra lo que Sustain se mide.
-    ///
-    /// **Se fija al construir y no llega por pulso.** La duración del Step
-    /// depende del tempo y de la Division, y ninguno de los dos puede cambiar
-    /// mientras suena: `TrackScheduler` documenta que la rejilla la fija la
-    /// `MusicalTimeline` con la que se construye y no se vuelve a leer. Pasarlo
-    /// en cada pulso sugeriría una flexibilidad que el resto del diseño no
-    /// tiene.
-    public let stepDurationNanoseconds: Int64
-
-    public init(channel: MIDIChannel, stepDurationNanoseconds: Int64) {
-        self.channel = channel
-        self.stepDurationNanoseconds = stepDurationNanoseconds
-    }
+    public init() {}
 
     /// Entrega los dos mensajes del pulso, cada uno con su instante de emisión.
     ///
-    /// **La altura y la Velocity llegan por parámetro y ya no son del emisor.**
-    /// Las dos fueron constantes que este tipo documentaba como provisionales:
-    /// la altura hasta Tonal, la Velocity hasta Groove. Ahora las dos salen del
-    /// `Track`, que es lo único que el hilo del scheduler lee. El canal sigue
-    /// siendo constante — es ajuste de Setup, no un parámetro generativo, y
-    /// llega con el preset del BeatStep Pro.
+    /// **Ya no queda nada constante en el emisor: todo sale del `Track`.** La
+    /// altura llegó con Tonal, la Velocity con Groove, y en la v2 el canal y la
+    /// duración del Step, que eran lo último que quedaba.
+    ///
+    /// Los dos dejaron de poder fijarse al construir por la misma razón: son de
+    /// cada Track. El canal se edita en pantalla mientras suena, y la duración
+    /// del Step depende de la Division, que ahora es de cada uno — así que
+    /// dieciséis Tracks tienen hasta dieciséis duraciones distintas sobre el
+    /// mismo tempo.
     ///
     /// **Sin altura no se emite nada.** Un pool vacío es un estado válido: el
     /// Track dispara sus Pulses y no tiene material. No se manda un note-on
@@ -74,6 +62,8 @@ public struct NoteEmitter: Equatable, Sendable {
     public func emit(
         pitch: Pitch?,
         groove: Groove,
+        on channel: MIDIChannel,
+        stepDurationNanoseconds: Int64,
         atHostTime hostTime: UInt64,
         send: (_ message: MIDIMessage, _ hostTime: UInt64) -> Void
     ) {

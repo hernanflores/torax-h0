@@ -79,35 +79,15 @@ final class TransportModel {
     /// un pad para que suene no es algo que la pantalla comunique todavía.
     static let initialPool = PitchPool().inserting(Pitch(48)!)
 
-    /// Altura, canal y velocity con los que suena el Track.
+    /// El emisor, que ya no lleva nada dentro.
     ///
-    /// **Ni la altura ni la Velocity están ya aquí: salen del Track.** La
-    /// altura desde Tonal, la Velocity desde Groove. Lo único que queda es el
-    /// canal.
-    ///
-    /// Las dos constantes vivieron aquí y no en `Track` precisamente para que
-    /// nada consolidara un valor musical antes de que existiera el parámetro que
-    /// lo gobierna. Ya existen los dos.
-    ///
-    /// **El canal se queda, y no es una deuda del mismo tipo.** No es un
-    /// parámetro generativo —no lo mueve un knob ni varía por Cycle— sino
-    /// ajuste de Setup, y llega con el preset del BeatStep Pro.
-    ///
-    /// Canal 6 es un literal dentro de su rango (1–16), así que el
-    /// desempaquetado no puede fallar.
-    ///
-    /// **Se construye con la línea de tiempo vigente y no una sola vez.** El
-    /// gate sale de Sustain como porcentaje de la Division, así que el emisor
-    /// necesita saber cuánto dura un Step. La Division la elige el knob, y el
-    /// Creates a note emitter configured for the transport timeline's step duration.
-    /// - Parameter timeline: The timeline that determines the duration of each step.
-    /// - Returns: A note emitter configured for MIDI channel 6 and the timeline's step duration.
-    private static func voice(for timeline: MusicalTimeline) -> NoteEmitter {
-        NoteEmitter(
-            channel: MIDIChannel(6)!,
-            stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds)
-        )
-    }
+    /// > **Cambio de la v2.** Llevaba el canal —6, fijo— y la duración del Step.
+    /// > Los dos pasan a salir del Track en cada pulso: el canal porque cada
+    /// > Track tiene el suyo, y la duración porque cada Track tiene su Division.
+    /// > **Lo que se oye cambia**: el Track 1 emite ahora por el canal 1 y no
+    /// > por el 6, así que el sintetizador hay que ponerlo en el canal del Track
+    /// > —o cambiarle el canal al Track—.
+    private static func voice() -> NoteEmitter { NoteEmitter() }
 
     /// 120 BPM está dentro del rango válido de `Tempo`, así que no puede fallar.
     private static let tempo = Tempo(beatsPerMinute: 120)!
@@ -207,7 +187,7 @@ final class TransportModel {
             transport = Transport(
                 configuration: SchedulerConfiguration(timeline: timeline),
                 track: track,
-                emitter: Self.voice(for: timeline)
+                emitter: Self.voice()
             ) { [output, activeDestination] message, hostTime in
                 Self.send(message, at: hostTime, through: output, to: activeDestination)
             }

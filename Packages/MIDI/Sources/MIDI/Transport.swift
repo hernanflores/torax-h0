@@ -120,8 +120,26 @@ public final class Transport: @unchecked Sendable {
             material: .track((handoff.load() ?? lastPublishedPattern).track(at: 0)!),
             handoff: handoff,
             playhead: playheadClock
-        ) { [emitter, send] _, pitch, groove, hostTime in
-            emitter.emit(pitch: pitch, groove: groove, atHostTime: hostTime, send: send)
+        ) {
+            [emitter, send, handoff, lastPublishedPattern, tempo = configuration.timeline.tempo]
+            track, _, pitch, groove, hostTime in
+            // El canal y la duración del Step son del Track que emite: dieciséis
+            // Tracks pueden estar en dieciséis canales y en Divisions distintas.
+            // Se leen del snapshot vigente, que es el mismo que produjo el
+            // evento.
+            let pattern = handoff.load() ?? lastPublishedPattern
+            guard let source = pattern.track(at: track) else { return }
+
+            emitter.emit(
+                pitch: pitch,
+                groove: groove,
+                on: MIDIChannel(source.channel),
+                stepDurationNanoseconds: Int64(
+                    MusicalTimeline(tempo: tempo, division: source.shape.division)
+                        .stepDurationNanoseconds),
+                atHostTime: hostTime,
+                send: send
+            )
         }
         scheduler = thread
         thread.start()
@@ -179,28 +197,54 @@ public final class Transport: @unchecked Sendable {
             &+ HostClock.hostTicks(
                 fromNanoseconds: UInt64(max(0, configuration.lookAheadNanoseconds)))
 
-        // Va primero: si el sintetizador lo honra, todo lo demás es
-        // confirmación; si no lo honra, no ha costado nada.
-        send(
-            .controlChange(
-                channel: emitter.channel,
-                controller: MIDIController.allNotesOff,
-                value: 0
-            ),
-            silenceAt
-        )
+        // **Se apaga Track por Track, cada uno por su canal.** Con dieciséis
+        // Tracks en hasta dieciséis canales, apagar solo uno dejaría sonando a
+        // los otros quince: exactamente el defecto que este método existe para
+        // evitar, multiplicado.
+        // **Dos pasadas, y el orden importa.** Primero el `all notes off` de
+        // cada canal y después los note-off del material: si el sintetizador
+        // honra el primero, lo demás es confirmación; si no lo honra, el barrido
+        // lo cubre. Mezclarlos dejaría un `all notes off` de un canal detrás del
+        // note-off de otro, que es ruido sin orden.
+        //
+        // Se apaga Track por Track y canal por canal: con dieciséis Tracks en
+        // hasta dieciséis canales, apagar solo uno dejaría sonando a los otros
+        // quince, que es este mismo defecto multiplicado.
+        var silenced: Set<Int> = []
+        for index in 0..<Pattern.trackCount {
+            guard let source = lastPublishedPattern.track(at: index) else { continue }
+            let channel = MIDIChannel(source.channel)
 
-        let pool = track.pool
-        for index in 0..<pool.count {
-            guard let pitch = pool.pitch(at: index) else { break }
+            // No depende de que el Track tenga material **ahora**: vaciar el
+            // pool mientras suena deja notas encendidas que ya no están en él, y
+            // el barrido del pool no las cubre por definición.
+            guard silenced.insert(channel.number).inserted else { continue }
             send(
-                .noteOff(
-                    channel: emitter.channel,
-                    note: MIDINote(unchecked: UInt8(pitch.value)),
-                    velocity: MIDIVelocity(unchecked: 0)
+                .controlChange(
+                    channel: channel,
+                    controller: MIDIController.allNotesOff,
+                    value: 0
                 ),
                 silenceAt
             )
+        }
+
+        for index in 0..<Pattern.trackCount {
+            guard let source = lastPublishedPattern.track(at: index) else { continue }
+            let channel = MIDIChannel(source.channel)
+            let pool = source.pool
+
+            for slot in 0..<pool.count {
+                guard let pitch = pool.pitch(at: slot) else { break }
+                send(
+                    .noteOff(
+                        channel: channel,
+                        note: MIDINote(unchecked: UInt8(pitch.value)),
+                        velocity: MIDIVelocity(unchecked: 0)
+                    ),
+                    silenceAt
+                )
+            }
         }
     }
 }

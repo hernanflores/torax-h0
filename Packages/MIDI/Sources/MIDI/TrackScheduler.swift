@@ -38,6 +38,22 @@ public enum SchedulerMaterial: Equatable, Sendable {
         }
     }
 
+    /// Si este material puede llegar a sonar.
+    ///
+    /// Un Track con el pool vacío dispara sus Pulses y no tiene nada que emitir,
+    /// así que programarlo es trabajo tirado: es lo que hace que el coste crezca
+    /// con los Tracks que suenan y no con dieciséis siempre (NFR3). El arnés de
+    /// medición siempre suena — mide la rejilla, no el material—.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    var emitsAnything: Bool {
+        switch self {
+        case .track(let track): !track.pool.isEmpty
+        case .everyStep: true
+        }
+    }
+
     /// Cómo se interpreta lo que suena.
     ///
     /// **El arnés usa el default y no el suyo propio.** Mide la rejilla
