@@ -68,6 +68,52 @@ final class FrameChangeTests: XCTestCase {
         XCTAssertTrue(fresh.track.pool.contains(Pitch(49)!))
     }
 
+    // MARK: - La superficie se recalcula, el desplazamiento se conserva
+
+    /// **Lo nuevo de la rebanada 7.** Cambiar el marco recalcula la superficie,
+    /// y el desplazamiento vigente no se pierde: tras dos pulsaciones del pad
+    /// 16, cambiar de Do a Re deja el pad 1 dos octavas por encima del grado 1
+    /// nuevo, no en la base.
+    func testChangingTheFrameKeepsTheOctaveShift() {
+        let input = makeInput(scale: .major, root: 0)
+        input.receive(pad(15))
+        input.receive(pad(15))
+        XCTAssertEqual(input.surface.pitch(at: 0)?.value, 72)
+
+        input.setFrame(TonalFrame(scale: .major, root: Root(2)!))
+
+        XCTAssertEqual(input.surface.octaveShift, 2, "se perdió el desplazamiento")
+        XCTAssertEqual(input.surface.pitch(at: 0)?.value, 74, "48 + 24 + Re")
+    }
+
+    /// Pasar de `major` a `pentatonic` apaga los pads 6, 7, 14 y 15 sin tocar el
+    /// pool ni el desplazamiento.
+    func testSwitchingToAFiveDegreeScaleTurnsFourPadsOffWithoutTouchingAnythingElse() {
+        let input = makeInput(scale: .major, root: 0)
+        input.receive(pad(15))
+        input.receive(pad(0))  // 60, que está en Do pentatónica
+        let pool = input.track.pool
+
+        input.setFrame(TonalFrame(scale: .pentatonic, root: Root(0)!))
+
+        for index in [5, 6, 13, 14] {
+            XCTAssertNil(input.surface.pitch(at: index), "pad \(index + 1)")
+        }
+        XCTAssertEqual(input.track.pool, pool, "el pool se movió")
+        XCTAssertEqual(input.surface.octaveShift, 1, "se perdió el desplazamiento")
+    }
+
+    /// Un pad apagado por el marco nuevo deja de publicar, y el de al lado
+    /// sigue.
+    func testAPadTurnedOffByTheNewScaleStopsPublishing() {
+        let input = makeInput(scale: .major, root: 0)
+        XCTAssertTrue(input.receive(pad(5)), "grado 6 de Do mayor")
+
+        input.setFrame(TonalFrame(scale: .pentatonic, root: Root(0)!))
+        XCTAssertFalse(input.receive(pad(5)), "pentatónica no tiene grado 6")
+        XCTAssertTrue(input.receive(pad(4)), "pero sí grado 5")
+    }
+
     // MARK: - Helpers
 
     private func makeInput(scale: Scale, root: Int) -> ControlInput {
