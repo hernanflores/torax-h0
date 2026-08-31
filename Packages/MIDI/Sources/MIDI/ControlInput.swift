@@ -4,13 +4,13 @@ import Engine
 ///
 /// Es la pieza que cierra la cadena del track: decodifica el giro, lo traduce al
 /// parámetro que le toca, se lo aplica al Shape vigente y publica el `Track`
-/// resultante por el `TrackHandoff` que la rebanada 1 dejó probado. Girar un
+/// resultante por el `PatternHandoff` que la rebanada 1 dejó probado. Girar un
 /// knob y publicar un snapshot son, a partir de aquí, la misma cosa.
 ///
 /// **Corre en el hilo de control, nunca en el del scheduler.** Recibir un
 /// mensaje asigna memoria —construir un Shape reparte los Pulses— y eso está
 /// prohibido en el camino de timing. La separación es la misma que ya usa
-/// `TrackHandoff`: un solo escritor publica, el scheduler solo lee.
+/// `PatternHandoff`: un solo escritor publica, el scheduler solo lee.
 public final class ControlInput: @unchecked Sendable {
 
     /// Track vigente, con los giros ya aplicados.
@@ -53,7 +53,7 @@ public final class ControlInput: @unchecked Sendable {
 
     /// - Parameter publish: dónde va el Track resultante de cada giro.
     ///
-    ///   Es un cierre y no un `TrackHandoff` porque quien publica en producto es
+    ///   Es un cierre y no un `PatternHandoff` porque quien publica en producto es
     ///   el transporte, que tiene el suyo propio: pasarle otro haría que el
     ///   scheduler leyera de un sitio y los knobs escribieran en otro.
     public init(
@@ -77,7 +77,7 @@ public final class ControlInput: @unchecked Sendable {
     public convenience init(
         track: Track,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
-        publishingTo handoff: TrackHandoff,
+        publishingTo handoff: PatternHandoff,
         mapping: ControlMapping = .beatStepPro,
         encoding: RelativeEncoding = .twosComplement,
         trackCount: Int = 1

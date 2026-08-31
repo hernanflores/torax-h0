@@ -9,7 +9,7 @@ import Foundation
 /// proteger.
 ///
 /// Lo que sí cambia en caliente es el **Track**, y no viaja aquí: llega por
-/// `TrackHandoff`, que el hilo consulta una vez por ventana. Esto sigue siendo
+/// `PatternHandoff`, que el hilo consulta una vez por ventana. Esto sigue siendo
 /// la configuración de la rejilla —tempo, división y tamaño de la ventana—, que
 /// se fija al arrancar el transporte.
 public struct SchedulerConfiguration: Sendable, Equatable {
@@ -59,7 +59,7 @@ public final class SchedulerThread: @unchecked Sendable {
 
     private let configuration: SchedulerConfiguration
     private let material: SchedulerMaterial
-    private let handoff: TrackHandoff?
+    private let handoff: PatternHandoff?
     private let handler: StepHandler
 
     /// Ancla temporal para el playhead. `nil` cuando nadie la mira.
@@ -78,7 +78,7 @@ public final class SchedulerThread: @unchecked Sendable {
     public init(
         configuration: SchedulerConfiguration,
         material: SchedulerMaterial = .everyStep,
-        handoff: TrackHandoff? = nil,
+        handoff: PatternHandoff? = nil,
         playhead: PlayheadClock? = nil,
         handler: @escaping StepHandler
     ) {
@@ -146,7 +146,7 @@ public final class SchedulerThread: @unchecked Sendable {
     private static func run(
         configuration: SchedulerConfiguration,
         material: SchedulerMaterial,
-        handoff: TrackHandoff?,
+        handoff: PatternHandoff?,
         playhead: PlayheadClock?,
         handler: StepHandler,
         running: AtomicFlag

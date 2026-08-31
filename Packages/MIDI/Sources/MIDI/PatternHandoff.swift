@@ -45,7 +45,7 @@ import Engine
 /// `Array` ni nada con conteo de referencias—, porque copiarlo ocurre en el hilo
 /// del scheduler y un `retain` ahí es una violación de las reglas de tiempo
 /// real. Hay un test que lo vigila.
-public final class TrackHandoff: @unchecked Sendable {
+public final class PatternHandoff: @unchecked Sendable {
 
     /// Ranuras del anillo. Potencia de dos para indexar con una máscara en vez
     /// de con un módulo, que es una división.

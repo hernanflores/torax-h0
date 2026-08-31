@@ -161,7 +161,7 @@ final class GrooveTurnsTests: XCTestCase {
         )
     }
 
-    private func makeInput() -> (ControlInput, TrackHandoff) {
+    private func makeInput() -> (ControlInput, PatternHandoff) {
         var pool = PitchPool()
         pool = pool.toggling(Pitch(60)!)
         pool = pool.toggling(Pitch(64)!)
@@ -174,7 +174,7 @@ final class GrooveTurnsTests: XCTestCase {
                 probability: Probability(percent: 50)!
             )
         )
-        let handoff = TrackHandoff(track)
+        let handoff = PatternHandoff(track)
         return (ControlInput(track: track, publishingTo: handoff), handoff)
     }
 
@@ -219,7 +219,7 @@ final class GrooveTurnsTests: XCTestCase {
             pool: pool,
             groove: Groove(velocity: Velocity(127)!, sustain: .default, probability: .default)
         )
-        let input = ControlInput(track: track, publishingTo: TrackHandoff(track))
+        let input = ControlInput(track: track, publishingTo: PatternHandoff(track))
 
         XCTAssertFalse(input.receive(turn(.velocity, by: 0x01)))
     }

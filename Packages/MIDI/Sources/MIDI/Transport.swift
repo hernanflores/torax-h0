@@ -26,7 +26,7 @@ public final class Transport: @unchecked Sendable {
     private let configuration: SchedulerConfiguration
     private let emitter: NoteEmitter
     private let send: Send
-    private let handoff: TrackHandoff
+    private let handoff: PatternHandoff
 
     /// Ancla temporal del playhead. Vive aquí y no en el hilo porque el hilo se
     /// crea y se tira en cada Play; el reloj tiene que sobrevivir a eso para que
@@ -82,7 +82,7 @@ public final class Transport: @unchecked Sendable {
         self.configuration = configuration
         self.emitter = emitter
         self.send = send
-        self.handoff = TrackHandoff(Pattern().replacing(track, at: 0))
+        self.handoff = PatternHandoff(Pattern().replacing(track, at: 0))
         self.lastPublishedPattern = Pattern().replacing(track, at: 0)
     }
 

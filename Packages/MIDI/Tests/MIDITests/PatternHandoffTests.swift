@@ -13,7 +13,7 @@ private typealias Pattern = Engine.Pattern
 /// timing. **Desde la v2 lo que se publica son los dieciséis Tracks**, así que
 /// la ranura es dieciséis veces mayor y la ventana para una lectura mezclada,
 /// dieciséis veces más ancha.
-final class TrackHandoffTests: XCTestCase {
+final class PatternHandoffTests: XCTestCase {
 
     /// Construye un Track cuyos campos están correlacionados: Steps, Pulses y
     /// Rotate valen todos lo mismo.
@@ -75,25 +75,25 @@ final class TrackHandoffTests: XCTestCase {
     // MARK: - Publicar y leer
 
     func testInitialPatternIsReadableBeforeAnyPublish() {
-        let handoff = TrackHandoff(correlatedPattern(4))
+        let handoff = PatternHandoff(correlatedPattern(4))
         XCTAssertEqual(handoff.load(), correlatedPattern(4))
     }
 
     func testPublishedPatternIsPickedUpByTheNextLoad() {
-        let handoff = TrackHandoff(correlatedPattern(4))
+        let handoff = PatternHandoff(correlatedPattern(4))
         handoff.publish(correlatedPattern(9))
         XCTAssertEqual(handoff.load(), correlatedPattern(9))
     }
 
     func testLoadIsRepeatableWithoutConsumingTheValue() {
-        let handoff = TrackHandoff(correlatedPattern(7))
+        let handoff = PatternHandoff(correlatedPattern(7))
         for _ in 0..<1_000 {
             XCTAssertEqual(handoff.load(), correlatedPattern(7))
         }
     }
 
     func testSuccessivePublicationsAreEachVisible() {
-        let handoff = TrackHandoff(correlatedPattern(1))
+        let handoff = PatternHandoff(correlatedPattern(1))
         for value in Steps.validRange {
             handoff.publish(correlatedPattern(value))
             XCTAssertEqual(handoff.load()?.track(at: 0)?.shape.steps.count, value)
@@ -109,7 +109,7 @@ final class TrackHandoffTests: XCTestCase {
             published = published.replacing(correlatedTrack(index + 1), at: index)
         }
 
-        let handoff = TrackHandoff(Pattern())
+        let handoff = PatternHandoff(Pattern())
         handoff.publish(published)
 
         let read = handoff.load()
@@ -122,7 +122,7 @@ final class TrackHandoffTests: XCTestCase {
     /// El anillo de ranuras da la vuelta: publicar más veces que ranuras hay no
     /// puede dejar el lector viendo una publicación vieja.
     func testPublishingMoreTimesThanThereAreSlotsStillReadsTheLatest() {
-        let handoff = TrackHandoff(correlatedPattern(1))
+        let handoff = PatternHandoff(correlatedPattern(1))
         for _ in 0..<200 {
             for value in Steps.validRange {
                 handoff.publish(correlatedPattern(value))
@@ -136,7 +136,7 @@ final class TrackHandoffTests: XCTestCase {
     /// El test central: publicar desde otro hilo mientras el lector lee no puede
     /// producir un Track con campos de dos publicaciones distintas.
     func testConcurrentPublishNeverYieldsATornTrack() {
-        let handoff = TrackHandoff(correlatedPattern(1))
+        let handoff = PatternHandoff(correlatedPattern(1))
         let writerFinished = expectation(description: "el escritor terminó")
 
         // Menos vueltas que con un Track solo: cada publicación copia dieciséis
@@ -168,13 +168,13 @@ final class TrackHandoffTests: XCTestCase {
         XCTAssertGreaterThan(reads, 10_000)
         // Descartar es legítimo y esperado bajo esta tasa de escritura absurda;
         // lo que no es aceptable es devolver un valor mezclado.
-        print("TrackHandoff: \(reads) lecturas, \(discarded) descartadas")
+        print("PatternHandoff: \(reads) lecturas, \(discarded) descartadas")
     }
 
     /// Bajo una tasa de publicación realista —un giro de knob es lento
     /// comparado con una ventana de scheduling— no se descarta ninguna lectura.
     func testLoadDoesNotDiscardUnderRealisticPublishRates() {
-        let handoff = TrackHandoff(correlatedPattern(3))
+        let handoff = PatternHandoff(correlatedPattern(3))
         for round in 0..<500 {
             handoff.publish(correlatedPattern((round % 16) + 1))
             XCTAssertNotNil(handoff.load(), "descartó una lectura sin contención")
@@ -217,34 +217,34 @@ final class TrackHandoffTests: XCTestCase {
 /// escritor tendría que dar la vuelta al anillo de cuatro ranuras mientras el
 /// lector copia unos enteros— y la única forma de verificarla es sobre los
 /// números.
-final class TrackHandoffSafetyTests: XCTestCase {
+final class PatternHandoffSafetyTests: XCTestCase {
 
     /// Sin publicaciones de por medio, la lectura es fiable.
     func testUnchangedGenerationIsSafe() {
-        XCTAssertTrue(TrackHandoff.readIsSafe(latched: 0, observed: 0))
-        XCTAssertTrue(TrackHandoff.readIsSafe(latched: 1_000, observed: 1_000))
+        XCTAssertTrue(PatternHandoff.readIsSafe(latched: 0, observed: 0))
+        XCTAssertTrue(PatternHandoff.readIsSafe(latched: 1_000, observed: 1_000))
     }
 
     /// El escritor puede adelantar hasta dos generaciones sin alcanzar la ranura
     /// latida: con cuatro ranuras, la reescribe al preparar la cuarta.
     func testGenerationMayAdvanceUpToTheSlotDistance() {
-        XCTAssertTrue(TrackHandoff.readIsSafe(latched: 10, observed: 11))
-        XCTAssertTrue(TrackHandoff.readIsSafe(latched: 10, observed: 12))
+        XCTAssertTrue(PatternHandoff.readIsSafe(latched: 10, observed: 11))
+        XCTAssertTrue(PatternHandoff.readIsSafe(latched: 10, observed: 12))
     }
 
     /// A partir de ahí el escritor ya pudo empezar a pisar la ranura, así que la
     /// lectura se descarta.
     func testGenerationBeyondTheSlotDistanceIsDiscarded() {
-        XCTAssertFalse(TrackHandoff.readIsSafe(latched: 10, observed: 13))
-        XCTAssertFalse(TrackHandoff.readIsSafe(latched: 10, observed: 14))
-        XCTAssertFalse(TrackHandoff.readIsSafe(latched: 10, observed: 1_000))
+        XCTAssertFalse(PatternHandoff.readIsSafe(latched: 10, observed: 13))
+        XCTAssertFalse(PatternHandoff.readIsSafe(latched: 10, observed: 14))
+        XCTAssertFalse(PatternHandoff.readIsSafe(latched: 10, observed: 1_000))
     }
 
     /// El contador es monótono, pero de 64 bits: si diera la vuelta, la resta
     /// envolvente sigue dando la distancia correcta.
     func testDistanceIsCorrectAcrossCounterWraparound() {
-        XCTAssertTrue(TrackHandoff.readIsSafe(latched: .max, observed: .max &+ 1))
-        XCTAssertTrue(TrackHandoff.readIsSafe(latched: .max &- 1, observed: .max &+ 1))
-        XCTAssertFalse(TrackHandoff.readIsSafe(latched: .max, observed: .max &+ 3))
+        XCTAssertTrue(PatternHandoff.readIsSafe(latched: .max, observed: .max &+ 1))
+        XCTAssertTrue(PatternHandoff.readIsSafe(latched: .max &- 1, observed: .max &+ 1))
+        XCTAssertFalse(PatternHandoff.readIsSafe(latched: .max, observed: .max &+ 3))
     }
 }

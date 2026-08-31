@@ -142,7 +142,7 @@ final class PadPoolInputTests: XCTestCase {
     // MARK: - Publicación
 
     func testEveryAcceptedPadPublishesTheTrack() {
-        let handoff = TrackHandoff(Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)))
+        let handoff = PatternHandoff(Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)))
         let input = ControlInput(
             track: Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
             frame: frame,

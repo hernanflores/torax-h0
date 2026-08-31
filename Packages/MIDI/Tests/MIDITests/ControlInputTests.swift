@@ -23,8 +23,8 @@ final class ControlInputTests: XCTestCase {
         )
     }
 
-    private func makeInput(_ shape: Shape) -> (ControlInput, TrackHandoff) {
-        let handoff = TrackHandoff(Track(shape: shape))
+    private func makeInput(_ shape: Shape) -> (ControlInput, PatternHandoff) {
+        let handoff = PatternHandoff(Track(shape: shape))
         return (ControlInput(track: Track(shape: shape), publishingTo: handoff), handoff)
     }
 
@@ -71,7 +71,7 @@ final class ControlInputTests: XCTestCase {
                 probability: Probability(percent: 50)!
             )
             let track = Track(shape: roomy, groove: roomyGroove)
-            let handoff = TrackHandoff(track)
+            let handoff = PatternHandoff(track)
             let input = ControlInput(track: track, publishingTo: handoff)
 
             XCTAssertTrue(input.receive(turn(parameter, by: 0x01)), "\(parameter) no respondió")

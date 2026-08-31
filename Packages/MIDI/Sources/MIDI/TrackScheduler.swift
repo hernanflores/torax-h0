@@ -4,7 +4,7 @@ import Engine
 ///
 /// **Existe para que dos significados no compartan un `nil`.** Antes esto era un
 /// `Track?`, y `nil` quería decir «emite todos los Steps». Pero
-/// `TrackHandoff.load()` devuelve `nil` con otro significado —«descarta esta
+/// `PatternHandoff.load()` devuelve `nil` con otro significado —«descarta esta
 /// lectura»—, así que enchufar uno en el otro convertía un descarte en una
 /// ráfaga de notas a densidad máxima. Con dos casos con nombre, esa confusión no
 /// se puede escribir.
@@ -186,7 +186,7 @@ public struct TrackScheduler {
     /// Steps that do not trigger do not consume a probability draw.
     public mutating func advance(
         toHorizon horizonNanoseconds: Int64,
-        refreshingFrom handoff: TrackHandoff?,
+        refreshingFrom handoff: PatternHandoff?,
         emit: (_ step: Int, _ pitch: Pitch?, _ groove: Groove, _ offsetNanoseconds: Int64) -> Void
     ) {
         if let published = handoff?.load(), let track = published.track(at: 0) {

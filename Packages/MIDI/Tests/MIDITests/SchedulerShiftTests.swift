@@ -37,7 +37,7 @@ final class SchedulerShiftTests: XCTestCase {
     private func emit(
         _ scheduler: inout TrackScheduler,
         toHorizon horizon: Int64,
-        from handoff: TrackHandoff? = nil
+        from handoff: PatternHandoff? = nil
     ) -> [(step: Int, offset: Int64)] {
         var emitted: [(step: Int, offset: Int64)] = []
         scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) { step, _, _, offset in
@@ -154,7 +154,7 @@ final class SchedulerShiftTests: XCTestCase {
     /// cubrir el adelanto en cuanto el knob se moviera.
     func testTheBudgetComesFromThePublishedSnapshotAndNotFromConstruction() {
         var scheduler = TrackScheduler(timeline: timeline, material: .track(track()))
-        let handoff = TrackHandoff(track())
+        let handoff = PatternHandoff(track())
 
         // Sin Delay: la ventana de medio Step solo alcanza al Step 0.
         XCTAssertEqual(emit(&scheduler, toHorizon: step / 2).map(\.step), [0])
@@ -184,7 +184,7 @@ final class SchedulerShiftTests: XCTestCase {
     /// no son dos lecturas que puedan discrepar en el borde de una ventana.
     func testTheShiftComesFromTheSameSnapshotAsTheGroove() {
         var scheduler = TrackScheduler(timeline: timeline, material: .track(track()))
-        let handoff = TrackHandoff(track())
+        let handoff = PatternHandoff(track())
         handoff.publish(Engine.Pattern().replacing(track(timing: 75, delay: 50), at: 0))
 
         var seen: [(groove: Groove, offset: Int64, step: Int)] = []

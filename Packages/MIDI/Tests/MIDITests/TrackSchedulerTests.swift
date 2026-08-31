@@ -41,7 +41,7 @@ final class TrackSchedulerTests: XCTestCase {
     private func emit(
         _ scheduler: inout TrackScheduler,
         upToStep stepIndex: Int,
-        from handoff: TrackHandoff? = nil
+        from handoff: PatternHandoff? = nil
     ) -> [Int] {
         var steps: [Int] = []
         scheduler.advance(
@@ -90,7 +90,7 @@ final class TrackSchedulerTests: XCTestCase {
     /// El test central de la fase: publicar mientras suena se recoge en la
     /// ventana siguiente, no en la actual ni tres ventanas después.
     func testSnapshotPublishedMidPlaybackIsPickedUpByTheNextWindow() {
-        let handoff = TrackHandoff(track(steps: 16, pulses: 4))
+        let handoff = PatternHandoff(track(steps: 16, pulses: 4))
         var scheduler = TrackScheduler(
             timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
 
@@ -104,7 +104,7 @@ final class TrackSchedulerTests: XCTestCase {
 
     /// Sin publicar nada, el scheduler conserva el Track con el que arrancó.
     func testWithoutPublishingTheTrackIsUnchanged() {
-        let handoff = TrackHandoff(track(steps: 16, pulses: 4))
+        let handoff = PatternHandoff(track(steps: 16, pulses: 4))
         var scheduler = TrackScheduler(
             timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
         for lap in 1...4 {
@@ -119,7 +119,7 @@ final class TrackSchedulerTests: XCTestCase {
     /// llenos —donde todos disparan— la secuencia emitida tiene que ser los
     /// enteros consecutivos desde cero, sin huecos ni repeticiones.
     func testChangingSnapshotNeverDuplicatesOrDropsAStep() {
-        let handoff = TrackHandoff(fullRing(16))
+        let handoff = PatternHandoff(fullRing(16))
         var scheduler = TrackScheduler(timeline: timeline, material: .track(fullRing(16)))
 
         var emitted: [Int] = []
@@ -133,7 +133,7 @@ final class TrackSchedulerTests: XCTestCase {
 
     /// Lo mismo publicando a mitad de ventana en lugar de entre ventanas.
     func testStepSequenceStaysContiguousAcrossManySnapshotChanges() {
-        let handoff = TrackHandoff(fullRing(8))
+        let handoff = PatternHandoff(fullRing(8))
         var scheduler = TrackScheduler(timeline: timeline, material: .track(fullRing(8)))
 
         var emitted: [Int] = []
@@ -152,7 +152,7 @@ final class TrackSchedulerTests: XCTestCase {
     func testDiscardedSnapshotReadKeepsThePreviousTrack() {
         var scheduler = TrackScheduler(
             timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
-        // `nil` es exactamente lo que `TrackHandoff.load()` devuelve al
+        // `nil` es exactamente lo que `PatternHandoff.load()` devuelve al
         // descartar, así que pasar nil reproduce ese caso.
         XCTAssertEqual(emit(&scheduler, upToStep: 16, from: nil), [0, 4, 8, 12])
         XCTAssertEqual(scheduler.material, .track(track(steps: 16, pulses: 4)))
@@ -171,7 +171,7 @@ final class TrackSchedulerTests: XCTestCase {
     /// `Track?` compartido con el `nil` de `load()`, y un descarte habría hecho
     /// sonar el anillo entero a densidad máxima.
     func testDiscardedReadCannotTurnIntoEveryStep() {
-        let handoff = TrackHandoff(track(steps: 16, pulses: 4))
+        let handoff = PatternHandoff(track(steps: 16, pulses: 4))
         var scheduler = TrackScheduler(
             timeline: timeline,
             material: .track(track(steps: 16, pulses: 4))
@@ -217,7 +217,7 @@ final class SchedulerThreadSnapshotTests: XCTestCase {
     }
 
     func testRunningSchedulerPicksUpAPublishedTrack() {
-        let handoff = TrackHandoff(track(rotate: 0))
+        let handoff = PatternHandoff(track(rotate: 0))
         let emitted = AtomicCounter()
         let unexpectedPosition = AtomicFlag(false)
         // El Rotate que el handler espera ver. Lo cambia el test al publicar.
