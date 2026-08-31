@@ -16,7 +16,7 @@ regresión la bloquea.
 
 ---
 
-## Phase 1: Dieciséis Tracks son un valor
+## Phase 1: Dieciséis Tracks son un valor [checkpoint: 4b92603]
 
 > `Engine` puro. Sin CoreMIDI, sin simulador, sin hardware. Es donde se decide si
 > el resto de la rebanada es posible: si el conjunto no es un valor trivial, no
@@ -40,7 +40,7 @@ regresión la bloquea.
   - [x] Tests (Red): `_isPOD` sigue verdadero con el canal dentro
   - [x] Implementación (Green): vive en `Track`, junto a lo que el hilo del scheduler necesita para construir el mensaje
   - [x] **Documentar la desviación** si el tipo de canal de `Engine` duplica al de `MIDI`: el motor no importa nada de plataforma, y la conversión vive en la capa que conoce ambos —igual que `Pitch`—
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: El snapshot que cruza al scheduler
 
@@ -48,7 +48,7 @@ regresión la bloquea.
 > depende del tamaño del snapshot: la ranura simplemente será mayor». Esta fase
 > lo cobra.
 
-- [ ] Task: `TrackHandoff` publica un `Pattern`
+- [~] Task: `TrackHandoff` publica un `Pattern`
   - [ ] Tests (Red): publicar y leer devuelve los dieciséis Tracks intactos
   - [ ] Tests (Red): los tests de disciplina de ranura que ya existen siguen valiendo **adaptados al valor nuevo, no reescritos**: el lector descarta si el escritor le da alcance, y nunca lee una ranura a medio escribir
   - [ ] Tests (Red): el escritor concurrente y el lector en bucle no producen ningún `Pattern` mezclado —mitad de una publicación y mitad de otra—, que es el fallo que el anillo existe para evitar y que con un valor mayor es más fácil de provocar
