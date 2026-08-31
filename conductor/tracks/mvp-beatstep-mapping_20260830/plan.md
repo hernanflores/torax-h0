@@ -43,15 +43,15 @@ la rebanada 8.
   - [x] Tests (Red): el grado 1 es siempre el 0 — el Root por definición, que es lo que hace que el pad 1 sea el Root seleccionado
   - [x] Tests (Red): enumerar no contradice a `allows(_:)`: toda altura construida desde un grado es admitida por el marco, sobre las cinco escalas y los doce Roots
   - [x] Implementación (Green): derivado de `pitchClassMask`, sin duplicar los intervalos en un segundo sitio donde puedan divergir
-- [ ] Task: `PadSurface` — qué altura tiene cada pad
-  - [ ] Tests (Red): con `major` y Root en Do, los pads 1–7 son las notas 48, 50, 52, 53, 55, 57, 59 — el grado 1 en la octava de C2, que es la que empieza en la nota MIDI 48
-  - [ ] Tests (Red): **el pad 9 es exactamente el pad 1 más doce semitonos**, sobre las cinco escalas y los doce Roots. Es la invariante de la que dependen los pads 8 y 16
-  - [ ] Tests (Red): los pads 9–15 son los mismos grados que los 1–7, una octava por encima, en el mismo orden
-  - [ ] Tests (Red): con Root en Re el pad 1 es la nota 50 — la base es la **octava**, no una nota fija; el grado 1 se mueve con el Root
-  - [ ] Tests (Red): con `pentatonic`, los pads **6, 7, 14 y 15 no tienen altura**, y los 1–5 y 9–13 sí. Es la desviación consciente de la decisión 3 del spec, fijada como comportamiento querido y no como efecto
-  - [ ] Tests (Red): los pads 8 y 16 nunca tienen altura — son desplazamiento, no nota, en todas las escalas
-  - [ ] Tests (Red): un índice fuera de 0–15 no tiene altura y no revienta
-  - [ ] Implementación (Green): función pura del índice, el `TonalFrame` y el desplazamiento vigente
+- [x] Task: `PadSurface` — qué altura tiene cada pad — `ee95f45`
+  - [x] Tests (Red): con `major` y Root en Do, los pads 1–7 son las notas 48, 50, 52, 53, 55, 57, 59 — el grado 1 en la octava de C2, que es la que empieza en la nota MIDI 48
+  - [x] Tests (Red): **el pad 9 es exactamente el pad 1 más doce semitonos**, sobre las cinco escalas y los doce Roots. Es la invariante de la que dependen los pads 8 y 16
+  - [x] Tests (Red): los pads 9–15 son los mismos grados que los 1–7, una octava por encima, en el mismo orden
+  - [x] Tests (Red): con Root en Re el pad 1 es la nota 50 — la base es la **octava**, no una nota fija; el grado 1 se mueve con el Root
+  - [x] Tests (Red): con `pentatonic`, los pads **6, 7, 14 y 15 no tienen altura**, y los 1–5 y 9–13 sí. Es la desviación consciente de la decisión 3 del spec, fijada como comportamiento querido y no como efecto
+  - [x] Tests (Red): los pads 8 y 16 nunca tienen altura — son desplazamiento, no nota, en todas las escalas
+  - [x] Tests (Red): un índice fuera de 0–15 no tiene altura y no revienta
+  - [x] Implementación (Green): función pura del índice, el `TonalFrame` y el desplazamiento vigente
 - [ ] Task: El desplazamiento de octava y su tope
   - [ ] Tests (Red): **el ejemplo literal del requisito.** Pad 1 en C2 y pad 9 en C3; tras el pad 8 quedan en C1 y C2; desde el estado inicial, tras el pad 16 quedan en C3 y C4
   - [ ] Tests (Red): subir y bajar mueve **todas** las alturas asignadas doce semitonos, no solo un bloque
