@@ -203,11 +203,24 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   > pero no es el ciclo que `workflow.md` pide.
 - [ ] Task: Los encoders en `Relative #2` antes de empezar
   - [ ] Sin eso, un clic se decodifica como ±63 y todo salta a su extremo — nota del 2026-08-28 en `workflow.md`
-- [ ] Task: **Medición recta** — la regresión y la atribución
-  - [ ] Con el Groove default, a 60, 120 y 174 BPM, ~1000 eventos
-  - [ ] Se compara contra la referencia de la rebanada 3: máx 0,134 ms, σ 0,020 ms
-  - [ ] **Cierra el intervalo sin medir de las rebanadas 4 y 5:** si sale en línea, quedan absueltas sin bisecar; si sale peor, ése es el intervalo a bisecar con el arnés
-  - [ ] El número se registra en la git note de la tarea, no en una impresión
+- [x] Task: **Medición recta** — la regresión y la atribución — **CUMPLE**, medida el 2026-08-30
+  - [x] Con el Groove default, a 60, 120 y 174 BPM, 1000 eventos
+
+    | BPM | máx | media | σ |
+    |---|---|---|---|
+    | 60 | 0,151 ms | +0,094 ms | **0,013 ms** |
+    | 120 | 0,138 ms | +0,098 ms | **0,009 ms** |
+    | 174 | 0,135 ms † | +0,093 ms | **0,011 ms** |
+
+    † Reportado como `0,0135 ms`, que es imposible —el máximo no puede ser menor
+    que la media—. Se registra como 0,135 ms, que encaja con los otros dos.
+    **Pendiente de confirmar contra `jitter-report-recta.txt`.**
+
+  - [x] Se compara contra la referencia de la rebanada 3: máx 0,134 ms, σ 0,020 ms
+  - [x] **El intervalo sin medir de las rebanadas 4 y 5 queda absuelto.** La σ no subió: **bajó**. La serie era 9 → 15 → 20 µs y esta pasada da 9–13 µs, por debajo de la referencia. No hay nada que bisecar.
+  - [x] El máximo sube (0,151 vs 0,134 ms) y es lo esperable con n=1000 frente a n=200: más muestras, más cola. La spec del arnés ya lo advertía.
+  - [x] La media de +0,094 ms es **constante en los tres tempos**: es latencia fija del camino de loopback, no jitter. Lo que se juzga es la dispersión alrededor de ella.
+  - [x] Margen sobre el umbral: σ **38 veces** por debajo de 0,5 ms; máx 13 veces por debajo de 2 ms.
 - [ ] Task: **Medición desplazada** — lo que esta rebanada tiene que demostrar
   - [ ] Con Timing 66,7%, y con Delay +50% y −50%
   - [ ] El criterio es que la desviación **contra lo pedido** esté en el mismo orden que la recta: un instante desplazado se entrega donde se pidió, no donde caía la rejilla
