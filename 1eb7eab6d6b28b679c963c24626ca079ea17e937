@@ -32,3 +32,40 @@ era la comprobacion.
 Verde
 -----
 MIDI 297 tests en la particion logica, sin fallos.
+
+Phase Verification & Checkpoint — Fase 3: Un reloj, dieciseis rejillas
+=====================================================================
+
+Tests automaticos
+-----------------
+  MIDI, particion logica de CI    -> 297, 0 fallos
+  MIDI, particion CoreMIDI        ->  21, 0 fallos
+  Engine                          -> 334, 0 fallos
+  xcodebuild build (generic/iOS)  -> BUILD SUCCEEDED
+
+Lo construido
+-------------
+PatternScheduler recorre los dieciseis dentro de la ventana ya abierta, cada uno
+con su rejilla sobre el mismo origen; una sola lectura del snapshot por ventana;
+dieciseis PRNG derivados; cada Track emite por su canal y con su duracion de
+Step; Stop apaga canal por canal en dos pasadas.
+
+Lo que el usuario tiene que saber
+---------------------------------
+1. LO QUE SE OYE CAMBIA: la app emitia por el canal 6 fijo y ahora el Track 1
+   emite por el canal 1. En dispositivo hay que poner el sinte en el canal del
+   Track o cambiarle el canal al Track.
+2. Un Track sin pool ya no se programa (NFR3); dos suites antiguas necesitaron
+   material.
+3. La deuda de la rebanada 6 -Stop con Delay positivo, analizado y no
+   reproducido- queda cerrada con test. No hizo falta corregir codigo.
+
+Verificacion manual
+-------------------
+Sin superficie todavia -la pantalla es la fase 5-. Lo comprobable en dispositivo
+-dos Tracks en canales distintos sonando juntos y en fase- va con la fase 6, que
+lo lleva entero y con la medicion de jitter delante.
+
+Confirmacion del usuario
+------------------------
+2026-08-31: 'Avancemos'.
