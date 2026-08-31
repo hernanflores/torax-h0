@@ -85,7 +85,9 @@ public final class ControlInput: @unchecked Sendable {
         self.init(
             track: track,
             frame: frame,
-            publish: { handoff.publish($0) },
+            // Puente de la v2, fase 2: la entrada edita un Track y el handoff
+            // publica los dieciséis. La fase 4 le da el Pattern entero.
+            publish: { handoff.publish(Pattern().replacing($0, at: 0)) },
             mapping: mapping,
             encoding: encoding,
             trackCount: trackCount

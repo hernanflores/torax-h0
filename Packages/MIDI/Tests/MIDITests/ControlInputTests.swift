@@ -36,7 +36,7 @@ final class ControlInputTests: XCTestCase {
         XCTAssertTrue(input.receive(turn(.pulses, by: 0x01)))
 
         XCTAssertEqual(input.track.shape.pulses.count, 5)
-        XCTAssertEqual(handoff.load()?.shape.pulses.count, 5, "no llegó al scheduler")
+        XCTAssertEqual(handoff.load()?.track(at: 0)?.shape.pulses.count, 5, "no llegó al scheduler")
     }
 
     func testTurningBackwardsDecrements() {
@@ -48,7 +48,7 @@ final class ControlInputTests: XCTestCase {
     func testAccumulatedTurnsAddUp() {
         let (input, handoff) = makeInput(shape(pulses: 1))
         for _ in 0..<5 { input.receive(turn(.pulses, by: 0x01)) }
-        XCTAssertEqual(handoff.load()?.shape.pulses.count, 6)
+        XCTAssertEqual(handoff.load()?.track(at: 0)?.shape.pulses.count, 6)
     }
 
     /// Cada parámetro responde a su propio controlador.
@@ -144,7 +144,7 @@ final class ControlInputTests: XCTestCase {
         XCTAssertEqual(input.track.shape.pulses.count, 12, "el giro destruyó Pulses")
 
         for _ in 0..<12 { input.receive(turn(.steps, by: 0x01)) }
-        XCTAssertEqual(handoff.load()?.shape, shape(steps: 16, pulses: 12))
+        XCTAssertEqual(handoff.load()?.track(at: 0)?.shape, shape(steps: 16, pulses: 12))
     }
 
     // MARK: - Extremos

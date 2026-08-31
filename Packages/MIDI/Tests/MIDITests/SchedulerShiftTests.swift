@@ -162,7 +162,7 @@ final class SchedulerShiftTests: XCTestCase {
         // Se publica un Delay negativo. La ventana siguiente llega justo al
         // borde del Step 1: sin presupuesto no emitiría nada —el horizonte es
         // exclusivo— y con él lo alcanza. Ese contraste es la señal.
-        handoff.publish(track(delay: -100))
+        handoff.publish(Engine.Pattern().replacing(track(delay: -100), at: 0))
         XCTAssertEqual(
             emit(&scheduler, toHorizon: step, from: handoff).map(\.step),
             [1],
@@ -185,7 +185,7 @@ final class SchedulerShiftTests: XCTestCase {
     func testTheShiftComesFromTheSameSnapshotAsTheGroove() {
         var scheduler = TrackScheduler(timeline: timeline, material: .track(track()))
         let handoff = TrackHandoff(track())
-        handoff.publish(track(timing: 75, delay: 50))
+        handoff.publish(Engine.Pattern().replacing(track(timing: 75, delay: 50), at: 0))
 
         var seen: [(groove: Groove, offset: Int64, step: Int)] = []
         scheduler.advance(toHorizon: 4 * step, refreshingFrom: handoff) { step, _, groove, offset in

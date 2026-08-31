@@ -2,10 +2,17 @@ import Engine
 import XCTest
 @testable import MIDI
 
-/// Tests de la entrega del Track al hilo del scheduler.
+/// **`Pattern` a secas es ambiguo en un target de test**: corren en macOS y
+/// XCTest arrastra `ApplicationServices`, que trae un `Pattern` de Quickdraw.
+private typealias Pattern = Engine.Pattern
+
+/// Tests de la entrega del material al hilo del scheduler.
 ///
-/// Es la pieza que el spike dejó pendiente y el mayor riesgo técnico del track:
-/// publicar estado nuevo mientras suena, sin lock en el camino de timing.
+/// Es la pieza que el spike dejó pendiente y el mayor riesgo técnico del
+/// proyecto: publicar estado nuevo mientras suena, sin lock en el camino de
+/// timing. **Desde la v2 lo que se publica son los dieciséis Tracks**, así que
+/// la ranura es dieciséis veces mayor y la ventana para una lectura mezclada,
+/// dieciséis veces más ancha.
 final class TrackHandoffTests: XCTestCase {
 
     /// Construye un Track cuyos campos están correlacionados: Steps, Pulses y
@@ -27,6 +34,33 @@ final class TrackHandoffTests: XCTestCase {
         )
     }
 
+    /// Un Pattern cuyos dieciséis Tracks están correlacionados con el mismo
+    /// valor.
+    ///
+    /// **Es el detector de lecturas mezcladas, ampliado.** Con un solo Track la
+    /// mezcla se veía entre sus campos; con dieciséis, también entre Tracks: una
+    /// lectura rota traería el Track 3 de una publicación y el 11 de otra.
+    private func correlatedPattern(_ value: Int) -> Pattern {
+        var pattern = Pattern()
+        for index in 0..<Pattern.trackCount {
+            pattern = pattern.replacing(correlatedTrack(value), at: index)
+        }
+        return pattern
+    }
+
+    private func assertCorrelated(
+        _ pattern: Pattern, file: StaticString = #filePath, line: UInt = #line
+    ) {
+        let first = pattern.track(at: 0)!.shape.steps.count
+        for index in 0..<Pattern.trackCount {
+            let track = pattern.track(at: index)!
+            // Entre Tracks: los dieciséis vienen de la misma publicación.
+            XCTAssertEqual(track.shape.steps.count, first, file: file, line: line)
+            // Y dentro de cada uno, entre campos.
+            assertCorrelated(track, file: file, line: line)
+        }
+    }
+
     private func assertCorrelated(
         _ track: Track, file: StaticString = #filePath, line: UInt = #line
     ) {
@@ -40,41 +74,60 @@ final class TrackHandoffTests: XCTestCase {
 
     // MARK: - Publicar y leer
 
-    func testInitialTrackIsReadableBeforeAnyPublish() {
-        let handoff = TrackHandoff(correlatedTrack(4))
-        XCTAssertEqual(handoff.load(), correlatedTrack(4))
+    func testInitialPatternIsReadableBeforeAnyPublish() {
+        let handoff = TrackHandoff(correlatedPattern(4))
+        XCTAssertEqual(handoff.load(), correlatedPattern(4))
     }
 
-    func testPublishedTrackIsPickedUpByTheNextLoad() {
-        let handoff = TrackHandoff(correlatedTrack(4))
-        handoff.publish(correlatedTrack(9))
-        XCTAssertEqual(handoff.load(), correlatedTrack(9))
+    func testPublishedPatternIsPickedUpByTheNextLoad() {
+        let handoff = TrackHandoff(correlatedPattern(4))
+        handoff.publish(correlatedPattern(9))
+        XCTAssertEqual(handoff.load(), correlatedPattern(9))
     }
 
     func testLoadIsRepeatableWithoutConsumingTheValue() {
-        let handoff = TrackHandoff(correlatedTrack(7))
+        let handoff = TrackHandoff(correlatedPattern(7))
         for _ in 0..<1_000 {
-            XCTAssertEqual(handoff.load(), correlatedTrack(7))
+            XCTAssertEqual(handoff.load(), correlatedPattern(7))
         }
     }
 
     func testSuccessivePublicationsAreEachVisible() {
-        let handoff = TrackHandoff(correlatedTrack(1))
+        let handoff = TrackHandoff(correlatedPattern(1))
         for value in Steps.validRange {
-            handoff.publish(correlatedTrack(value))
-            XCTAssertEqual(handoff.load()?.shape.steps.count, value)
+            handoff.publish(correlatedPattern(value))
+            XCTAssertEqual(handoff.load()?.track(at: 0)?.shape.steps.count, value)
+        }
+    }
+
+    /// **Los dieciséis Tracks llegan enteros, no solo el primero.** Es lo que
+    /// distingue publicar un Pattern de publicar un Track con quince pasajeros
+    /// que nadie mira.
+    func testEveryTrackSurvivesThePublication() {
+        var published = Pattern()
+        for index in 0..<Pattern.trackCount {
+            published = published.replacing(correlatedTrack(index + 1), at: index)
+        }
+
+        let handoff = TrackHandoff(Pattern())
+        handoff.publish(published)
+
+        let read = handoff.load()
+        for index in 0..<Pattern.trackCount {
+            XCTAssertEqual(
+                read?.track(at: index)?.shape.steps.count, index + 1, "Track \(index + 1)")
         }
     }
 
     /// El anillo de ranuras da la vuelta: publicar más veces que ranuras hay no
     /// puede dejar el lector viendo una publicación vieja.
     func testPublishingMoreTimesThanThereAreSlotsStillReadsTheLatest() {
-        let handoff = TrackHandoff(correlatedTrack(1))
+        let handoff = TrackHandoff(correlatedPattern(1))
         for _ in 0..<200 {
             for value in Steps.validRange {
-                handoff.publish(correlatedTrack(value))
+                handoff.publish(correlatedPattern(value))
             }
-            XCTAssertEqual(handoff.load()?.shape.steps.count, 16)
+            XCTAssertEqual(handoff.load()?.track(at: 0)?.shape.steps.count, 16)
         }
     }
 
@@ -83,13 +136,15 @@ final class TrackHandoffTests: XCTestCase {
     /// El test central: publicar desde otro hilo mientras el lector lee no puede
     /// producir un Track con campos de dos publicaciones distintas.
     func testConcurrentPublishNeverYieldsATornTrack() {
-        let handoff = TrackHandoff(correlatedTrack(1))
+        let handoff = TrackHandoff(correlatedPattern(1))
         let writerFinished = expectation(description: "el escritor terminó")
 
+        // Menos vueltas que con un Track solo: cada publicación copia dieciséis
+        // veces más, y lo que se mide es la mezcla, no el rendimiento.
         let writer = Thread {
-            for _ in 0..<20_000 {
+            for _ in 0..<2_000 {
                 for value in Steps.validRange {
-                    handoff.publish(self.correlatedTrack(value))
+                    handoff.publish(self.correlatedPattern(value))
                 }
             }
             writerFinished.fulfill()
@@ -100,8 +155,8 @@ final class TrackHandoffTests: XCTestCase {
         var reads = 0
         var discarded = 0
         while writer.isFinished == false || reads < 10_000 {
-            if let track = handoff.load() {
-                assertCorrelated(track)
+            if let pattern = handoff.load() {
+                assertCorrelated(pattern)
             } else {
                 discarded += 1
             }
@@ -119,9 +174,9 @@ final class TrackHandoffTests: XCTestCase {
     /// Bajo una tasa de publicación realista —un giro de knob es lento
     /// comparado con una ventana de scheduling— no se descarta ninguna lectura.
     func testLoadDoesNotDiscardUnderRealisticPublishRates() {
-        let handoff = TrackHandoff(correlatedTrack(3))
+        let handoff = TrackHandoff(correlatedPattern(3))
         for round in 0..<500 {
-            handoff.publish(correlatedTrack((round % 16) + 1))
+            handoff.publish(correlatedPattern((round % 16) + 1))
             XCTAssertNotNil(handoff.load(), "descartó una lectura sin contención")
         }
     }
@@ -134,9 +189,19 @@ final class TrackHandoffTests: XCTestCase {
     ///
     /// Es la restricción que hay que preservar cuando lleguen Tonal y Groove: el
     /// pool de pitches tiene que ser almacenamiento inline, no un `Array`.
-    func testTrackIsATrivialTypeSoCopyingItTakesNoReferenceCounting() {
+    func testTheSnapshotIsATrivialTypeSoCopyingItTakesNoReferenceCounting() {
+        XCTAssertTrue(_isPOD(Pattern.self), "Pattern dejó de ser trivial")
         XCTAssertTrue(_isPOD(Track.self), "Track dejó de ser trivial: revisar Tonal/Groove")
         XCTAssertTrue(_isPOD(Shape.self))
+    }
+
+    /// **El número que la fase 2 existía para conocer**: lo que el hilo del
+    /// scheduler copia en cada ventana. Se fija aquí para que un crecimiento
+    /// futuro del modelo se vea como un cambio, y no como una sorpresa medida
+    /// tarde.
+    func testTheSnapshotIsSixteenTracksWideAndNothingMore() {
+        XCTAssertEqual(MemoryLayout<Pattern>.size, MemoryLayout<Track>.size * 16)
+        XCTAssertLessThan(MemoryLayout<Pattern>.size, 4_096, "el snapshot creció de orden")
     }
 }
 

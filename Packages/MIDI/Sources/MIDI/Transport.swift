@@ -35,17 +35,23 @@ public final class Transport: @unchecked Sendable {
 
     private var scheduler: SchedulerThread?
 
-    /// Último Track publicado.
+    /// Último material publicado: los dieciséis Tracks.
     ///
     /// Se guarda aparte del handoff porque `load()` puede descartar una lectura,
-    /// y arrancar sin Track significaría `.everyStep` — una ráfaga a densidad
-    /// máxima en lugar del patrón. Aquí siempre hay un Track válido.
-    private var lastPublishedTrack: Track
+    /// y arrancar sin material significaría `.everyStep` — una ráfaga a densidad
+    /// máxima en lugar del patrón. Aquí siempre hay un Pattern válido.
+    private var lastPublishedPattern: Pattern
 
     public var isPlaying: Bool { scheduler?.isRunning ?? false }
 
-    /// Track vigente. Cambiarlo mientras suena se hace con `publish(_:)`.
-    public var track: Track { lastPublishedTrack }
+    /// Los dieciséis Tracks vigentes. Cambiarlos mientras suena se hace con
+    /// `publish(_:)`.
+    public var pattern: Pattern { lastPublishedPattern }
+
+    /// El Track 1, que es el único que la interfaz edita hasta la fase 4.
+    ///
+    /// Los literales de índice no fallan: el Pattern siempre tiene dieciséis.
+    public var track: Track { lastPublishedPattern.track(at: 0)! }
 
     /// Dónde está el playhead sobre el anillo, o `nil` con el transporte
     /// parado.
@@ -63,7 +69,7 @@ public final class Transport: @unchecked Sendable {
         return Playhead(
             elapsedNanoseconds: elapsed,
             timeline: configuration.timeline,
-            steps: lastPublishedTrack.shape.steps
+            steps: track.shape.steps
         )
     }
 
@@ -76,8 +82,8 @@ public final class Transport: @unchecked Sendable {
         self.configuration = configuration
         self.emitter = emitter
         self.send = send
-        self.handoff = TrackHandoff(track)
-        self.lastPublishedTrack = track
+        self.handoff = TrackHandoff(Pattern().replacing(track, at: 0))
+        self.lastPublishedPattern = Pattern().replacing(track, at: 0)
     }
 
     deinit {
@@ -85,9 +91,20 @@ public final class Transport: @unchecked Sendable {
     }
 
     /// Publica un Track nuevo. Se recoge en la ventana siguiente, suene o no.
+    ///
+    /// > **Puente de la v2, fase 2.** El handoff ya publica los dieciséis
+    /// > Tracks, pero quien llama todavía edita uno solo. Se sustituye el Track 1
+    /// > y los otros quince se conservan, que es lo que hace que este puente no
+    /// > mienta: no reinicia nada. La fase 4 lo cambia por `publish(_:)` de un
+    /// > Pattern entero, y esta sobrecarga desaparece.
     public func publish(_ track: Track) {
-        lastPublishedTrack = track
-        handoff.publish(track)
+        publish(lastPublishedPattern.replacing(track, at: 0))
+    }
+
+    /// Publica los dieciséis Tracks. Se recogen en la ventana siguiente.
+    public func publish(_ pattern: Pattern) {
+        lastPublishedPattern = pattern
+        handoff.publish(pattern)
     }
 
     /// Arranca el reloj.
@@ -100,7 +117,7 @@ public final class Transport: @unchecked Sendable {
 
         let thread = SchedulerThread(
             configuration: configuration,
-            material: .track(handoff.load() ?? lastPublishedTrack),
+            material: .track((handoff.load() ?? lastPublishedPattern).track(at: 0)!),
             handoff: handoff,
             playhead: playheadClock
         ) { [emitter, send] _, pitch, groove, hostTime in
@@ -173,7 +190,7 @@ public final class Transport: @unchecked Sendable {
             silenceAt
         )
 
-        let pool = lastPublishedTrack.pool
+        let pool = track.pool
         for index in 0..<pool.count {
             guard let pitch = pool.pitch(at: index) else { break }
             send(

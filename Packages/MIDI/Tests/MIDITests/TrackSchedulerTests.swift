@@ -96,7 +96,7 @@ final class TrackSchedulerTests: XCTestCase {
 
         XCTAssertEqual(emit(&scheduler, upToStep: 16, from: handoff), [0, 4, 8, 12])
 
-        handoff.publish(track(steps: 16, pulses: 4, rotate: 2))
+        handoff.publish(Engine.Pattern().replacing(track(steps: 16, pulses: 4, rotate: 2), at: 0))
 
         // Segunda vuelta del anillo, ya con el Track nuevo: 2, 6, 10, 14.
         XCTAssertEqual(emit(&scheduler, upToStep: 32, from: handoff), [18, 22, 26, 30])
@@ -124,7 +124,7 @@ final class TrackSchedulerTests: XCTestCase {
 
         var emitted: [Int] = []
         for window in 1...40 {
-            handoff.publish(fullRing((window % 16) + 1))
+            handoff.publish(Engine.Pattern().replacing(fullRing((window % 16) + 1), at: 0))
             emitted += emit(&scheduler, upToStep: window * 3, from: handoff)
         }
 
@@ -139,7 +139,7 @@ final class TrackSchedulerTests: XCTestCase {
         var emitted: [Int] = []
         for window in 1...60 {
             emitted += emit(&scheduler, upToStep: window * 2, from: handoff)
-            handoff.publish(fullRing((window % 8) + 1))
+            handoff.publish(Engine.Pattern().replacing(fullRing((window % 8) + 1), at: 0))
         }
 
         XCTAssertEqual(emitted, Array(0..<(60 * 2)))
@@ -240,7 +240,7 @@ final class SchedulerThreadSnapshotTests: XCTestCase {
         XCTAssertFalse(unexpectedPosition.value, "emitió fuera de las posiciones de 16/4")
 
         // Se publica un giro de dos Steps a media reproducción.
-        handoff.publish(track(rotate: 2))
+        handoff.publish(Engine.Pattern().replacing(track(rotate: 2), at: 0))
 
         // Margen para que el relevo se consuma: el Track viejo puede tener Steps
         // ya entregados dentro de la ventana en curso.
