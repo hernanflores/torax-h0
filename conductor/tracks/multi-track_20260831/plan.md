@@ -42,7 +42,7 @@ regresión la bloquea.
   - [x] **Documentar la desviación** si el tipo de canal de `Engine` duplica al de `MIDI`: el motor no importa nada de plataforma, y la conversión vive en la capa que conoce ambos —igual que `Pitch`—
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: El snapshot que cruza al scheduler
+## Phase 2: El snapshot que cruza al scheduler [checkpoint: 5c38c0e]
 
 > `MIDI`. El `TrackHandoff` ya dice en su documentación que «el protocolo no
 > depende del tamaño del snapshot: la ranura simplemente será mayor». Esta fase
@@ -57,7 +57,7 @@ regresión la bloquea.
   - [x] Comprobar el tamaño real de `Pattern` con `MemoryLayout` y **registrarlo en la git note**: es lo que el hilo del scheduler copia en cada ventana
   - [x] Si el tamaño resulta desproporcionado para copiarlo por ventana, **parar y decidirlo explícitamente** en vez de seguir: la alternativa —leer solo lo que cambió— es otro diseño, no un ajuste
   - [x] Dejar el número escrito en la documentación del handoff, que es donde alguien lo buscará
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Un reloj, dieciséis rejillas
 
@@ -65,7 +65,7 @@ regresión la bloquea.
 > así que aquí es donde hay que ser conservador: nada nuevo en el bucle que no
 > sea aritmética sobre valores ya copiados.
 
-- [ ] Task: El scheduler recorre los Tracks con material
+- [~] Task: El scheduler recorre los Tracks con material
   - [ ] Tests (Red): con un solo Track con material, la secuencia emitida es **byte a byte la de hoy** — la regresión que más importa, porque es la que dice que no se rompió lo entregado
   - [ ] Tests (Red): con dos Tracks, se emiten los eventos de los dos, cada uno en sus posiciones
   - [ ] Tests (Red): un Track vacío no programa nada — el coste crece con los Tracks con material, no con dieciséis siempre (NFR3)
