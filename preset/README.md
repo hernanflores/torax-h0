@@ -107,12 +107,17 @@ silencio a propósito, porque en una sesión real llegan mensajes de todo tipo.
 3. Asignar los CC de los knobs (70–85) y de los step buttons (102–117), y el
    bloque de notas de los pads empezando en 36, según las tablas de arriba.
 4. **Send To Device** para grabarlo en el controlador.
-5. `Save As…` y exportar el `.bspx` a este directorio, junto a este README.
+5. O, más corto: cargar [`Torax.beatsteppro`](./Torax.beatsteppro) desde MIDI
+   Control Center y hacer **Send To Device**.
 
-> **Por qué el `.bspx` todavía no está aquí.** El formato de proyecto de MIDI
-> Control Center solo lo produce el propio programa, contra el hardware
-> conectado. Publicar un archivo generado a mano y sin abrirlo nunca en MCC sería
-> exactamente la clase de suposición sobre el controlador que la nota del
-> 2026-08-28 dejó escrita: se exporta en la sesión de verificación en
-> dispositivo, cuando los números de las tablas se hayan visto llegar al iPad.
-> Hasta entonces, este README y el JSON son la fuente.
+## El archivo del controlador
+
+[`Torax.beatsteppro`](./Torax.beatsteppro) es el proyecto exportado desde MIDI
+Control Center contra el BeatStep Pro ya configurado, el **2026-08-31**. No está
+escrito a mano: sale del programa que lo carga, que es la única forma de que sea
+cierto.
+
+Su contenido coincide con las tablas de arriba —dieciséis encoders en CC 70–85 en
+modo relativo, dieciséis step buttons en CC 102–117 y dieciséis pads en las notas
+36–51— y con lo que declara `ControlMapping`. Los tres tienen que decir lo mismo:
+si uno cambia, los otros dos están mal.
