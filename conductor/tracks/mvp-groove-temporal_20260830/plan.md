@@ -210,11 +210,11 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
     |---|---|---|---|
     | 60 | 0,151 ms | +0,094 ms | **0,013 ms** |
     | 120 | 0,138 ms | +0,098 ms | **0,009 ms** |
-    | 174 | 0,135 ms † | +0,093 ms | **0,011 ms** |
+    | 174 | 0,135 ms | +0,093 ms | **0,011 ms** |
 
-    † Reportado como `0,0135 ms`, que es imposible —el máximo no puede ser menor
-    que la media—. Se registra como 0,135 ms, que encaja con los otros dos.
-    **Pendiente de confirmar contra `jitter-report-recta.txt`.**
+    El 174 BPM llegó transcrito como `0,0135 ms`, imposible por ser menor que la
+    media. **Contrastado contra el informe el 2026-08-30: son 0,135 ms.** Fue
+    una errata al copiar, no un dato raro.
 
   - [x] Se compara contra la referencia de la rebanada 3: máx 0,134 ms, σ 0,020 ms
   - [x] **El intervalo sin medir de las rebanadas 4 y 5 queda absuelto.** La σ no subió: **bajó**. La serie era 9 → 15 → 20 µs y esta pasada da 9–13 µs, por debajo de la referencia. No hay nada que bisecar.
