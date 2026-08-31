@@ -45,11 +45,20 @@ final class PadPoolInputTests: XCTestCase {
         for scale in Scale.allCases {
             for rootValue in 0..<12 {
                 let frame = TonalFrame(scale: scale, root: Root(rootValue)!)
-                let input = makeInput(frame: frame)
-                for index in 0..<16 {
-                    guard input.receive(pad(index)) else { continue }
-                    let added = input.track.pool.pitch(at: input.track.pool.count - 1)!
-                    XCTAssertTrue(frame.allows(added), "\(scale)·\(rootValue)·\(index)")
+                // Los pads de octava mueven la superficie y no meten nada:
+                // aquí se miran los catorce que sí pueden. Uno por input, que
+                // el pool solo tiene ocho sitios.
+                for index in 0..<16
+                where index != PadSurface.octaveDownIndex && index != PadSurface.octaveUpIndex {
+                    let input = makeInput(frame: frame)
+                    guard let expected = input.surface.pitch(at: index) else {
+                        XCTAssertFalse(input.receive(pad(index)), "\(scale)·\(rootValue)·\(index)")
+                        continue
+                    }
+                    XCTAssertTrue(input.receive(pad(index)), "\(scale)·\(rootValue)·\(index)")
+                    XCTAssertTrue(
+                        input.track.pool.contains(expected), "\(scale)·\(rootValue)·\(index)")
+                    XCTAssertTrue(frame.allows(expected), "\(scale)·\(rootValue)·\(index)")
                 }
             }
         }

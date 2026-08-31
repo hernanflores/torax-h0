@@ -30,6 +30,12 @@ public struct PadSurface: Equatable, Sendable {
     /// Cuántos pads lleva cada bloque antes del pad de octava.
     static let degreesPerBlock = 7
 
+    /// El pad que baja el registro: el 8 en numeración de hardware.
+    public static let octaveDownIndex = 7
+
+    /// El pad que sube el registro: el 16 en numeración de hardware.
+    public static let octaveUpIndex = 15
+
     /// La nota MIDI donde empieza la octava base: C2.
     ///
     /// **Es una octava, no una nota fija.** Con Root en Do el pad 1 es C2

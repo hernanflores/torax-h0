@@ -145,6 +145,15 @@ public final class ControlInput: @unchecked Sendable {
     /// tipo.
     private func press(_ note: MIDINote) -> Bool {
         guard let index = mapping.padIndex(for: note) else { return false }
+
+        // Los dos pads de octava se despachan antes de llegar al pool: mueven la
+        // superficie, no el material.
+        switch index {
+        case PadSurface.octaveDownIndex: return shift { $0.shiftedDown() }
+        case PadSurface.octaveUpIndex: return shift { $0.shiftedUp() }
+        default: break
+        }
+
         guard let pitch = surface.pitch(at: index) else { return false }
 
         let adjusted = track.pool.toggling(pitch)
@@ -152,6 +161,27 @@ public final class ControlInput: @unchecked Sendable {
         guard adjusted != track.pool else { return false }
 
         track = Track(shape: track.shape, pool: adjusted)
+        publish(track)
+        return true
+    }
+
+    /// Los pads 8 y 16 mueven el registro **sin tocar el pool**.
+    ///
+    /// Las alturas ya metidas se quedan donde estaban: `product-guidelines.md`
+    /// dice que cambiar un parámetro nunca destruye material, y transponer el
+    /// pool bajo los pies de quien lo construyó es exactamente eso. Lo que
+    /// cambia es qué altura mete el pad siguiente, y por eso la superficie es un
+    /// teclado de registro móvil: se baja, se meten dos graves, se sube y se
+    /// meten dos agudas.
+    ///
+    /// En el tope no pasa nada y no se publica: mandar un snapshot idéntico es
+    /// trabajo y ruido para nada. Lo que sí tiene que enterarse es la pantalla,
+    /// que es donde se lee que no se puede seguir.
+    private func shift(_ move: (PadSurface) -> PadSurface) -> Bool {
+        let moved = move(surface)
+        guard moved != surface else { return false }
+
+        surface = moved
         publish(track)
         return true
     }
