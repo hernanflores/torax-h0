@@ -56,3 +56,39 @@ se acaba el recorrido- ya esta cubierta en Engine y MIDI.
 
 xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: BUILD
 SUCCEEDED.
+
+Phase Verification & Checkpoint — Fase 4: La octava en pantalla
+==============================================================
+
+Cobertura de los cambios
+------------------------
+Solo App: TonalView.swift, TransportModel.swift y ContentView.swift. Sin tests, a
+proposito: workflow.md dice que si algo en App merece un test esta en el sitio
+equivocado, y la logica -que altura tiene cada pad, cuando se acaba el recorrido-
+esta cubierta en Engine y MIDI.
+
+Verificacion
+------------
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS
+  -> BUILD SUCCEEDED
+
+Simulador iPad Pro 11-inch, iOS 26.3: build, install, launch y captura, guardada
+en el track como pads-octave-simulator.png. Se lee 'Pads: C3 - C4' bajo el pool,
+con el acento cromatico de Tonal y sin etiqueta de tope, que es lo correcto con
+la superficie en medio del rango.
+
+La cuestion abierta de la fase 1, cerrada
+-----------------------------------------
+El C2/C3 del spec deja de importar: la pantalla muestra nombres de nota y no un
+numero de octava, y usa la misma convencion que el pool de al lado, que ya
+mostraba C3 para la nota 48.
+
+Verificacion manual propuesta
+-----------------------------
+La seccion Pads visible sin controlador y no editable; cambiar Root a Re deja
+'D3 - D4'; y con el BeatStep Pro -fase 5- el pad 16 lleva la lectura a 'C4 - C5'
+y en el extremo aparece 'Highest octave' con el pad sin responder.
+
+Confirmacion del usuario
+------------------------
+2026-08-31: 'si, seguimos con la fase 5'.
