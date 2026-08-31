@@ -1,6 +1,6 @@
 # Track: MVP rebanada 7 — Preset del BeatStep Pro: knobs, pads y step buttons
 
-**ID:** `mvp-beatstep-mapping_20260830` · **Type:** Feature · **Status:** new
+**ID:** `mvp-beatstep-mapping_20260830` · **Type:** Feature · **Status:** in-progress
 
 La rebanada 6 cerró el Track generativo completo. Lo que queda de la v1 no es motor: es **la superficie de control**. Esta rebanada sustituye el mapeo provisional por un preset declarado, verificado en dispositivo y entregado como artefacto cargable.
 

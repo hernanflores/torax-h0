@@ -58,7 +58,7 @@ veces sin que afectara a nada.
 
 ---
 
-- [ ] **Track: MVP rebanada 7 — Preset del BeatStep Pro: knobs, pads y step buttons**
+- [~] **Track: MVP rebanada 7 — Preset del BeatStep Pro: knobs, pads y step buttons**
   *Link: [conductor/tracks/mvp-beatstep-mapping_20260830/index.md](./tracks/mvp-beatstep-mapping_20260830/index.md)*
 
   Abierto el 2026-08-30. Sustituye el mapeo provisional por un preset declarado y
