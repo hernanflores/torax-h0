@@ -1,6 +1,6 @@
 # Track: MVP rebanada 6 — Groove temporal: Timing y Delay
 
-**ID:** `mvp-groove-temporal_20260830` · **Type:** Feature · **Status:** new — planificado el 2026-08-30
+**ID:** `mvp-groove-temporal_20260830` · **Type:** Feature · **Status:** complete — cerrado el 2026-08-30, con una fase *Review Fixes* abierta
 
 La otra mitad de Groove: la que cambia **cuándo** se envía. Timing desplaza cada segundo Step —swing— y Delay mueve la voz entera contra la rejilla. Con ella se cierra el Track generativo completo del MVP; después solo queda la rebanada 7, que no toca el motor.
 
@@ -8,11 +8,18 @@ La otra mitad de Groove: la que cambia **cuándo** se envía. Timing desplaza ca
 
 Lleva **dos mediciones de jitter obligatorias**: la recta, que además cierra el intervalo sin medir que dejaron las rebanadas 4 y 5; y la desplazada, que es lo que la rebanada tiene que demostrar.
 
+**Cerrado con deuda conocida.** La revisión dejó cuatro hallazgos sin arreglar
+—uno de ellos que `Stop` podría dejar sonar notas con Delay positivo— registrados
+en la fase *Review Fixes* del plan por decisión del 2026-08-30. La medición
+desplazada tampoco se ejecutó, y su razón está escrita.
+
 ## Documents
 
 -   [Specification](./spec.md)
--   [Implementation Plan](./plan.md)
+-   [Implementation Plan](./plan.md) — incluye la fase *Review Fixes*, **abierta**
 -   [Metadata](./metadata.json)
+-   [Verificación en dispositivo](./device-verification.md) — bloques 4–8 ejecutados, validados
+-   [Captura del simulador](./simulator-groove-temporal.png)
 
 ## Project Context
 

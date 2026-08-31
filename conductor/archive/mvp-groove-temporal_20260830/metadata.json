@@ -2,10 +2,11 @@
   "id": "mvp-groove-temporal_20260830",
   "title": "MVP rebanada 6 — Groove temporal: Timing y Delay",
   "type": "Feature",
-  "status": "new",
+  "status": "complete",
   "created_at": "2026-08-30",
   "updated_at": "2026-08-30",
   "branch": "feat/mvp-groove-temporal",
   "phases": 6,
-  "tasks": 24
+  "tasks": 28,
+  "open_review_findings": 4
 }

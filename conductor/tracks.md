@@ -14,8 +14,8 @@ una deuda que la siguiente necesita.
 | 3 | Anillo, playhead y valor transitorio | cerrada |
 | 4 | Tonal: pool, Scale y Root | cerrada |
 | 5 | Groove estático: Velocity, Sustain, Probability | cerrada |
-| 6 | Groove temporal: Timing y Delay | **abierta**, planificada el 2026-08-30 |
-| 7 | Preset del BeatStep Pro y MIDI Learn | por planificar |
+| 6 | Groove temporal: Timing y Delay | cerrada |
+| 7 | Preset del BeatStep Pro y MIDI Learn | **siguiente**, por planificar |
 
 **Por qué ese orden.** La 3 no toca el motor y salda la última carga de jitter
 sin medir que `product.md` dejó anotada —la visual—; además evita desarrollar
@@ -48,33 +48,19 @@ veces sin que afectara a nada.
 
 ---
 
-- [~] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay**
-  *Link: [conductor/tracks/mvp-groove-temporal_20260830/index.md](./tracks/mvp-groove-temporal_20260830/index.md)*
+*Sin track abierto.* La rebanada 6 cerró el 2026-08-30 y con ella el Track
+generativo completo del MVP. La 7 —preset del BeatStep Pro y MIDI Learn— es lo
+único que queda de la v1, y no toca el motor.
 
-  Planificada el 2026-08-30. Cierra el Track generativo completo del MVP: Timing
-  desplaza cada segundo Step —swing, 50–75%— y Delay mueve la voz entera contra
-  la rejilla —±100% de la Division—.
+**Ahí se vuelve bloqueante `network-session-source`**, tal como estaba previsto:
+MIDI Learn tiene que escuchar la fuente correcta, y en iPad la sesión de red se
+autoselecciona.
 
-  **Su núcleo técnico es el presupuesto de adelanto.** Un evento con Delay
-  negativo tiene que calcularse antes de su instante o se pediría para un momento
-  que ya pasó, y eso ocurre en dos sitios: el arranque —el origen de la rejilla
-  pasa a ser `Play + presupuesto`— y el régimen —el horizonte de selección se
-  amplía en él—. Es dinámico, así que con Delay ≥ 0, donde vive el default, no
-  cuesta ni latencia de arranque ni respuesta de knob. Queda documentado como
-  desviación fechada en `tech-stack.md`, que hoy declara la ventana de look-ahead
-  como constante acotada por la latencia de knob.
-
-  **Lleva dos mediciones de jitter, y la primera salda una deuda ajena.** La
-  recta se compara contra la referencia de la rebanada 3 —máx 0,134 ms, σ
-  0,020 ms— y con ella cierra el intervalo sin medir que dejaron las rebanadas 4
-  y 5: la σ viene subiendo de forma monótona —9 → 15 → 20 µs— y si sale en línea
-  quedan absueltas sin bisecar. La desplazada es lo que la rebanada tiene que
-  demostrar: que un instante desplazado se entrega donde se pidió.
-
-  **Es la primera rebanada que se topa con `midi-test-flake` a propósito.** Su
-  fase 3 tiene que arrancar el bucle del scheduler para verificar el origen, y no
-  hay forma de esquivarlo como hizo la 5. La decisión del 2026-08-29 ya está
-  tomada: se convive con el ruido.
+**La rebanada 6 cerró con deuda conocida**, y conviene tenerla delante antes de
+abrir la 7: cuatro hallazgos de revisión sin arreglar en su fase *Review Fixes*,
+uno de ellos que `Stop` podría dejar sonar notas con Delay positivo —analizado,
+no reproducido en dispositivo, con la condición para provocarlo escrita—. Y la
+medición desplazada no se ejecutó: la recta CUMPLE y el swing se juzgó al oído.
 
 ## Defectos conocidos
 
@@ -111,6 +97,9 @@ en cualquier momento.
   Dato acumulado por si sirve al diagnóstico: en la rebanada 5 apareció en 2 de 8 pasadas y **siempre con la misma firma** —las 4 pruebas de `VirtualLoopbackTests`, ningún otro test—. El fallo está localizado en la creación de endpoints virtuales, no es difuso.
 
 ## Archivados
+
+- [x] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay** — swing y Delay suenan; jitter recto máx 0,151 ms · σ 0,009–0,013 ms. **Cerrado con deuda: fase *Review Fixes* abierta**
+  *Link: [conductor/archive/mvp-groove-temporal_20260830/index.md](./archive/mvp-groove-temporal_20260830/index.md)*
 
 - [x] **Track: MVP rebanada 5 — Groove estático: Velocity, Sustain, Probability** — los tres suenan; verificado en iPad con BeatStep Pro
   *Link: [conductor/archive/mvp-groove-static_20260829/index.md](./archive/mvp-groove-static_20260829/index.md)*
