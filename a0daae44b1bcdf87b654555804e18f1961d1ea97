@@ -1,0 +1,58 @@
+Tasks: La octava vigente de los pads se lee junto al pool + Cableado de la superficie (Fase 4, rebanada 7)
+
+Las dos tareas de la fase entran en el mismo commit: la lectura no se puede ver
+sin el cableado, y el cableado no tiene como comprobarse sin la lectura.
+
+Que se hizo
+-----------
+TonalView recibe la PadSurface y anade la seccion 'Pads' bajo 'Pool':
+
+  Pads
+  [ C3 - C4 ]        <- pad 1 y pad 9, con el acento cromatico de Tonal
+  Lowest octave      <- solo en los extremos
+
+TransportModel guarda la superficie junto al marco tonal:
+  - setFrame la recalcula conservando el desplazamiento, tambien SIN controlador
+  - apply(_:) la copia de ControlInput aparte del Track, porque los pads 8 y 16
+    la mueven sin tocarlo: copiar solo el Track dejaria la octava atrasada
+  - connectControlInput la sincroniza al conectar
+
+Ficheros
+--------
+- App/TonalView.swift        (modificado)
+- App/TransportModel.swift   (modificado)
+- App/ContentView.swift      (modificado)
+- conductor/tracks/mvp-beatstep-mapping_20260830/pads-octave-simulator.png
+
+La decision de que mostrar
+--------------------------
+Se muestran NOMBRES DE NOTA -'C3 - C4'- y no un numero de octava. La razon:
+el spec llama C2 a la octava base pero la fija en la nota MIDI 48, y
+Pitch.description usa convencion cientifica, donde 48 es C3. Mostrar un numero
+obligaba a elegir entre dos convenciones y a traducir mentalmente; mostrar el
+nombre de la nota se compara directo con lo que suena y usa la MISMA convencion
+que el pool de al lado, que ya mostraba C3. La ambiguedad del spec queda sin
+efecto sobre la pantalla.
+
+En el tope se dice cual -'Lowest octave' / 'Highest octave'-, que es el defecto
+que la fase existe para evitar: un pad que no responde sin explicacion visible.
+
+Verificacion en simulador
+-------------------------
+iPad Pro 11-inch, iOS 26.3. Build, install, launch y captura. Se lee la seccion
+Pads con 'C3 - C4', sin etiqueta de tope -correcto: la superficie esta en medio
+del rango-, con el acento cromatico de Tonal y a tamano title3, legible a un
+metro como el pool.
+
+Nota de entorno: el scroll del simulador no se pudo automatizar desde aqui
+-postear eventos de raton exige permiso de accesibilidad que este entorno no
+tiene-. Lo hizo el usuario a mano antes de la captura.
+
+Sin tests, a proposito
+----------------------
+Es App: cableado y presentacion. workflow.md dice que si algo ahi merece un test
+esta en el sitio equivocado, y toda la logica -que altura tiene cada pad, cuando
+se acaba el recorrido- ya esta cubierta en Engine y MIDI.
+
+xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: BUILD
+SUCCEEDED.
