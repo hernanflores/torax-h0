@@ -30,3 +30,44 @@ cualquiera. Un test lo dice para que nadie lo lea como un olvido y lo 'arregle'.
 Verde
 -----
 MIDI 272 tests en la particion logica, sin fallos.
+
+Phase Verification & Checkpoint — Fase 3: El preset completo (knobs y step buttons)
+==================================================================================
+
+Cobertura de los cambios
+------------------------
+Desde el checkpoint 7f4d0f2: ControlMapping.swift y ControlInput.swift. Los dos
+con tests propios -PresetMappingTests, StepButtonInputTests, UnassignedInputTests-.
+
+Tests automaticos
+-----------------
+  MIDI, particion logica de CI     -> 272, 0 fallos
+  MIDI, particion CoreMIDI         ->  21, 0 fallos
+  Engine                           -> 311, 0 fallos
+  xcodebuild build (generic/iOS)   -> BUILD SUCCEEDED
+
+Cobertura MIDI, un proceso con .profdata fusionado a mano: 92,12% de lineas
+(umbral 80%). ControlInput.swift y ControlMapping.swift al 100%. La pasada en un
+proceso trae otra vez el flake conocido con su firma exacta -4 de
+VirtualLoopbackTests, clientCreationFailed(-50), ningun otro test-.
+
+La tabla declarada
+------------------
+  Knobs 1-9      CC 70-78     los nueve parametros, en orden de TrackParameter
+  Knobs 10-16    CC 79-85     declarados y sin asignar; sitio de v2
+  Pads 1-16      notas 36-51  grados de escala; 8 y 16 desplazan la octava
+  Step buttons   CC 102-117   seleccionan Track N; solo el 1 tiene Track en v1
+
+Los numeros se verifican en dispositivo en la fase 5. Hasta entonces son la
+suposicion aislada de la nota de riesgo 1 del plan.
+
+Verificacion manual
+-------------------
+No hay nada nuevo que tocar en el iPad: los step buttons no tienen efecto visible
+en v1, por diseno (limitacion 6 del spec). Lo comprobable -que los knobs 10-16 y
+los step buttons no rompan nada- va con el barrido de los 48 controles de la
+fase 5.
+
+Confirmacion del usuario
+------------------------
+2026-08-31: 'go ahead'.
