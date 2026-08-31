@@ -1,0 +1,47 @@
+Task: Pulsar un pad alterna el pool por indice (Fase 2, rebanada 7)
+
+Que se hizo
+-----------
+ControlInput.press(_:) sustituye a toggle(_:):
+
+  antes: Pitch(note.value), y frame.allows(pitch) decidia si pasaba
+  ahora: mapping.padIndex(for: note) -> surface.pitch(at: index)
+
+El estado pasa de 'frame: TonalFrame' a 'surface: PadSurface'; frame queda como
+lectura de la superficie, asi que la API publica y la App no cambian. setFrame
+recalcula la superficie conservando el desplazamiento vigente.
+
+Ficheros
+--------
+- Packages/MIDI/Sources/MIDI/ControlInput.swift              (modificado)
+- Packages/MIDI/Tests/MIDITests/PadPoolInputTests.swift      (adaptado)
+- Packages/MIDI/Tests/MIDITests/FrameChangeTests.swift       (adaptado)
+
+Los tests, adaptados y no reescritos
+------------------------------------
+Los casos que seguian valiendo se pulsan ahora por indice -pad(0) en vez de
+pad(60)- y afirman la altura que la superficie asigna: un pad mete la altura, el
+mismo la saca, varios construyen un pool, el noveno se rechaza sin publicar, el
+note-off no alterna, el note-on de velocity cero no alterna, girar un knob no
+borra el pool y pulsar un pad no borra el Shape.
+
+El caso que desaparecio: 'una altura fuera del marco tonal se ignora'. Ya no
+existe esa altura. En su lugar entra el barrido de 5 escalas x 12 Roots x 16 pads
+que comprueba que toda nota que un pad puede meter es admitida por el marco -la
+propiedad que hace innecesario el filtro-.
+
+Nuevos: un pad sin altura no publica nada (6, 7, 14 y 15 con pentatonic), y una
+nota fuera del bloque tampoco (0, 35, 52, 127).
+
+Un test propio se corrigio, no el codigo
+----------------------------------------
+testThePadsFollowTheNewFrame fallaba al afirmar que tras cambiar a frigio el pad
+2 mete el 49. No: el reencuadre ya habia movido el 50 a 49, asi que pulsar el
+pad 2 lo sacaba. Se comprueba la superficie sobre el input reencuadrado y la
+insercion sobre uno limpio. El comportamiento observado era el correcto.
+
+Verde
+-----
+MIDI: 241 tests en la particion logica, 21 en la de CoreMIDI, sin fallos.
+xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: BUILD
+SUCCEEDED.
