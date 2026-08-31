@@ -1,0 +1,47 @@
+Task: Los pads 8 y 16 desplazan sin tocar el pool (Fase 2, rebanada 7)
+
+Que se hizo
+-----------
+ControlInput.press(_:) despacha los dos indices de octava antes de consultar la
+altura:
+
+  case PadSurface.octaveDownIndex -> shift { $0.shiftedDown() }
+  case PadSurface.octaveUpIndex   -> shift { $0.shiftedUp() }
+
+shift(_:) cambia la superficie y publica solo si algo se movio. El pool no se
+toca en ningun caso.
+
+PadSurface expone octaveDownIndex (7) y octaveUpIndex (15) para que el despacho
+no lleve numeros sueltos.
+
+Ficheros
+--------
+- Packages/Engine/Sources/Engine/PadSurface.swift                     (modificado)
+- Packages/MIDI/Sources/MIDI/ControlInput.swift                       (modificado)
+- Packages/MIDI/Tests/MIDITests/PadOctaveShiftInputTests.swift        (nuevo, 6 tests)
+- Packages/MIDI/Tests/MIDITests/PadPoolInputTests.swift               (ajustado)
+
+Los tests
+---------
+- Los pads mueven la superficie: 48 -> 60 -> 48 -> 36.
+- Con tres notas dentro, dos subidas y una bajada dejan el pool identico.
+- El caso de uso que justifica la superficie movil: bajar, meter 36 y 38, subir
+  dos veces, meter 60 y 62. Las cuatro en el pool.
+- En el tope el pad no publica y no cambia ni superficie ni pool, en los dos
+  extremos.
+- Se publica solo si algo cambio.
+- La soltada de un pad de octava no hace nada.
+
+Dos correcciones de tests propios
+---------------------------------
+1. Los bucles 'while input.surface.canShiftUp { ... }' colgaban la suite en la
+   fase roja, porque el pad todavia no movia nada. Acotados a 32 vueltas: un
+   test que se cuelga no es un test que falla.
+2. testEveryPitchAPadCanAddIsAllowedByTheFrame reventaba al empezar los pads de
+   octava a publicar sin meter nada -leia la ultima nota de un pool vacio-. Se
+   reescribio para comprobar contra la altura que la superficie declara, con un
+   input limpio por pad: el pool tiene ocho sitios y catorce pads no caben.
+
+Verde
+-----
+Engine 311; MIDI 247 en la particion logica y 21 en la de CoreMIDI.
