@@ -1,0 +1,47 @@
+Task: Los step buttons seleccionan Track (Fase 3, rebanada 7)
+
+Que se hizo
+-----------
+ControlInput despacha el bloque de step buttons antes que los knobs:
+
+  if let index = mapping.stepButtonIndex(for: controller) {
+      guard value > 0 else { return false }   // la soltada no hace nada
+      return selectTrack(index)
+  }
+
+selectTrack(_:) mueve selectedTrackIndex si hay Track detras y si no era el
+vigente; en cualquier otro caso no publica. trackCount -1 por defecto- declara
+cuantos hay.
+
+Ficheros
+--------
+- Packages/MIDI/Sources/MIDI/ControlInput.swift               (modificado)
+- Packages/MIDI/Tests/MIDITests/StepButtonInputTests.swift    (nuevo, 8 tests)
+
+La decision de diseno que merece explicacion
+--------------------------------------------
+La primera version de los tests pasaba en verde SIN implementar nada: como los
+CC 102-117 no estaban asignados, 'no publica' era cierto por omision. Un test que
+no distingue 'implementado' de 'ignorado' no prueba nada.
+
+De ahi sale trackCount y selectedTrackIndex: con la seleccion como estado
+observable, la semantica final se puede probar de verdad -un input con cuatro
+Tracks declarados selecciona el 3 y luego el 2- y v1 sigue siendo el caso de
+trackCount 1, donde quince step buttons no hacen nada. La App no cambia: pasa el
+valor por defecto.
+
+Los tests
+---------
+- El step button N selecciona el Track N (con cuatro declarados).
+- Reseleccionar el vigente no publica.
+- Un step button sin Track detras no mueve la seleccion.
+- En v1: el primero no destruye el Track vigente -Shape y pool intactos- y los
+  otros quince no publican ni cambian nada.
+- La soltada no hace nada.
+- Un step button no mueve ningun parametro ni toca la superficie de pads.
+
+Red confirmado: 'no member selectedTrackIndex'. Verde despues.
+
+Verde
+-----
+MIDI 267 tests en la particion logica, sin fallos.
