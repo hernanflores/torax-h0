@@ -1,0 +1,42 @@
+Task: El coste de copiar el snapshot, medido y escrito (Fase 2, v2 rebanada 1)
+
+Los numeros
+-----------
+  MemoryLayout<Track>.size    = 112 bytes   (104 + 8 del canal)
+  MemoryLayout<Pattern>.size  = 1792 bytes  (16 x 112, sin cabecera)
+  anillo de 4 ranuras         = 7168 bytes
+  load() completo             = 274 ns en debug
+
+El load() medido no es solo la copia: son las dos lecturas atomicas de la
+generacion, la copia de la ranura y la comprobacion de distancia. Contra una
+ventana de 20 ms, 274 ns es el 0,0014% del presupuesto.
+
+La decision que la tarea existia para tomar
+-------------------------------------------
+El plan decia: si el tamano resulta desproporcionado para copiarlo por ventana,
+PARAR y decidir explicitamente, porque la alternativa -publicar por Track- es
+otro diseno y no un ajuste.
+
+No lo es. Se copia el Pattern entero, y publicar por Track queda descartado con
+el dato delante en vez de por intuicion.
+
+Una correccion
+--------------
+El commit anterior (fa50889) decia 'de 104 a 1664 bytes'. Esa medicion se tomo en
+la fase 1, ANTES de que Track ganara el canal. Los numeros buenos son los de
+arriba. La documentacion del handoff y el test llevan ya los correctos.
+
+Una micro-optimizacion considerada y descartada
+------------------------------------------------
+Channel guarda un Int -8 bytes para un valor de 1 a 16-. Con un UInt8 el Pattern
+bajaria de 1792 a 1680, un 6%. No se hace: Pitch tambien guarda un Int por la
+misma clase de valor acotado, y la consistencia entre los tipos del dominio vale
+mas que 112 bytes que ya sabemos que no cuestan nada.
+
+Donde quedo escrito
+-------------------
+- La documentacion de TrackHandoff, que es donde alguien buscara el numero.
+- Un test que fija Pattern = 16 x Track y una cota de 4 KB, que no es un umbral
+  de rendimiento sino un detector de cambio de orden: si el modelo crece hasta
+  ahi, la decision hay que volver a tomarla.
+- tech-stack.md, con la enmienda del anillo: cuatro Pattern, no cuatro Track.
