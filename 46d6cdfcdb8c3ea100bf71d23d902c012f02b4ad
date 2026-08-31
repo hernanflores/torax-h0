@@ -1,0 +1,37 @@
+Task: Cada Track cae en su propia rejilla, en fase (Fase 3, v2 rebanada 1)
+
+Que se hizo
+-----------
+Solo tests: la implementacion ya la trajo ad5d318 -cada TrackScheduler nace con
+su propia MusicalTimeline sobre el tempo compartido-. Esta tarea fija que la
+propiedad se cumple, que es distinto de que este escrita.
+
+Ficheros
+--------
+- Packages/MIDI/Tests/MIDITests/PatternSchedulerTests.swift  (4 tests nuevos)
+
+Los tests, y por que estan escritos asi
+----------------------------------------
+1. Dos Divisions: no basta comprobar un compas. La deriva es un fallo que tarda
+   en verse -dos rejillas pueden sonar bien un minuto y separarse a los mil
+   ciclos-, asi que se recorren cien ciclos y se comprueba que cada 1/8 sigue
+   cayendo EXACTAMENTE sobre un 1/16 par. Es la nota de riesgo 2 del plan,
+   convertida en test.
+2. Dos longitudes -16 y 12 Steps, un Pulse cada uno-: 480 Steps, cada uno con su
+   periodo exacto, y coincidencia en los diez multiplos de 48.
+3. El Timing y el Delay de un vecino no mueven al Track 1. Se compara el mismo
+   Track corriendo solo contra corriendo acompanado: la independencia se afirma
+   contra una referencia, no contra un numero escrito a mano.
+4. Cada Track recorre su propia longitud.
+
+Dos tests mios estaban mal, y se corrigieron los tests
+-------------------------------------------------------
+Esperaba que el indice de Step emitido diera la vuelta al anillo -0,1,2,3,0,1...-
+y es absoluto: cuenta desde el arranque. El comportamiento observado era el
+correcto y el que ya tenia la v1; lo que estaba mal era mi expectativa. Los tests
+se reescribieron para medir la longitud del anillo por CUANDO dispara cada Track,
+que es donde se ve de verdad.
+
+Verde
+-----
+MIDI 284 tests en la particion logica, sin fallos.
