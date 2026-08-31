@@ -99,13 +99,13 @@ regresión la bloquea.
 > `MIDI`. Aquí `trackCount` pasa de 1 a 16 y la costura que dejó la rebanada 7 se
 > usa por primera vez. El preset no se toca.
 
-- [~] Task: Los knobs y los pads mueven el Track seleccionado
-  - [ ] Tests (Red): girar un knob cambia el parámetro **del seleccionado** y de ninguno más, comprobado sobre los nueve
-  - [ ] Tests (Red): un pad edita el pool del seleccionado
-  - [ ] Tests (Red): **seleccionar otro Track no cambia nada del que se deja** — parámetros, pool, marco tonal y octava de pads siguen como estaban al volver
-  - [ ] Tests (Red): los dieciséis step buttons seleccionan, y ahora ninguno se ignora
-  - [ ] Implementación (Green): `trackCount` a 16; el resto del camino ya está escrito
-- [ ] Task: El marco tonal deja de ser global
+- [x] Task: Los knobs y los pads mueven el Track seleccionado — `f055f0c`
+  - [x] Tests (Red): girar un knob cambia el parámetro **del seleccionado** y de ninguno más, comprobado sobre los nueve
+  - [x] Tests (Red): un pad edita el pool del seleccionado
+  - [x] Tests (Red): **seleccionar otro Track no cambia nada del que se deja** — parámetros, pool, marco tonal y octava de pads siguen como estaban al volver
+  - [x] Tests (Red): los dieciséis step buttons seleccionan, y ahora ninguno se ignora
+  - [x] Implementación (Green): `trackCount` a 16; el resto del camino ya está escrito
+- [~] Task: El marco tonal deja de ser global
   - [ ] Tests (Red): dos Tracks en escalas distintas conviven; cambiar la Scale de uno no reencuadra el pool del otro
   - [ ] Tests (Red): al seleccionar un Track, **la superficie de pads se recalcula con su marco y con su desplazamiento de octava**
   - [ ] Tests (Red): el reencuadre del pool al cambiar de Scale sigue siendo el de la rebanada 4, ahora por Track
