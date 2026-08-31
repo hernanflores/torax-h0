@@ -1,0 +1,34 @@
+Task: Stop para los dieciseis sin dejar notas colgadas (Fase 3, v2 rebanada 1)
+
+Que se hizo
+-----------
+Tests. La implementacion en dos pasadas -all notes off por canal distinto, luego
+los note-off del material- entro con 5f7d425, donde hizo falta para compilar.
+
+Ficheros
+--------
+- Packages/MIDI/Tests/MIDITests/StopWithSixteenTracksTests.swift (nuevo, 4 tests)
+
+Los tests
+---------
+- Ningun note-on sin note-off tras Stop, contado por canal Y altura: un balance
+  por canal solo no distinguiria dos alturas cruzadas.
+- El all notes off llega a los dieciseis canales en uso.
+- Delay positivo con Sustain 200%: el evento se emite desplazado respecto a su
+  rejilla, asi que parar entre el note-on y su note-off es mas probable. Con
+  dieciseis Tracks a la vez, mas todavia.
+- Dos Tracks con Sustain 25% y 200% apagan cada uno a su hora, medido como la
+  distancia entre su note-on y su note-off. Con un emisor compartido -como era
+  hasta la v2- los dos habrian durado lo mismo, asi que este test habria fallado
+  antes del cambio: mide algo que la rebanada aporta.
+
+La deuda de la rebanada 6, cerrada por el camino
+-------------------------------------------------
+'Stop podria dejar sonar notas con Delay positivo' quedo escrito en la rebanada 6
+como hallazgo de revision analizado y no reproducido. Aqui se reproduce el caso y
+se comprueba que no cuelga nada. No se corrigio codigo por ello: lo que faltaba
+era la comprobacion.
+
+Verde
+-----
+MIDI 297 tests en la particion logica, sin fallos.
