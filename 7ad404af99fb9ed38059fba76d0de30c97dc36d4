@@ -1,0 +1,52 @@
+Task: El desplazamiento de octava y su tope (Fase 1, rebanada 7)
+
+Que se hizo
+-----------
+shiftedUp() / shiftedDown() devuelven la superficie desplazada doce semitonos, o
+la misma cuando el desplazamiento no cabe. canShiftUp / canShiftDown exponen el
+tope para la pantalla (fase 4, FR11).
+
+El criterio: se admite mientras TODAS las alturas asignadas queden en 0-127.
+Basta comprobar dos, porque lo de en medio esta dentro por construccion:
+
+  base   = 48 + 12*shift + root.pitchClass
+  cabe   = (base + grado_mas_grave) in 0...127 && (base + 12 + grado_mas_agudo) in 0...127
+
+En el tope no pasa nada: la superficie se devuelve a si misma. Ni wrap -un salto
+de siete octavas en vivo es una sorpresa que nadie pidio- ni recorte contra el
+borde, que dejaria dos pads sonando la misma nota sin decirlo.
+
+Ficheros
+--------
+- Packages/Engine/Sources/Engine/PadSurface.swift                  (modificado)
+- Packages/Engine/Tests/EngineTests/PadSurfaceShiftTests.swift     (nuevo, 6 tests)
+
+Los tests
+---------
+- El ejemplo literal del requisito: 48 y 60; tras el pad 8, 36 y 48; desde el
+  inicio, tras el pad 16, 60 y 72.
+- Todas las alturas se mueven, no un bloque: 5 escalas x 12 Roots x 16 pads.
+- Subir y volver da la superficie identica -el desplazamiento es estado, no una
+  transformacion acumulada-.
+- El tope, en los dos extremos, sobre las cinco escalas y los doce Roots.
+- El barrido de 32 desplazamientos por direccion que comprueba las dos formas de
+  romper el alineamiento: ninguna altura desaparece (recorte) y ninguna salta al
+  otro extremo (wrap), y en cada peldano el pad 9 sigue doce semitonos sobre el
+  pad 1.
+- Que el tope depende de la escala y del Root: el test falla si todas las
+  superficies alcanzan el mismo desplazamiento maximo.
+
+Red confirmado: 'no member shiftedDown'. Verde despues, 311 tests de Engine.
+
+Cobertura
+---------
+Engine 98,36% de lineas. PadSurface.swift 100% de lineas; la unica region sin
+cubrir es el guard de una escala sin grados, que no existe.
+
+Nota para la revision
+---------------------
+El init publico sigue aceptando cualquier octaveShift, asi que construir una
+superficie con un desplazamiento absurdo deja los pads sin altura. No se acota
+en el init a proposito: los unicos mutadores son shiftedUp/shiftedDown y los dos
+respetan el tope. Si en la fase 2 alguien necesita construirla desde fuera con
+un desplazamiento arbitrario, ahi habra que decidirlo.
