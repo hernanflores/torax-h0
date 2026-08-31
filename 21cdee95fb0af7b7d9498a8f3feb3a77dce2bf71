@@ -1,0 +1,45 @@
+Tasks: Verificacion en dispositivo de los cuarenta y ocho controles + Reconciliar la tabla + el .bspx que faltaba (Fase 5, rebanada 7)
+
+Resultado
+---------
+TODO SEGUN LA TABLA. Los cuarenta y ocho controles se pulsaron y giraron uno a
+uno en iPad, con el BeatStep Pro y el preset cargado contra destino MIDI real.
+Ninguna discrepancia, asi que la tarea de reconciliacion no tuvo nada que
+corregir — y se registra explicitamente como resultado, no como silencio.
+
+Comprobado: los dieciseis pads contra la tabla de C menor; el pad 9 doce
+semitonos sobre el pad 1; los pads 8 y 16 moviendo el registro con el pool
+quieto; los dos extremos del desplazamiento, con el pad sin responder y la
+pantalla diciendolo; los nueve knobs asignados y los siete libres; los dieciseis
+step buttons sin efecto visible y sin romper nada; y pentatonic apagando los pads
+6, 7, 14 y 15.
+
+El artefacto que faltaba
+------------------------
+preset/Torax.beatsteppro, exportado desde MIDI Control Center contra el
+controlador ya configurado. No esta escrito a mano: sale del programa que lo
+carga, que era la condicion que dejo pendiente 687bf94.
+
+Verificado su contenido contra las tablas declaradas, control a control:
+  ids 32-47   -> CC 70-85,   encoders, modo relativo
+  ids 48-63   -> CC 102-117, step buttons
+  ids 112-127 -> notas 36-51, pads
+Coincide con ControlMapping y con preset/README.md.
+
+La nota de riesgo 1, cerrada
+----------------------------
+'El numero del bloque de pads es una suposicion hasta la fase 5'. Lo era, y
+resulto correcta: ningun test tuvo que cambiar de numero y el aislamiento -el
+bloque como dato del mapeo- no hizo falta. Haberlo aislado sigue siendo correcto:
+el coste de la suposicion era desconocido cuando se tomo.
+
+Ficheros
+--------
+- preset/Torax.beatsteppro                                              (nuevo)
+- preset/README.md                                                      (modificado)
+- conductor/tracks/mvp-beatstep-mapping_20260830/device-verification.md (nuevo)
+
+Sin medicion de jitter, y es deliberado
+---------------------------------------
+La rebanada no mueve ningun instante (NFR3): es el caso que exime la nota del
+2026-08-28 de workflow.md. La medicion final de v1 va con la rebanada 8.
