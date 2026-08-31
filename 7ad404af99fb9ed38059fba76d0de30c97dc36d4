@@ -50,3 +50,44 @@ superficie con un desplazamiento absurdo deja los pads sin altura. No se acota
 en el init a proposito: los unicos mutadores son shiftedUp/shiftedDown y los dos
 respetan el tope. Si en la fase 2 alguien necesita construirla desde fuera con
 un desplazamiento arbitrario, ahi habra que decidirlo.
+
+Phase Verification & Checkpoint — Fase 1: Los grados y la superficie de pads
+===========================================================================
+
+Cobertura de los cambios
+------------------------
+Ficheros de codigo tocados desde el inicio del track: Tonal.swift y
+PadSurface.swift. Los dos tienen fichero de tests propio -ScaleDegreesTests,
+PadSurfaceTests y PadSurfaceShiftTests-, escritos en esta fase.
+
+Tests automaticos
+-----------------
+  swift test --package-path Packages/Engine
+  -> 311 tests, 0 fallos.
+
+Cobertura Engine: 98,36% de lineas (umbral 90%). PadSurface.swift 100%.
+
+Verificacion manual propuesta
+-----------------------------
+La fase es Engine puro y no hay nada visible en el iPad todavia: los pads siguen
+siendo un teclado cromatico hasta la fase 2. Lo verificable son los numeros:
+
+1. Scale.degrees: major [0,2,4,5,7,9,11]; pentatonic [0,3,5,7,10], derivados de
+   pitchClassMask.
+2. PadSurface con Do mayor: pads 1-7 = 48, 50, 52, 53, 55, 57, 59; pad 9 = 60.
+   Con Root en Re, pad 1 = 50.
+3. pentatonic: pads 6, 7, 14 y 15 sin altura; los otros diez con ella.
+4. Desplazamiento: pad 8 deja pad 1/pad 9 en 36/48; pad 16, en 60/72. En los
+   topes el pad no hace nada y canShiftUp/canShiftDown lo dicen.
+
+Confirmacion del usuario
+------------------------
+Confirmado el 2026-08-31: 'go on'.
+
+Cuestion abierta, registrada y no bloqueante
+--------------------------------------------
+El spec llama C2 a la octava base pero la fija en la nota MIDI 48, y
+Pitch.description usa convencion cientifica, donde 48 es C3 (Do central 60 = C4).
+Los tests estan escritos contra los numeros, que es lo que el spec fija de forma
+inequivoca. Lo que queda por decidir es que nombre muestra la pantalla, y se
+decide en la fase 4. No afecta a ninguna altura.
