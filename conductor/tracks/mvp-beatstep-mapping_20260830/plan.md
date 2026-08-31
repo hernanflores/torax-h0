@@ -118,16 +118,16 @@ la rebanada 8.
 > `App`. Cableado y dibujo. Ninguna lógica nueva aquí: si algo de esta fase
 > merece un test, está en el sitio equivocado (`workflow.md`).
 
-- [ ] Task: La octava vigente de los pads se lee junto al pool
-  - [ ] Estado persistente, no valor grande transitorio: no lo mueve un knob (FR11)
-  - [ ] Con el acento cromático de Tonal, que es la familia a la que pertenece
-  - [ ] Legible a un metro, según `product-guidelines.md`
-  - [ ] En el tope, la lectura tiene que dejar claro que no se puede seguir — un pad que no responde sin explicación visible es el defecto que esta fase existe para evitar
-  - [ ] Verificación en simulador con captura, según las notas de entorno de `workflow.md`
-- [ ] Task: Cableado de la superficie
-  - [ ] La superficie vive donde ya vive el marco tonal, y se recalcula por el mismo camino
-  - [ ] Sin controlador conectado la superficie se ve y no se edita, como el resto de los parámetros generativos
-  - [ ] `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'` en verde
+- [x] Task: La octava vigente de los pads se lee junto al pool — `a0daae4`
+  - [x] Estado persistente, no valor grande transitorio: no lo mueve un knob (FR11)
+  - [x] Con el acento cromático de Tonal, que es la familia a la que pertenece
+  - [x] Legible a un metro, según `product-guidelines.md`
+  - [x] En el tope, la lectura tiene que dejar claro que no se puede seguir — un pad que no responde sin explicación visible es el defecto que esta fase existe para evitar
+  - [x] Verificación en simulador con captura, según las notas de entorno de `workflow.md`
+- [x] Task: Cableado de la superficie — `a0daae4`
+  - [x] La superficie vive donde ya vive el marco tonal, y se recalcula por el mismo camino
+  - [x] Sin controlador conectado la superficie se ve y no se edita, como el resto de los parámetros generativos
+  - [x] `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'` en verde
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: El artefacto del preset y el dispositivo
