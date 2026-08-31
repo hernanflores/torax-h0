@@ -32,11 +32,11 @@ la rebanada 8.
 > `Engine` puro. Sin CoreMIDI, sin simulador, sin hardware. Es donde vive la
 > corrección musical del track.
 
-- [ ] Task: Documentar las dos desviaciones **antes** de implementar (paso 8 del Task Workflow)
-  - [ ] Nota fechada en `Pre Spec Torax H-0.md`: los 16 Value Buttons dejan de ser un teclado cromático filtrado por Scale y pasan a ser grados de escala en dos octavas, con los pads 8 y 16 desplazando el registro
-  - [ ] La misma nota lleva la razón, no solo la regla: sobre dieciséis pads que envían dieciséis semitonos contiguos, el filtro cromático deja la mayoría muertos y acota el registro alcanzable a un octavo del rango MIDI — la superficie nueva cumple la intención de la Pre Spec («sólo las notas permitidas por la Scale») mejor que el mecanismo que proponía
-  - [ ] Nota fechada en `product.md`: el alcance de v1 lista «Mapeo del controlador + MIDI Learn» como una línea y se parte en dos rebanadas; la 7 entrega el preset, la 8 entrega MIDI Learn junto con `network-session-source`
-  - [ ] **No va en `tech-stack.md`:** las dos son decisiones de dominio, no de stack. Nada de la arquitectura cambia
+- [x] Task: Documentar las dos desviaciones **antes** de implementar (paso 8 del Task Workflow) — `96d24ee`
+  - [x] Nota fechada en `Pre Spec Torax H-0.md`: los 16 Value Buttons dejan de ser un teclado cromático filtrado por Scale y pasan a ser grados de escala en dos octavas, con los pads 8 y 16 desplazando el registro
+  - [x] La misma nota lleva la razón, no solo la regla: sobre dieciséis pads que envían dieciséis semitonos contiguos, el filtro cromático deja la mayoría muertos y acota el registro alcanzable a un octavo del rango MIDI — la superficie nueva cumple la intención de la Pre Spec («sólo las notas permitidas por la Scale») mejor que el mecanismo que proponía
+  - [x] Nota fechada en `product.md`: el alcance de v1 lista «Mapeo del controlador + MIDI Learn» como una línea y se parte en dos rebanadas; la 7 entrega el preset, la 8 entrega MIDI Learn junto con `network-session-source`
+  - [x] **No va en `tech-stack.md`:** las dos son decisiones de dominio, no de stack. Nada de la arquitectura cambia
 - [ ] Task: Una escala se puede enumerar por grados
   - [ ] Tests (Red): `minor`, `major`, `dorian` y `phrygian` tienen **7 grados**; `pentatonic` tiene **5** — los números salen de la máscara que ya existe, no de una tabla nueva
   - [ ] Tests (Red): los grados son los semitonos de la máscara en orden ascendente desde 0: `major` da `[0,2,4,5,7,9,11]` y `pentatonic` da `[0,3,5,7,10]`, que es el registro canónico de `TonalFrameTests`
