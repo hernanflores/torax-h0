@@ -137,24 +137,24 @@ la rebanada 8.
 > 2026-08-28 sobre los encoders en `Relative #2`, donde una suposición sobre el
 > controlador clavó todos los parámetros en su extremo.
 
-- [~] Task: El preset del BeatStep Pro, versionado — `687bf94` · **parcial: falta el `.bspx`, que se exporta en la sesión con el dispositivo**
-  - [ ] Archivo cargable por MIDI Control Center en el repositorio
+- [x] Task: El preset del BeatStep Pro, versionado — `687bf94` · `21cdee9`
+  - [x] Archivo cargable por MIDI Control Center en el repositorio
   - [x] README junto a él con la tabla completa: los dieciséis knobs (nueve con parámetro, siete libres), los dieciséis pads y los dieciséis step buttons, con su número y su significado
   - [x] El README incluye el modo **`Relative #2`** de los encoders, que ya está documentado en `workflow.md` y sin el cual todos los parámetros saltan a su extremo
   - [x] El README dice qué hacer con un BeatStep Pro que no tenga el preset cargado: qué se rompe y cómo se reconoce
-- [ ] Task: Verificación en dispositivo de los cuarenta y ocho controles
-  - [ ] iPad real, BeatStep Pro con el preset cargado, sintetizador o destino MIDI real
-  - [ ] Los dieciséis pads, uno a uno: qué nota mete cada uno, contra la tabla
-  - [ ] Los pads 8 y 16, con notas ya en el pool: el registro se mueve y el pool no
-  - [ ] Los dos extremos del desplazamiento: el pad deja de responder y la pantalla lo dice
-  - [ ] Los nueve knobs asignados y los siete libres
-  - [ ] Los dieciséis step buttons: el primero sin efecto visible, los otros quince sin efecto y sin romper nada
-  - [ ] Con `pentatonic` cargada: los pads 6, 7, 14 y 15 no hacen nada, y es lo esperado
-  - [ ] Se registra en un `device-verification.md` del track y en la git note
-- [ ] Task: Reconciliar la tabla con lo observado
-  - [ ] **Si el dispositivo desmiente algún número, manda el dispositivo**: se corrige la tabla, el preset y el código, en ese orden
-  - [ ] Los tests que fijaban el bloque se actualizan con el número real y la razón queda en la git note
-  - [ ] Si no hay discrepancia, se registra explícitamente que la tabla se verificó y coincidió — un resultado, no un silencio
+- [x] Task: Verificación en dispositivo de los cuarenta y ocho controles — `21cdee9`
+  - [x] iPad real, BeatStep Pro con el preset cargado, sintetizador o destino MIDI real
+  - [x] Los dieciséis pads, uno a uno: qué nota mete cada uno, contra la tabla
+  - [x] Los pads 8 y 16, con notas ya en el pool: el registro se mueve y el pool no
+  - [x] Los dos extremos del desplazamiento: el pad deja de responder y la pantalla lo dice
+  - [x] Los nueve knobs asignados y los siete libres
+  - [x] Los dieciséis step buttons: el primero sin efecto visible, los otros quince sin efecto y sin romper nada
+  - [x] Con `pentatonic` cargada: los pads 6, 7, 14 y 15 no hacen nada, y es lo esperado
+  - [x] Se registra en un `device-verification.md` del track y en la git note
+- [x] Task: Reconciliar la tabla con lo observado — `21cdee9` · sin discrepancias
+  - [x] **Si el dispositivo desmiente algún número, manda el dispositivo**: se corrige la tabla, el preset y el código, en ese orden
+  - [x] Los tests que fijaban el bloque se actualizan con el número real y la razón queda en la git note
+  - [x] Si no hay discrepancia, se registra explícitamente que la tabla se verificó y coincidió — un resultado, no un silencio
 - [ ] Task: Cerrar la rebanada
   - [ ] `swift test --package-path Packages/Engine --enable-code-coverage` y lo mismo para `MIDI`, contra los umbrales ≥90% y ≥80%
   - [ ] `ControlMapping` ya no se llama provisional, y lo que queda pendiente —MIDI Learn— está nombrado como rebanada 8
