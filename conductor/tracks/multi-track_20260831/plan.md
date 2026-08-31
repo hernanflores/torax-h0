@@ -87,11 +87,11 @@ regresión la bloquea.
   - [x] Tests (Red): los mensajes de un Track llevan su canal; cambiarlo cambia lo que sale
   - [x] Tests (Red): dos Tracks en el mismo canal conviven sin pisarse los note-off
   - [x] Implementación (Green)
-- [~] Task: Stop para los dieciséis sin dejar notas colgadas
-  - [ ] Tests (Red): con los dieciséis sonando, tras `Stop` no queda ningún note-on sin su note-off
-  - [ ] Tests (Red): **el caso con Delay positivo**, que la rebanada 6 dejó anotado como deuda sin reproducir: con dieciséis Tracks es más probable, así que se cubre aquí
-  - [ ] Tests (Red): el gate de Sustain de cada Track es independiente del de los demás
-  - [ ] Implementación (Green)
+- [x] Task: Stop para los dieciséis sin dejar notas colgadas — `1eb7eab`
+  - [x] Tests (Red): con los dieciséis sonando, tras `Stop` no queda ningún note-on sin su note-off
+  - [x] Tests (Red): **el caso con Delay positivo**, que la rebanada 6 dejó anotado como deuda sin reproducir: con dieciséis Tracks es más probable, así que se cubre aquí
+  - [x] Tests (Red): el gate de Sustain de cada Track es independiente del de los demás
+  - [x] Implementación (Green)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: La entrada edita el Track seleccionado
