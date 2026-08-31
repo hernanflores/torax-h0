@@ -33,13 +33,13 @@ regresión la bloquea.
   - [x] Tests (Red): el `Pattern` inicial tiene material **solo en el Track 1**, con el pool de una altura que la app ya usa; los otros quince están vacíos
   - [x] Tests (Red): un Track vacío no dispara nada aunque su Shape tenga Pulses — el comportamiento de hoy, comprobado ahora sobre quince a la vez
   - [x] Implementación (Green)
-- [~] Task: El canal MIDI es un dato del Track
-  - [ ] Tests (Red): el Track N arranca en el canal N, sobre los dieciséis
-  - [ ] Tests (Red): cambiar el canal de un Track no toca el de los otros; dos Tracks pueden compartir canal
-  - [ ] Tests (Red): el canal se mantiene dentro de 1–16 por construcción
-  - [ ] Tests (Red): `_isPOD` sigue verdadero con el canal dentro
-  - [ ] Implementación (Green): vive en `Track`, junto a lo que el hilo del scheduler necesita para construir el mensaje
-  - [ ] **Documentar la desviación** si el tipo de canal de `Engine` duplica al de `MIDI`: el motor no importa nada de plataforma, y la conversión vive en la capa que conoce ambos —igual que `Pitch`—
+- [x] Task: El canal MIDI es un dato del Track — `4b92603`
+  - [x] Tests (Red): el Track N arranca en el canal N, sobre los dieciséis
+  - [x] Tests (Red): cambiar el canal de un Track no toca el de los otros; dos Tracks pueden compartir canal
+  - [x] Tests (Red): el canal se mantiene dentro de 1–16 por construcción
+  - [x] Tests (Red): `_isPOD` sigue verdadero con el canal dentro
+  - [x] Implementación (Green): vive en `Track`, junto a lo que el hilo del scheduler necesita para construir el mensaje
+  - [x] **Documentar la desviación** si el tipo de canal de `Engine` duplica al de `MIDI`: el motor no importa nada de plataforma, y la conversión vive en la capa que conoce ambos —igual que `Pitch`—
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: El snapshot que cruza al scheduler
