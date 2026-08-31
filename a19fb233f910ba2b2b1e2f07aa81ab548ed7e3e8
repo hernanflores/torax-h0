@@ -1,0 +1,38 @@
+--- MEDICIÓN RECTA (Fase 6, 2026-08-30) ---
+
+Ejecutada en iPad con la rejilla 'Recta' y 1000 eventos por tempo.
+
+  60 BPM   máx 0,151 ms   media +0,094 ms   σ 0,013 ms
+  120 BPM  máx 0,138 ms   media +0,098 ms   σ 0,009 ms
+  174 BPM  máx 0,135 ms   media +0,093 ms   σ 0,011 ms
+  VEREDICTO: CUMPLE
+
+QUÉ RESUELVE
+Es la medición de atribución, no la de esta rebanada. workflow.md había
+aceptado no medir en las rebanadas 4 y 5 dejando escrito el coste: la σ
+subía de forma monótona —9 → 15 → 20 µs— y sin medir cada rebanada no se
+sabría cuál introdujo una regresión.
+
+No hubo regresión que atribuir: la σ BAJÓ. 9–13 µs contra los 20 µs de la
+referencia de la rebanada 3. Las rebanadas 4 y 5 quedan absueltas y no
+hay nada que bisecar.
+
+LO QUE NO ES UNA REGRESIÓN
+El máximo sube: 0,151 ms contra 0,134 ms. Es lo esperable con n=1000
+frente a n=200 —más muestras, más cola—, y la propia spec del arnés lo
+advierte: 'un outlier que ocurra una vez por minuto puede no aparecer'
+con muestra corta.
+
+La media de +0,094 ms es constante en los tres tempos, así que es
+latencia fija del camino de loopback y no dispersión. Lo que el criterio
+juzga es la σ alrededor de ella.
+
+MARGEN
+σ 38 veces por debajo del umbral de 0,5 ms; máximo 13 veces por debajo
+del de 2 ms.
+
+UNA CIFRA A CONFIRMAR
+El 174 BPM se reportó como máx 0,0135 ms, que es imposible: el máximo no
+puede ser menor que la media (+0,093 ms). Se registra como 0,135 ms, que
+encaja con los otros dos tempos, y queda pendiente de contrastar contra
+Documents/jitter-report-recta.txt.
