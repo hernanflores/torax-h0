@@ -49,8 +49,30 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
   - Groove: Timing (swing) y Delay. **Entregado** (rebanada 6).
 - Transporte (play/stop) y reloj interno.
 - Salida MIDI por CoreMIDI a dispositivo externo.
-- Mapeo del controlador + MIDI Learn.
+- Mapeo del controlador + MIDI Learn. **Se parte en dos rebanadas** (ver la nota
+  de abajo): el preset del BeatStep Pro en la 7, MIDI Learn en la 8.
 - Pantalla de estado del Track.
+
+> **Nota del 2026-08-31 — «Mapeo del controlador + MIDI Learn» es una línea y
+> son dos rebanadas.** Escrito como una sola entrega, el alcance mezcla dos
+> problemas que no comparten nada. El **preset** decide *qué significa cada
+> control físico* —dominio musical: qué nota da cada pad, qué parámetro mueve
+> cada knob— y **MIDI Learn** decide *cómo se reasigna a otro hardware*
+> —infraestructura de entrada, que arrastra el defecto
+> [`network-session-source`](./tracks/network-session-source_20260828/index.md) y
+> con él una investigación de CoreMIDI—. Juntas metían esa investigación dentro
+> de una rebanada cuyo núcleo es la escala.
+>
+> - **Rebanada 7** (`mvp-beatstep-mapping_20260830`): el preset del BeatStep Pro
+>   —knobs, pads y step buttons—, versionado en el repositorio y verificado en
+>   dispositivo.
+> - **Rebanada 8**: MIDI Learn, con `network-session-source` dentro, donde el
+>   defecto sí bloquea: MIDI Learn tiene que escuchar la fuente correcta y en
+>   iPad la sesión de red se autoselecciona.
+>
+> **Las dos siguen dentro de la v1**; lo que cambia es que se entregan por
+> separado. Hasta que cierre la 8, esta página promete un MIDI Learn que la app
+> todavía no hace.
 
 **Fuera de v1:**
 
