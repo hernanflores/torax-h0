@@ -155,11 +155,11 @@ la rebanada 8.
   - [x] **Si el dispositivo desmiente algún número, manda el dispositivo**: se corrige la tabla, el preset y el código, en ese orden
   - [x] Los tests que fijaban el bloque se actualizan con el número real y la razón queda en la git note
   - [x] Si no hay discrepancia, se registra explícitamente que la tabla se verificó y coincidió — un resultado, no un silencio
-- [ ] Task: Cerrar la rebanada
-  - [ ] `swift test --package-path Packages/Engine --enable-code-coverage` y lo mismo para `MIDI`, contra los umbrales ≥90% y ≥80%
-  - [ ] `ControlMapping` ya no se llama provisional, y lo que queda pendiente —MIDI Learn— está nombrado como rebanada 8
-  - [ ] `tracks.md` refleja el corte de la rebanada 7 en dos y deja la 8 descrita
-  - [ ] Pull Request contra `main`, con los checks en verde
+- [x] Task: Cerrar la rebanada — PR [#17](https://github.com/hernanflores/torax-h0/pull/17), checks en verde
+  - [x] `swift test --package-path Packages/Engine --enable-code-coverage` y lo mismo para `MIDI`, contra los umbrales ≥90% y ≥80%
+  - [x] `ControlMapping` ya no se llama provisional, y lo que queda pendiente —MIDI Learn— está nombrado como rebanada 8
+  - [x] `tracks.md` refleja el corte de la rebanada 7 en dos y deja la 8 descrita
+  - [x] Pull Request contra `main`, con los checks en verde
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Notas de riesgo
