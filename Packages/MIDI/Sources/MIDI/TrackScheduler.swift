@@ -145,6 +145,20 @@ public struct TrackScheduler {
         self.stepDurationNanoseconds = Int64(timeline.stepDurationNanoseconds)
     }
 
+    /// Sustituye el material sin tocar la posición en la rejilla.
+    ///
+    /// Es lo que hace `advance(toHorizon:refreshingFrom:)` cuando el handoff
+    /// trae algo, expuesto aparte para que `PatternScheduler` pueda leer el
+    /// snapshot **una sola vez** y repartirlo entre los dieciséis: si cada uno
+    /// leyera el suyo, dos Tracks podrían tocar material de publicaciones
+    /// distintas.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    mutating func refresh(with track: Track) {
+        material = .track(track)
+    }
+
     /// Cuánto tiempo hay que reservar por delante para que ningún evento
     /// adelantado se pida para un instante que ya pasó.
     ///
