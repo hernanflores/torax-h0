@@ -1,0 +1,54 @@
+Task: Cada Track emite por su canal (Fase 3, v2 rebanada 1)
+
+Que se hizo
+-----------
+NoteEmitter se queda SIN estado: emit(pitch:groove:on:stepDurationNanoseconds:
+atHostTime:send:). El canal y la duracion del Step eran lo ultimo constante y
+dejaron de poder serlo por la misma razon -son de cada Track-: el canal se edita
+mientras suena y la duracion depende de la Division, que ahora es por Track.
+
+MIDIChannel gana init(_ channel: Channel): la conversion entre el tipo del
+dominio y el del protocolo, en la capa que conoce los dos, igual que con Pitch.
+
+SchedulerThread usa PatternScheduler y su StepHandler recibe el indice del Track.
+El arnes de jitter entra por la via convenience de PatternScheduler -un material
+sobre una rejilla dada, quince Tracks vacios- para que siga midiendo por el mismo
+recorrido que suena, en vez de por uno propio que podria divergir.
+
+Ficheros
+--------
+- NoteEmitter.swift, MIDIMessage.swift, SchedulerThread.swift, Transport.swift,
+  PatternScheduler.swift, TrackScheduler.swift, JitterHarness.swift
+- App/TransportModel.swift
+- PatternChannelEmissionTests.swift (nuevo, 4 tests) y ocho ficheros de test
+  adaptados
+
+Un cambio audible, y hay que decirlo
+-------------------------------------
+La app emitia por el CANAL 6 fijo. Ahora el Track 1 emite por el canal 1. Para
+oir algo en dispositivo hay que poner el sintetizador en el canal del Track o
+cambiarle el canal al Track. Es consecuencia directa de la decision 5 del spec
+-Track N en el canal N- y esta anotado en TransportModel.
+
+Un cambio de comportamiento que rompio dos tests, y por que se adaptaron
+-------------------------------------------------------------------------
+Desde ahora un Track SIN pool no se programa (NFR3). Dos suites construian Tracks
+sin pool y contaban emisiones: no median el pool, asi que se les dio material.
+El comportamiento nuevo es el especificado; lo que estaba desactualizado era el
+material de prueba.
+
+Stop, rehecho en dos pasadas
+-----------------------------
+Primero el all notes off de cada canal distinto, despues los note-off del
+material. La primera version mezclaba las dos cosas y dejaba un all notes off
+detras del ultimo note-off, lo que rompio un test que fija que el ultimo mensaje
+al parar es un note-off. El test tenia razon: el orden es parte del contrato.
+
+Y el all notes off NO depende de que el Track tenga material ahora -vaciar el
+pool mientras suena deja notas encendidas que ya no estan en el-, que es el caso
+que StopSilencesEverythingTests fija desde la rebanada 5.
+
+Verde
+-----
+MIDI 293 en la particion logica, 21 en la de CoreMIDI; Engine 334; BUILD
+SUCCEEDED.
