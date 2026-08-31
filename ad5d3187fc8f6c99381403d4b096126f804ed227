@@ -1,0 +1,48 @@
+Task: El scheduler recorre los Tracks con material (Fase 3, v2 rebanada 1)
+
+Que se hizo
+-----------
+PatternScheduler: una clase final con dieciseis TrackScheduler reservados de una
+vez, que recorre los Tracks dentro de la ventana ya abierta.
+
+  - un TrackScheduler por Track, cada uno con SU MusicalTimeline, porque cada
+    Track lleva su propia Division; todas con el mismo tempo y el mismo origen
+  - el snapshot se lee UNA vez por ventana y se reparte con refresh(with:)
+  - un Track sin material no emite, pero su rejilla avanza igual
+  - advanceBudgetNanoseconds es el MAYOR de los dieciseis, porque el origen es
+    comun y tiene que dar cabida al que mas se adelanta
+
+Ficheros
+--------
+- Packages/MIDI/Sources/MIDI/PatternScheduler.swift            (nuevo)
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift              (refresh(with:))
+- Packages/MIDI/Tests/MIDITests/PatternSchedulerTests.swift    (nuevo, 6 tests)
+
+Las decisiones que merecen quedar escritas
+-------------------------------------------
+1. UnsafeMutablePointer y no Array. El recorrido ocurre dentro del bucle del
+   scheduler; un Array meteria comprobaciones de unicidad y posible conteo de
+   referencias ahi. Es el mismo patron que ya usan las ranuras de PatternHandoff:
+   se reserva al construir -y construir es lo que hace Play- y vive lo que viva
+   el objeto.
+
+2. Una lectura del handoff, no dieciseis. Si cada TrackScheduler leyera el suyo,
+   dos Tracks podrian acabar tocando material de publicaciones distintas: la
+   mezcla que el handoff existe para evitar, reintroducida un nivel mas arriba.
+   De ahi que refresh(with:) se separe de advance(...).
+
+3. La rejilla de un Track vacio avanza igual. Solo se salta la emision. Si se
+   saltara el avance, darle alturas mientras suena lo dejaria fuera de fase con
+   los demas.
+
+4. Las semillas se derivan con el multiplicador de Knuth: indices contiguos dan
+   semillas muy separadas. Se prueba en la tarea 3; aqui solo queda el mecanismo.
+
+El test que mas importa
+-----------------------
+testWithOneTrackTheOutputIsWhatItAlwaysWas compara evento a evento contra el
+TrackScheduler de un solo Track, sobre el mismo horizonte. Es la comprobacion de
+que recorrer no cambio lo que ya sonaba, y esta primero a proposito.
+
+Red confirmado: 'cannot find type PatternScheduler in scope'. Verde despues:
+MIDI 280 tests en la particion logica.
