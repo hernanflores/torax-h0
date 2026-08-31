@@ -113,7 +113,7 @@ la rebanada 8.
   - [x] Implementación (Green): si el barrido encuentra un camino no declarado, se cierra
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 4: La octava en pantalla
+## Phase 4: La octava en pantalla [checkpoint: a0daae4]
 
 > `App`. Cableado y dibujo. Ninguna lógica nueva aquí: si algo de esta fase
 > merece un test, está en el sitio equivocado (`workflow.md`).
@@ -128,7 +128,7 @@ la rebanada 8.
   - [x] La superficie vive donde ya vive el marco tonal, y se recalcula por el mismo camino
   - [x] Sin controlador conectado la superficie se ve y no se edita, como el resto de los parámetros generativos
   - [x] `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'` en verde
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: El artefacto del preset y el dispositivo
 
