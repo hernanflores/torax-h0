@@ -59,7 +59,7 @@ regresión la bloquea.
   - [x] Dejar el número escrito en la documentación del handoff, que es donde alguien lo buscará
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: Un reloj, dieciséis rejillas
+## Phase 3: Un reloj, dieciséis rejillas [checkpoint: 1eb7eab]
 
 > `MIDI`, y el corazón de la rebanada. Aquí es donde el jitter se puede degradar,
 > así que aquí es donde hay que ser conservador: nada nuevo en el bucle que no
@@ -92,14 +92,14 @@ regresión la bloquea.
   - [x] Tests (Red): **el caso con Delay positivo**, que la rebanada 6 dejó anotado como deuda sin reproducir: con dieciséis Tracks es más probable, así que se cubre aquí
   - [x] Tests (Red): el gate de Sustain de cada Track es independiente del de los demás
   - [x] Implementación (Green)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: La entrada edita el Track seleccionado
 
 > `MIDI`. Aquí `trackCount` pasa de 1 a 16 y la costura que dejó la rebanada 7 se
 > usa por primera vez. El preset no se toca.
 
-- [ ] Task: Los knobs y los pads mueven el Track seleccionado
+- [~] Task: Los knobs y los pads mueven el Track seleccionado
   - [ ] Tests (Red): girar un knob cambia el parámetro **del seleccionado** y de ninguno más, comprobado sobre los nueve
   - [ ] Tests (Red): un pad edita el pool del seleccionado
   - [ ] Tests (Red): **seleccionar otro Track no cambia nada del que se deja** — parámetros, pool, marco tonal y octava de pads siguen como estaban al volver
