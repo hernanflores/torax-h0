@@ -40,7 +40,7 @@ final class VirtualControllerTests: XCTestCase {
         guard case .controlChange(_, let cc, let value) = message else {
             return XCTFail("no produjo un control change")
         }
-        XCTAssertEqual(cc, ControlMapping.provisional.controller(for: .pulses))
+        XCTAssertEqual(cc, ControlMapping.beatStepPro.controller(for: .pulses))
         XCTAssertEqual(RelativeEncoding.twosComplement.delta(from: value), 1)
     }
 
@@ -80,7 +80,7 @@ final class VirtualControllerTests: XCTestCase {
         // A mano, como lo mandaría el hardware.
         let realHandoff = TrackHandoff(Track(shape: shape))
         let viaReal = ControlInput(track: Track(shape: shape), publishingTo: realHandoff)
-        let cc = try XCTUnwrap(ControlMapping.provisional.controller(for: .pulses))
+        let cc = try XCTUnwrap(ControlMapping.beatStepPro.controller(for: .pulses))
         for _ in 0..<3 {
             viaReal.receive(.controlChange(channel: MIDIChannel(1)!, controller: cc, value: 0x01))
         }

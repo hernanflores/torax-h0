@@ -10,7 +10,7 @@ import XCTest
 /// octava vigente.
 final class PadIndexTests: XCTestCase {
 
-    private let mapping = ControlMapping.provisional
+    private let mapping = ControlMapping.beatStepPro
 
     // MARK: - El bloque se resuelve a índice
 

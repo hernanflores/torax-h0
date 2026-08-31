@@ -46,7 +46,7 @@ public final class ControlInput: @unchecked Sendable {
         track: Track,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publish: @escaping @Sendable (Track) -> Void,
-        mapping: ControlMapping = .provisional,
+        mapping: ControlMapping = .beatStepPro,
         encoding: RelativeEncoding = .twosComplement
     ) {
         self.track = track
@@ -62,7 +62,7 @@ public final class ControlInput: @unchecked Sendable {
         track: Track,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publishingTo handoff: TrackHandoff,
-        mapping: ControlMapping = .provisional,
+        mapping: ControlMapping = .beatStepPro,
         encoding: RelativeEncoding = .twosComplement
     ) {
         self.init(
