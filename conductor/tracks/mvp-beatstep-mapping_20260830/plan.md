@@ -101,13 +101,13 @@ la rebanada 8.
   - [x] Tests (Red): los CC de los knobs 10–16 no dan parámetro y no publican nada
   - [x] Tests (Red): el bloque de pads y el bloque de step buttons son parte del mapeo, y **ningún número se solapa entre las tres familias** — un test que barra los tres bloques y falle si un número aparece dos veces
   - [x] Implementación (Green): un valor que declara los tres bloques; su documentación deja de decir «fija y provisional» y pasa a decir qué preset describe y qué sigue pendiente (MIDI Learn, rebanada 8)
-- [~] Task: Los step buttons seleccionan Track
-  - [ ] Tests (Red): un step button del bloque da su índice 0–15
-  - [ ] Tests (Red): **en v1 solo el primero corresponde a un Track existente**; los otros quince no publican nada y no rompen el estado
-  - [ ] Tests (Red): la soltada no hace nada — mismo criterio que el note-off de un pad
-  - [ ] Tests (Red): pulsar el step button 1 no destruye el Track vigente: seleccionar el único que hay es una operación sin efecto, no un reinicio
-  - [ ] Implementación (Green): la semántica final —step button N selecciona el Track N— con un solo Track detrás
-- [ ] Task: Todo lo no asignado se ignora en silencio, y está probado
+- [x] Task: Los step buttons seleccionan Track — `e4c7e78`
+  - [x] Tests (Red): un step button del bloque da su índice 0–15
+  - [x] Tests (Red): **en v1 solo el primero corresponde a un Track existente**; los otros quince no publican nada y no rompen el estado
+  - [x] Tests (Red): la soltada no hace nada — mismo criterio que el note-off de un pad
+  - [x] Tests (Red): pulsar el step button 1 no destruye el Track vigente: seleccionar el único que hay es una operación sin efecto, no un reinicio
+  - [x] Implementación (Green): la semántica final —step button N selecciona el Track N— con un solo Track detrás
+- [~] Task: Todo lo no asignado se ignora en silencio, y está probado
   - [ ] Tests (Red): un barrido de los 128 CC y las 128 notas sobre un `ControlInput` recién construido: **nada fuera de los bloques declarados publica**, y nada revienta
   - [ ] Tests (Red): el canal MIDI no se filtra, y el test lo fija como decisión y no como olvido — el mismo mensaje en dos canales distintos hace lo mismo
   - [ ] Implementación (Green): si el barrido encuentra un camino no declarado, se cierra
