@@ -251,6 +251,70 @@ final class PatternSchedulerTests: XCTestCase {
         XCTAssertEqual(steps[1], [0, 3, 6, 9], "el anillo de tres")
     }
 
+    // MARK: - Dieciséis generadores
+
+    /// Misma semilla, misma secuencia: pulsar Play dos veces reproduce las
+    /// mismas omisiones. Es la promesa de `tech-stack.md`, ahora sobre dieciséis
+    /// Tracks a la vez.
+    func testTheSameSeedReproducesTheSameOmissions() {
+        var first = PatternScheduler(tempo: tempo, pattern: halved(), seed: 12_345)
+        var second = PatternScheduler(tempo: tempo, pattern: halved(), seed: 12_345)
+
+        let a = fired(&first, upToStep: 64).map { [$0.track, $0.step] }
+        let b = fired(&second, upToStep: 64).map { [$0.track, $0.step] }
+        XCTAssertEqual(a, b)
+    }
+
+    /// **Dos Tracks con la misma Probability no omiten los mismos Pulses.** Con
+    /// un generador compartido —o con la misma semilla— el aleatorio se oiría
+    /// como una sola decisión repetida dieciséis veces en vez de como dieciséis
+    /// voces independientes.
+    func testTwoTracksWithTheSameProbabilityDoNotOmitTheSamePulses() {
+        var scheduler = PatternScheduler(tempo: tempo, pattern: halved())
+        let events = fired(&scheduler, upToStep: 256)
+
+        let first = Set(events.filter { $0.track == 0 }.map(\.step))
+        let second = Set(events.filter { $0.track == 1 }.map(\.step))
+
+        XCTAssertFalse(first.isEmpty)
+        XCTAssertFalse(second.isEmpty)
+        XCTAssertNotEqual(first, second, "los dos Tracks omitieron exactamente lo mismo")
+    }
+
+    /// Y ningún par de los dieciséis coincide: no es que el 1 y el 2 difieran
+    /// por suerte, es que las dieciséis secuencias son distintas.
+    func testTheSixteenSequencesAreAllDifferent() {
+        var full: [Int: Track] = [:]
+        for index in 0..<16 { full[index] = halfProbabilityTrack() }
+
+        var scheduler = PatternScheduler(tempo: tempo, pattern: pattern(full))
+        let events = fired(&scheduler, upToStep: 256)
+
+        var sequences: [Set<Int>] = []
+        for index in 0..<16 {
+            sequences.append(Set(events.filter { $0.track == index }.map(\.step)))
+        }
+        for a in 0..<16 {
+            for b in (a + 1)..<16 {
+                XCTAssertNotEqual(sequences[a], sequences[b], "Tracks \(a + 1) y \(b + 1)")
+            }
+        }
+    }
+
+    /// **El estado del aleatorio no entra en el snapshot.** Tiene estado mutable
+    /// y vive en el scheduler, que es su único dueño; meterlo en el Pattern
+    /// rompería la trivialidad y haría que dos hilos mutaran lo mismo.
+    func testTheRandomStateStaysOutOfTheSnapshot() {
+        XCTAssertTrue(_isPOD(Pattern.self))
+        XCTAssertTrue(_isPOD(Track.self))
+    }
+
+    /// Las semillas derivadas no se pisan entre Tracks contiguos.
+    func testDerivedSeedsAreAllDistinct() {
+        let seeds = (0..<16).map { PatternScheduler.seed(0, forTrack: $0) }
+        XCTAssertEqual(Set(seeds).count, 16)
+    }
+
     // MARK: - El relevo de snapshot
 
     /// El Pattern publicado se recoge una vez por ventana y lo ven todos los
@@ -269,6 +333,37 @@ final class PatternSchedulerTests: XCTestCase {
     }
 
     // MARK: - Helpers
+
+    /// Un Track que dispara en todos los Steps con Probability al 50%: la mitad
+    /// de los Pulses se omite, y cuáles lo decide el generador.
+    private func halfProbabilityTrack() -> Track {
+        Track(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!),
+            pool: PitchPool().inserting(Pitch(60)!),
+            groove: Groove(
+                velocity: .default,
+                sustain: .default,
+                probability: Probability(percent: 50)!
+            )
+        )
+    }
+
+    /// Dos Tracks idénticos con Probability al 50%, para que lo único que pueda
+    /// diferenciarlos sea el generador.
+    private func halved() -> Pattern {
+        pattern([0: halfProbabilityTrack(), 1: halfProbabilityTrack()])
+    }
+
+    private func fired(
+        _ scheduler: inout PatternScheduler, upToStep stepIndex: Int
+    ) -> [(track: Int, step: Int)] {
+        var events: [(track: Int, step: Int)] = []
+        scheduler.advance(toHorizon: Int64(stepIndex) * stepNanoseconds, refreshingFrom: nil) {
+            track, step, _, _, _ in
+            events.append((track, step))
+        }
+        return events
+    }
 
     private func offsets(
         of scheduler: inout PatternScheduler, track wanted: Int, upToStep stepIndex: Int
