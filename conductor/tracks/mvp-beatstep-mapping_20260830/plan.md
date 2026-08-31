@@ -37,12 +37,12 @@ la rebanada 8.
   - [x] La misma nota lleva la razón, no solo la regla: sobre dieciséis pads que envían dieciséis semitonos contiguos, el filtro cromático deja la mayoría muertos y acota el registro alcanzable a un octavo del rango MIDI — la superficie nueva cumple la intención de la Pre Spec («sólo las notas permitidas por la Scale») mejor que el mecanismo que proponía
   - [x] Nota fechada en `product.md`: el alcance de v1 lista «Mapeo del controlador + MIDI Learn» como una línea y se parte en dos rebanadas; la 7 entrega el preset, la 8 entrega MIDI Learn junto con `network-session-source`
   - [x] **No va en `tech-stack.md`:** las dos son decisiones de dominio, no de stack. Nada de la arquitectura cambia
-- [ ] Task: Una escala se puede enumerar por grados
-  - [ ] Tests (Red): `minor`, `major`, `dorian` y `phrygian` tienen **7 grados**; `pentatonic` tiene **5** — los números salen de la máscara que ya existe, no de una tabla nueva
-  - [ ] Tests (Red): los grados son los semitonos de la máscara en orden ascendente desde 0: `major` da `[0,2,4,5,7,9,11]` y `pentatonic` da `[0,3,5,7,10]`, que es el registro canónico de `TonalFrameTests`
-  - [ ] Tests (Red): el grado 1 es siempre el 0 — el Root por definición, que es lo que hace que el pad 1 sea el Root seleccionado
-  - [ ] Tests (Red): enumerar no contradice a `allows(_:)`: toda altura construida desde un grado es admitida por el marco, sobre las cinco escalas y los doce Roots
-  - [ ] Implementación (Green): derivado de `pitchClassMask`, sin duplicar los intervalos en un segundo sitio donde puedan divergir
+- [x] Task: Una escala se puede enumerar por grados — `b9b76fc`
+  - [x] Tests (Red): `minor`, `major`, `dorian` y `phrygian` tienen **7 grados**; `pentatonic` tiene **5** — los números salen de la máscara que ya existe, no de una tabla nueva
+  - [x] Tests (Red): los grados son los semitonos de la máscara en orden ascendente desde 0: `major` da `[0,2,4,5,7,9,11]` y `pentatonic` da `[0,3,5,7,10]`, que es el registro canónico de `TonalFrameTests`
+  - [x] Tests (Red): el grado 1 es siempre el 0 — el Root por definición, que es lo que hace que el pad 1 sea el Root seleccionado
+  - [x] Tests (Red): enumerar no contradice a `allows(_:)`: toda altura construida desde un grado es admitida por el marco, sobre las cinco escalas y los doce Roots
+  - [x] Implementación (Green): derivado de `pitchClassMask`, sin duplicar los intervalos en un segundo sitio donde puedan divergir
 - [ ] Task: `PadSurface` — qué altura tiene cada pad
   - [ ] Tests (Red): con `major` y Root en Do, los pads 1–7 son las notas 48, 50, 52, 53, 55, 57, 59 — el grado 1 en la octava de C2, que es la que empieza en la nota MIDI 48
   - [ ] Tests (Red): **el pad 9 es exactamente el pad 1 más doce semitonos**, sobre las cinco escalas y los doce Roots. Es la invariante de la que dependen los pads 8 y 16
