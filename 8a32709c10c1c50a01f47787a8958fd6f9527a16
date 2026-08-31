@@ -1,0 +1,33 @@
+Task: Dieciseis generadores, uno por Track (Fase 3, v2 rebanada 1)
+
+Que se hizo
+-----------
+Tests. El mecanismo -PatternScheduler.seed(_:forTrack:), que deriva con el
+multiplicador de Knuth- entro con ad5d318; aqui se comprueba que hace lo que
+tiene que hacer.
+
+Ficheros
+--------
+- Packages/MIDI/Tests/MIDITests/PatternSchedulerTests.swift  (5 tests nuevos)
+
+Los tests
+---------
+- Misma semilla, misma secuencia, sobre dos schedulers completos: pulsar Play dos
+  veces reproduce las mismas omisiones.
+- Dos Tracks IDENTICOS con Probability al 50% omiten Pulses distintos. Identicos
+  a proposito: si difirieran en algo mas, la diferencia podria venir de ahi y el
+  test no probaria nada del generador.
+- Ningun par de los dieciseis coincide sobre 256 Steps. No basta con que el 1 y
+  el 2 difieran: con una derivacion mala podrian emparejarse los contiguos.
+- Las dieciseis semillas derivadas son distintas.
+- El estado del aleatorio sigue fuera del snapshot (_isPOD).
+
+Por que la derivacion y no un sorteo
+-------------------------------------
+Sortear semillas rompe la promesa de reproducibilidad de tech-stack.md. Derivar
+del indice con un multiplicador grande impar da secuencias no emparentadas y
+mantiene la promesa: la misma base da siempre los mismos dieciseis generadores.
+
+Verde
+-----
+MIDI 289 tests en la particion logica, sin fallos.
