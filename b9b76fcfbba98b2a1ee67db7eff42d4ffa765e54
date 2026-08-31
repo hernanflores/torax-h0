@@ -1,0 +1,42 @@
+Task: Una escala se puede enumerar por grados (Fase 1, rebanada 7)
+
+Que se hizo
+-----------
+Scale.degrees: [Int], los semitonos de la escala sobre la fundamental en orden
+ascendente. major -> [0,2,4,5,7,9,11]; pentatonic -> [0,3,5,7,10].
+
+Derivado de pitchClassMask filtrando los doce bits. No hay tabla de intervalos
+nueva: la que existe es la mascara, y escribir los intervalos en un segundo
+sitio es exactamente como las dos representaciones acabarian divergiendo sin que
+ningun test lo note.
+
+Ficheros
+--------
+- Packages/Engine/Sources/Engine/Tonal.swift               (modificado)
+- Packages/Engine/Tests/EngineTests/ScaleDegreesTests.swift (nuevo, 8 tests)
+
+Los tests
+---------
+- Cuantos: 7 grados en minor/major/dorian/phrygian, 5 en pentatonic.
+- Cuales: los cinco registros canonicos que TonalFrameTests ya fija, aqui en su
+  otra forma -no un conjunto que se consulta, una lista que se recorre-.
+- El grado 1 es siempre 0, sobre las cinco escalas.
+- Estrictamente ascendentes, sin repeticiones, todos dentro de la octava.
+- Las dos que atan enumerar con admitir, sobre 5 escalas x 12 Roots: toda altura
+  construida desde un grado es admitida por el marco, y los grados agotan el
+  marco -ninguna clase de altura admitida se queda sin grado-. Son la red que
+  impide la divergencia, no un adorno.
+
+Red confirmado: la suite no compilaba -'value of type Scale has no member
+degrees'-. Verde tras la implementacion, 297 tests de Engine en verde.
+
+Cobertura
+---------
+Engine 98,27% de lineas (umbral 90%). Tonal.swift 97,01%.
+
+Por que asi
+-----------
+degrees es un desplazamiento sobre el Root, no una altura: la altura la construye
+la superficie de pads con el marco y la octava vigente. Mantenerlo en clases de
+altura es lo que permite que el mismo dato sirva para las dos octavas de la
+superficie sin duplicarse.
