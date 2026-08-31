@@ -43,3 +43,27 @@ Sin medicion de jitter, y es deliberado
 ---------------------------------------
 La rebanada no mueve ningun instante (NFR3): es el caso que exime la nota del
 2026-08-28 de workflow.md. La medicion final de v1 va con la rebanada 8.
+
+Phase Verification & Checkpoint — Fase 5: El artefacto del preset y el dispositivo
+=================================================================================
+
+Tests automaticos
+-----------------
+  swift test --package-path Packages/Engine --enable-code-coverage
+  -> 311 tests, 0 fallos. Cobertura 98,36% de lineas (umbral 90%).
+
+  swift test --package-path Packages/MIDI --enable-code-coverage
+  -> 293 tests, 0 fallos. Cobertura 92,52% de lineas (umbral 80%).
+  Esta vez el flake de CoreMIDI no aparecio ni en proceso unico.
+
+  PR #17 contra main: check 'build' en verde (2m09s).
+
+Verificacion manual
+-------------------
+La de esta fase ES la verificacion en dispositivo, ya hecha: los cuarenta y ocho
+controles segun la tabla, sin discrepancias. Registrada en device-verification.md
+y en la git note de esta tarea. No quedaba nada por comprobar a mano.
+
+Confirmacion del usuario
+------------------------
+2026-08-31: 'Cerremos el track'.
