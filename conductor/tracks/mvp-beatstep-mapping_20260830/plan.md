@@ -84,11 +84,11 @@ la rebanada 8.
   - [x] Tests (Red): en el tope, pulsar el pad no publica nada y no cambia el estado
   - [x] Tests (Red): desplazar publica un snapshot solo si algo cambió; en el tope no se publica
   - [x] Implementación (Green): los dos índices se despachan a la superficie antes de llegar al pool
-- [ ] Task: Cambiar Scale o Root recalcula la superficie
-  - [ ] Tests (Red): `setFrame(_:)` sigue reencuadrando el pool en vez de vaciarlo — el comportamiento de la rebanada 4 no se toca
-  - [ ] Tests (Red): lo nuevo — **la superficie se recalcula con el marco y el desplazamiento vigente se conserva**: tras dos pulsaciones del pad 16, cambiar de Do a Re deja el pad 1 dos octavas arriba del nuevo grado 1, no en la base
-  - [ ] Tests (Red): pasar de `major` a `pentatonic` apaga los pads 6, 7, 14 y 15 sin tocar el pool ni el desplazamiento
-  - [ ] Implementación (Green)
+- [x] Task: Cambiar Scale o Root recalcula la superficie — `7f4d0f2`
+  - [x] Tests (Red): `setFrame(_:)` sigue reencuadrando el pool en vez de vaciarlo — el comportamiento de la rebanada 4 no se toca
+  - [x] Tests (Red): lo nuevo — **la superficie se recalcula con el marco y el desplazamiento vigente se conserva**: tras dos pulsaciones del pad 16, cambiar de Do a Re deja el pad 1 dos octavas arriba del nuevo grado 1, no en la base
+  - [x] Tests (Red): pasar de `major` a `pentatonic` apaga los pads 6, 7, 14 y 15 sin tocar el pool ni el desplazamiento
+  - [x] Implementación (Green)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: El preset completo — knobs y step buttons
