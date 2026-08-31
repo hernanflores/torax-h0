@@ -65,14 +65,14 @@ regresión la bloquea.
 > así que aquí es donde hay que ser conservador: nada nuevo en el bucle que no
 > sea aritmética sobre valores ya copiados.
 
-- [~] Task: El scheduler recorre los Tracks con material
-  - [ ] Tests (Red): con un solo Track con material, la secuencia emitida es **byte a byte la de hoy** — la regresión que más importa, porque es la que dice que no se rompió lo entregado
-  - [ ] Tests (Red): con dos Tracks, se emiten los eventos de los dos, cada uno en sus posiciones
-  - [ ] Tests (Red): un Track vacío no programa nada — el coste crece con los Tracks con material, no con dieciséis siempre (NFR3)
-  - [ ] Tests (Red): con los dieciséis llenos no se pierde ningún evento dentro de una ventana
-  - [ ] Implementación (Green): un solo hilo y un solo `SchedulerThread`; el bucle recorre los Tracks dentro de la ventana ya abierta
-  - [ ] **Sin asignaciones, locks ni `await` nuevos en el bucle**, que es la regla que no se negocia (`swift.md`)
-- [ ] Task: Cada Track cae en su propia rejilla, en fase
+- [x] Task: El scheduler recorre los Tracks con material — `ad5d318`
+  - [x] Tests (Red): con un solo Track con material, la secuencia emitida es **byte a byte la de hoy** — la regresión que más importa, porque es la que dice que no se rompió lo entregado
+  - [x] Tests (Red): con dos Tracks, se emiten los eventos de los dos, cada uno en sus posiciones
+  - [x] Tests (Red): un Track vacío no programa nada — el coste crece con los Tracks con material, no con dieciséis siempre (NFR3)
+  - [x] Tests (Red): con los dieciséis llenos no se pierde ningún evento dentro de una ventana
+  - [x] Implementación (Green): un solo hilo y un solo `SchedulerThread`; el bucle recorre los Tracks dentro de la ventana ya abierta
+  - [x] **Sin asignaciones, locks ni `await` nuevos en el bucle**, que es la regla que no se negocia (`swift.md`)
+- [~] Task: Cada Track cae en su propia rejilla, en fase
   - [ ] Tests (Red): **dos Tracks con Divisions distintas comparten origen** — el 1/8 cae exactamente sobre uno de cada dos 1/16, y no se desalinean al cabo de muchos ciclos
   - [ ] Tests (Red): dos Tracks con Steps distintos —16 y 12— vuelven a coincidir donde les toca, sin deriva acumulada
   - [ ] Tests (Red): el Timing y el Delay de un Track no desplazan a los otros
