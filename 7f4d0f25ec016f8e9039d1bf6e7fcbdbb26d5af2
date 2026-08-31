@@ -1,0 +1,34 @@
+Task: Cambiar Scale o Root recalcula la superficie (Fase 2, rebanada 7)
+
+Que se hizo
+-----------
+Solo tests. La implementacion ya estaba: en 6fefe6e el estado de ControlInput
+paso de 'frame: TonalFrame' a 'surface: PadSurface' y setFrame quedo asi:
+
+  surface = PadSurface(frame: frame, octaveShift: surface.octaveShift)
+
+No hubo fase roja, y se registra como lo que es en vez de fabricar una: lo que
+esta tarea aporta es fijar el comportamiento como querido, no descubrirlo.
+
+Ficheros
+--------
+- Packages/MIDI/Tests/MIDITests/FrameChangeTests.swift   (3 tests nuevos)
+
+Los tests
+---------
+- El desplazamiento sobrevive al cambio de marco: tras dos pulsaciones del pad
+  16 el pad 1 esta en 72; cambiar de Do a Re lo deja en 74 -48 + 24 + 2- y no en
+  la base. Es el caso concreto que pide el plan.
+- Pasar de major a pentatonic apaga los pads 6, 7, 14 y 15 y deja intactos el
+  pool y el desplazamiento.
+- Un pad apagado por el marco nuevo deja de publicar y el de al lado sigue: el
+  grado 6 desaparece con la pentatonica, el 5 no.
+
+Lo que no se toco
+-----------------
+El reencuadre del pool de la rebanada 4 sigue igual y sus tests siguen verdes:
+setFrame reencuadra en vez de vaciar, y no publica si el pool ya cabia.
+
+Verde
+-----
+MIDI 250 tests en la particion logica, sin fallos.
