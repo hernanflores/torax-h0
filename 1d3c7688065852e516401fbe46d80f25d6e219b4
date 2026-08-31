@@ -1,0 +1,35 @@
+Task: El Track por defecto y el arranque (Fase 1, v2 rebanada 1)
+
+Que se hizo
+-----------
+Pattern.initial: Steps 16, Pulses 5 y un pool de una altura (48) en el Track 1;
+los otros quince, vacios.
+
+Ficheros
+--------
+- Packages/Engine/Sources/Engine/Pattern.swift                 (modificado)
+- Packages/Engine/Tests/EngineTests/PatternInitialTests.swift  (nuevo, 6 tests)
+
+La regla que fijan los tests
+----------------------------
+Una rebanada de motor no cambia lo que se oye. Los valores son exactamente los
+que la App ya usaba, asi que al terminar la rebanada la app abrira sonando igual
+que hoy y no habra que explicar ninguna diferencia.
+
+El test que distingue las dos formas de callar
+-----------------------------------------------
+Un Track puede estar mudo por no disparar o por no tener material, y no es lo
+mismo: lo primero seria un Shape apagado -que ademas no se puede expresar, porque
+Pulses va de 1 a Steps- y lo segundo es el pool vacio, que la Pre Spec admite.
+El test recorre los quince Tracks vacios y exige LAS DOS COSAS: que disparen, y
+que ninguna posicion tenga altura. Sin la primera mitad, el test pasaria tambien
+con un motor que hubiera dejado de disparar por error.
+
+Duplicacion conocida y con fecha de caducidad
+----------------------------------------------
+TransportModel.initialShape e initialPool siguen existiendo en App con los
+mismos valores. No se borran aqui porque el modelo todavia publica un Track y no
+un Pattern: se van en la fase 5, que es la que cambia el cableado. Queda escrito
+para que no se quede como duplicacion permanente.
+
+Red confirmado: 'type Pattern has no member initial'. Verde despues, 326 tests.
