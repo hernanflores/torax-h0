@@ -107,10 +107,10 @@ la rebanada 8.
   - [x] Tests (Red): la soltada no hace nada — mismo criterio que el note-off de un pad
   - [x] Tests (Red): pulsar el step button 1 no destruye el Track vigente: seleccionar el único que hay es una operación sin efecto, no un reinicio
   - [x] Implementación (Green): la semántica final —step button N selecciona el Track N— con un solo Track detrás
-- [~] Task: Todo lo no asignado se ignora en silencio, y está probado
-  - [ ] Tests (Red): un barrido de los 128 CC y las 128 notas sobre un `ControlInput` recién construido: **nada fuera de los bloques declarados publica**, y nada revienta
-  - [ ] Tests (Red): el canal MIDI no se filtra, y el test lo fija como decisión y no como olvido — el mismo mensaje en dos canales distintos hace lo mismo
-  - [ ] Implementación (Green): si el barrido encuentra un camino no declarado, se cierra
+- [x] Task: Todo lo no asignado se ignora en silencio, y está probado — `5a979d7`
+  - [x] Tests (Red): un barrido de los 128 CC y las 128 notas sobre un `ControlInput` recién construido: **nada fuera de los bloques declarados publica**, y nada revienta
+  - [x] Tests (Red): el canal MIDI no se filtra, y el test lo fija como decisión y no como olvido — el mismo mensaje en dos canales distintos hace lo mismo
+  - [x] Implementación (Green): si el barrido encuentra un camino no declarado, se cierra
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: La octava en pantalla
