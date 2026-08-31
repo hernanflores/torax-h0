@@ -78,12 +78,12 @@ regresión la bloquea.
   - [x] Tests (Red): el Timing y el Delay de un Track no desplazan a los otros
   - [x] Tests (Red): el playhead de cada Track avanza por su propia longitud
   - [x] Implementación (Green): una `MusicalTimeline` por Track sobre un solo origen, o el equivalente que no duplique el origen — **la deriva se evita compartiendo el origen, no sincronizando después**
-- [~] Task: Dieciséis generadores, uno por Track
-  - [ ] Tests (Red): misma semilla, misma secuencia, por Track (NFR4)
-  - [ ] Tests (Red): **dos Tracks con la misma Probability no omiten los mismos Pulses** — con un solo generador compartido el aleatorio se oiría como una sola decisión, y este test es lo que lo impide
-  - [ ] Tests (Red): el estado del aleatorio **no** entra en el snapshot: sigue siendo del scheduler, que es su único dueño, y `_isPOD(Pattern.self)` lo confirma
-  - [ ] Implementación (Green)
-- [ ] Task: Cada Track emite por su canal
+- [x] Task: Dieciséis generadores, uno por Track — `8a32709`
+  - [x] Tests (Red): misma semilla, misma secuencia, por Track (NFR4)
+  - [x] Tests (Red): **dos Tracks con la misma Probability no omiten los mismos Pulses** — con un solo generador compartido el aleatorio se oiría como una sola decisión, y este test es lo que lo impide
+  - [x] Tests (Red): el estado del aleatorio **no** entra en el snapshot: sigue siendo del scheduler, que es su único dueño, y `_isPOD(Pattern.self)` lo confirma
+  - [x] Implementación (Green)
+- [~] Task: Cada Track emite por su canal
   - [ ] Tests (Red): los mensajes de un Track llevan su canal; cambiarlo cambia lo que sale
   - [ ] Tests (Red): dos Tracks en el mismo canal conviven sin pisarse los note-off
   - [ ] Implementación (Green)
