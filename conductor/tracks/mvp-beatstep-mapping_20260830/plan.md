@@ -78,12 +78,12 @@ la rebanada 8.
   - [x] Tests (Red): el caso que desaparece: ya no existe «una altura fuera del marco tonal», porque toda altura de la superficie sale de la escala. El test viejo se sustituye por el que fija que **toda nota que un pad puede meter es admitida por el marco**, sobre las cinco escalas
   - [x] Tests (Red): girar un knob no borra el pool y pulsar un pad no borra el Shape — los dos tests de convivencia que ya existen siguen verdes
   - [x] Implementación (Green): `ControlInput` consulta la superficie y alterna; el resto del camino no cambia
-- [~] Task: Los pads 8 y 16 desplazan sin tocar el pool
-  - [ ] Tests (Red): **con notas dentro del pool, desplazar la octava deja el pool byte a byte idéntico.** Es `product-guidelines.md` —cambiar un parámetro nunca destruye material— y es la decisión 4 del spec
-  - [ ] Tests (Red): bajar, meter dos graves, subir y meter dos agudas deja las cuatro en el pool — el caso de uso que justifica la superficie móvil
-  - [ ] Tests (Red): en el tope, pulsar el pad no publica nada y no cambia el estado
-  - [ ] Tests (Red): desplazar publica un snapshot solo si algo cambió; en el tope no se publica
-  - [ ] Implementación (Green): los dos índices se despachan a la superficie antes de llegar al pool
+- [x] Task: Los pads 8 y 16 desplazan sin tocar el pool — `ad11f67`
+  - [x] Tests (Red): **con notas dentro del pool, desplazar la octava deja el pool byte a byte idéntico.** Es `product-guidelines.md` —cambiar un parámetro nunca destruye material— y es la decisión 4 del spec
+  - [x] Tests (Red): bajar, meter dos graves, subir y meter dos agudas deja las cuatro en el pool — el caso de uso que justifica la superficie móvil
+  - [x] Tests (Red): en el tope, pulsar el pad no publica nada y no cambia el estado
+  - [x] Tests (Red): desplazar publica un snapshot solo si algo cambió; en el tope no se publica
+  - [x] Implementación (Green): los dos índices se despachan a la superficie antes de llegar al pool
 - [ ] Task: Cambiar Scale o Root recalcula la superficie
   - [ ] Tests (Red): `setFrame(_:)` sigue reencuadrando el pool en vez de vaciarlo — el comportamiento de la rebanada 4 no se toca
   - [ ] Tests (Red): lo nuevo — **la superficie se recalcula con el marco y el desplazamiento vigente se conserva**: tras dos pulsaciones del pad 16, cambiar de Do a Re deja el pad 1 dos octavas arriba del nuevo grado 1, no en la base
