@@ -73,6 +73,20 @@ veces sin que afectara a nada.
 
 ---
 
+- [ ] **Track: MVP rebanada 8 — MIDI Learn, con `network-session-source` dentro**
+
+  Por planificar. **Cierra la v1.** Entrega la reasignación del mapeo a otro
+  hardware —`ControlMapping` es fija hasta entonces, y `product.md` promete MIDI
+  Learn desde el principio— y se lleva dentro
+  [`network-session-source`](./tracks/network-session-source_20260828/index.md),
+  que **ahí sí bloquea**: MIDI Learn tiene que escuchar la fuente correcta y en
+  iPad la sesión de red se autoselecciona.
+
+  Lleva también la **medición final de jitter de la v1**, que la 7 no hizo por no
+  mover ningún instante.
+
+---
+
 La rebanada 6 cerró el 2026-08-30 y con ella el Track generativo completo del
 MVP. Después de la 7 solo queda la 8 —MIDI Learn—, y **ahí se vuelve bloqueante
 `network-session-source`**, tal como estaba previsto: MIDI Learn tiene que
