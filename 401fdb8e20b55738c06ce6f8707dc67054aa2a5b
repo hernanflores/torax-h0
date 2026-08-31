@@ -1,0 +1,49 @@
+Task: ControlMapping pasa a describir el preset entero (Fase 3, rebanada 7)
+
+Que se hizo
+-----------
+El mapeo declara las tres familias del BeatStep Pro, con los bloques como datos:
+
+  knobBlock        CC 70   -> 70..85; los nueve primeros son los parametros
+  padBlock         nota 36 -> 36..51
+  stepButtonBlock  CC 102  -> 102..117; sin definir en la especificacion MIDI
+
+declaredNumbers devuelve los tres tramos, y stepButtonIndex(for:) resuelve el
+tercero como padIndex resolvia el segundo.
+
+'provisional' -> 'beatStepPro'. La documentacion del tipo deja de decir que la
+sustituyen 'el preset del BeatStep Pro y MIDI Learn, que son el track siguiente'
+y pasa a decir que ES el preset, con MIDI Learn nombrado como rebanada 8.
+
+Ficheros
+--------
+- Packages/MIDI/Sources/MIDI/ControlMapping.swift          (modificado)
+- Packages/MIDI/Tests/MIDITests/PresetMappingTests.swift   (nuevo, 9 tests)
+- El resto: solo el nombre del valor estatico.
+
+Los tests
+---------
+- Cada familia declara 16 controles contiguos.
+- Ningun numero aparece en dos familias -el barrido que pide el plan-.
+- Los tres bloques caben en el rango del protocolo.
+- Los nueve primeros knobs son los nueve parametros en el orden de
+  TrackParameter, leido de TrackParameter.allCases y no de una lista escrita.
+- Los siete ultimos no dan parametro, y girarlos no publica: el mapeo y la
+  entrada dicen lo mismo.
+- El bloque de step buttons resuelve 0..15, y los 112 CC restantes no.
+- Mover un bloque mueve su familia entera.
+
+Los tests existentes de ControlMappingTests pasan sin reescribirse: cambia el
+nombre del valor, ninguna asercion. Es la comprobacion de que el preset conserva
+lo que ya funcionaba.
+
+Desviacion del orden TDD, registrada
+------------------------------------
+En esta tarea la implementacion se escribio antes que los tests nuevos: no hubo
+fase roja. La tarea es tabla de numeros y no cambio de comportamiento, pero el
+paso 3 del Task Workflow pide lo contrario y conviene que quede escrito en vez de
+disimulado. Las tareas siguientes vuelven al orden.
+
+Verde
+-----
+MIDI 259 tests en la particion logica, sin fallos.
