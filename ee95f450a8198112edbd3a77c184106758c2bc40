@@ -1,0 +1,47 @@
+Task: PadSurface — que altura tiene cada pad (Fase 1, rebanada 7)
+
+Que se hizo
+-----------
+PadSurface, un valor de Engine con el marco tonal y el desplazamiento de octava
+vigente, que responde pitch(at:) para los dieciseis indices.
+
+  indice 0-6   -> grados 1-7 en la octava base (48 + root + grado)
+  indice 8-14  -> los mismos grados, +12 semitonos
+  indice 7, 15 -> nil; son desplazamiento, no nota
+  offset >= numero de grados -> nil (pentatonic apaga 6, 7, 14 y 15)
+  fuera de 0-15 -> nil, sin trap
+
+Ficheros
+--------
+- Packages/Engine/Sources/Engine/PadSurface.swift               (nuevo)
+- Packages/Engine/Tests/EngineTests/PadSurfaceTests.swift       (nuevo, 8 tests)
+
+Los tests
+---------
+- El ejemplo canonico: Do mayor da 48, 50, 52, 53, 55, 57, 59.
+- Root en Re da 50: la base es la octava, no una nota fija.
+- El pad 9 es siempre el pad 1 mas doce semitonos, sobre 5 escalas x 12 Roots.
+  Es la invariante de la que dependen los pads 8 y 16, y por eso se barre entera
+  en vez de comprobarse en un caso.
+- Los dos bloques coinciden grado a grado, o los dos estan vacios -nunca uno si
+  y el otro no-.
+- pentatonic apaga 6, 7, 14 y 15 y deja encendidos los otros diez.
+- Los pads 8 y 16 nunca tienen altura, en ninguna escala ni Root.
+- Indices -1, 16, Int.max, Int.min: nil, sin reventar.
+- Toda altura asignada es admitida por el marco. Es lo que sustituye al filtro
+  cromatico que la rebanada retira: ya no hay nada que filtrar porque nada
+  ilegal se construye.
+
+Red confirmado: 'cannot find type PadSurface in scope'. Verde despues, 305 tests
+de Engine.
+
+Cobertura
+---------
+Engine 98,32% de lineas (umbral 90%); PadSurface.swift 100%.
+
+Por que asi
+-----------
+El desplazamiento es un campo del valor y no un argumento de pitch(at:): la
+octava vigente es estado de la superficie, y pasarla en cada consulta invitaria
+a que dos sitios discreparan sobre cual es. El tope del desplazamiento es la
+tarea siguiente; aqui octaveShift se acepta tal cual.
