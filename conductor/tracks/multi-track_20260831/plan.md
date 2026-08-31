@@ -105,13 +105,13 @@ regresión la bloquea.
   - [x] Tests (Red): **seleccionar otro Track no cambia nada del que se deja** — parámetros, pool, marco tonal y octava de pads siguen como estaban al volver
   - [x] Tests (Red): los dieciséis step buttons seleccionan, y ahora ninguno se ignora
   - [x] Implementación (Green): `trackCount` a 16; el resto del camino ya está escrito
-- [~] Task: El marco tonal deja de ser global
-  - [ ] Tests (Red): dos Tracks en escalas distintas conviven; cambiar la Scale de uno no reencuadra el pool del otro
-  - [ ] Tests (Red): al seleccionar un Track, **la superficie de pads se recalcula con su marco y con su desplazamiento de octava**
-  - [ ] Tests (Red): el reencuadre del pool al cambiar de Scale sigue siendo el de la rebanada 4, ahora por Track
-  - [ ] Implementación (Green): el marco viaja en el Track; `ControlInput` deja de tener uno propio
-  - [ ] **Documentar la desviación**: `product.md` describe Scale y Root como configuración de la app; pasan a ser del Track, como dice la Pre Spec
-- [ ] Task: El canal se edita, y no con un knob
+- [x] Task: El marco tonal deja de ser global — `cae4703`
+  - [x] Tests (Red): dos Tracks en escalas distintas conviven; cambiar la Scale de uno no reencuadra el pool del otro
+  - [x] Tests (Red): al seleccionar un Track, **la superficie de pads se recalcula con su marco y con su desplazamiento de octava**
+  - [x] Tests (Red): el reencuadre del pool al cambiar de Scale sigue siendo el de la rebanada 4, ahora por Track
+  - [x] Implementación (Green): el marco viaja en el Track; `ControlInput` deja de tener uno propio
+  - [x] **Documentar la desviación**: `product.md` describe Scale y Root como configuración de la app; pasan a ser del Track, como dice la Pre Spec
+- [~] Task: El canal se edita, y no con un knob
   - [ ] Tests (Red): la edición del canal no pasa por `ControlMapping` — ningún CC lo mueve
   - [ ] Tests (Red): cambiar el canal publica el snapshot, para que el scheduler lo use en el evento siguiente
   - [ ] Implementación (Green)
