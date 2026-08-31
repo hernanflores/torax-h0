@@ -1,0 +1,42 @@
+Task: El bloque de pads del preset se resuelve a indice (Fase 2, rebanada 7)
+
+Que se hizo
+-----------
+ControlMapping crece con el bloque de pads:
+
+  padBlock: MIDINote          nota del primer pad; 36 por defecto
+  padIndex(for:) -> Int?      0-15 restando contra la base, nil fuera del bloque
+
+Sin tabla: es una resta y una comprobacion de rango contra PadSurface.padCount.
+
+Ficheros
+--------
+- Packages/MIDI/Sources/MIDI/ControlMapping.swift        (modificado)
+- Packages/MIDI/Tests/MIDITests/PadIndexTests.swift      (nuevo, 5 tests)
+
+Los tests
+---------
+- Los dieciseis del bloque dan 0..15 en orden.
+- Las 112 notas restantes del rango MIDI no dan indice.
+- Mover el bloque mueve los dieciseis pads a la vez, y solo esos: un mapeo con
+  padBlock 60 responde 0..15 para 60..75 y nil para 59 y 76.
+- El bloque cabe entero en el rango MIDI.
+- EL IMPORTANTE: el numero de transporte no es la altura musical. El pad cuya
+  nota es 36 da indice 0, y la superficie con el marco por defecto le asigna la
+  nota 48. Existe para que la coincidencia numerica de un bloque no se lea nunca
+  como identidad -es exactamente el error que la rebanada viene a deshacer-.
+
+Red confirmado: 'no member padBlock' / 'no member padIndex'.
+Verde: MIDI en las dos particiones de CI, 21 + 239 tests, sin fallos.
+
+Que NO entra aqui
+-----------------
+'Una nota fuera del bloque no publica nada' se comprueba en la tarea siguiente,
+que es donde ControlInput empieza a consultar la superficie: hoy todavia alterna
+por altura cromatica y el criterio de publicacion no ha cambiado.
+
+Por que asi
+-----------
+padBlock es propiedad de instancia y no una constante global porque la fase 5
+puede desmentir el numero contra el dispositivo. Con el dato en el mapeo, esa
+correccion es un valor; repartido por el codigo, seria una caceria.
