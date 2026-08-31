@@ -116,7 +116,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: v2 rebanada 1 — Dieciséis Tracks sobre un reloj**
+- [~] **Track: v2 rebanada 1 — Dieciséis Tracks sobre un reloj**
   *Link: [conductor/tracks/multi-track_20260831/index.md](./tracks/multi-track_20260831/index.md)*
 
   Abierto el 2026-08-31. El snapshot deja de ser un `Track` y pasa a ser
