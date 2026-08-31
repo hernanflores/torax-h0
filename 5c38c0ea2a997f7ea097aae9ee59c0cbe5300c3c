@@ -1,0 +1,31 @@
+Phase Verification & Checkpoint — Fase 2: El snapshot que cruza al scheduler
+
+Tests automaticos
+-----------------
+  MIDI, particion logica de CI     -> 274, 0 fallos
+  MIDI, particion CoreMIDI         ->  21, 0 fallos
+  Engine                           -> 334, 0 fallos
+  xcodebuild build (generic/iOS)   -> BUILD SUCCEEDED
+
+La pregunta de la fase, contestada
+----------------------------------
+Track 112 B, Pattern 1792 B, anillo 7 KB, load() 274 ns contra una ventana de
+20 ms. Se copia el Pattern entero; publicar por Track queda descartado con el
+dato delante, que es la decision que el plan mandaba tomar explicitamente.
+
+El protocolo del handoff no cambio ni una linea. tech-stack.md lleva la enmienda.
+
+Renombrado, decidido por el usuario
+-----------------------------------
+TrackHandoff -> PatternHandoff. Ya no entrega un Track. Mecanico sobre catorce
+ficheros, sin cambio de comportamiento, hecho ahora que es barato.
+
+Verificacion manual
+-------------------
+Fase sin superficie visible: lo que cambia es el tipo que cruza entre hilos. Lo
+comprobable es que la app sigue compilando y sonando igual, y que los tests de
+concurrencia del handoff pasan con el valor dieciseis veces mayor.
+
+Confirmacion del usuario
+------------------------
+2026-08-31: 'Confirmo, y renombrar a PatternHandoff'.
