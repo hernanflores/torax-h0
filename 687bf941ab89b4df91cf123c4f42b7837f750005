@@ -1,0 +1,30 @@
+Task: El preset del BeatStep Pro, versionado (Fase 5, rebanada 7)
+
+Que se hizo
+-----------
+- preset/README.md: la tabla completa de los cuarenta y ocho controles, el modo
+  Relative #2 con su razon y su sintoma, que se rompe sin el preset cargado -con
+  tabla de sintoma/causa para reconocerlo-, y el procedimiento de carga en MIDI
+  Control Center.
+- preset/torax-h0.beatstep-pro.json: la misma tabla, legible por maquina.
+
+Los numeros son los que declara ControlMapping, y el README lo dice: si uno de
+los dos cambia, el otro esta mal.
+
+Lo que NO se entrego, y por que
+--------------------------------
+El .bspx cargable no esta en el repositorio. Ese formato solo lo produce MIDI
+Control Center contra el hardware conectado; fabricar uno a mano y publicarlo sin
+haberlo abierto nunca en MCC seria exactamente la suposicion sobre el controlador
+que la nota del 2026-08-28 dejo escrita -la de los encoders en Relative #2, donde
+dar por bueno un comportamiento no verificado clavo todos los parametros en su
+extremo-.
+
+Queda como paso 5 del procedimiento de carga del README: Save As y exportar el
+.bspx a este directorio, en la sesion de verificacion en dispositivo. Es una
+entrega incompleta de la tarea y se registra como tal, no como hecha.
+
+Ficheros
+--------
+- preset/README.md                        (nuevo)
+- preset/torax-h0.beatstep-pro.json       (nuevo)
