@@ -1,0 +1,38 @@
+Task: Documentar las dos desviaciones antes de implementar (Fase 1, rebanada 7)
+
+Que se hizo
+-----------
+Las dos notas fechadas que exige el paso 8 del Task Workflow, escritas antes de
+que exista una linea de codigo de la superficie de pads.
+
+1. 'Pre Spec Torax H-0.md', seccion 'Control de Pitch: pool, no piano-roll'.
+   La linea 70 decia que los 16 Value Buttons se comportan como teclado
+   cromatico filtrado por la Scale. La nota la sustituye por la tabla de la
+   superficie nueva -pads 1-7 y 9-15 grados de escala en dos octavas, pads 8 y
+   16 desplazamiento- y explica por que: sobre dieciseis pads que envian
+   dieciseis semitonos contiguos, siete grados vivos dejan nueve pads muertos y
+   el registro alcanzable es un octavo del rango MIDI. Deja escrita la
+   invariante que sostiene el diseno -el pad 9 es siempre el pad 1 mas doce
+   semitonos- y por que se prefiere dejar cuatro pads apagados con pentatonic a
+   rellenarlos.
+
+2. 'conductor/product.md', MVP Scope v1. La linea 'Mapeo del controlador + MIDI
+   Learn' se anota como partida en dos rebanadas, con el motivo -son dos
+   problemas sin nada en comun, y MIDI Learn arrastra network-session-source- y
+   con la advertencia de que hasta que cierre la 8 la pagina promete algo que la
+   app no hace.
+
+Ficheros
+--------
+- Pre Spec Torax H-0.md   (modificado)
+- conductor/product.md    (modificado)
+
+Por que
+-------
+El paso 8 pide parar y documentar *antes*. La razon de fondo es que las dos son
+desviaciones de dominio y no de implementacion: la primera cambia que es un pad
+-de altura a indice- y es el nucleo entero de la rebanada; la segunda cambia lo
+que la v1 promete entregar de una vez. Escritas despues serian una
+justificacion; escritas antes son la decision.
+
+No se toco tech-stack.md, a proposito: nada de la arquitectura cambia.
