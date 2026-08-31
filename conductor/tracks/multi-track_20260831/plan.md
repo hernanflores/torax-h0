@@ -72,13 +72,13 @@ regresión la bloquea.
   - [x] Tests (Red): con los dieciséis llenos no se pierde ningún evento dentro de una ventana
   - [x] Implementación (Green): un solo hilo y un solo `SchedulerThread`; el bucle recorre los Tracks dentro de la ventana ya abierta
   - [x] **Sin asignaciones, locks ni `await` nuevos en el bucle**, que es la regla que no se negocia (`swift.md`)
-- [~] Task: Cada Track cae en su propia rejilla, en fase
-  - [ ] Tests (Red): **dos Tracks con Divisions distintas comparten origen** — el 1/8 cae exactamente sobre uno de cada dos 1/16, y no se desalinean al cabo de muchos ciclos
-  - [ ] Tests (Red): dos Tracks con Steps distintos —16 y 12— vuelven a coincidir donde les toca, sin deriva acumulada
-  - [ ] Tests (Red): el Timing y el Delay de un Track no desplazan a los otros
-  - [ ] Tests (Red): el playhead de cada Track avanza por su propia longitud
-  - [ ] Implementación (Green): una `MusicalTimeline` por Track sobre un solo origen, o el equivalente que no duplique el origen — **la deriva se evita compartiendo el origen, no sincronizando después**
-- [ ] Task: Dieciséis generadores, uno por Track
+- [x] Task: Cada Track cae en su propia rejilla, en fase — `46d6cdf`
+  - [x] Tests (Red): **dos Tracks con Divisions distintas comparten origen** — el 1/8 cae exactamente sobre uno de cada dos 1/16, y no se desalinean al cabo de muchos ciclos
+  - [x] Tests (Red): dos Tracks con Steps distintos —16 y 12— vuelven a coincidir donde les toca, sin deriva acumulada
+  - [x] Tests (Red): el Timing y el Delay de un Track no desplazan a los otros
+  - [x] Tests (Red): el playhead de cada Track avanza por su propia longitud
+  - [x] Implementación (Green): una `MusicalTimeline` por Track sobre un solo origen, o el equivalente que no duplique el origen — **la deriva se evita compartiendo el origen, no sincronizando después**
+- [~] Task: Dieciséis generadores, uno por Track
   - [ ] Tests (Red): misma semilla, misma secuencia, por Track (NFR4)
   - [ ] Tests (Red): **dos Tracks con la misma Probability no omiten los mismos Pulses** — con un solo generador compartido el aleatorio se oiría como una sola decisión, y este test es lo que lo impide
   - [ ] Tests (Red): el estado del aleatorio **no** entra en el snapshot: sigue siendo del scheduler, que es su único dueño, y `_isPOD(Pattern.self)` lo confirma
