@@ -37,3 +37,36 @@ haya que impedir.
 
 Red confirmado: 'cannot find Channel in scope'. Verde despues, 334 tests de
 Engine; MIDI sigue compilando.
+
+Phase Verification & Checkpoint — Fase 1: Dieciseis Tracks son un valor
+======================================================================
+
+Cobertura de los cambios
+------------------------
+Pattern.swift, Channel.swift y el Track ampliado. Los tres con tests propios:
+PatternTests, PatternInitialTests y TrackChannelTests.
+
+Tests automaticos
+-----------------
+  swift test --package-path Packages/Engine   -> 334 tests, 0 fallos
+  swift build --package-path Packages/MIDI    -> sin errores
+
+Cobertura Engine 99,41% de lineas (umbral 90%); Pattern.swift y Channel.swift al
+100%.
+
+La pregunta de la fase, respondida
+----------------------------------
+Pattern es trivial y mide 1664 bytes (16 x 104, sin cabecera). El resto de la
+rebanada es posible tal como esta planteada. La fase 2 decide si copiarlo por
+ventana con el handoff delante.
+
+Verificacion manual
+-------------------
+Fase de Engine puro: no hay nada que tocar en el iPad. Lo comprobable es que
+Pattern.initial deja el Track 1 con 16/5 sobre una altura y los otros quince
+vacios y en su canal — es decir, que la app sonara igual que hoy cuando la fase 5
+la cablee.
+
+Confirmacion del usuario
+------------------------
+2026-08-31: 'Go on'.
