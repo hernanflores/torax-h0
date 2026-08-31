@@ -69,6 +69,41 @@ No cambia la estructura base: sobre cada Pulse añade triggers adicionales. Sirv
 
 El control **PITCH** determina el *pool* de notas que un Track puede usar; no escribe una melodía fija. Al pulsarlo, los 16 Value Buttons se comportan como teclado cromático, pero sólo están disponibles las notas permitidas por la Scale actual. Una nota activada entra al pool; una desactivada se excluye.
 
+> **Nota del 2026-08-31 — los 16 Value Buttons dejan de ser un teclado cromático
+> filtrado por la Scale.** Sustituido por la rebanada 7 del MVP
+> (`mvp-beatstep-mapping_20260830`). Cada pad pasa a ser un **grado de escala**,
+> no una altura leída del mensaje:
+>
+> | Pad | Contenido |
+> |---|---|
+> | 1–7 | Grados 1–7 de la escala, en la octava base (la que empieza en la nota MIDI 48) |
+> | 9–15 | Los mismos grados, una octava por encima |
+> | 8 | Baja el registro una octava |
+> | 16 | Sube el registro una octava |
+>
+> **La razón, no solo la regla.** El mecanismo de arriba funciona sobre un
+> teclado completo; sobre dieciséis pads que envían dieciséis semitonos
+> contiguos, no. Dieciséis semitonos contienen siete grados de una escala de
+> siete notas, así que **nueve de los dieciséis pads quedan muertos**; el
+> registro alcanzable es **un octavo del rango MIDI** —dieciséis notas de 128, sin
+> forma de meter una grave ni una aguda—; y qué pad da qué nota se mueve al
+> cambiar el Root, de una manera que no se puede aprender.
+>
+> La superficie nueva **cumple la intención de esta línea —«sólo están
+> disponibles las notas permitidas por la Scale actual»— mejor que el mecanismo
+> que proponía**: toda altura que un pad puede meter en el pool sale de la
+> escala, y ninguna se descarta en silencio.
+>
+> El precio es consciente: con una escala de menos de siete grados
+> —`pentatonic`— los pads 6, 7, 14 y 15 quedan sin altura asignada. Se prefiere
+> ese hueco estable a rellenarlos, porque rellenar rompería la invariante que
+> sostiene todo lo demás: **el pad 9 es siempre el pad 1 más doce semitonos**, sea
+> cual sea la escala y el Root. Es lo que permite que los pads 8 y 16 se llamen
+> *octava* sin mentir.
+>
+> Decisiones completas en
+> [`conductor/tracks/mvp-beatstep-mapping_20260830/spec.md`](./conductor/tracks/mvp-beatstep-mapping_20260830/spec.md).
+
 - Girar **PITCH** transpone el pool dentro de la Scale actual, por lo tanto sigue en tonalidad. **Scale** determina las notas permitidas y **Root** su centro tonal.
 - El pool puede tener desde una nota (centro estable) a ocho. Para empezar, 2–4 notas —por ejemplo fundamental, tercera y quinta— suele producir líneas más claras que habilitar toda la escala.
 - Al cambiar Scale o Root se actualiza el teclado y el marco tonal.

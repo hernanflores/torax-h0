@@ -19,11 +19,33 @@ public final class ControlInput: @unchecked Sendable {
     /// una lectura, y perder un giro por eso sería un knob que no responde.
     public private(set) var track: Track
 
-    /// El marco tonal vigente: qué alturas admiten los pads.
+    /// La superficie de pads vigente: qué altura tiene cada uno de los
+    /// dieciséis.
+    ///
+    /// **Es lo que sustituye al filtro cromático.** Hasta la rebanada 7 el
+    /// número de nota entrante era la altura y el marco decidía si pasaba;
+    /// ahora el número solo dice qué pad se pulsó y la altura sale de aquí.
+    public private(set) var surface: PadSurface
+
+    /// El marco tonal vigente: de qué escala salen los grados de los pads.
     ///
     /// Se puede cambiar en caliente porque Scale y Root son configuración
     /// táctil, y cambiarlas **reencuadra el pool** en vez de vaciarlo.
-    public private(set) var frame: TonalFrame
+    public var frame: TonalFrame { surface.frame }
+
+    /// Qué Track está seleccionado, 0 el primero.
+    ///
+    /// **La semántica final es la de v2** —el step button N selecciona el
+    /// Track N— y se implementa entera aquí, con un solo Track detrás en v1.
+    /// Es lo que evita que el preset haya que reescribirlo cuando los haya: los
+    /// números del controlador ya significan lo correcto.
+    public private(set) var selectedTrackIndex = 0
+
+    /// Cuántos Tracks hay detrás de los step buttons. **Uno en v1.**
+    ///
+    /// Es la costura por donde entra v2: los step buttons sin Track detrás se
+    /// ignoran en silencio, con el mismo criterio que un CC sin asignar.
+    private let trackCount: Int
 
     private let publish: @Sendable (Track) -> Void
     private let mapping: ControlMapping
@@ -38,14 +60,16 @@ public final class ControlInput: @unchecked Sendable {
         track: Track,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publish: @escaping @Sendable (Track) -> Void,
-        mapping: ControlMapping = .provisional,
-        encoding: RelativeEncoding = .twosComplement
+        mapping: ControlMapping = .beatStepPro,
+        encoding: RelativeEncoding = .twosComplement,
+        trackCount: Int = 1
     ) {
         self.track = track
-        self.frame = frame
+        self.surface = PadSurface(frame: frame)
         self.publish = publish
         self.mapping = mapping
         self.encoding = encoding
+        self.trackCount = trackCount
     }
 
     /// Publica directamente en un handoff. Atajo para tests y para quien no
@@ -54,15 +78,17 @@ public final class ControlInput: @unchecked Sendable {
         track: Track,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publishingTo handoff: TrackHandoff,
-        mapping: ControlMapping = .provisional,
-        encoding: RelativeEncoding = .twosComplement
+        mapping: ControlMapping = .beatStepPro,
+        encoding: RelativeEncoding = .twosComplement,
+        trackCount: Int = 1
     ) {
         self.init(
             track: track,
             frame: frame,
             publish: { handoff.publish($0) },
             mapping: mapping,
-            encoding: encoding
+            encoding: encoding,
+            trackCount: trackCount
         )
     }
 
@@ -81,13 +107,19 @@ public final class ControlInput: @unchecked Sendable {
     public func receive(_ message: MIDIMessage) -> Bool {
         switch message {
         case .controlChange(_, let controller, let value):
+            // Un step button no es un knob: se despacha antes, y su soltada
+            // —valor cero— no hace nada, igual que el note-off de un pad.
+            if let index = mapping.stepButtonIndex(for: controller) {
+                guard value > 0 else { return false }
+                return selectTrack(index)
+            }
             return turn(controller, by: value)
         case .noteOn(_, let note, let velocity):
             // Velocity cero es la convención de apagado de muchos
             // controladores. Alternar en la pulsación **y** en la soltada sería
             // no alternar: cada pad dejaría el pool como estaba.
             guard velocity.value > 0 else { return false }
-            return toggle(note)
+            return press(note)
         case .noteOff:
             return false
         }
@@ -124,22 +156,70 @@ public final class ControlInput: @unchecked Sendable {
         return true
     }
 
-    /// Un pad alterna la pertenencia de una altura al pool.
+    /// Un pad alterna la pertenencia de su altura al pool.
     ///
-    /// **Fuera del marco tonal se ignora en silencio**, igual que un CC sin
-    /// mapear: en una sesión real llegan mensajes de todo tipo y no es asunto de
-    /// la entrada quejarse de ellos. La Pre Spec lo pide así — «solo están
-    /// disponibles las notas permitidas por la Scale actual».
-    private func toggle(_ note: MIDINote) -> Bool {
-        // `MIDINote` y `Pitch` comparten el rango 0–127 por definición del
-        // protocolo, así que la conversión no puede fallar.
-        guard let pitch = Pitch(Int(note.value)), frame.allows(pitch) else { return false }
+    /// **El número de nota solo dice qué pad se pulsó.** La altura la pone la
+    /// superficie, así que ya no hay nada que filtrar: todo lo que un pad puede
+    /// meter en el pool sale de la escala por construcción.
+    ///
+    /// Se ignoran en silencio, con el mismo criterio que un CC sin asignar: una
+    /// nota fuera del bloque de pads, un pad sin grado —los que sobran cuando la
+    /// escala tiene menos de siete— y los pads de octava, que desplazan en vez
+    /// de sonar. Ninguno es un error: en una sesión real llegan mensajes de todo
+    /// tipo.
+    private func press(_ note: MIDINote) -> Bool {
+        guard let index = mapping.padIndex(for: note) else { return false }
+
+        // Los dos pads de octava se despachan antes de llegar al pool: mueven la
+        // superficie, no el material.
+        switch index {
+        case PadSurface.octaveDownIndex: return shift { $0.shiftedDown() }
+        case PadSurface.octaveUpIndex: return shift { $0.shiftedUp() }
+        default: break
+        }
+
+        guard let pitch = surface.pitch(at: index) else { return false }
 
         let adjusted = track.pool.toggling(pitch)
         // El pool lleno rechaza la novena: no cambió nada que publicar.
         guard adjusted != track.pool else { return false }
 
         track = Track(shape: track.shape, pool: adjusted)
+        publish(track)
+        return true
+    }
+
+    /// Un step button selecciona el Track de su posición.
+    ///
+    /// **En v1 solo el primero tiene Track detrás**; los otros quince se ignoran
+    /// en silencio, con el mismo criterio que un CC sin asignar. Seleccionar el
+    /// que ya estaba tampoco publica: es una operación sin efecto, no un
+    /// reinicio.
+    private func selectTrack(_ index: Int) -> Bool {
+        guard index < trackCount, index != selectedTrackIndex else { return false }
+
+        selectedTrackIndex = index
+        publish(track)
+        return true
+    }
+
+    /// Los pads 8 y 16 mueven el registro **sin tocar el pool**.
+    ///
+    /// Las alturas ya metidas se quedan donde estaban: `product-guidelines.md`
+    /// dice que cambiar un parámetro nunca destruye material, y transponer el
+    /// pool bajo los pies de quien lo construyó es exactamente eso. Lo que
+    /// cambia es qué altura mete el pad siguiente, y por eso la superficie es un
+    /// teclado de registro móvil: se baja, se meten dos graves, se sube y se
+    /// meten dos agudas.
+    ///
+    /// En el tope no pasa nada y no se publica: mandar un snapshot idéntico es
+    /// trabajo y ruido para nada. Lo que sí tiene que enterarse es la pantalla,
+    /// que es donde se lee que no se puede seguir.
+    private func shift(_ move: (PadSurface) -> PadSurface) -> Bool {
+        let moved = move(surface)
+        guard moved != surface else { return false }
+
+        surface = moved
         publish(track)
         return true
     }
@@ -151,7 +231,7 @@ public final class ControlInput: @unchecked Sendable {
     /// del marco nuevo.
     @discardableResult
     public func setFrame(_ frame: TonalFrame) -> Bool {
-        self.frame = frame
+        surface = PadSurface(frame: frame, octaveShift: surface.octaveShift)
 
         let adjusted = track.pool.reframed(to: frame)
         guard adjusted != track.pool else { return false }

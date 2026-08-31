@@ -34,6 +34,7 @@ struct ContentView: View {
                 TonalView(
                     frame: model.frame,
                     pool: model.track.pool,
+                    surface: model.surface,
                     onFrameChange: { model.setFrame($0) }
                 )
                 Divider().overlay(Palette.border)

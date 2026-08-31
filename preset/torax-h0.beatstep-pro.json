@@ -1,0 +1,279 @@
+{
+  "name": "Torax H-0",
+  "device": "Arturia BeatStep Pro",
+  "version": 1,
+  "updated": "2026-08-31",
+  "channel": "cualquiera; la app no filtra por canal",
+  "encoders": {
+    "mode": "Relative #2",
+    "why": "Es el unico modo que RelativeEncoding decodifica: complemento a dos (0x01 = +1, 0x7F = -1). En otro modo un clic se lee como delta de +-63 y todos los parametros saltan a su extremo."
+  },
+  "knobs": {
+    "block": {
+      "first_cc": 70,
+      "count": 16
+    },
+    "assigned": [
+      {
+        "knob": 1,
+        "cc": 70,
+        "parameter": "Steps"
+      },
+      {
+        "knob": 2,
+        "cc": 71,
+        "parameter": "Pulses"
+      },
+      {
+        "knob": 3,
+        "cc": 72,
+        "parameter": "Rotate"
+      },
+      {
+        "knob": 4,
+        "cc": 73,
+        "parameter": "Division"
+      },
+      {
+        "knob": 5,
+        "cc": 74,
+        "parameter": "Velocity"
+      },
+      {
+        "knob": 6,
+        "cc": 75,
+        "parameter": "Sustain"
+      },
+      {
+        "knob": 7,
+        "cc": 76,
+        "parameter": "Probability"
+      },
+      {
+        "knob": 8,
+        "cc": 77,
+        "parameter": "Timing"
+      },
+      {
+        "knob": 9,
+        "cc": 78,
+        "parameter": "Delay"
+      }
+    ],
+    "free": [
+      {
+        "knob": 10,
+        "cc": 79,
+        "parameter": null
+      },
+      {
+        "knob": 11,
+        "cc": 80,
+        "parameter": null
+      },
+      {
+        "knob": 12,
+        "cc": 81,
+        "parameter": null
+      },
+      {
+        "knob": 13,
+        "cc": 82,
+        "parameter": null
+      },
+      {
+        "knob": 14,
+        "cc": 83,
+        "parameter": null
+      },
+      {
+        "knob": 15,
+        "cc": 84,
+        "parameter": null
+      },
+      {
+        "knob": 16,
+        "cc": 85,
+        "parameter": null
+      }
+    ]
+  },
+  "pads": {
+    "block": {
+      "first_note": 36,
+      "count": 16
+    },
+    "semantics": "El numero de nota es solo el indice del pad; la altura la decide la escala vigente.",
+    "layout": [
+      {
+        "pad": 1,
+        "note": 36,
+        "meaning": "grado 1, octava base"
+      },
+      {
+        "pad": 2,
+        "note": 37,
+        "meaning": "grado 2, octava base"
+      },
+      {
+        "pad": 3,
+        "note": 38,
+        "meaning": "grado 3, octava base"
+      },
+      {
+        "pad": 4,
+        "note": 39,
+        "meaning": "grado 4, octava base"
+      },
+      {
+        "pad": 5,
+        "note": 40,
+        "meaning": "grado 5, octava base"
+      },
+      {
+        "pad": 6,
+        "note": 41,
+        "meaning": "grado 6, octava base"
+      },
+      {
+        "pad": 7,
+        "note": 42,
+        "meaning": "grado 7, octava base"
+      },
+      {
+        "pad": 8,
+        "note": 43,
+        "meaning": "bajar una octava"
+      },
+      {
+        "pad": 9,
+        "note": 44,
+        "meaning": "grado 1, octava superior"
+      },
+      {
+        "pad": 10,
+        "note": 45,
+        "meaning": "grado 2, octava superior"
+      },
+      {
+        "pad": 11,
+        "note": 46,
+        "meaning": "grado 3, octava superior"
+      },
+      {
+        "pad": 12,
+        "note": 47,
+        "meaning": "grado 4, octava superior"
+      },
+      {
+        "pad": 13,
+        "note": 48,
+        "meaning": "grado 5, octava superior"
+      },
+      {
+        "pad": 14,
+        "note": 49,
+        "meaning": "grado 6, octava superior"
+      },
+      {
+        "pad": 15,
+        "note": 50,
+        "meaning": "grado 7, octava superior"
+      },
+      {
+        "pad": 16,
+        "note": 51,
+        "meaning": "subir una octava"
+      }
+    ]
+  },
+  "step_buttons": {
+    "block": {
+      "first_cc": 102,
+      "count": 16
+    },
+    "semantics": "El step button N selecciona el Track N. En v1 solo existe el Track 1.",
+    "layout": [
+      {
+        "step_button": 1,
+        "cc": 102,
+        "meaning": "seleccionar Track 1"
+      },
+      {
+        "step_button": 2,
+        "cc": 103,
+        "meaning": "seleccionar Track 2"
+      },
+      {
+        "step_button": 3,
+        "cc": 104,
+        "meaning": "seleccionar Track 3"
+      },
+      {
+        "step_button": 4,
+        "cc": 105,
+        "meaning": "seleccionar Track 4"
+      },
+      {
+        "step_button": 5,
+        "cc": 106,
+        "meaning": "seleccionar Track 5"
+      },
+      {
+        "step_button": 6,
+        "cc": 107,
+        "meaning": "seleccionar Track 6"
+      },
+      {
+        "step_button": 7,
+        "cc": 108,
+        "meaning": "seleccionar Track 7"
+      },
+      {
+        "step_button": 8,
+        "cc": 109,
+        "meaning": "seleccionar Track 8"
+      },
+      {
+        "step_button": 9,
+        "cc": 110,
+        "meaning": "seleccionar Track 9"
+      },
+      {
+        "step_button": 10,
+        "cc": 111,
+        "meaning": "seleccionar Track 10"
+      },
+      {
+        "step_button": 11,
+        "cc": 112,
+        "meaning": "seleccionar Track 11"
+      },
+      {
+        "step_button": 12,
+        "cc": 113,
+        "meaning": "seleccionar Track 12"
+      },
+      {
+        "step_button": 13,
+        "cc": 114,
+        "meaning": "seleccionar Track 13"
+      },
+      {
+        "step_button": 14,
+        "cc": 115,
+        "meaning": "seleccionar Track 14"
+      },
+      {
+        "step_button": 15,
+        "cc": 116,
+        "meaning": "seleccionar Track 15"
+      },
+      {
+        "step_button": 16,
+        "cc": 117,
+        "meaning": "seleccionar Track 16"
+      }
+    ]
+  }
+}

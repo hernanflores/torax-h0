@@ -42,6 +42,14 @@ final class TransportModel {
     /// (`product-guidelines.md`).
     private(set) var frame = TonalFrame(scale: .minor, root: Root(0)!)
 
+    /// La superficie de pads vigente: qué altura tiene cada pad ahora mismo.
+    ///
+    /// **Vive aquí y no dentro de `ControlInput` porque se ve sin controlador
+    /// conectado.** Sin controlador no se edita —como el resto del material
+    /// generativo— pero se lee: es estado del Track, no del cable. Cuando hay
+    /// entrada, la de `ControlInput` es la que manda y esta la sigue.
+    private(set) var surface = PadSurface(frame: TonalFrame(scale: .minor, root: Root(0)!))
+
     /// Cambia Scale o Root y reencuadra el pool.
     ///
     /// **Sigue disponible sin controlador conectado:** es configuración, no
@@ -49,9 +57,15 @@ final class TransportModel {
     /// lado de la pantalla.
     func setFrame(_ updated: TonalFrame) {
         frame = updated
-        guard let controlInput else { return }
+        guard let controlInput else {
+            // Sin controlador la superficie se recalcula igual: se ve, aunque no
+            // se pueda mover.
+            surface = PadSurface(frame: updated, octaveShift: surface.octaveShift)
+            return
+        }
         controlInput.setFrame(updated)
         track = controlInput.track
+        surface = controlInput.surface
     }
 
     /// Con qué material arranca la app.
@@ -217,6 +231,7 @@ final class TransportModel {
             publish: { [weak transport] updated in transport?.publish(updated) }
         )
         self.controlInput = controlInput
+        surface = controlInput.surface
 
         do {
             let input = try CoreMIDIInput { [weak self] message in
@@ -260,6 +275,10 @@ final class TransportModel {
         let previous = track
         guard controlInput.receive(message) else { return }
         track = controlInput.track
+        // Los pads 8 y 16 mueven la superficie sin tocar el Track, así que se
+        // lee por separado: si solo se copiara el Track, la octava en pantalla
+        // se quedaría atrás.
+        surface = controlInput.surface
         announce(ParameterChange(from: previous, to: track))
     }
 

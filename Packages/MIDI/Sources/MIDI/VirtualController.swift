@@ -32,7 +32,7 @@ import Engine
         /// puede fallar. Es la justificación que `swift.md` exige para un `!`.
         public init(
             channel: MIDIChannel = MIDIChannel(1)!,
-            mapping: ControlMapping = .provisional,
+            mapping: ControlMapping = .beatStepPro,
             encoding: RelativeEncoding = .twosComplement
         ) {
             self.channel = channel

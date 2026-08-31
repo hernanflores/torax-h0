@@ -18,7 +18,7 @@ final class ControlInputTests: XCTestCase {
     private func turn(_ parameter: TrackParameter, by value: UInt8) -> MIDIMessage {
         .controlChange(
             channel: channel,
-            controller: ControlMapping.provisional.controller(for: parameter)!,
+            controller: ControlMapping.beatStepPro.controller(for: parameter)!,
             value: value
         )
     }

@@ -15,7 +15,8 @@ una deuda que la siguiente necesita.
 | 4 | Tonal: pool, Scale y Root | cerrada |
 | 5 | Groove estático: Velocity, Sustain, Probability | cerrada |
 | 6 | Groove temporal: Timing y Delay | cerrada |
-| 7 | Preset del BeatStep Pro y MIDI Learn | **siguiente**, por planificar |
+| 7 | Preset del BeatStep Pro: knobs, pads y step buttons | **abierta** |
+| 8 | MIDI Learn, con `network-session-source` dentro | por planificar |
 
 **Por qué ese orden.** La 3 no toca el motor y salda la última carga de jitter
 sin medir que `product.md` dejó anotada —la visual—; además evita desarrollar
@@ -31,8 +32,17 @@ se envía; Timing y Delay cambian **cuándo**, que es el camino de jitter que
 costó validar, y aislarlas evita que una regresión ahí se lleve por delante al
 resto. La 7 va última porque hasta entonces la tabla fija de cuatro CC alcanza.
 
+**La 7 se parte en dos, el 2026-08-30.** Estaba definida como «preset del
+BeatStep Pro y MIDI Learn» y son dos problemas que no comparten nada: el preset
+decide *qué significa cada control físico* —dominio musical, y ahí están las
+decisiones difíciles: qué nota da cada pad— y MIDI Learn decide *cómo se reasigna
+a otro hardware* —infraestructura de entrada, que arrastra
+`network-session-source`—. Juntas metían una investigación de CoreMIDI dentro de
+una rebanada cuyo núcleo es la escala. La 7 entrega el preset; la 8, MIDI Learn.
+
 **Cuándo se vuelve bloqueante un defecto.** `network-session-source` en la
-rebanada 7, cuando MIDI Learn tenga que escuchar la fuente correcta.
+**rebanada 8**, cuando MIDI Learn tenga que escuchar la fuente correcta. *(Era
+la 7 hasta el 2026-08-30, cuando la 7 se partió en dos.)*
 
 `midi-test-flake` **queda aplazado a después de la v2, por decisión del
 2026-08-29.** Lo había marcado como bloqueante de la rebanada 6 y ya no lo es:
@@ -48,13 +58,47 @@ veces sin que afectara a nada.
 
 ---
 
-*Sin track abierto.* La rebanada 6 cerró el 2026-08-30 y con ella el Track
-generativo completo del MVP. La 7 —preset del BeatStep Pro y MIDI Learn— es lo
-único que queda de la v1, y no toca el motor.
+- [x] **Track: MVP rebanada 7 — Preset del BeatStep Pro: knobs, pads y step buttons** — los 48 controles verificados en iPad, sin discrepancias
+  *Link: [conductor/tracks/mvp-beatstep-mapping_20260830/index.md](./tracks/mvp-beatstep-mapping_20260830/index.md)*
 
-**Ahí se vuelve bloqueante `network-session-source`**, tal como estaba previsto:
-MIDI Learn tiene que escuchar la fuente correcta, y en iPad la sesión de red se
-autoselecciona.
+  Abierto el 2026-08-30. Sustituye el mapeo provisional por un preset declarado y
+  verificado en dispositivo. **Su núcleo es que un pad deja de ser una altura y
+  pasa a ser un índice:** hoy los pads son un teclado cromático filtrado por
+  Scale, y sobre dieciséis pads contiguos eso deja la mayoría muertos y acota el
+  registro alcanzable a un octavo del rango MIDI. Pasan a ser grados de escala en
+  dos octavas alineadas, con los pads 8 y 16 moviendo el registro sin tocar el
+  pool.
+
+  No toca el motor y **no lleva medición de jitter** — no mueve ningún instante.
+
+  **Cerrado el 2026-08-31**, PR [#17](https://github.com/hernanflores/torax-h0/pull/17).
+  Las cinco fases con checkpoint, `Engine` al 98,36% y `MIDI` al 92,52%, y el
+  preset entregado como artefacto: `preset/Torax.beatsteppro` exportado desde
+  MIDI Control Center, con su README y la tabla de los 48 controles. La
+  verificación en dispositivo no encontró ninguna discrepancia, así que el número
+  del bloque de pads —la única suposición del track— resultó correcto.
+
+---
+
+- [ ] **Track: MVP rebanada 8 — MIDI Learn, con `network-session-source` dentro**
+
+  Por planificar. **Cierra la v1.** Entrega la reasignación del mapeo a otro
+  hardware —`ControlMapping` es fija hasta entonces, y `product.md` promete MIDI
+  Learn desde el principio— y se lleva dentro
+  [`network-session-source`](./tracks/network-session-source_20260828/index.md),
+  que **ahí sí bloquea**: MIDI Learn tiene que escuchar la fuente correcta y en
+  iPad la sesión de red se autoselecciona.
+
+  Lleva también la **medición final de jitter de la v1**, que la 7 no hizo por no
+  mover ningún instante.
+
+---
+
+La rebanada 6 cerró el 2026-08-30 y con ella el Track generativo completo del
+MVP. Después de la 7 solo queda la 8 —MIDI Learn—, y **ahí se vuelve bloqueante
+`network-session-source`**, tal como estaba previsto: MIDI Learn tiene que
+escuchar la fuente correcta, y en iPad la sesión de red se autoselecciona. La 7
+convive con el defecto: basta con elegir el BeatStep Pro a mano.
 
 **La rebanada 6 cerró con deuda conocida**, y conviene tenerla delante antes de
 abrir la 7: cuatro hallazgos de revisión sin arreglar en su fase *Review Fixes*,

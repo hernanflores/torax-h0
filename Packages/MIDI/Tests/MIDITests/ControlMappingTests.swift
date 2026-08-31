@@ -5,7 +5,7 @@ import XCTest
 /// Tests del mapeo de controladores a parámetros de Shape.
 final class ControlMappingTests: XCTestCase {
 
-    private let mapping = ControlMapping.provisional
+    private let mapping = ControlMapping.beatStepPro
 
     // MARK: - Un CC mueve su parámetro y solo el suyo
 
@@ -88,7 +88,7 @@ final class GrooveControlMappingTests: XCTestCase {
     func testEveryTrackParameterHasAController() {
         for parameter in TrackParameter.allCases {
             XCTAssertNotNil(
-                ControlMapping.provisional.controller(for: parameter),
+                ControlMapping.beatStepPro.controller(for: parameter),
                 "\(parameter) no tiene controlador")
         }
     }
@@ -98,7 +98,7 @@ final class GrooveControlMappingTests: XCTestCase {
     /// parámetro suelto lo detectaría.
     func testNoControllerIsSharedByTwoParameters() {
         let numbers = TrackParameter.allCases.compactMap {
-            ControlMapping.provisional.controller(for: $0)?.number
+            ControlMapping.beatStepPro.controller(for: $0)?.number
         }
         XCTAssertEqual(Set(numbers).count, numbers.count, "dos parámetros comparten CC: \(numbers)")
     }
@@ -110,7 +110,7 @@ final class GrooveControlMappingTests: XCTestCase {
 
         for (number, parameter) in expected {
             XCTAssertEqual(
-                ControlMapping.provisional.parameter(for: MIDIController(number)!),
+                ControlMapping.beatStepPro.parameter(for: MIDIController(number)!),
                 parameter)
         }
     }
@@ -122,7 +122,7 @@ final class GrooveControlMappingTests: XCTestCase {
 
         for (number, parameter) in expected {
             XCTAssertEqual(
-                ControlMapping.provisional.parameter(for: MIDIController(number)!),
+                ControlMapping.beatStepPro.parameter(for: MIDIController(number)!),
                 parameter)
         }
     }
@@ -138,13 +138,13 @@ final class GrooveControlMappingTests: XCTestCase {
     func testAnUnassignedControllerIsStillIgnored() {
         let assigned = Set(
             TrackParameter.allCases.compactMap {
-                ControlMapping.provisional.controller(for: $0)?.number
+                ControlMapping.beatStepPro.controller(for: $0)?.number
             })
         guard let unassigned = (0...127).first(where: { !assigned.contains($0) }) else {
             return XCTFail("el mapeo provisional ocupó los 128 controladores")
         }
 
-        XCTAssertNil(ControlMapping.provisional.parameter(for: MIDIController(unassigned)!))
+        XCTAssertNil(ControlMapping.beatStepPro.parameter(for: MIDIController(unassigned)!))
     }
 }
 
@@ -156,7 +156,7 @@ final class GrooveTurnsTests: XCTestCase {
     private func turn(_ parameter: TrackParameter, by value: UInt8) -> MIDIMessage {
         .controlChange(
             channel: channel,
-            controller: ControlMapping.provisional.controller(for: parameter)!,
+            controller: ControlMapping.beatStepPro.controller(for: parameter)!,
             value: value
         )
     }
