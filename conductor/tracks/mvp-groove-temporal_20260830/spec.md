@@ -212,7 +212,9 @@ no se editan —son material generativo— pero se leen.
   logging. Marcador `/// Realtime:` en todo lo que corra ahí.
 - **NFR2 — `Track` sigue siendo trivial.** `_isPOD(Track.self)` sigue en verde
   con los dos parámetros nuevos dentro de `Groove`.
-- **NFR3 — Medición de jitter obligatoria, y son dos.** Es el caso que
+- **NFR3 — Medición de jitter obligatoria, y son dos.** *(Enmendado el
+  2026-08-30: solo se ejecuta la recta. Ver la enmienda de la Fase 6 en
+  `plan.md`.)* Es el caso que
   `workflow.md` nombra explícitamente: *«Swing (Timing), Delay y cualquier
   parámetro que desplace eventos respecto a la rejilla.»* Recta contra la
   referencia de la rebanada 3, y desplazada contra lo pedido. En dispositivo,

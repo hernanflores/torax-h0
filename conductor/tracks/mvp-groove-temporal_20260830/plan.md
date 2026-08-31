@@ -221,11 +221,12 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
   - [x] El máximo sube (0,151 vs 0,134 ms) y es lo esperable con n=1000 frente a n=200: más muestras, más cola. La spec del arnés ya lo advertía.
   - [x] La media de +0,094 ms es **constante en los tres tempos**: es latencia fija del camino de loopback, no jitter. Lo que se juzga es la dispersión alrededor de ella.
   - [x] Margen sobre el umbral: σ **38 veces** por debajo de 0,5 ms; máx 13 veces por debajo de 2 ms.
-- [ ] Task: **Medición desplazada** — lo que esta rebanada tiene que demostrar
-  - [ ] Con Timing 66,7%, y con Delay +50% y −50%
-  - [ ] El criterio es que la desviación **contra lo pedido** esté en el mismo orden que la recta: un instante desplazado se entrega donde se pidió, no donde caía la rejilla
-  - [ ] El caso de Delay negativo verifica en dispositivo lo que la fase 3 verifica en test: ningún evento en el pasado
-  - [ ] Los números se registran en la git note
+- [~] Task: **Medición desplazada** — **no se ejecuta, por decisión del 2026-08-30**
+  - [x] Decisión del usuario: la medición recta alcanza. Se sustituye por la escucha.
+  - [x] **Por qué se sostiene.** Esta medición no buscaba drift pequeño sino si un instante desplazado *se entrega* donde se pidió, y ese fallo sería grosero —un Step entero, o una ráfaga al arrancar—, no un microdesplazamiento. Los bloques 4–6 de `device-verification.md` lo cazan al oído: el tresillo al 67%, el vaivén del swing y el arranque con Delay negativo. El jitter alrededor de un instante desplazado recorre además el mismo camino de entrega que la recta ya midió.
+  - [x] **Qué queda sin verificar en dispositivo.** El presupuesto de adelanto con números. Detrás quedan el barrido exhaustivo de la Fase 2 —el desplazamiento nunca es más negativo que el presupuesto— y los tests de origen y horizonte de la Fase 3, más el bloque 6 de la guía al oído.
+  - [x] **Cuándo volver a ella.** Si aparece una regresión de timing, el arnés sigue ahí y ahora sabe correr desplazado (`a19fb23`): es el instrumento para bisecar, no trabajo perdido.
+  - [ ] *(No ejecutada: `Timing 67%`, `Delay +50%`, `Delay −50%`.)*
 - [ ] Task: Escuchar los dos
   - [ ] **Timing:** subirlo convierte la línea recta en swing; al 66,7% el tresillo es reconocible; al 75% es el extremo y sigue sonando ordenado
   - [ ] **Delay:** adelanta y atrasa la voz entera contra el pulso, de forma audible y proporcional
@@ -273,6 +274,15 @@ Step —0,9 ms a 1/16 y 120 BPM—, por debajo de lo audible; la alternativa era
 décimo de porcentaje, que da exactitud a cambio de diez veces más recorrido de
 knob para el mismo tramo. El criterio del test de la Fase 2 pasa de igualdad
 exacta a **tolerancia declarada**. Queda documentado en el propio tipo.
+
+**2026-08-30, Fase 6 — la medición desplazada no se ejecuta.** `workflow.md` la
+exige —«Swing (Timing), Delay y cualquier parámetro que desplace eventos»— y el
+spec la puso como NFR3. **Decidido por el usuario que la recta alcanza.** La
+razón que lo sostiene: el modo de fallo que la desplazada buscaba es grosero y
+audible, no un drift pequeño, y los bloques 4–6 de la guía lo cubren al oído. Lo
+que se pierde es el presupuesto de adelanto medido con números; queda cubierto
+por el barrido exhaustivo de la Fase 2 y los tests de la Fase 3. El arnés
+desplazado se conserva como instrumento de bisección.
 
 **2026-08-30, checkpoint de la Fase 3 — el flake deja de ser intermitente.** Los
 tests del origen arrancan el bucle del scheduler cuatro veces más, y con eso la
