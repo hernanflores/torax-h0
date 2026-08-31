@@ -130,7 +130,7 @@ la rebanada 8.
   - [x] `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'` en verde
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 5: El artefacto del preset y el dispositivo
+## Phase 5: El artefacto del preset y el dispositivo [checkpoint: 21cdee9]
 
 > Es la fase que decide si el track vale. **Los números del preset no son
 > ciertos hasta verse llegar en el iPad**, y esa es la lección de la nota del
@@ -160,7 +160,7 @@ la rebanada 8.
   - [x] `ControlMapping` ya no se llama provisional, y lo que queda pendiente —MIDI Learn— está nombrado como rebanada 8
   - [x] `tracks.md` refleja el corte de la rebanada 7 en dos y deja la 8 descrita
   - [x] Pull Request contra `main`, con los checks en verde
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Notas de riesgo
 
