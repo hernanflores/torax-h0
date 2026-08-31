@@ -52,13 +52,13 @@ la rebanada 8.
   - [x] Tests (Red): los pads 8 y 16 nunca tienen altura — son desplazamiento, no nota, en todas las escalas
   - [x] Tests (Red): un índice fuera de 0–15 no tiene altura y no revienta
   - [x] Implementación (Green): función pura del índice, el `TonalFrame` y el desplazamiento vigente
-- [ ] Task: El desplazamiento de octava y su tope
-  - [ ] Tests (Red): **el ejemplo literal del requisito.** Pad 1 en C2 y pad 9 en C3; tras el pad 8 quedan en C1 y C2; desde el estado inicial, tras el pad 16 quedan en C3 y C4
-  - [ ] Tests (Red): subir y bajar mueve **todas** las alturas asignadas doce semitonos, no solo un bloque
-  - [ ] Tests (Red): el desplazamiento se admite mientras todas las alturas asignadas queden en 0–127; en el extremo el desplazamiento **no se aplica** y el estado queda idéntico
-  - [ ] Tests (Red): **no envuelve** —del tope agudo no se vuelve al grave— y **no recorta** —ninguna altura se queda pegada al borde mientras otra sigue subiendo—, que son las dos formas de romper el alineamiento por octava
-  - [ ] Tests (Red): el tope depende de la escala y del Root, y se comprueba sobre los dos extremos en las cinco escalas
-  - [ ] Implementación (Green): el desplazamiento es un valor del estado de la superficie; subir o bajar devuelve la superficie nueva o la misma
+- [x] Task: El desplazamiento de octava y su tope — `7ad404a`
+  - [x] Tests (Red): **el ejemplo literal del requisito.** Pad 1 en C2 y pad 9 en C3; tras el pad 8 quedan en C1 y C2; desde el estado inicial, tras el pad 16 quedan en C3 y C4
+  - [x] Tests (Red): subir y bajar mueve **todas** las alturas asignadas doce semitonos, no solo un bloque
+  - [x] Tests (Red): el desplazamiento se admite mientras todas las alturas asignadas queden en 0–127; en el extremo el desplazamiento **no se aplica** y el estado queda idéntico
+  - [x] Tests (Red): **no envuelve** —del tope agudo no se vuelve al grave— y **no recorta** —ninguna altura se queda pegada al borde mientras otra sigue subiendo—, que son las dos formas de romper el alineamiento por octava
+  - [x] Tests (Red): el tope depende de la escala y del Root, y se comprueba sobre los dos extremos en las cinco escalas
+  - [x] Implementación (Green): el desplazamiento es un valor del estado de la superficie; subir o bajar devuelve la superficie nueva o la misma
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: El pad es un índice, no una altura
