@@ -33,10 +33,42 @@ public struct ControlMapping: Equatable, Sendable {
         .delay: 78,
     ])
 
+    /// Nota por defecto del primer pad.
+    ///
+    /// Los dieciséis van seguidos desde aquí. El número se verifica en
+    /// dispositivo antes de darlo por cierto (fase 5 del track): lo que el
+    /// código dé por sabido del controlador tiene que haberse visto llegar en el
+    /// iPad, que es la lección de la nota del 2026-08-28 sobre los encoders en
+    /// `Relative #2`.
+    public static let defaultPadBlock = MIDINote(36)!
+
     private let assignments: [TrackParameter: Int]
 
-    public init(assignments: [TrackParameter: Int]) {
+    /// Nota del primer pad; los dieciséis son consecutivos desde ella.
+    ///
+    /// **Es un dato del mapeo y no una constante repartida por el código.** Si
+    /// el dispositivo desmiente el número, cambiarlo aquí mueve los dieciséis
+    /// pads a la vez, sin tocar nada de dominio: el índice que sale de aquí es
+    /// el mismo, y la altura la sigue decidiendo la superficie.
+    public let padBlock: MIDINote
+
+    public init(assignments: [TrackParameter: Int], padBlock: MIDINote = defaultPadBlock) {
         self.assignments = assignments
+        self.padBlock = padBlock
+    }
+
+    /// Índice 0–15 del pad que envió esa nota, o `nil` fuera del bloque.
+    ///
+    /// **El número no es la altura.** Lo único que dice es qué pad se pulsó;
+    /// que el bloque empiece en la nota 36 y el pad 1 suene 48 no es una
+    /// contradicción, son dos numeraciones distintas.
+    ///
+    /// Fuera del bloque devuelve `nil` con el mismo criterio que un CC sin
+    /// asignar: no publica y no es un error.
+    public func padIndex(for note: MIDINote) -> Int? {
+        let offset = Int(note.value) - Int(padBlock.value)
+        guard (0..<PadSurface.padCount).contains(offset) else { return nil }
+        return offset
     }
 
     /// Finds the MIDI controller assigned to a track parameter.
