@@ -36,6 +36,18 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 
 - **Controlador MIDI = entrada primaria.** Knobs para parámetros continuos; pads para el pool tonal. **Un pad es un grado de la escala, no una altura fija**: los catorce primeros dan dos octavas alineadas de la escala vigente y dos mueven el registro entero, así que qué suena depende de Scale y Root y no del número que envía el controlador. Detalle en la nota del 2026-08-31 de la Pre Spec.
 - **Pantalla = feedback + edición secundaria.** Muestra estado (pasos activos, pool tonal, Cycle en curso) y expone lo que no cabe en knobs: Scale, guardado, mapeos.
+
+> **Nota del 2026-08-31 — Scale y Root son de cada Track, no de la app.** Esta
+> página y `product-guidelines.md` los describían como configuración táctil sin
+> decir de qué, y con un solo Track daba igual. Con dieciséis no: la Pre Spec
+> pone los parámetros generativos en el Track —«una voz/carril musical y de
+> control»— y eso incluye el marco tonal. **Dónde se editan no cambia**: siguen
+> siendo táctiles, del lado de la pantalla; lo que cambia es a quién afectan, que
+> es el Track seleccionado.
+>
+> Lo hace posible un bajo en menor bajo un arpegio en mayor, que con un marco
+> global no se podía expresar. Entra con la rebanada 1 de la v2
+> (`multi-track_20260831`).
 - **Mapeo:** preset listo para BeatStep Pro + **MIDI Learn** para reasignar a otro hardware.
 
 ## MVP Scope — v1
