@@ -106,6 +106,30 @@ uno de ellos que `Stop` podría dejar sonar notas con Delay positivo —analizad
 no reproducido en dispositivo, con la condición para provocarlo escrita—. Y la
 medición desplazada no se ejecutó: la recta CUMPLE y el swing se juzgó al oído.
 
+---
+
+## v2
+
+Abierta el 2026-08-31, con la v1 a falta de MIDI Learn. La estructura de la Pre
+Spec sigue subiendo —16 Tracks por Pattern, 16 Patterns por Bank— y el primer
+escalón es el que se nota.
+
+---
+
+- [ ] **Track: v2 rebanada 1 — Dieciséis Tracks sobre un reloj**
+  *Link: [conductor/tracks/multi-track_20260831/index.md](./tracks/multi-track_20260831/index.md)*
+
+  Abierto el 2026-08-31. El snapshot deja de ser un `Track` y pasa a ser
+  dieciséis, y un reloj pasa a emitir dieciséis rejillas. Todo lo generativo
+  —Shape, Groove y Tonal completo— es de cada Track, más su canal MIDI; el reloj
+  y el transporte se comparten.
+
+  **Lleva medición de jitter con los dieciséis sonando**: es el riesgo que la v1
+  existió para acotar, y una regresión bloquea la rebanada.
+
+  No es la UI definitiva del handoff —esa es la rebanada siguiente, y es la vista
+  de lo que ésta construye— ni Patterns ni Banks, que necesitan persistencia.
+
 ## Defectos conocidos
 
 Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres
