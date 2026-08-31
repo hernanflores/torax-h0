@@ -96,12 +96,12 @@ la rebanada 8.
 > `MIDI`. Aquí ya no hay cambio de modelo: es la tabla de números y lo que
 > deliberadamente no se asigna.
 
-- [ ] Task: `ControlMapping` pasa a describir el preset entero
-  - [ ] Tests (Red): los nueve CC 70–78 siguen moviendo sus nueve parámetros en el orden de `TrackParameter` — **los tests existentes de `ControlMappingTests` pasan sin reescribirse**, que es la comprobación de que el preset conserva lo que ya funcionaba
-  - [ ] Tests (Red): los CC de los knobs 10–16 no dan parámetro y no publican nada
-  - [ ] Tests (Red): el bloque de pads y el bloque de step buttons son parte del mapeo, y **ningún número se solapa entre las tres familias** — un test que barra los tres bloques y falle si un número aparece dos veces
-  - [ ] Implementación (Green): un valor que declara los tres bloques; su documentación deja de decir «fija y provisional» y pasa a decir qué preset describe y qué sigue pendiente (MIDI Learn, rebanada 8)
-- [ ] Task: Los step buttons seleccionan Track
+- [x] Task: `ControlMapping` pasa a describir el preset entero — `401fdb8`
+  - [x] Tests (Red): los nueve CC 70–78 siguen moviendo sus nueve parámetros en el orden de `TrackParameter` — **los tests existentes de `ControlMappingTests` pasan sin reescribirse**, que es la comprobación de que el preset conserva lo que ya funcionaba
+  - [x] Tests (Red): los CC de los knobs 10–16 no dan parámetro y no publican nada
+  - [x] Tests (Red): el bloque de pads y el bloque de step buttons son parte del mapeo, y **ningún número se solapa entre las tres familias** — un test que barra los tres bloques y falle si un número aparece dos veces
+  - [x] Implementación (Green): un valor que declara los tres bloques; su documentación deja de decir «fija y provisional» y pasa a decir qué preset describe y qué sigue pendiente (MIDI Learn, rebanada 8)
+- [~] Task: Los step buttons seleccionan Track
   - [ ] Tests (Red): un step button del bloque da su índice 0–15
   - [ ] Tests (Red): **en v1 solo el primero corresponde a un Track existente**; los otros quince no publican nada y no rompen el estado
   - [ ] Tests (Red): la soltada no hace nada — mismo criterio que el note-off de un pad
