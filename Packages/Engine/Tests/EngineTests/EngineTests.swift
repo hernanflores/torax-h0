@@ -3,6 +3,6 @@ import XCTest
 
 final class EngineTests: XCTestCase {
     func testSchemaVersionIsDeclared() {
-        XCTAssertEqual(Engine.schemaVersion, 1)
+        XCTAssertEqual(EngineSchema.schemaVersion, 1)
     }
 }
