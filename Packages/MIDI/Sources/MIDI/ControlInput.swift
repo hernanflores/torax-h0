@@ -33,13 +33,21 @@ public final class ControlInput: @unchecked Sendable {
     /// **Es lo que sustituye al filtro cromático.** Hasta la rebanada 7 el
     /// número de nota entrante era la altura y el marco decidía si pasaba;
     /// ahora el número solo dice qué pad se pulsó y la altura sale de aquí.
-    public private(set) var surface: PadSurface
+    ///
+    /// **Se calcula, no se guarda** (v2). El marco y el registro son del Track
+    /// seleccionado, así que guardarla aparte sería un segundo sitio donde
+    /// pueden discrepar: cambiar de Track dejaría la superficie del anterior.
+    public var surface: PadSurface {
+        PadSurface(frame: track.frame, octaveShift: track.padOctaveShift)
+    }
 
-    /// El marco tonal vigente: de qué escala salen los grados de los pads.
+    /// El marco tonal del Track seleccionado: de qué escala salen los grados de
+    /// sus pads.
     ///
     /// Se puede cambiar en caliente porque Scale y Root son configuración
-    /// táctil, y cambiarlas **reencuadra el pool** en vez de vaciarlo.
-    public var frame: TonalFrame { surface.frame }
+    /// táctil, y cambiarlas **reencuadra el pool** en vez de vaciarlo. **Es del
+    /// Track** desde la v2: dos Tracks pueden estar en tonalidades distintas.
+    public var frame: TonalFrame { track.frame }
 
     /// Qué Track está seleccionado, 0 el primero.
     ///
@@ -73,8 +81,14 @@ public final class ControlInput: @unchecked Sendable {
         encoding: RelativeEncoding = .twosComplement,
         trackCount: Int = Pattern.trackCount
     ) {
-        self.pattern = pattern
-        self.surface = PadSurface(frame: frame)
+        // El marco llega por parámetro para no romper a quien construye con uno
+        // suelto, y se reparte a los dieciséis: a partir de aquí cada Track
+        // lleva el suyo.
+        var seeded = pattern
+        for index in 0..<Pattern.trackCount {
+            seeded = seeded.replacing(seeded.track(at: index)!.with(frame: frame), at: index)
+        }
+        self.pattern = seeded
         self.publish = publish
         self.mapping = mapping
         self.encoding = encoding
@@ -272,7 +286,8 @@ public final class ControlInput: @unchecked Sendable {
         let moved = move(surface)
         guard moved != surface else { return false }
 
-        surface = moved
+        pattern = pattern.replacing(
+            track.with(padOctaveShift: moved.octaveShift), at: selectedTrackIndex)
         publish(pattern)
         return true
     }
@@ -284,12 +299,12 @@ public final class ControlInput: @unchecked Sendable {
     /// del marco nuevo.
     @discardableResult
     public func setFrame(_ frame: TonalFrame) -> Bool {
-        surface = PadSurface(frame: frame, octaveShift: surface.octaveShift)
+        // El marco es del Track seleccionado, y el registro de sus pads se
+        // conserva: cambiar de escala no mueve a nadie de octava.
+        let reframed = track.with(pool: track.pool.reframed(to: frame)).with(frame: frame)
+        guard reframed != track else { return false }
 
-        let adjusted = track.pool.reframed(to: frame)
-        guard adjusted != track.pool else { return false }
-
-        pattern = pattern.replacing(track.with(pool: adjusted), at: selectedTrackIndex)
+        pattern = pattern.replacing(reframed, at: selectedTrackIndex)
         publish(pattern)
         return true
     }

@@ -43,6 +43,12 @@ public struct Root: Equatable, Sendable {
         guard Self.validRange.contains(pitchClass) else { return nil }
         self.pitchClass = pitchClass
     }
+
+    /// Do, que es el Root con el que arranca todo.
+    ///
+    /// Existe como constante pública porque un argumento por defecto no puede
+    /// usar una vía interna, igual que `Channel.first`.
+    public static let c = Root(0)!
 }
 
 extension Pitch: CustomStringConvertible {

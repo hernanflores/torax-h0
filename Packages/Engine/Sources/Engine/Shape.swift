@@ -193,16 +193,37 @@ public struct Track: Equatable, Sendable {
     /// misma razón que trajo aquí al pool y al Groove.
     public let channel: Channel
 
+    /// De qué escala y qué centro tonal sale el material de este Track.
+    ///
+    /// **Es del Track y no de la app** (v2): la Pre Spec pone los parámetros
+    /// generativos en el Track, y dos Tracks en tonalidades distintas es una
+    /// función y no un accidente. Hasta la v1 había un solo marco para todo, que
+    /// es lo que hacía imposible un bajo en menor bajo un arpegio en mayor.
+    public let frame: TonalFrame
+
+    /// En qué registro está editando los pads este Track.
+    ///
+    /// **Es la única concesión de `Track` a la superficie de control**, y está
+    /// aquí porque tiene que sobrevivir a cambiar de Track: volver a uno y
+    /// encontrarlo dos octavas más abajo de donde se dejó sería perder trabajo.
+    /// La altura de cada pad la sigue calculando `PadSurface`, que es quien sabe
+    /// de pads; esto es solo dónde se dejó.
+    public let padOctaveShift: Int
+
     public init(
         shape: Shape,
         pool: PitchPool = PitchPool(),
         groove: Groove = .default,
-        channel: Channel = .first
+        channel: Channel = .first,
+        frame: TonalFrame = TonalFrame(scale: .minor, root: .c),
+        padOctaveShift: Int = 0
     ) {
         self.shape = shape
         self.pool = pool
         self.groove = groove
         self.channel = channel
+        self.frame = frame
+        self.padOctaveShift = padOctaveShift
     }
 
     /// El mismo Track con otro pool.
@@ -211,14 +232,30 @@ public struct Track: Equatable, Sendable {
     /// campos en cada sitio: repetirlos es como se acaba perdiendo uno al añadir
     /// el quinto, que es la destrucción que `product-guidelines.md` prohíbe.
     public func with(pool: PitchPool) -> Track {
-        Track(shape: shape, pool: pool, groove: groove, channel: channel)
+        Track(
+            shape: shape, pool: pool, groove: groove, channel: channel, frame: frame,
+            padOctaveShift: padOctaveShift)
+    }
+
+    /// El mismo Track con otro marco tonal y otro registro de pads.
+    ///
+    /// Los dos van juntos porque cambian juntos: la superficie se recalcula con
+    /// el marco nuevo **conservando** el desplazamiento, y quien cambia el
+    /// desplazamiento no toca el marco.
+    public func with(frame: TonalFrame? = nil, padOctaveShift: Int? = nil) -> Track {
+        Track(
+            shape: shape, pool: pool, groove: groove, channel: channel,
+            frame: frame ?? self.frame,
+            padOctaveShift: padOctaveShift ?? self.padOctaveShift)
     }
 
     /// El mismo Track emitiendo por otro canal.
     ///
     /// Cambiar el canal no toca el material: es configuración, no contenido.
     public func on(_ channel: Channel) -> Track {
-        Track(shape: shape, pool: pool, groove: groove, channel: channel)
+        Track(
+            shape: shape, pool: pool, groove: groove, channel: channel, frame: frame,
+            padOctaveShift: padOctaveShift)
     }
 
     /// Indica si el Step dado dispara, combinando Shape y Rotate.

@@ -102,7 +102,8 @@ Regla derivada: el hilo del scheduler no asigna memoria, no toma locks y no llam
 > disciplina de ranura nunca dependió del tamaño, que era exactamente la
 > propiedad que se buscaba al elegirla.
 >
-> Los números, medidos: `Track` 112 bytes, `Pattern` 1792, el anillo 7 KB. Un
+> Los números, medidos: `Track` 144 bytes —112 antes de que Scale y Root pasaran
+> a ser del Track—, `Pattern` 2304, el anillo 9 KB. Un
 > `load()` completo —dos lecturas atómicas, la copia y la comprobación de
 > generación— cuesta **274 ns** en `debug`, contra una ventana de 20 ms. Se
 > copia el Pattern entero en cada ventana; publicar por Track sería otro diseño y

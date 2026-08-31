@@ -87,12 +87,13 @@ final class SelectedTrackEditingTests: XCTestCase {
     func testAPadEditsThePoolOfTheSelectedTrack() {
         let input = input()
         input.receive(stepButton(3))
+        let before = input.pattern
 
         XCTAssertTrue(input.receive(pad(0)))
         XCTAssertTrue(input.pattern.track(at: 3)!.pool.contains(Pitch(48)!))
         for other in 0..<16 where other != 3 {
             XCTAssertEqual(
-                input.pattern.track(at: other), Pattern.initial.track(at: other),
+                input.pattern.track(at: other), before.track(at: other),
                 "el pad tocó el Track \(other + 1)")
         }
     }
@@ -140,6 +141,59 @@ final class SelectedTrackEditingTests: XCTestCase {
                 input.pattern.track(at: index)?.shape.pulses.count, expected, "Track \(index + 1)")
         }
     }
+
+    // MARK: - El marco tonal es del Track
+
+    /// **Dos Tracks en tonalidades distintas conviven.** Es lo que hacía
+    /// imposible el marco global de la v1: un bajo en menor bajo un arpegio en
+    /// mayor.
+    func testTwoTracksCanBeInDifferentKeys() {
+        let input = input()
+
+        input.setFrame(TonalFrame(scale: .major, root: Root(0)!))
+        input.receive(stepButton(1))
+        input.setFrame(TonalFrame(scale: .phrygian, root: Root(7)!))
+
+        XCTAssertEqual(input.pattern.track(at: 0)?.frame.scale, .major)
+        XCTAssertEqual(input.pattern.track(at: 1)?.frame.scale, .phrygian)
+        XCTAssertEqual(input.pattern.track(at: 1)?.frame.root, Root(7)!)
+    }
+
+    /// Cambiar la Scale de uno no reencuadra el pool del otro.
+    func testChangingOneKeyDoesNotReframeAnotherTrackPool() {
+        let input = input()
+
+        input.setFrame(TonalFrame(scale: .major, root: Root(0)!))
+        input.receive(pad(1))  // el grado 2 de Do mayor: Re
+        let untouched = input.pattern.track(at: 0)
+
+        input.receive(stepButton(6))
+        input.setFrame(TonalFrame(scale: .phrygian, root: Root(1)!))
+
+        XCTAssertEqual(input.pattern.track(at: 0), untouched, "reencuadró el pool del vecino")
+    }
+
+    /// **Al seleccionar, la superficie se recalcula con el marco y el registro
+    /// de ese Track.** Volver a uno y encontrarlo dos octavas más abajo sería
+    /// perder trabajo.
+    func testTheSurfaceFollowsTheSelectedTrack() {
+        let input = input()
+
+        input.setFrame(TonalFrame(scale: .major, root: Root(0)!))
+        input.receive(padOctaveUp())
+        input.receive(padOctaveUp())
+        let raised = input.surface
+
+        input.receive(stepButton(2))
+        input.setFrame(TonalFrame(scale: .pentatonic, root: Root(2)!))
+        XCTAssertEqual(input.surface.frame.scale, .pentatonic)
+        XCTAssertEqual(input.surface.octaveShift, 0, "heredó el registro del Track anterior")
+
+        input.receive(stepButton(0))
+        XCTAssertEqual(input.surface, raised, "no devolvió la superficie del Track 1")
+    }
+
+    private func padOctaveUp() -> MIDIMessage { pad(PadSurface.octaveUpIndex) }
 
     // MARK: - Publicar
 

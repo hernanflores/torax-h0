@@ -31,12 +31,13 @@ import Engine
 /// snapshot: llegaron Tonal y Groove, y en la v2 la ranura pasó de un `Track` a
 /// un `Pattern` de dieciséis sin tocar una línea de la disciplina de ranura.
 ///
-/// **Lo que cuesta, medido el 2026-08-31**: `Track` son 112 bytes y `Pattern`
-/// 1792, así que el anillo de cuatro ranuras ocupa 7 KB y cada `load()` copia
-/// 1,75 KB. Medido en `debug`, un `load()` completo —dos lecturas atómicas, la
-/// copia y la comprobación de generación— sale a **274 ns**, contra una ventana
-/// de 20 ms: el 0,0014% del presupuesto. No hay nada que decidir aquí, y por eso
-/// se copia entero en vez de publicar por Track.
+/// **Lo que cuesta, medido el 2026-08-31**: `Track` son 144 bytes y `Pattern`
+/// 2304, así que el anillo de cuatro ranuras ocupa 9 KB y cada `load()` copia
+/// 2,25 KB. Medido en `debug` con el Track de 112 bytes —antes de que se le
+/// añadiera el marco tonal—, un `load()` completo salía a **274 ns** contra una
+/// ventana de 20 ms: el 0,0014% del presupuesto. Un 28% más de bytes no cambia
+/// el orden de magnitud. No hay nada que decidir aquí, y por eso se copia entero
+/// en vez de publicar por Track.
 ///
 /// Lo que sí cambia es la aritmética del riesgo: copiar dieciséis veces más deja
 /// al lector expuesto más tiempo, y por eso el test de concurrencia publica un
