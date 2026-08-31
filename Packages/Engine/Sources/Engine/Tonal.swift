@@ -113,6 +113,24 @@ public enum Scale: Equatable, Sendable, CaseIterable {
         }
     }
 
+    /// Los grados de la escala, en semitonos sobre la fundamental y en orden
+    /// ascendente: `major` da `[0, 2, 4, 5, 7, 9, 11]` y `pentatonic` da
+    /// `[0, 3, 5, 7, 10]`.
+    ///
+    /// **Es la máscara vista al revés.** `allows(_:)` responde si una altura
+    /// pertenece; esto responde cuál es la enésima. La superficie de pads
+    /// necesita lo segundo —el pad 3 es el tercer grado— y `pitchClassMask` ya
+    /// tiene el dato, así que se deriva de ella en vez de escribir los
+    /// intervalos en un segundo sitio donde puedan divergir.
+    ///
+    /// El grado 1 es siempre el 0: el Root, por definición. La longitud es el
+    /// número de notas de la escala —siete en las heptatónicas, cinco en la
+    /// pentatónica—, y de ahí sale que con `pentatonic` sobren pads.
+    public var degrees: [Int] {
+        let mask = pitchClassMask
+        return (0..<12).filter { (mask >> UInt16($0)) & 1 == 1 }
+    }
+
     /// Escala siguiente o anterior en la lista, **deteniéndose en los
     /// extremos**.
     ///
