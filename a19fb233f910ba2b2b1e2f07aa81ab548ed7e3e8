@@ -36,3 +36,10 @@ El 174 BPM se reportó como máx 0,0135 ms, que es imposible: el máximo no
 puede ser menor que la media (+0,093 ms). Se registra como 0,135 ms, que
 encaja con los otros dos tempos, y queda pendiente de contrastar contra
 Documents/jitter-report-recta.txt.
+
+--- CIFRA CONFIRMADA (2026-08-30) ---
+
+El máximo de 174 BPM, que había llegado transcrito como 0,0135 ms y se
+registró como 0,135 ms por imposibilidad aritmética, queda CONFIRMADO
+contra Documents/jitter-report-recta.txt: son 0,135 ms. Errata al copiar,
+no un dato anómalo. La medición recta no tiene ya nada pendiente.
