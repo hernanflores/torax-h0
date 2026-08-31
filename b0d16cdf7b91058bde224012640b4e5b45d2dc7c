@@ -1,0 +1,54 @@
+Task: Pattern — los dieciseis Tracks como un solo valor (Fase 1, v2 rebanada 1)
+
+Que se hizo
+-----------
+Pattern: dieciseis Tracks en una tupla homogenea, con track(at:) y
+replacing(_:at:). Fuera de 0-15 devuelve nil y no cambia nada, con el criterio de
+un pad fuera de la superficie.
+
+Ficheros
+--------
+- Packages/Engine/Sources/Engine/Pattern.swift          (nuevo)
+- Packages/Engine/Tests/EngineTests/PatternTests.swift  (nuevo, 9 tests)
+- Packages/Engine/Sources/Engine/Engine.swift           (enum renombrado)
+- Packages/Engine/Tests/EngineTests/EngineTests.swift   (sigue al renombrado)
+
+Las tres decisiones de almacenamiento
+-------------------------------------
+1. Tupla y no Array: un Array meteria conteo de referencias en un valor que se
+   copia dentro del hilo del scheduler. Misma razon por la que PitchPool guarda
+   sus ocho alturas en un UInt64.
+2. Tupla y no InlineArray: InlineArray lo resolveria de forma legible, pero exige
+   una version de plataforma muy posterior al objetivo de despliegue (iOS 17).
+3. Aritmetica de punteros y no un switch de dieciseis casos: el switch no seria
+   mas seguro, solo mas largo, y habria que escribirlo dos veces -leer y
+   sustituir-. Los tests recorren los dieciseis huecos, asi que un cambio de
+   disposicion se veria de inmediato.
+
+El numero que importa
+---------------------
+  MemoryLayout<Track>.size   = 104 bytes
+  MemoryLayout<Pattern>.size = 1664 bytes  (16 x 104, sin cabecera)
+
+Es lo que el hilo del scheduler copiara por ventana. La fase 2 lo decide con el
+dato delante; a primera vista 1,6 KB por ventana de 20 ms no es un problema.
+
+La colision de nombres, y por que se resolvio asi
+--------------------------------------------------
+'Pattern' a secas es ambiguo en los targets de test: corren en macOS y XCTest
+arrastra ApplicationServices, que trae un Pattern de Quickdraw. Cualificar como
+Engine.Pattern no compilaba porque el paquete tenia un 'enum Engine' con el
+nombre del modulo, que gana la resolucion.
+
+Se renombro el enum a EngineSchema -tiene una constante y un test- en vez de
+renombrar el tipo del dominio: Pattern es la palabra de la Pre Spec y sera el
+nombre correcto cuando existan varios Patterns de verdad. La ambiguedad volvera
+a aparecer en los tests de MIDI en la fase 2, y ahora se resuelve con un
+typealias local.
+
+Red confirmado: 'type Pattern has no member trackCount'. Verde despues, 320 tests
+de Engine.
+
+Cobertura
+---------
+Engine 98,48% de lineas (umbral 90%). Pattern.swift al 100%.
