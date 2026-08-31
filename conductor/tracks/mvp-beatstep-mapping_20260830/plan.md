@@ -61,7 +61,7 @@ la rebanada 8.
   - [x] Implementación (Green): el desplazamiento es un valor del estado de la superficie; subir o bajar devuelve la superficie nueva o la misma
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: El pad es un índice, no una altura
+## Phase 2: El pad es un índice, no una altura [checkpoint: 7f4d0f2]
 
 > `MIDI`. Es el cambio de modelo: el número de nota entrante deja de llegar a
 > `Pitch`. Sin arrancar el bucle del scheduler.
@@ -89,7 +89,7 @@ la rebanada 8.
   - [x] Tests (Red): lo nuevo — **la superficie se recalcula con el marco y el desplazamiento vigente se conserva**: tras dos pulsaciones del pad 16, cambiar de Do a Re deja el pad 1 dos octavas arriba del nuevo grado 1, no en la base
   - [x] Tests (Red): pasar de `major` a `pentatonic` apaga los pads 6, 7, 14 y 15 sin tocar el pool ni el desplazamiento
   - [x] Implementación (Green)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: El preset completo — knobs y step buttons
 
