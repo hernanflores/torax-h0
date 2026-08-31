@@ -77,11 +77,12 @@ final class ControlMappingTests: XCTestCase {
     }
 }
 
-/// Tests del mapeo ampliado a los siete parámetros.
+/// Tests del mapeo ampliado a los nueve parámetros.
 ///
-/// Los tres CC de Groove entran en el mismo bloque contiguo que los de Shape:
-/// 70–76, dentro del rango de controladores de propósito general que la
-/// especificación MIDI deja sin significado fijo.
+/// Los cinco CC de Groove entran en el mismo bloque contiguo que los de Shape:
+/// 70–78. Los de propósito general de la especificación MIDI llegan hasta el 79,
+/// así que los nueve caben sin salir del rango que la especificación deja sin
+/// significado fijo.
 final class GrooveControlMappingTests: XCTestCase {
 
     func testEveryTrackParameterHasAController() {
@@ -103,7 +104,9 @@ final class GrooveControlMappingTests: XCTestCase {
     }
 
     func testTheGrooveControllersResolveBack() {
-        let expected: [Int: TrackParameter] = [74: .velocity, 75: .sustain, 76: .probability]
+        let expected: [Int: TrackParameter] = [
+            74: .velocity, 75: .sustain, 76: .probability, 77: .timing, 78: .delay,
+        ]
 
         for (number, parameter) in expected {
             XCTAssertEqual(
@@ -126,9 +129,22 @@ final class GrooveControlMappingTests: XCTestCase {
 
     /// Un CC sin asignar se sigue ignorando en silencio: en una sesión real
     /// llegan mensajes de todo tipo y no es asunto del mapeo quejarse.
+    ///
+    /// **El CC sin asignar se busca, no se escribe.** Estaba escrito como 77, y
+    /// la rebanada 6 se lo dio a Timing: el test falló por un comportamiento que
+    /// no había cambiado. Es la misma lección que `ControlInputTests` dejó
+    /// anotada al añadir 1/32 — lo que cambia es el dominio, y el test tiene que
+    /// leerlo de ahí.
     func testAnUnassignedControllerIsStillIgnored() {
-        XCTAssertNil(ControlMapping.provisional.parameter(for: MIDIController(1)!))
-        XCTAssertNil(ControlMapping.provisional.parameter(for: MIDIController(77)!))
+        let assigned = Set(
+            TrackParameter.allCases.compactMap {
+                ControlMapping.provisional.controller(for: $0)?.number
+            })
+        guard let unassigned = (0...127).first(where: { !assigned.contains($0) }) else {
+            return XCTFail("el mapeo provisional ocupó los 128 controladores")
+        }
+
+        XCTAssertNil(ControlMapping.provisional.parameter(for: MIDIController(unassigned)!))
     }
 }
 

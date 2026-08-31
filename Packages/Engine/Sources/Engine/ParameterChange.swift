@@ -77,6 +77,15 @@ public struct ParameterChange: Equatable, Sendable {
         } else if previousGroove.probability != groove.probability {
             parameter = .probability
             description = "Probability \(groove.probability.percent)%"
+        } else if previousGroove.timing != groove.timing {
+            parameter = .timing
+            description = "Timing \(groove.timing.percent)%"
+        } else if previousGroove.delay != groove.delay {
+            parameter = .delay
+            // Con signo, y por la misma razón que en `Groove.description`: es el
+            // único parámetro que puede ser negativo, y adelantar y atrasar no
+            // se distinguen por el contexto.
+            description = "Delay \(groove.delay.percent)%"
         } else {
             // Cambió algo que no es un parámetro ajustable: el pool.
             return nil

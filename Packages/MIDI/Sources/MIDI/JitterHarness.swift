@@ -21,18 +21,33 @@ public struct JitterMeasurementConfiguration: Sendable {
     /// Tiempo máximo de espera antes de abandonar.
     public let timeoutSeconds: Double
 
+    /// Con qué Groove medir, o `nil` para medir la rejilla recta.
+    ///
+    /// **`nil` no es «el Groove default», es otro camino.** Sin Groove el arnés
+    /// corre en su modo `everyStep` de siempre, exactamente como antes de la
+    /// rebanada 6: la medición de regresión no cambia de forma y se puede
+    /// comparar contra las de las rebanadas anteriores sin asteriscos.
+    ///
+    /// Con Groove, el arnés mide lo que la rebanada 6 tiene que demostrar: que
+    /// un instante **desplazado** se entrega donde se pidió y no donde caía la
+    /// rejilla. No hace falta que el arnés sepa nada del desplazamiento —compara
+    /// lo pedido contra lo entregado, y lo pedido ya lo lleva dentro—.
+    public let groove: Groove?
+
     public init(
         tempo: Tempo,
         division: Division = .sixteenth,
         sampleCount: Int = 200,
         lookAheadNanoseconds: Int64 = 20_000_000,
-        timeoutSeconds: Double = 120
+        timeoutSeconds: Double = 120,
+        groove: Groove? = nil
     ) {
         self.tempo = tempo
         self.division = division
         self.sampleCount = sampleCount
         self.lookAheadNanoseconds = lookAheadNanoseconds
         self.timeoutSeconds = timeoutSeconds
+        self.groove = groove
     }
 }
 
@@ -108,7 +123,10 @@ public enum JitterHarness {
         // La altura y el Groove los ignora a propósito: el arnés mide la rejilla
         // temporal, no el material musical, y manda siempre el mismo mensaje
         // para que dos muestras solo se diferencien en cuándo salieron.
-        let thread = SchedulerThread(configuration: schedulerConfiguration) {
+        let thread = SchedulerThread(
+            configuration: schedulerConfiguration,
+            material: material(for: configuration.groove)
+        ) {
             _, _, _, hostTime in
             // Realtime: hilo del scheduler.
             output.send(message, to: endpoint, atHostTime: hostTime)
@@ -132,6 +150,35 @@ public enum JitterHarness {
         return recorder.statistics()
     }
 
+    /// Con qué material corre el scheduler durante la medición.
+    ///
+    /// **Sin Groove, el modo `everyStep` de siempre.** Es el mismo camino que
+    /// las mediciones anteriores a la rebanada 6, así que la referencia contra
+    /// la que se compara una regresión no cambia de forma.
+    ///
+    /// **Con Groove, un anillo lleno.** Todos los Steps disparan —Pulses igual a
+    /// Steps— y el pool lleva una sola altura, así que sigue sonando en todos los
+    /// Steps y sigue mandando el mismo mensaje: lo único que cambia respecto a
+    /// `everyStep` es que ahora los instantes llevan el desplazamiento dentro.
+    /// Un reparto euclidiano de verdad solo quitaría muestras al histograma.
+    static func material(for groove: Groove?) -> SchedulerMaterial {
+        // El anillo lleno se construye con los inicializadores validadores, que
+        // es lo que `code_styleguides/swift.md` pide fuera de los tests. Sus
+        // valores están dentro de rango, así que la rama de escape no se toma
+        // nunca; existe para no forzar un desempaquetado.
+        guard let groove, let steps = Steps(16), let pulses = Pulses(16) else {
+            return .everyStep
+        }
+
+        return .track(
+            Track(
+                shape: Shape(steps: steps, pulses: pulses),
+                pool: PitchPool().toggling(SchedulerMaterial.measurementPitch),
+                groove: groove
+            )
+        )
+    }
+
     /// Recorre varios tempos y devuelve la medición de cada uno.
     ///
     /// El barrido existe para revelar si el error escala con el tempo: un fallo
@@ -140,7 +187,8 @@ public enum JitterHarness {
         tempos: [Double] = [60, 120, 174],
         sampleCount: Int = 200,
         lookAheadNanoseconds: Int64 = 20_000_000,
-        timeoutSeconds: Double = 120
+        timeoutSeconds: Double = 120,
+        groove: Groove? = nil
     ) throws -> [JitterMeasurement] {
         try tempos.compactMap { beatsPerMinute in
             guard let tempo = Tempo(beatsPerMinute: beatsPerMinute) else { return nil }
@@ -149,7 +197,8 @@ public enum JitterHarness {
                     tempo: tempo,
                     sampleCount: sampleCount,
                     lookAheadNanoseconds: lookAheadNanoseconds,
-                    timeoutSeconds: timeoutSeconds
+                    timeoutSeconds: timeoutSeconds,
+                    groove: groove
                 )
             )
             return JitterMeasurement(beatsPerMinute: beatsPerMinute, statistics: statistics)

@@ -17,12 +17,73 @@ final class JitterMeasurementModel {
     static let sampleCountOptions = [200, 1_000]
     static let tempos: [Double] = [60, 120, 174]
 
+    /// Con qué rejilla medir.
+    ///
+    /// **Instrumentación de la rebanada 6, no producto.** La medición recta es
+    /// la de siempre —la que se compara contra la referencia de la rebanada 3—;
+    /// las otras tres son lo que la rebanada tiene que demostrar: que un
+    /// instante desplazado se entrega donde se pidió.
+    ///
+    /// Los cuatro casos son exactamente los que pide el plan del track. No hay
+    /// un selector libre de Timing y Delay porque medir no es tocar: lo que hace
+    /// falta es repetir siempre los mismos cuatro y poder compararlos entre
+    /// pasadas.
+    enum Grid: String, CaseIterable, Identifiable {
+        case straight = "Recta"
+        case swung = "Timing 67%"
+        case dragged = "Delay +50%"
+        case pushed = "Delay −50%"
+
+        var id: String { rawValue }
+
+        /// Sufijo del fichero de informe. Sin acentos ni espacios, para que el
+        /// nombre sobreviva a cualquier forma de sacarlo del dispositivo.
+        var fileNameSuffix: String {
+            switch self {
+            case .straight: "recta"
+            case .swung: "timing-67"
+            case .dragged: "delay-mas-50"
+            case .pushed: "delay-menos-50"
+            }
+        }
+
+        /// El Groove con el que medir, o `nil` en la recta — que no es «el
+        /// Groove default» sino el modo `everyStep` del arnés, el mismo camino
+        /// que recorrieron las mediciones anteriores a la rebanada 6.
+        var groove: Groove? {
+            switch self {
+            case .straight:
+                return nil
+            case .swung:
+                return groove(timing: 67, delay: 0)
+            case .dragged:
+                return groove(timing: 50, delay: 50)
+            case .pushed:
+                return groove(timing: 50, delay: -50)
+            }
+        }
+
+        private func groove(timing: Int, delay: Int) -> Groove? {
+            guard let timing = Timing(percent: timing), let delay = Delay(percent: delay) else {
+                return nil
+            }
+            return Groove(
+                velocity: .default,
+                sustain: .default,
+                probability: .default,
+                timing: timing,
+                delay: delay
+            )
+        }
+    }
+
     private(set) var isRunning = false
     private(set) var statusMessage = "Listo para medir"
     private(set) var measurements: [JitterMeasurement] = []
     private(set) var failureMessage: String?
 
     var sampleCount = 200
+    var grid: Grid = .straight
 
     private var task: Task<Void, Never>?
 
@@ -48,6 +109,7 @@ final class JitterMeasurementModel {
         UIApplication.shared.isIdleTimerDisabled = true
 
         let sampleCount = sampleCount
+        let groove = grid.groove
         task = Task { [weak self] in
             for beatsPerMinute in Self.tempos {
                 if Task.isCancelled { break }
@@ -61,7 +123,8 @@ final class JitterMeasurementModel {
                 let trace: @Sendable (String) -> Void = { [weak self] in self?.writeTrace($0) }
                 let outcome = await Task.detached(priority: .userInitiated) {
                     JitterMeasurementModel.measure(
-                        beatsPerMinute: beatsPerMinute, sampleCount: sampleCount, trace: trace
+                        beatsPerMinute: beatsPerMinute, sampleCount: sampleCount,
+                        groove: groove, trace: trace
                     )
                 }.value
                 self?.writeTrace("fin \(Int(beatsPerMinute)) BPM")
@@ -154,7 +217,7 @@ final class JitterMeasurementModel {
         }
     }
 
-    /// Escribe el informe a `Documents/jitter-report.txt`.
+    /// Escribe el informe a `Documents/jitter-report-<rejilla>.txt`.
     ///
     /// El streaming de consola (`devicectl --console`) se invalida en
     /// mediciones de varios minutos, así que el resultado se persiste en el
@@ -172,6 +235,7 @@ final class JitterMeasurementModel {
         lines.append(
             "dispositivo: \(UIDevice.current.model) · iPadOS \(UIDevice.current.systemVersion)")
         lines.append("eventos por tempo: \(sampleCount)")
+        lines.append("rejilla: \(grid.rawValue)")
         lines.append("umbral: máx < 2 ms · σ < 0,5 ms")
         lines.append("")
         for measurement in measurements {
@@ -187,7 +251,11 @@ final class JitterMeasurementModel {
         }
         if let failure = failureMessage { lines.append("fallo: \(failure)") }
 
-        let url = directory.appendingPathComponent("jitter-report.txt")
+        // **Un fichero por rejilla.** La rebanada 6 mide cuatro veces —recta,
+        // swing y los dos Delay— y un nombre fijo dejaría solo la última: la
+        // medición de regresión, que es la que hay que comparar contra la
+        // referencia, la habría pisado cualquiera de las otras tres.
+        let url = directory.appendingPathComponent("jitter-report-\(grid.fileNameSuffix).txt")
         try? lines.joined(separator: "\n").write(to: url, atomically: true, encoding: .utf8)
         print("[jitter] informe escrito en \(url.path)")
     }
@@ -203,7 +271,8 @@ final class JitterMeasurementModel {
     ///   - sampleCount: The number of events to collect.
     /// - Returns: A successful measurement or a failure describing an invalid tempo, timeout, or measurement error.
     private nonisolated static func measure(
-        beatsPerMinute: Double, sampleCount: Int, trace: @Sendable (String) -> Void = { _ in }
+        beatsPerMinute: Double, sampleCount: Int, groove: Groove? = nil,
+        trace: @Sendable (String) -> Void = { _ in }
     ) -> Outcome {
         guard let tempo = Tempo(beatsPerMinute: beatsPerMinute) else {
             return .failure("Tempo fuera de rango: \(beatsPerMinute) BPM")
@@ -214,7 +283,8 @@ final class JitterMeasurementModel {
                 JitterMeasurementConfiguration(
                     tempo: tempo,
                     sampleCount: sampleCount,
-                    timeoutSeconds: 300
+                    timeoutSeconds: 300,
+                    groove: groove
                 )
             )
             return .success(

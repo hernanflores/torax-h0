@@ -14,8 +14,8 @@ una deuda que la siguiente necesita.
 | 3 | Anillo, playhead y valor transitorio | cerrada |
 | 4 | Tonal: pool, Scale y Root | cerrada |
 | 5 | Groove estático: Velocity, Sustain, Probability | cerrada |
-| 6 | Groove temporal: Timing y Delay | **siguiente**, por planificar |
-| 7 | Preset del BeatStep Pro y MIDI Learn | por planificar |
+| 6 | Groove temporal: Timing y Delay | cerrada |
+| 7 | Preset del BeatStep Pro y MIDI Learn | **siguiente**, por planificar |
 
 **Por qué ese orden.** La 3 no toca el motor y salda la última carga de jitter
 sin medir que `product.md` dejó anotada —la visual—; además evita desarrollar
@@ -48,12 +48,19 @@ veces sin que afectara a nada.
 
 ---
 
-*Sin track abierto.* La rebanada 5 cerró el 2026-08-29; la 6 —Groove temporal:
-Timing y Delay— está en la cola de arriba, pendiente de planificar.
+*Sin track abierto.* La rebanada 6 cerró el 2026-08-30 y con ella el Track
+generativo completo del MVP. La 7 —preset del BeatStep Pro y MIDI Learn— es lo
+único que queda de la v1, y no toca el motor.
 
-La 6 lleva medición de jitter: es la primera desde la 3 que mueve instantes, y
-la σ viene subiendo de forma monótona —9 → 15 → 20 µs— sin que las rebanadas 4
-y 5 la midieran. Si sale peor, ese es el intervalo a bisecar.
+**Ahí se vuelve bloqueante `network-session-source`**, tal como estaba previsto:
+MIDI Learn tiene que escuchar la fuente correcta, y en iPad la sesión de red se
+autoselecciona.
+
+**La rebanada 6 cerró con deuda conocida**, y conviene tenerla delante antes de
+abrir la 7: cuatro hallazgos de revisión sin arreglar en su fase *Review Fixes*,
+uno de ellos que `Stop` podría dejar sonar notas con Delay positivo —analizado,
+no reproducido en dispositivo, con la condición para provocarlo escrita—. Y la
+medición desplazada no se ejecutó: la recta CUMPLE y el swing se juzgó al oído.
 
 ## Defectos conocidos
 
@@ -90,6 +97,9 @@ en cualquier momento.
   Dato acumulado por si sirve al diagnóstico: en la rebanada 5 apareció en 2 de 8 pasadas y **siempre con la misma firma** —las 4 pruebas de `VirtualLoopbackTests`, ningún otro test—. El fallo está localizado en la creación de endpoints virtuales, no es difuso.
 
 ## Archivados
+
+- [x] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay** — swing y Delay suenan; jitter recto máx 0,151 ms · σ 0,009–0,013 ms. **Cerrado con deuda: fase *Review Fixes* abierta**
+  *Link: [conductor/archive/mvp-groove-temporal_20260830/index.md](./archive/mvp-groove-temporal_20260830/index.md)*
 
 - [x] **Track: MVP rebanada 5 — Groove estático: Velocity, Sustain, Probability** — los tres suenan; verificado en iPad con BeatStep Pro
   *Link: [conductor/archive/mvp-groove-static_20260829/index.md](./archive/mvp-groove-static_20260829/index.md)*

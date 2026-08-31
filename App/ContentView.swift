@@ -208,9 +208,15 @@ struct ContentView: View {
             Text(model.shapeSummary)
                 .font(.title3.monospaced())
                 .foregroundStyle(Palette.shape.opacity(0.85))
-            Text(model.grooveSummary)
-                .font(.title3.monospaced())
-                .foregroundStyle(Palette.groove.opacity(0.85))
+            // Dos renglones, un solo acento: el color codifica la familia y
+            // Groove es una. El corte lo decide `Engine` —por lo que se envía y
+            // por cuándo se envía— y no el ancho de la pantalla, que dejaba
+            // `Delay 0%` colgando solo.
+            ForEach(model.grooveSummaryLines, id: \.self) { line in
+                Text(line)
+                    .font(.title3.monospaced())
+                    .foregroundStyle(Palette.groove.opacity(0.85))
+            }
         }
     }
 
@@ -240,6 +246,18 @@ struct ContentView: View {
                 .disabled(jitter.isRunning)
                 .frame(maxWidth: 320)
             }
+
+            // La rejilla con la que medir. La recta es la de siempre, y es la
+            // que se compara contra la referencia; las otras tres son las que la
+            // rebanada 6 tiene que demostrar.
+            Picker("Rejilla", selection: $jitter.grid) {
+                ForEach(JitterMeasurementModel.Grid.allCases) { grid in
+                    Text(grid.rawValue).tag(grid)
+                }
+            }
+            .pickerStyle(.segmented)
+            .disabled(jitter.isRunning)
+            .frame(maxWidth: 520)
 
             Text("Umbral: máx < 2 ms · σ < 0,5 ms")
                 .font(.footnote)

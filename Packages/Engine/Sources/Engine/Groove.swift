@@ -112,6 +112,101 @@ public struct Probability: Equatable, Sendable {
     }
 }
 
+/// Cuánto se desplaza cada segundo Step — el swing.
+///
+/// La Pre Spec lo describe como «desplaza cada segundo Step, creando
+/// swing/shuffle (rejilla no uniforme)». Este es el primero de los dos
+/// parámetros que cambian **cuándo** suena algo, y no qué.
+///
+/// **El porcentaje es la posición del segundo Step del par dentro del par**, no
+/// la fracción que se desplaza. Es la convención del hardware y del software que
+/// ya existe, y se lee sola: al 50% el par está partido por la mitad y la
+/// rejilla es recta; al 66,7% el par es un tresillo; al 75% el Step impar cae
+/// medio Step tarde.
+///
+/// **Por debajo del 50% no hay nada que ganar.** Sería swing invertido —el Step
+/// impar adelantado— y para adelantar está `Delay`, que además lo hace sobre el
+/// Track entero y con el presupuesto de adelanto que eso exige.
+///
+/// **El tope de 75% es una decisión de corrección, no de gusto.** Medio Step es
+/// el desplazamiento máximo con el que un Step nunca alcanza al siguiente:
+/// pasado ese punto la secuencia de emisión podría invertirse, y un evento que
+/// adelanta a su predecesor es una nota fuera de sitio, no un valor extremo.
+/// La invariante de orden está fijada por un test exhaustivo.
+///
+/// **El tresillo exacto cae entre dos valores del knob.** Con porcentaje entero,
+/// 2:1 sería 66,67% y el knob pasa por 66 y por 67; el más cercano se separa
+/// menos de un 0,7% de la duración del Step —a 1/16 y 120 BPM, unos 0,9 ms—, que
+/// está por debajo de lo que distingue el oído. Un décimo de porcentaje daría
+/// exactitud a cambio de diez veces más recorrido de knob para el mismo tramo.
+public struct Timing: Equatable, Sendable {
+
+    /// Rango admitido. El extremo inferior es la rejilla recta; el superior, el
+    /// límite que conserva el orden de emisión.
+    public static let validRange: ClosedRange<Int> = 50...75
+
+    /// La rejilla recta: ningún Step se mueve.
+    public static let straight = Timing(unchecked: 50)
+
+    /// Default del producto: recto. El swing es una decisión, no el punto de
+    /// partida — mismo criterio que `Probability.default`.
+    public static let `default` = straight
+
+    public let percent: Int
+
+    /// Devuelve `nil` si el porcentaje cae fuera de `validRange`.
+    public init?(percent: Int) {
+        guard Self.validRange.contains(percent) else { return nil }
+        self.percent = percent
+    }
+
+    /// Vía interna para valores ya acotados. Ver `Velocity.init(unchecked:)`.
+    init(unchecked percent: Int) {
+        self.percent = percent
+    }
+}
+
+/// Cuánto se desplaza el Track entero respecto a la rejilla.
+///
+/// La Pre Spec: «desplaza el Track entero hacia adelante o atrás respecto a la
+/// rejilla». A diferencia de `Timing`, se aplica a todos los Steps por igual.
+///
+/// **Porcentaje de la Division y no milisegundos**, por la misma razón que
+/// `Sustain`: expresado en tiempo absoluto dejaría de significar lo mismo en
+/// cuanto se moviera el tempo o la Division. «Medio Step antes» sigue siendo
+/// medio Step a cualquier velocidad.
+///
+/// **Es el único parámetro del motor con rango negativo**, y esa mitad es la que
+/// tiene coste. Un evento adelantado hay que calcularlo antes de su instante, o
+/// se pide su emisión para un momento que ya pasó; de ahí el *presupuesto de
+/// adelanto*, que desplaza el origen de la rejilla al arrancar y amplía el
+/// horizonte de selección mientras suena. Enmienda fechada del 2026-08-30 en
+/// `tech-stack.md`.
+///
+/// El cero no es un extremo sino el centro: el knob lo cruza sin caso especial.
+public struct Delay: Equatable, Sendable {
+
+    /// Rango admitido, en porcentaje de la Division. Simétrico: un Step entero
+    /// hacia cada lado.
+    public static let validRange: ClosedRange<Int> = -100...100
+
+    /// Default del producto: sobre la rejilla.
+    public static let `default` = Delay(unchecked: 0)
+
+    public let percent: Int
+
+    /// Devuelve `nil` si el porcentaje cae fuera de `validRange`.
+    public init?(percent: Int) {
+        guard Self.validRange.contains(percent) else { return nil }
+        self.percent = percent
+    }
+
+    /// Vía interna para valores ya acotados. Ver `Velocity.init(unchecked:)`.
+    init(unchecked percent: Int) {
+        self.percent = percent
+    }
+}
+
 extension Sustain {
 
     /// Cuánto dura la nota, dado lo que dura un Step.
@@ -214,6 +309,41 @@ extension Probability {
     }
 }
 
+extension Timing {
+
+    /// Swing resultante de desplazar el knob `delta` posiciones.
+    ///
+    /// **Se frena en los extremos, no envuelve.** Ver `Sustain.advanced(by:)`.
+    /// Aquí importa más que en los otros: el recorrido son 26 posiciones, así
+    /// que los topes se alcanzan enseguida, y envolver haría que pasarse del
+    /// swing máximo devolviera la rejilla recta de golpe.
+    /// Adjusts the swing amount by the specified amount within its valid range.
+    /// - Parameter delta: The amount to add to the swing percentage.
+    /// - Returns: A timing clamped to the valid range.
+    public func advanced(by delta: Int) -> Timing {
+        Timing(unchecked: Self.validRange.clamping(percent + delta))
+    }
+}
+
+extension Delay {
+
+    /// Desplazamiento resultante de mover el knob `delta` posiciones.
+    ///
+    /// **Se frena en los extremos, no envuelve.** Ver `Sustain.advanced(by:)`.
+    ///
+    /// **El cero no es un caso especial.** Es el único parámetro del motor cuyo
+    /// rango lo cruza, y el knob lo atraviesa como atraviesa cualquier otro
+    /// valor: adelantar y atrasar son el mismo gesto en distinto sentido, y
+    /// tratar el paso por la rejilla como un punto de parada sería un enganche
+    /// que nadie pidió.
+    /// Adjusts the delay by the specified amount while keeping it within the valid range.
+    /// - Parameter delta: The amount to add to the delay percentage.
+    /// - Returns: A delay clamped to the valid range.
+    public func advanced(by delta: Int) -> Delay {
+        Delay(unchecked: Self.validRange.clamping(percent + delta))
+    }
+}
+
 extension ClosedRange where Bound == Int {
 
     /// El valor llevado dentro del rango.
@@ -244,8 +374,14 @@ extension ClosedRange where Bound == Int {
 public struct Groove: Equatable, Sendable {
 
     /// Los defaults de producto: suena todo, a nivel medio-alto, durando una
-    /// Division completa. Es el Groove que no interpreta nada — el punto de
-    /// partida desde el que cada knob se aparta.
+    /// Division completa, sobre la rejilla recta y sin desplazar. Es el Groove
+    /// que no interpreta nada — el punto de partida desde el que cada knob se
+    /// aparta.
+    ///
+    /// **Que no interprete nada en el tiempo es una propiedad de la que depende
+    /// el arnés de medición.** Su modo `everyStep` usa este valor, así que la
+    /// medición de regresión sigue midiendo la rejilla de `MusicalTimeline` y no
+    /// una desplazada.
     public static let `default` = Groove(
         velocity: .default,
         sustain: .default,
@@ -255,18 +391,34 @@ public struct Groove: Equatable, Sendable {
     public let velocity: Velocity
     public let sustain: Sustain
     public let probability: Probability
+    public let timing: Timing
+    public let delay: Delay
 
-    public init(velocity: Velocity, sustain: Sustain, probability: Probability) {
+    /// **Timing y Delay entran con valor por defecto.** `Groove` se construye en
+    /// sitios que no saben nada de ellos —tests, código anterior a la rebanada
+    /// 6— y los defaults son lo que les permite seguir compilando y sonando
+    /// igual. No es comodidad: es la regla de destructividad de
+    /// `product-guidelines.md` aplicada al código, un parámetro nuevo no cambia
+    /// lo que ya hacía quien no lo pide.
+    public init(
+        velocity: Velocity,
+        sustain: Sustain,
+        probability: Probability,
+        timing: Timing = .default,
+        delay: Delay = .default
+    ) {
         self.velocity = velocity
         self.sustain = sustain
         self.probability = probability
+        self.timing = timing
+        self.delay = delay
     }
 }
 
 extension Groove: CustomStringConvertible {
 
     /// Cómo se lee Groove en pantalla:
-    /// `Velocity 100 · Sustain 100% · Probability 75%`.
+    /// `Velocity 100 · Sustain 100% · Probability 75% · Timing 50% · Delay 0%`.
     ///
     /// Mismo formato que `Shape.description`, y por la misma razón: el término
     /// de la Pre Spec en inglés y el valor, sin prosa. `product-guidelines.md`
@@ -278,7 +430,36 @@ extension Groove: CustomStringConvertible {
     ///
     /// Velocity va sin signo de porcentaje: vive en la unidad MIDI, y ponérselo
     /// diría que es un porcentaje de algo.
+    ///
+    /// **El signo de Delay se ve, y no es adorno.** Es el único parámetro que
+    /// puede ser negativo, y adelantar y atrasar no se distinguen por el
+    /// contexto: sin el signo, `Delay 25%` sería ambiguo. La interpolación lo
+    /// pone sola en el negativo y lo omite en el positivo, que es la convención
+    /// que ya usa `Rotate`.
     public var description: String {
-        "Velocity \(velocity.value) · Sustain \(sustain.percent)% · Probability \(probability.percent)%"
+        descriptionLines.joined(separator: " · ")
+    }
+
+    /// La misma lectura, partida por donde tiene sentido partirla.
+    ///
+    /// **Existe porque los cinco no caben en una línea.** Con Timing y Delay
+    /// dentro, la pantalla parte el texto por donde se acaba el ancho y deja
+    /// `Delay 0%` colgando solo — un corte que no significa nada. Estas dos
+    /// líneas cortan por donde el dominio ya está cortado: **qué** se envía y
+    /// **cuándo** se envía, que es el mismo criterio con el que la rebanada 5 y
+    /// la 6 se separaron.
+    ///
+    /// **Las dos siguen siendo Groove**, así que la vista las pinta con el mismo
+    /// acento: el color codifica la familia y aquí no hay dos familias, hay una
+    /// leída en dos renglones.
+    ///
+    /// Vive en `Engine` por la razón de siempre: un formato es exactamente lo
+    /// que `workflow.md` dice que no debe estar donde no hay tests.
+    public var descriptionLines: [String] {
+        [
+            "Velocity \(velocity.value) · Sustain \(sustain.percent)% · "
+                + "Probability \(probability.percent)%",
+            "Timing \(timing.percent)% · Delay \(delay.percent)%",
+        ]
     }
 }

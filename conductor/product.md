@@ -46,7 +46,7 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
   - Shape: Steps (1–16), Pulses euclidianos, Rotate, Division (1/1–1/32). **Entregado** (rebanadas 1–2; 1/32 en la 5).
   - Tonal: pool de hasta 8 pitches, Scale + Root. **Entregado** (rebanada 4).
   - Groove: Velocity, Sustain, Probability. **Entregado** (rebanada 5).
-  - Groove: Timing (swing) y Delay. Pendiente (rebanada 6).
+  - Groove: Timing (swing) y Delay. **Entregado** (rebanada 6).
 - Transporte (play/stop) y reloj interno.
 - Salida MIDI por CoreMIDI a dispositivo externo.
 - Mapeo del controlador + MIDI Learn.
@@ -66,6 +66,14 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > **Estado (2026-08-26): validado.** Medido en iPad Air 4ª generación: σ ≈ 9 µs y máximo 0,149 ms, frente a un umbral de 0,5 ms / 2 ms. La arquitectura de look-ahead scheduling aguanta. Ver [`verdict.md`](./archive/timing-spike_20260826/verdict.md).
 >
 > **Actualización (2026-08-27): medido con carga.** Con el motor generativo y la interfaz corriendo: máximo 0,127 ms y σ 0,015 ms en el peor tempo. Sin degradación grosera. La σ sube de 8–9 µs a 12–15 µs respecto al spike —4–7 µs, inaudibles— y sube con el tempo. Ver [`measurement-200.txt`](./archive/mvp-shape-transport_20260827/measurement-200.txt).
+>
+> **Rebanada 6 (2026-08-30): medido con la rejilla desplazada dentro.** La
+> primera medición desde la rebanada 3, con 1000 eventos por tempo: máximo
+> **0,151 ms** y σ entre **0,009 y 0,013 ms**. La σ **bajó** respecto a la
+> referencia de 0,020 ms, así que el intervalo sin medir de las rebanadas 4 y 5
+> queda absuelto sin bisecar. El máximo sube porque la muestra es cinco veces
+> mayor. Swing y Delay se juzgaron al oído, no con el arnés: ver la enmienda de
+> la Fase 6 en el plan de `mvp-groove-temporal_20260830`.
 >
 > **Cierre (2026-08-28): medido con el anillo.** Era la carga visual que faltaba. Con el anillo circular y el playhead redibujándose: máximo **0,134 ms** y σ hasta **0,020 ms**, contra 0,127 ms y 0,015 ms sin él. El redibujado cuesta unos 5 µs de σ en el peor tempo —mismo orden que el salto anterior, e inaudible—, y la σ queda 25 veces por debajo del umbral de 0,5 ms. **La arquitectura de look-ahead aguanta también la carga de dibujo.** Ver la git note de `9189aec` (track `mvp-ring-feedback_20260828`).
 

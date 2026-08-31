@@ -35,14 +35,19 @@ public final class PlayheadClock: @unchecked Sendable {
 
     /// Fija el origen del transporte.
     ///
-    /// **Sin test automático, a propósito.** Verificarlo exige correr el bucle
-    /// del scheduler, y cada vez que la suite lo arranca una vez más,
-    /// `VirtualLoopbackTests` pasa de fallar de forma intermitente a fallar
-    /// **3 de 3 pasadas** con `clientCreationFailed(-50)`. Medido el 2026-08-28
-    /// contra `main`, que da 0 de 4. La causa pertenece a
-    /// `midi-test-flake_20260826`; hasta que se arregle, esta línea se verifica
-    /// en dispositivo —el playhead va con lo que suena o no va— y no en la
-    /// suite.
+    /// **Desde la rebanada 6 sí tiene test automático.** Antes no lo tenía a
+    /// propósito: verificarlo exige correr el bucle del scheduler, y cada vez
+    /// que la suite lo arranca una vez más, `VirtualLoopbackTests` empeora su
+    /// tasa de `clientCreationFailed(-50)` —medido el 2026-08-28—. Esa razón no
+    /// desapareció; lo que cambió es la decisión: `midi-test-flake_20260826`
+    /// queda **aplazado a después de la v2** (2026-08-29) y se convive con el
+    /// ruido, descartándolo por comparación de pasadas contra `main`.
+    ///
+    /// Lo que hizo falta pagarlo fue el origen desplazado: desde que no es el
+    /// instante de Play sino `Play + presupuesto`, hay una forma de que el
+    /// playhead y los timestamps discrepen que antes no existía, y verificarla
+    /// en dispositivo era verificarla tarde. Lo cubre
+    /// `testThePlayheadSharesTheOriginThatStampsTheTimestamps`.
     ///
     /// Realtime: llamado desde el hilo del scheduler, una vez al arrancar.
     /// Sin asignaciones, sin locks, sin await.

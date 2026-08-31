@@ -81,6 +81,68 @@ final class GrooveTypesTests: XCTestCase {
         XCTAssertEqual(Probability.validRange, 0...100)
     }
 
+    // MARK: - Timing
+
+    func testTimingAcceptsTheWholeValidRange() {
+        for percent in 50...75 {
+            XCTAssertEqual(Timing(percent: percent)?.percent, percent)
+        }
+    }
+
+    /// **Por debajo del 50% no hay swing, hay swing invertido.** El porcentaje
+    /// es la posición del segundo Step del par dentro del par, así que un valor
+    /// menor que 50 adelantaría el Step impar en lugar de atrasarlo. Para
+    /// adelantar está Delay, que lo hace sobre el Track entero y con el
+    /// presupuesto que eso exige.
+    func testTimingRejectsValuesBelowStraight() {
+        XCTAssertNil(Timing(percent: 49))
+        XCTAssertNil(Timing(percent: 0))
+        XCTAssertNil(Timing(percent: -1))
+    }
+
+    /// **El tope de 75% es corrección, no gusto.** Es medio Step de retraso: un
+    /// Step desplazado llega justo antes del siguiente y nunca lo alcanza. Por
+    /// encima, la secuencia de emisión podría invertirse, que es una nota fuera
+    /// de sitio y no un valor extremo. Ver la invariante de orden del spec (FR3).
+    func testTimingRejectsValuesAboveTheOrderPreservingLimit() {
+        XCTAssertNil(Timing(percent: 76))
+        XCTAssertNil(Timing(percent: 100))
+    }
+
+    func testTimingValidRangeIsFiftyToSeventyFivePercent() {
+        XCTAssertEqual(Timing.validRange, 50...75)
+    }
+
+    /// El 50% no es un caso límite: es la rejilla recta, el punto de partida
+    /// desde el que el knob se aparta.
+    func testTimingAtFiftyPercentIsTheStraightGrid() {
+        XCTAssertEqual(Timing.default.percent, 50)
+        XCTAssertEqual(Timing.straight, Timing.default)
+    }
+
+    // MARK: - Delay
+
+    /// **El único parámetro del motor con rango negativo.** Adelantar es tan
+    /// válido como atrasar, y el cero no es un extremo sino el centro.
+    func testDelayAcceptsTheWholeValidRangeIncludingNegatives() {
+        for percent in -100...100 {
+            XCTAssertEqual(Delay(percent: percent)?.percent, percent)
+        }
+    }
+
+    func testDelayRejectsValuesOutsideTheRange() {
+        XCTAssertNil(Delay(percent: -101))
+        XCTAssertNil(Delay(percent: 101))
+    }
+
+    func testDelayValidRangeIsMinusOneHundredToOneHundredPercent() {
+        XCTAssertEqual(Delay.validRange, -100...100)
+    }
+
+    func testDelayDefaultIsOnTheGrid() {
+        XCTAssertEqual(Delay.default.percent, 0)
+    }
+
     // MARK: - Defaults de producto
 
     /// Los defaults salen del spec y de la Pre Spec: Sustain default es «una
@@ -89,6 +151,16 @@ final class GrooveTypesTests: XCTestCase {
         XCTAssertEqual(Velocity.default.value, 100)
         XCTAssertEqual(Sustain.default.percent, 100)
         XCTAssertEqual(Probability.default.percent, 100)
+    }
+
+    /// **Los dos que llegan con la rebanada 6 no interpretan nada por defecto.**
+    /// Timing 50% es la rejilla recta y Delay 0% no desplaza: el Groove default
+    /// sigue siendo el que deja los instantes exactamente donde los pone
+    /// `MusicalTimeline`, que es lo que permite que la medición de regresión no
+    /// cambie de forma.
+    func testTemporalProductDefaultsLeaveTheGridUntouched() {
+        XCTAssertEqual(Timing.default.percent, 50)
+        XCTAssertEqual(Delay.default.percent, 0)
     }
 }
 
@@ -106,6 +178,8 @@ final class GrooveTests: XCTestCase {
         XCTAssertTrue(_isPOD(Velocity.self))
         XCTAssertTrue(_isPOD(Sustain.self))
         XCTAssertTrue(_isPOD(Probability.self))
+        XCTAssertTrue(_isPOD(Timing.self))
+        XCTAssertTrue(_isPOD(Delay.self))
     }
 
     func testTrackStaysTrivialWithGrooveInside() {
@@ -120,6 +194,45 @@ final class GrooveTests: XCTestCase {
         XCTAssertEqual(groove.velocity, .default)
         XCTAssertEqual(groove.sustain, .default)
         XCTAssertEqual(groove.probability, .default)
+        XCTAssertEqual(groove.timing, .default)
+        XCTAssertEqual(groove.delay, .default)
+    }
+
+    /// **El Groove default sigue sin interpretar nada, ahora también en el
+    /// tiempo.** Es lo que hace que la rejilla recta siga siendo la de
+    /// `MusicalTimeline` y que el arnés de medición —que usa este valor— mida lo
+    /// mismo que medía antes de la rebanada 6.
+    func testTheDefaultGrooveLeavesTheGridStraight() {
+        XCTAssertEqual(Groove.default.timing, .straight)
+        XCTAssertEqual(Groove.default.delay.percent, 0)
+    }
+
+    /// **Ningún llamante existente cambia.** `Groove` se construye en tests y en
+    /// código que no sabe nada de Timing ni de Delay; los defaults son lo que
+    /// les permite seguir compilando y sonando igual.
+    func testGrooveBuiltWithoutTheTemporalParametersTakesTheirDefaults() {
+        let groove = Groove(
+            velocity: Velocity(64)!,
+            sustain: Sustain(percent: 25)!,
+            probability: Probability(percent: 50)!
+        )
+
+        XCTAssertEqual(groove.timing, .default)
+        XCTAssertEqual(groove.delay, .default)
+        XCTAssertEqual(groove.velocity.value, 64)
+    }
+
+    func testGrooveKeepsTheTemporalParametersItIsBuiltWith() {
+        let groove = Groove(
+            velocity: .default,
+            sustain: .default,
+            probability: .default,
+            timing: Timing(percent: 75)!,
+            delay: Delay(percent: -100)!
+        )
+
+        XCTAssertEqual(groove.timing.percent, 75)
+        XCTAssertEqual(groove.delay.percent, -100)
     }
 
     func testGrooveKeepsWhatItIsBuiltWith() {
@@ -223,6 +336,42 @@ final class GrooveAdjustmentTests: XCTestCase {
         XCTAssertEqual(Probability(percent: 50)!.advanced(by: 1000).percent, 100)
     }
 
+    // MARK: - Timing
+
+    func testTimingMovesByTheDelta() {
+        XCTAssertEqual(Timing(percent: 50)!.advanced(by: 17).percent, 67)
+        XCTAssertEqual(Timing(percent: 67)!.advanced(by: -1).percent, 66)
+    }
+
+    /// El recorrido del knob es corto —26 posiciones— y los dos topes se
+    /// alcanzan enseguida. Que se frene y no envuelva es lo que evita que
+    /// pasarse del swing máximo devuelva la rejilla recta de golpe.
+    func testTimingStopsAtBothEnds() {
+        XCTAssertEqual(Timing(percent: 75)!.advanced(by: 1).percent, 75)
+        XCTAssertEqual(Timing(percent: 50)!.advanced(by: -1).percent, 50)
+        XCTAssertEqual(Timing(percent: 60)!.advanced(by: 1000).percent, 75)
+        XCTAssertEqual(Timing(percent: 60)!.advanced(by: -1000).percent, 50)
+    }
+
+    // MARK: - Delay
+
+    /// **El cero no es un caso especial.** Es el único parámetro del motor cuyo
+    /// rango cruza el cero, y el knob lo atraviesa como atraviesa cualquier otro
+    /// valor: adelantar y atrasar son el mismo gesto en distinto sentido.
+    func testDelayCrossesZeroWithoutASpecialCase() {
+        XCTAssertEqual(Delay(percent: 2)!.advanced(by: -4).percent, -2)
+        XCTAssertEqual(Delay(percent: -2)!.advanced(by: 4).percent, 2)
+        XCTAssertEqual(Delay(percent: 0)!.advanced(by: -1).percent, -1)
+        XCTAssertEqual(Delay(percent: 0)!.advanced(by: 1).percent, 1)
+    }
+
+    func testDelayStopsAtBothEnds() {
+        XCTAssertEqual(Delay(percent: 100)!.advanced(by: 1).percent, 100)
+        XCTAssertEqual(Delay(percent: -100)!.advanced(by: -1).percent, -100)
+        XCTAssertEqual(Delay(percent: 0)!.advanced(by: 1000).percent, 100)
+        XCTAssertEqual(Delay(percent: 0)!.advanced(by: -1000).percent, -100)
+    }
+
     // MARK: - Girar contra un extremo no mueve nada
 
     /// **Es lo que después permite no publicar.** `ControlInput` compara el
@@ -233,6 +382,8 @@ final class GrooveAdjustmentTests: XCTestCase {
         XCTAssertEqual(Velocity(127)!.advanced(by: 5), Velocity(127)!)
         XCTAssertEqual(Sustain(percent: 1)!.advanced(by: -5), Sustain(percent: 1)!)
         XCTAssertEqual(Probability(percent: 0)!.advanced(by: -5), Probability(percent: 0)!)
+        XCTAssertEqual(Timing(percent: 75)!.advanced(by: 5), Timing(percent: 75)!)
+        XCTAssertEqual(Delay(percent: -100)!.advanced(by: -5), Delay(percent: -100)!)
     }
 
     /// Un delta de cero no es un caso especial que haya que interceptar antes:
@@ -241,6 +392,8 @@ final class GrooveAdjustmentTests: XCTestCase {
         XCTAssertEqual(Velocity(64)!.advanced(by: 0), Velocity(64)!)
         XCTAssertEqual(Sustain(percent: 64)!.advanced(by: 0), Sustain(percent: 64)!)
         XCTAssertEqual(Probability(percent: 64)!.advanced(by: 0), Probability(percent: 64)!)
+        XCTAssertEqual(Timing(percent: 64)!.advanced(by: 0), Timing(percent: 64)!)
+        XCTAssertEqual(Delay(percent: -64)!.advanced(by: 0), Delay(percent: -64)!)
     }
 }
 
@@ -274,5 +427,43 @@ final class ShortestStepTests: XCTestCase {
             division: try XCTUnwrap(Division.fastest)
         )
         XCTAssertEqual(timeline.stepDurationNanoseconds, 25_000_000, accuracy: 1.0)
+    }
+}
+
+/// Tests de la lectura de Groove partida en dos renglones.
+///
+/// Con los cinco parámetros dentro, la línea no cabe y la pantalla la parte por
+/// donde se acaba el ancho. Estas dos cortan por donde el dominio ya estaba
+/// cortado.
+final class GrooveDescriptionLinesTests: XCTestCase {
+
+    func testTheFirstLineIsWhatIsSentAndTheSecondIsWhen() {
+        XCTAssertEqual(
+            Groove.default.descriptionLines,
+            ["Velocity 100 · Sustain 100% · Probability 100%", "Timing 50% · Delay 0%"]
+        )
+    }
+
+    /// **Las dos líneas y la línea entera dicen lo mismo.** Si divergieran, la
+    /// pantalla y cualquier otro lector de `description` mostrarían valores
+    /// distintos para el mismo Groove.
+    func testTheLinesJoinBackIntoTheFullDescription() {
+        let groove = Groove(
+            velocity: Velocity(64)!,
+            sustain: Sustain(percent: 25)!,
+            probability: Probability(percent: 50)!,
+            timing: Timing(percent: 67)!,
+            delay: Delay(percent: -25)!
+        )
+
+        XCTAssertEqual(groove.descriptionLines.joined(separator: " · "), groove.description)
+    }
+
+    /// Ningún renglón se queda vacío ni acumula los cinco: el corte es real.
+    func testBothLinesCarryParameters() {
+        XCTAssertEqual(Groove.default.descriptionLines.count, 2)
+        for line in Groove.default.descriptionLines {
+            XCTAssertFalse(line.isEmpty)
+        }
     }
 }

@@ -72,3 +72,68 @@ final class JitterHarnessTests: XCTestCase {
         }
     }
 }
+
+/// Tests del arnés corriendo con un Groove desplazado.
+///
+/// **Sin CoreMIDI de por medio.** Lo que se comprueba es la elección de
+/// material, que es lógica pura; la medición de verdad exige dispositivo y es la
+/// Fase 6 del track.
+final class JitterHarnessGrooveTests: XCTestCase {
+
+    /// **Sin Groove, el camino de siempre.** La medición de regresión tiene que
+    /// poder compararse contra las de las rebanadas anteriores sin asteriscos, y
+    /// para eso tiene que recorrer exactamente el mismo código.
+    func testWithoutAGrooveTheHarnessKeepsItsEveryStepMode() {
+        XCTAssertEqual(JitterHarness.material(for: nil), .everyStep)
+    }
+
+    /// Con Groove, un anillo lleno: todos los Steps siguen disparando, así que
+    /// no se pierden muestras del histograma.
+    func testWithAGrooveEveryStepStillTriggers() {
+        let swung = Groove(
+            velocity: .default,
+            sustain: .default,
+            probability: .default,
+            timing: Timing(percent: 75)!,
+            delay: .default
+        )
+
+        let material = JitterHarness.material(for: swung)
+
+        for step in 0..<16 {
+            XCTAssertTrue(material.triggers(atStep: step), "el Step \(step) no dispara")
+        }
+        XCTAssertEqual(material.groove, swung)
+    }
+
+    /// Y sigue sonando siempre la misma altura: dos muestras solo se
+    /// diferencian en cuándo salieron.
+    func testWithAGrooveThePitchIsStillConstant() {
+        let material = JitterHarness.material(for: .default)
+
+        for step in 0..<16 {
+            XCTAssertEqual(material.pitch(atStep: step), SchedulerMaterial.measurementPitch)
+        }
+    }
+
+    /// El default explícito **no** es lo mismo que no pasar nada: uno recorre el
+    /// camino de un Track y el otro el modo del arnés. Los dos dejan la rejilla
+    /// recta, y eso es lo que hace comparable la medición.
+    func testTheDefaultGrooveStillLeavesTheGridStraight() {
+        let material = JitterHarness.material(for: .default)
+
+        XCTAssertNotEqual(material, .everyStep)
+        for step in 0..<16 {
+            XCTAssertEqual(
+                material.groove.shiftNanoseconds(
+                    atStep: step, stepDurationNanoseconds: 125_000_000),
+                0
+            )
+        }
+    }
+
+    func testTheConfigurationCarriesNoGrooveByDefault() {
+        let configuration = JitterMeasurementConfiguration(tempo: Tempo(beatsPerMinute: 120)!)
+        XCTAssertNil(configuration.groove)
+    }
+}

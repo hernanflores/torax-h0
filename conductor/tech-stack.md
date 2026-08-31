@@ -40,6 +40,54 @@ Implicaciones estructurales:
 - **Timing musical (Sustain, Delay, swing) se expresa como offset de timestamp**, no como sleeps ni retardos de hilo.
 - La ventana de look-ahead se equilibra contra la respuesta al knob: un giro debe oírse en el step siguiente, así que esa latencia acota el tamaño de la ventana.
 
+### Enmienda — 2026-08-30: el horizonte de selección deja de ser constante, y el origen deja de ser Play
+
+**Qué cambia.** Dos cosas que hasta ahora eran fijas:
+
+1. **El horizonte con el que se seleccionan los Steps** era la ventana de
+   look-ahead y nada más. Pasa a ser la ventana **más un presupuesto de
+   adelanto**, releído del snapshot una vez por ventana.
+2. **El origen de la rejilla** era el instante de pulsar Play. Pasa a ser
+   `Play + presupuesto`, fijado al arrancar el transporte como ya se fija la
+   `MusicalTimeline`.
+
+El presupuesto es la misma cantidad en los dos sitios:
+
+```
+presupuesto = max(0, −Delay en nanosegundos)
+```
+
+**Por qué.** Delay desplaza el Track respecto a la rejilla, y su mitad negativa
+adelanta eventos. Un evento adelantado **tiene que calcularse antes de su
+instante**, y hoy no lo estaría en ninguno de los dos momentos:
+
+- *En régimen:* `TrackScheduler` selecciona por el instante de **rejilla**, así
+  que calcularía un Step unos 20 ms antes de su rejilla y pediría su emisión
+  hasta un Step antes de eso — en el pasado, en cada vuelta del anillo.
+- *En el arranque:* el Step 0 con Delay negativo se pediría para un instante
+  anterior al propio transporte.
+
+La alternativa era recortar el rango de Delay negativo a lo que cabe en la
+ventana de 20 ms, que resuelve el problema técnico vaciando el parámetro:
+20 ms son inaudibles como desplazamiento musical.
+
+**Qué se conserva de la regla que enmienda.** La frase de arriba —«esa latencia
+acota el tamaño de la ventana»— sigue siendo cierta donde vive el default. El
+presupuesto es **dinámico**, no el máximo del rango: con Delay ≥ 0 vale
+exactamente 0, y entonces el horizonte, el origen y la latencia de knob son los
+de siempre. El coste lo paga solo quien pide Delay negativo, y es literalmente lo
+que pidió.
+
+Fijar el presupuesto al máximo del rango habría sido la implementación simple y
+habría alargado el look-ahead un Step entero para todo el mundo, rompiendo
+«un giro debe oírse en el step siguiente» para quien no usa el parámetro.
+
+**Lo que introduce.** Con Delay −100%, pulsar Play tarda un Step en sonar; y
+bajar el Delay a negativo **mientras suena** mueve un presupuesto que el origen
+ya no puede acompañar, así que recorta una ventana de eventos una sola vez.
+Las dos están registradas como limitaciones conocidas en
+`conductor/tracks/mvp-groove-temporal_20260830/spec.md`.
+
 ## Concurrencia
 
 **Estado inmutable con snapshot publicado atómicamente.** La UI edita el estado en el hilo principal; el scheduler lee un snapshot inmutable. **No hay locks en el camino de timing** — ni esperas, ni riesgo de inversión de prioridad, ni suspensiones por `await`.
