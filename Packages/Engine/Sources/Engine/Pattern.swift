@@ -61,6 +61,29 @@ public struct Pattern: Equatable, Sendable {
         )
     }
 
+    /// El Pattern con el que arranca la app: material **solo en el Track 1**.
+    ///
+    /// **Una rebanada de motor no debería cambiar lo que se oye.** Al pasar de
+    /// un Track a dieciséis, la app suena exactamente como sonaba —16/5 sobre
+    /// una sola altura— hasta que alguien use los otros quince. El silencio de
+    /// esos quince sale de su pool vacío, no de un Shape apagado.
+    ///
+    /// El material es el que la app ya traía: Steps 16 y Pulses 5, que es uno de
+    /// los casos de la Pre Spec y se reconoce de oído, sobre un pool de una sola
+    /// altura, que la Pre Spec describe como «centro estable». Arrancar con el
+    /// pool vacío también sería legítimo, pero la app abriría muda y averiguar
+    /// que hay que pulsar un pad no es algo que la pantalla comunique todavía.
+    ///
+    /// Los literales están dentro de rango, así que el desempaquetado no puede
+    /// fallar.
+    public static let initial = Pattern().replacing(
+        Track(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!),
+            pool: PitchPool().inserting(Pitch(48)!)
+        ),
+        at: 0
+    )
+
     /// El Track de esa posición, o `nil` fuera de 0–15.
     ///
     /// Fuera de rango devuelve `nil` con el mismo criterio que un pad fuera de la
