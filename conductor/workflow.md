@@ -327,6 +327,47 @@ Aplica también a los commits que genera Conductor —`conductor(plan): …`,
 fixes de revisión, archivado de tracks—: van en la misma rama y el mismo PR,
 no sueltos sobre `main`.
 
+### El cuerpo del PR es corto
+
+> **Enmienda del 2026-08-31.** Los cuerpos de PR venían creciendo hasta ser un
+> resumen del track entero —tabla del preset incluida—, y eso es duplicar lo que
+> ya está escrito en otro sitio y envejece peor: `spec.md` tiene las decisiones,
+> `plan.md` el estado, las git notes el detalle de cada tarea, y el repositorio
+> las tablas. Un PR largo hace que se lea en diagonal, que es lo contrario de lo
+> que un PR sirve.
+
+**Cinco líneas y una tabla de verificación, como techo.** El cuerpo responde tres
+preguntas y ninguna más:
+
+1. **Qué cambia**, en una o dos frases. Si el cambio tiene un núcleo, se nombra.
+2. **Cómo se verificó**, en números: tests, cobertura, jitter si aplica,
+   dispositivo si aplica.
+3. **Qué queda pendiente**, si queda algo.
+
+Lo demás se enlaza, no se copia: `spec.md` para las decisiones y su porqué,
+`plan.md` para el estado, las git notes para el detalle de cada tarea, y los
+ficheros del repositorio para las tablas.
+
+**El título lleva el núcleo del cambio**, no el número de la rebanada solo.
+
+Ejemplo del tamaño correcto:
+
+```
+Rebanada 7 del MVP: un pad deja de ser una altura y pasa a ser un índice. La
+altura la decide la escala vigente, no el número de nota entrante, y los pads 8
+y 16 mueven el registro sin tocar el pool.
+
+Decisiones y porqués en `spec.md`; el detalle de cada tarea, en las git notes.
+
+| | |
+|---|---|
+| `Engine` | 311 tests · cobertura 98,36% |
+| `MIDI` | 293 tests · cobertura 92,52% |
+| Dispositivo | Los 48 controles según la tabla, sin discrepancias |
+
+Sin medición de jitter: no mueve ningún instante (NFR3 del track).
+```
+
 ### El check puede fallar sin culpa del cambio
 
 `MIDITests` arrastra un flake conocido: `clientCreationFailed(-50)` al crear
