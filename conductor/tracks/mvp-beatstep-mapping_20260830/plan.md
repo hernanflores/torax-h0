@@ -137,11 +137,11 @@ la rebanada 8.
 > 2026-08-28 sobre los encoders en `Relative #2`, donde una suposición sobre el
 > controlador clavó todos los parámetros en su extremo.
 
-- [ ] Task: El preset del BeatStep Pro, versionado
+- [~] Task: El preset del BeatStep Pro, versionado — `687bf94` · **parcial: falta el `.bspx`, que se exporta en la sesión con el dispositivo**
   - [ ] Archivo cargable por MIDI Control Center en el repositorio
-  - [ ] README junto a él con la tabla completa: los dieciséis knobs (nueve con parámetro, siete libres), los dieciséis pads y los dieciséis step buttons, con su número y su significado
-  - [ ] El README incluye el modo **`Relative #2`** de los encoders, que ya está documentado en `workflow.md` y sin el cual todos los parámetros saltan a su extremo
-  - [ ] El README dice qué hacer con un BeatStep Pro que no tenga el preset cargado: qué se rompe y cómo se reconoce
+  - [x] README junto a él con la tabla completa: los dieciséis knobs (nueve con parámetro, siete libres), los dieciséis pads y los dieciséis step buttons, con su número y su significado
+  - [x] El README incluye el modo **`Relative #2`** de los encoders, que ya está documentado en `workflow.md` y sin el cual todos los parámetros saltan a su extremo
+  - [x] El README dice qué hacer con un BeatStep Pro que no tenga el preset cargado: qué se rompe y cómo se reconoce
 - [ ] Task: Verificación en dispositivo de los cuarenta y ocho controles
   - [ ] iPad real, BeatStep Pro con el preset cargado, sintetizador o destino MIDI real
   - [ ] Los dieciséis pads, uno a uno: qué nota mete cada uno, contra la tabla
