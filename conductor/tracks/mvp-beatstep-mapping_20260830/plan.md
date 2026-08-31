@@ -27,7 +27,7 @@ ni `SchedulerThread`, y no se añade carga visual al ritmo del reloj: es el caso
 que la nota del 2026-08-28 de `workflow.md` exime. La medición final de v1 va con
 la rebanada 8.
 
-## Phase 1: Los grados y la superficie de pads
+## Phase 1: Los grados y la superficie de pads [checkpoint: 7ad404a]
 
 > `Engine` puro. Sin CoreMIDI, sin simulador, sin hardware. Es donde vive la
 > corrección musical del track.
@@ -59,7 +59,7 @@ la rebanada 8.
   - [x] Tests (Red): **no envuelve** —del tope agudo no se vuelve al grave— y **no recorta** —ninguna altura se queda pegada al borde mientras otra sigue subiendo—, que son las dos formas de romper el alineamiento por octava
   - [x] Tests (Red): el tope depende de la escala y del Root, y se comprueba sobre los dos extremos en las cinco escalas
   - [x] Implementación (Green): el desplazamiento es un valor del estado de la superficie; subir o bajar devuelve la superficie nueva o la misma
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: El pad es un índice, no una altura
 
