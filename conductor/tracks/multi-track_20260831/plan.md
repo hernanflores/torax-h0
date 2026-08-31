@@ -83,11 +83,11 @@ regresión la bloquea.
   - [x] Tests (Red): **dos Tracks con la misma Probability no omiten los mismos Pulses** — con un solo generador compartido el aleatorio se oiría como una sola decisión, y este test es lo que lo impide
   - [x] Tests (Red): el estado del aleatorio **no** entra en el snapshot: sigue siendo del scheduler, que es su único dueño, y `_isPOD(Pattern.self)` lo confirma
   - [x] Implementación (Green)
-- [~] Task: Cada Track emite por su canal
-  - [ ] Tests (Red): los mensajes de un Track llevan su canal; cambiarlo cambia lo que sale
-  - [ ] Tests (Red): dos Tracks en el mismo canal conviven sin pisarse los note-off
-  - [ ] Implementación (Green)
-- [ ] Task: Stop para los dieciséis sin dejar notas colgadas
+- [x] Task: Cada Track emite por su canal — `5f7d425`
+  - [x] Tests (Red): los mensajes de un Track llevan su canal; cambiarlo cambia lo que sale
+  - [x] Tests (Red): dos Tracks en el mismo canal conviven sin pisarse los note-off
+  - [x] Implementación (Green)
+- [~] Task: Stop para los dieciséis sin dejar notas colgadas
   - [ ] Tests (Red): con los dieciséis sonando, tras `Stop` no queda ningún note-on sin su note-off
   - [ ] Tests (Red): **el caso con Delay positivo**, que la rebanada 6 dejó anotado como deuda sin reproducir: con dieciséis Tracks es más probable, así que se cubre aquí
   - [ ] Tests (Red): el gate de Sustain de cada Track es independiente del de los demás
