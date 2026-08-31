@@ -52,12 +52,21 @@ public struct Pattern: Equatable, Sendable {
     /// desempaquetado no puede fallar.
     static let emptyTrack = Track(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!))
 
-    /// Dieciséis Tracks vacíos.
+    /// Dieciséis Tracks vacíos, **cada uno en su canal**: el Track N emite por
+    /// el canal N.
+    ///
+    /// Dieciséis Tracks y dieciséis canales es la correspondencia que no hay que
+    /// explicar, y sin ella los dieciséis sonarían al mismo instrumento. Se puede
+    /// cambiar: dos capas rítmicas sobre el mismo sinte es un caso real.
     public init() {
-        let empty = Self.emptyTrack
+        func empty(_ number: Int) -> Track {
+            Self.emptyTrack.on(Channel(unchecked: number))
+        }
         tracks = (
-            empty, empty, empty, empty, empty, empty, empty, empty,
-            empty, empty, empty, empty, empty, empty, empty, empty
+            empty(1), empty(2), empty(3), empty(4),
+            empty(5), empty(6), empty(7), empty(8),
+            empty(9), empty(10), empty(11), empty(12),
+            empty(13), empty(14), empty(15), empty(16)
         )
     }
 

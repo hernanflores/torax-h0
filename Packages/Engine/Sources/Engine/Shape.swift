@@ -182,10 +182,34 @@ public struct Track: Equatable, Sendable {
     /// snapshot en algo que dos hilos mutan.
     public let groove: Groove
 
-    public init(shape: Shape, pool: PitchPool = PitchPool(), groove: Groove = .default) {
+    /// Por dónde sale lo que este Track emite.
+    ///
+    /// **Es configuración, no material generativo**, así que se edita en
+    /// pantalla y no con un knob: `product-guidelines.md` pone esa frontera del
+    /// lado táctil, donde ya están Scale y Root.
+    ///
+    /// Vive en `Track` porque el hilo del scheduler lo necesita para construir
+    /// el mensaje, y lo único que ese hilo lee es el snapshot publicado — la
+    /// misma razón que trajo aquí al pool y al Groove.
+    public let channel: Channel
+
+    public init(
+        shape: Shape,
+        pool: PitchPool = PitchPool(),
+        groove: Groove = .default,
+        channel: Channel = .first
+    ) {
         self.shape = shape
         self.pool = pool
         self.groove = groove
+        self.channel = channel
+    }
+
+    /// El mismo Track emitiendo por otro canal.
+    ///
+    /// Cambiar el canal no toca el material: es configuración, no contenido.
+    public func on(_ channel: Channel) -> Track {
+        Track(shape: shape, pool: pool, groove: groove, channel: channel)
     }
 
     /// Indica si el Step dado dispara, combinando Shape y Rotate.
