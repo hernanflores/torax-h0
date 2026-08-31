@@ -23,6 +23,7 @@ struct TonalView: View {
 
     let frame: TonalFrame
     let pool: PitchPool
+    let surface: PadSurface
     let onFrameChange: (TonalFrame) -> Void
 
     var body: some View {
@@ -34,6 +35,7 @@ struct TonalView: View {
             scales
             roots
             poolReadout
+            padsReadout
         }
     }
 
@@ -109,6 +111,68 @@ struct TonalView: View {
                     }
                 }
             }
+        }
+    }
+
+    // MARK: - La octava de los pads
+
+    /// En qué registro están los pads ahora mismo.
+    ///
+    /// **Sin esto, pulsar un pad y no reconocer la nota no tiene explicación
+    /// visible** — y en el tope, un pad que deja de responder parecería un
+    /// defecto. Es la razón de que esta lectura exista (FR11).
+    ///
+    /// **Estado persistente, no valor grande transitorio.** No lo mueve un knob:
+    /// lo mueven los pads 8 y 16, y se queda donde se dejó. El valor grande que
+    /// se desvanece es para lo que cambia mientras se gira.
+    ///
+    /// Se nombra por las alturas que se van a oír —el primer pad y el noveno, que
+    /// es el mismo doce semitonos arriba—, no por un número de octava: el número
+    /// habría que traducirlo, y el nombre de la nota se compara directamente con
+    /// lo que suena.
+    private var padsReadout: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            label("Pads")
+
+            HStack(spacing: 12) {
+                Text(range)
+                    .font(.title3.weight(.semibold).monospaced())
+                    .foregroundStyle(Palette.tonal)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        Palette.tonal.opacity(0.15),
+                        in: RoundedRectangle(cornerRadius: 6)
+                    )
+
+                if let limit {
+                    Text(limit)
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(Palette.muted)
+                }
+            }
+        }
+    }
+
+    /// Las dos octavas de la superficie, por el nombre de su primera nota.
+    private var range: String {
+        guard let first = surface.pitch(at: 0), let ninth = surface.pitch(at: 8) else {
+            return "—"
+        }
+        return "\(first.description) – \(ninth.description)"
+    }
+
+    /// Qué se acabó, cuando se acabó.
+    ///
+    /// **Un pad que no responde sin explicación visible es el defecto que esta
+    /// lectura existe para evitar.** En el tope se dice cuál, y en medio no se
+    /// dice nada: no hay nada que avisar.
+    private var limit: String? {
+        switch (surface.canShiftDown, surface.canShiftUp) {
+        case (false, true): "Lowest octave"
+        case (true, false): "Highest octave"
+        case (false, false): "No room to move"
+        case (true, true): nil
         }
     }
 
