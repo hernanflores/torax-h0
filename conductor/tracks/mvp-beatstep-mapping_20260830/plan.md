@@ -66,12 +66,12 @@ la rebanada 8.
 > `MIDI`. Es el cambio de modelo: el número de nota entrante deja de llegar a
 > `Pitch`. Sin arrancar el bucle del scheduler.
 
-- [ ] Task: El bloque de pads del preset se resuelve a índice
-  - [ ] Tests (Red): un `noteOn` del bloque de pads da su índice 0–15; el primero da 0 y el decimosexto da 15
-  - [ ] Tests (Red): una nota por debajo o por encima del bloque **no da índice** y no publica nada — mismo criterio que un CC sin asignar
-  - [ ] Tests (Red): el bloque es un dato del mapeo, no una constante repartida por el código: cambiarlo mueve los dieciséis pads a la vez
-  - [ ] Tests (Red): **el número de transporte no es la altura musical.** Un test que fije explícitamente que el pad cuyo mensaje es la nota 36 puede producir la nota 48, para que la coincidencia numérica del bloque no se lea nunca como identidad
-  - [ ] Implementación (Green): resta contra la nota base del bloque, sin tabla
+- [x] Task: El bloque de pads del preset se resuelve a índice — `e9348cf`
+  - [x] Tests (Red): un `noteOn` del bloque de pads da su índice 0–15; el primero da 0 y el decimosexto da 15
+  - [x] Tests (Red): una nota por debajo o por encima del bloque **no da índice** y no publica nada — mismo criterio que un CC sin asignar
+  - [x] Tests (Red): el bloque es un dato del mapeo, no una constante repartida por el código: cambiarlo mueve los dieciséis pads a la vez
+  - [x] Tests (Red): **el número de transporte no es la altura musical.** Un test que fije explícitamente que el pad cuyo mensaje es la nota 36 puede producir la nota 48, para que la coincidencia numérica del bloque no se lea nunca como identidad
+  - [x] Implementación (Green): resta contra la nota base del bloque, sin tabla
 - [ ] Task: Pulsar un pad alterna el pool por índice
   - [ ] Tests (Red): los casos de `PadPoolInputTests` que siguen valiendo, **adaptados al índice y no reescritos**: un pad mete la altura, el mismo pad la saca, varios pads construyen un pool, el noveno se rechaza sin publicar, el note-off no alterna, el note-on de velocity cero no alterna
   - [ ] Tests (Red): **un pad sin altura asignada no publica nada** — el 6 con `pentatonic`, y los 8 y 16 en cuanto a pool
