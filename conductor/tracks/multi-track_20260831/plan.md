@@ -29,11 +29,11 @@ regresión la bloquea.
   - [x] Tests (Red): sustituir un Track devuelve un `Pattern` nuevo con **solo ese** cambiado, comprobado sobre los otros quince
   - [x] Implementación (Green): almacenamiento inline de tamaño fijo, por la misma razón que `PitchPool` lo es — un `Array` traería conteo de referencias y rompería la trivialidad
   - [x] **El nombre es `Pattern` y no una palabra nueva** (NFR6): la Pre Spec llama así al conjunto de los dieciséis Tracks. Que todavía no se pueda tener más de uno es una limitación, no otro concepto
-- [~] Task: El Track por defecto y el arranque
-  - [ ] Tests (Red): el `Pattern` inicial tiene material **solo en el Track 1**, con el pool de una altura que la app ya usa; los otros quince están vacíos
-  - [ ] Tests (Red): un Track vacío no dispara nada aunque su Shape tenga Pulses — el comportamiento de hoy, comprobado ahora sobre quince a la vez
-  - [ ] Implementación (Green)
-- [ ] Task: El canal MIDI es un dato del Track
+- [x] Task: El Track por defecto y el arranque — `1d3c768`
+  - [x] Tests (Red): el `Pattern` inicial tiene material **solo en el Track 1**, con el pool de una altura que la app ya usa; los otros quince están vacíos
+  - [x] Tests (Red): un Track vacío no dispara nada aunque su Shape tenga Pulses — el comportamiento de hoy, comprobado ahora sobre quince a la vez
+  - [x] Implementación (Green)
+- [~] Task: El canal MIDI es un dato del Track
   - [ ] Tests (Red): el Track N arranca en el canal N, sobre los dieciséis
   - [ ] Tests (Red): cambiar el canal de un Track no toca el de los otros; dos Tracks pueden compartir canal
   - [ ] Tests (Red): el canal se mantiene dentro de 1–16 por construcción
