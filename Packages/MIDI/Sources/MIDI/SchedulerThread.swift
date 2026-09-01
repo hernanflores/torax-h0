@@ -63,6 +63,14 @@ public final class SchedulerThread: @unchecked Sendable {
 
     private let configuration: SchedulerConfiguration
     private let material: SchedulerMaterial
+
+    /// Los dieciséis Tracks, cuando quien arranca el hilo los tiene.
+    ///
+    /// **`nil` es la vía del arnés de medición**, que mide la rejilla y no el
+    /// material: le basta un `SchedulerMaterial` sobre una `MusicalTimeline`. Las
+    /// dos vías construyen el mismo `PatternScheduler`, para que lo que se mide
+    /// pase por el mismo recorrido que lo que suena.
+    private let pattern: Pattern?
     private let handoff: PatternHandoff?
     private let handler: StepHandler
 
@@ -84,8 +92,10 @@ public final class SchedulerThread: @unchecked Sendable {
         material: SchedulerMaterial = .everyStep,
         handoff: PatternHandoff? = nil,
         playhead: PlayheadClock? = nil,
+        pattern: Pattern? = nil,
         handler: @escaping StepHandler
     ) {
+        self.pattern = pattern
         self.configuration = configuration
         self.material = material
         self.handoff = handoff
@@ -99,10 +109,12 @@ public final class SchedulerThread: @unchecked Sendable {
         guard !running.value else { return }
         running.value = true
 
-        let thread = Thread { [configuration, material, handoff, playhead, handler, running] in
+        let thread = Thread {
+            [configuration, material, pattern, handoff, playhead, handler, running] in
             SchedulerThread.run(
                 configuration: configuration,
                 material: material,
+                pattern: pattern,
                 handoff: handoff,
                 playhead: playhead,
                 handler: handler,
@@ -150,12 +162,18 @@ public final class SchedulerThread: @unchecked Sendable {
     private static func run(
         configuration: SchedulerConfiguration,
         material: SchedulerMaterial,
+        pattern: Pattern?,
         handoff: PatternHandoff?,
         playhead: PlayheadClock?,
         handler: StepHandler,
         running: AtomicFlag
     ) {
-        let scheduler = PatternScheduler(timeline: configuration.timeline, material: material)
+        // Con Pattern se recorren los dieciséis; sin él, la vía del arnés. Las
+        // dos construyen el mismo scheduler.
+        let scheduler =
+            pattern.map {
+                PatternScheduler(tempo: configuration.timeline.tempo, pattern: $0)
+            } ?? PatternScheduler(timeline: configuration.timeline, material: material)
         let startHostTicks = HostClock.now()
         let sleepNanoseconds = UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))
 

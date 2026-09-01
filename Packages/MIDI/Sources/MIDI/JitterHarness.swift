@@ -34,13 +34,22 @@ public struct JitterMeasurementConfiguration: Sendable {
     /// lo pedido contra lo entregado, y lo pedido ya lo lleva dentro—.
     public let groove: Groove?
 
+    /// Cuántos Tracks suenan a la vez durante la medición.
+    ///
+    /// **Uno mide la rejilla; dieciséis miden el peor caso realista de la v2.**
+    /// El coste de recorrer dieciséis rejillas dentro de la ventana no se puede
+    /// deducir de la medición de una, y lo que decide si la rebanada vale es el
+    /// número con las dieciséis dentro.
+    public let trackCount: Int
+
     public init(
         tempo: Tempo,
         division: Division = .sixteenth,
         sampleCount: Int = 200,
         lookAheadNanoseconds: Int64 = 20_000_000,
         timeoutSeconds: Double = 120,
-        groove: Groove? = nil
+        groove: Groove? = nil,
+        trackCount: Int = 1
     ) {
         self.tempo = tempo
         self.division = division
@@ -48,6 +57,7 @@ public struct JitterMeasurementConfiguration: Sendable {
         self.lookAheadNanoseconds = lookAheadNanoseconds
         self.timeoutSeconds = timeoutSeconds
         self.groove = groove
+        self.trackCount = trackCount
     }
 }
 
@@ -125,7 +135,8 @@ public enum JitterHarness {
         // para que dos muestras solo se diferencien en cuándo salieron.
         let thread = SchedulerThread(
             configuration: schedulerConfiguration,
-            material: material(for: configuration.groove)
+            material: material(for: configuration.groove),
+            pattern: pattern(forTrackCount: configuration.trackCount, groove: configuration.groove)
         ) {
             _, _, _, _, hostTime in
             // Realtime: hilo del scheduler.
@@ -161,6 +172,33 @@ public enum JitterHarness {
     /// Steps y sigue mandando el mismo mensaje: lo único que cambia respecto a
     /// `everyStep` es que ahora los instantes llevan el desplazamiento dentro.
     /// Un reparto euclidiano de verdad solo quitaría muestras al histograma.
+    /// Los Tracks que suenan durante la medición, o `nil` para medir con uno.
+    ///
+    /// Todos llevan el anillo lleno y la misma altura: el arnés manda un mensaje
+    /// fijo y lo que mide es *cuándo* sale, no qué suena. Con dieciséis, cada
+    /// Step entrega dieciséis mensajes con el mismo instante programado, que es
+    /// exactamente la carga que la v2 introduce.
+    static func pattern(forTrackCount count: Int, groove: Groove?) -> Pattern? {
+        guard count > 1 else { return nil }
+
+        guard let steps = Steps(16), let pulses = Pulses(16), let pitch = Pitch(60) else {
+            return nil
+        }
+
+        var pattern = Pattern()
+        for index in 0..<min(count, Pattern.trackCount) {
+            pattern = pattern.replacing(
+                Track(
+                    shape: Shape(steps: steps, pulses: pulses),
+                    pool: PitchPool().inserting(pitch),
+                    groove: groove ?? .default
+                ),
+                at: index
+            )
+        }
+        return pattern
+    }
+
     static func material(for groove: Groove?) -> SchedulerMaterial {
         // El anillo lleno se construye con los inicializadores validadores, que
         // es lo que `code_styleguides/swift.md` pide fuera de los tests. Sus
