@@ -1,0 +1,11 @@
+{
+  "id": "cycles_20260901",
+  "title": "v2 rebanada 3 — Cycles, el Track varía por vuelta",
+  "type": "Feature",
+  "status": "new",
+  "created_at": "2026-09-01",
+  "updated_at": "2026-09-01",
+  "phases": 6,
+  "tasks": 25,
+  "depends_on": ["multi-track_20260831", "v2 rebanada 2 — la UI del handoff"]
+}
