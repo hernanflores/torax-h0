@@ -27,25 +27,30 @@ struct TonalView: View {
     let onFrameChange: (TonalFrame) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Tonal")
-                .font(Typography.sectionTitle)
-                .foregroundStyle(Palette.tonal)
-
+        VStack(alignment: .leading, spacing: 24) {
             scales
-            roots
-            poolReadout
-            padsReadout
+            keyboard
+            statusLine
+            HStack(alignment: .top, spacing: 32) {
+                poolReadout
+                padsReadout
+            }
         }
     }
 
-    // MARK: - Scale
+    private var keys: TonalKeyboard { TonalKeyboard(frame: frame) }
 
+    // MARK: - La rejilla de escalas
+
+    /// **Seis botones**: las cinco escalas y `+User`.
+    ///
+    /// `+User` va con borde discontinuo. La Pre Spec admite escalas de usuario
+    /// —«la escala puede ser preset o de usuario»— y esta rebanada no las
+    /// entrega; el borde discontinuo es el signo que el handoff define para
+    /// «todavía no», el mismo que llevan las tres pestañas que no existen.
     private var scales: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             label("Scale")
-            // Envuelve porque a lo ancho de un iPad caben las cinco, pero el
-            // objetivo táctil manda sobre la rejilla: se toca de pie.
             HStack(spacing: 10) {
                 ForEach(Scale.ordered, id: \.self) { scale in
                     button(
@@ -54,31 +59,87 @@ struct TonalView: View {
                         action: { onFrameChange(TonalFrame(scale: scale, root: frame.root)) }
                     )
                 }
+
+                Text("+User")
+                    .font(Typography.body)
+                    .frame(minWidth: 96, minHeight: 52)
+                    .brutalistUnavailable(radius: Brutalist.radiusLarge)
             }
         }
     }
 
-    // MARK: - Root
+    // MARK: - El gráfico de notas
 
-    /// Las doce clases de altura, todas elegibles.
+    /// Una barra por nota: **las de la escala altas, las de fuera cortas y
+    /// oscuras**, y la raíz con trazo de 3px y etiqueta destacada.
     ///
-    /// No hay Roots «fuera de escala»: el Root es la fundamental **que
-    /// transpone** la Scale (Pre Spec), así que es él quien decide dónde se
-    /// apoya el conjunto, no al revés.
-    private var roots: some View {
-        VStack(alignment: .leading, spacing: 8) {
+    /// **Las doce siguen siendo tocables**, y ahí no se sigue al handoff. La
+    /// razón está escrita en `TonalKeyboard.Key.canBecomeRoot`: elegir una nota
+    /// de fuera construye un marco nuevo en el que esa nota es la fundamental,
+    /// así que «está en la escala vigente» no dice nada sobre si puede ser raíz.
+    /// La altura de la barra informa; no restringe.
+    private var keyboard: some View {
+        VStack(alignment: .leading, spacing: 10) {
             label("Root")
-            HStack(spacing: 6) {
-                ForEach(0..<12, id: \.self) { pitchClass in
-                    let root = Root(pitchClass)!
-                    button(
-                        title: root.description,
-                        isSelected: root == frame.root,
-                        action: { onFrameChange(TonalFrame(scale: frame.scale, root: root)) }
-                    )
+            HStack(alignment: .bottom, spacing: 6) {
+                ForEach(keys.keys, id: \.pitchClass) { key in
+                    bar(for: key)
                 }
             }
+            .frame(height: 132)
         }
+    }
+
+    private func bar(for key: TonalKeyboard.Key) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+
+        return Button {
+            onFrameChange(TonalFrame(scale: frame.scale, root: Root(key.pitchClass)!))
+        } label: {
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+                Text(key.name)
+                    .font(key.isRoot ? Typography.bodyStrong : Typography.caption)
+                    .foregroundStyle(labelColour(for: key))
+                    .padding(.bottom, 10)
+            }
+            // Las de fuera de la escala miden un tercio: se ven, se pueden
+            // tocar, y a un metro no se confunden con las de dentro.
+            .frame(maxWidth: .infinity)
+            .frame(height: key.isInScale ? 132 : 44)
+            .background(fill(for: key), in: shape)
+            .overlay(
+                shape.stroke(
+                    key.isRoot ? Color.white : (key.isInScale ? Palette.tonal : Palette.border),
+                    // 3px solo en la raíz: es el tratamiento que el handoff
+                    // reserva para distinguirla de «está en la escala».
+                    lineWidth: key.isRoot ? Brutalist.strokeEmphasis : Brutalist.stroke
+                )
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func fill(for key: TonalKeyboard.Key) -> Color {
+        if key.isRoot { return Palette.tonal }
+        return key.isInScale ? Color.clear : Palette.inset
+    }
+
+    private func labelColour(for key: TonalKeyboard.Key) -> Color {
+        if key.isRoot { return Palette.toolbar }
+        return key.isInScale ? Palette.tonal : Palette.muted
+    }
+
+    /// `Scale · <nombre>   Root · <nota>`, con la raíz en color.
+    private var statusLine: some View {
+        HStack(spacing: 8) {
+            Text("Scale · \(name(of: frame.scale))")
+                .foregroundStyle(Palette.mutedBright)
+            Text("Root · ")
+                .foregroundStyle(Palette.mutedBright)
+                + Text(frame.root.description).foregroundStyle(Palette.tonal)
+        }
+        .font(Typography.bodyStrong)
     }
 
     // MARK: - El pool
