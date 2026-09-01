@@ -25,6 +25,13 @@ struct ContentView: View {
     @State private var model = TransportModel()
     @State private var jitter = JitterMeasurementModel()
 
+    /// Qué familia muestra el panel en reposo.
+    ///
+    /// **Es navegación, no edición** (FR4): elegir un tab cambia lo que se mira,
+    /// nunca lo que suena. Por eso funciona sin controlador conectado — mirar no
+    /// es editar — y por eso vive en la vista y no en el modelo.
+    @State private var family: ParameterFamily = .shape
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
@@ -53,6 +60,13 @@ struct ContentView: View {
         .background(Palette.background)
         .foregroundStyle(.white)
         .onAppear { jitter.startIfRequestedByLaunchArguments() }
+        // **El giro manda sobre el tab.** Mover un knob de otra familia cambia
+        // el tab activo en vez de mostrar el valor con un acento que no
+        // corresponde al panel: la pantalla es el espejo del controlador, así
+        // que sigue a la mano y no al revés.
+        .onChange(of: model.transientChange) { _, change in
+            if let change { family = change.parameter.family }
+        }
     }
 
     // MARK: - La composición apaisada
@@ -130,7 +144,9 @@ struct ContentView: View {
     /// el acento de su familia. **Su contenido en reposo lo construye la tarea
     /// siguiente de la Fase 3**; por ahora sostiene lo que ya había.
     private var readout: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 12) {
+            Spacer(minLength: 0)
+
             // **El valor grande sustituye al estado en reposo, no lo tapa**, y
             // sobre todo no tapa los anillos: viven en otra columna (FR14). Con
             // esto la regla de `product-guidelines.md` —el patrón permanece
@@ -139,14 +155,34 @@ struct ContentView: View {
             if let change = model.transientChange {
                 transient(change)
             } else {
-                parameters
+                resting
             }
+
             Spacer(minLength: 0)
             transport
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(24)
         .brutalistPanel()
+    }
+
+    /// Lo que el panel dice cuando no se está girando nada.
+    ///
+    /// El texto lo decide `FamilyReadout`, en `Engine` y con tests. Aquí solo se
+    /// compone y se le pone el acento de la familia.
+    private var resting: some View {
+        let readout = FamilyReadout(track: model.track, family: family)
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(readout.headline)
+                .font(Typography.transientValue)
+                .minimumScaleFactor(0.4)
+                .lineLimit(1)
+                .foregroundStyle(Palette.accent(for: family))
+            Text(readout.detail)
+                .font(Typography.parameterLine)
+                .foregroundStyle(Palette.mutedBright)
+        }
+        .padding(.horizontal, 24)
     }
 
     /// La columna derecha: los tres tabs de familia.
@@ -156,15 +192,53 @@ struct ContentView: View {
     /// medir antes de que sean interactivas.
     private var families: some View {
         VStack(spacing: 12) {
-            ForEach(ParameterFamily.allCases, id: \.self) { family in
-                Text(String(describing: family).uppercased())
-                    .font(Typography.captionStrong)
-                    .foregroundStyle(Palette.accent(for: family))
-                    .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .brutalistPanel(radius: Brutalist.radius)
+            ForEach(ParameterFamily.allCases, id: \.self) { candidate in
+                tab(candidate)
             }
             Spacer(minLength: 0)
+        }
+    }
+
+    /// Un tab de familia, con el tratamiento del handoff: **borde izquierdo
+    /// acentuado**, contorno y sombra dura en el activo.
+    ///
+    /// **Sigue funcionando sin controlador conectado.** La app es de solo
+    /// lectura sin knobs, pero mirar no es editar: los tabs cambian qué se mira.
+    private func tab(_ candidate: ParameterFamily) -> some View {
+        let accent = Palette.accent(for: candidate)
+        let isActive = candidate == family
+
+        return Button {
+            family = candidate
+        } label: {
+            HStack(spacing: 12) {
+                // El borde izquierdo acentuado: es lo que identifica la familia
+                // incluso cuando el tab no está activo.
+                Rectangle()
+                    .fill(accent)
+                    .frame(width: Brutalist.stroke * 2)
+                Text(Self.name(of: candidate))
+                    .font(isActive ? Typography.captionBold : Typography.captionStrong)
+                    .foregroundStyle(isActive ? Palette.toolbar : accent)
+                Spacer(minLength: 0)
+            }
+            .frame(minHeight: 52)
+            .padding(.trailing, 16)
+        }
+        .buttonStyle(.plain)
+        .brutalistControl(accent: accent, isSelected: isActive)
+    }
+
+    /// El vocabulario de la Pre Spec, en inglés y sin traducir (NFR7).
+    ///
+    /// No sale de `String(describing:)`: el nombre del caso de Swift es un
+    /// detalle del lenguaje, y que hoy coincida con el término del dominio no lo
+    /// convierte en la fuente de la que copiarlo.
+    private static func name(of family: ParameterFamily) -> String {
+        switch family {
+        case .shape: "SHAPE"
+        case .groove: "GROOVE"
+        case .tonal: "TONAL"
         }
     }
 
