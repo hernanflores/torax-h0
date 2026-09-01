@@ -182,10 +182,87 @@ public struct Track: Equatable, Sendable {
     /// snapshot en algo que dos hilos mutan.
     public let groove: Groove
 
-    public init(shape: Shape, pool: PitchPool = PitchPool(), groove: Groove = .default) {
+    /// Por dónde sale lo que este Track emite.
+    ///
+    /// **Es configuración, no material generativo**, así que se edita en
+    /// pantalla y no con un knob: `product-guidelines.md` pone esa frontera del
+    /// lado táctil, donde ya están Scale y Root.
+    ///
+    /// Vive en `Track` porque el hilo del scheduler lo necesita para construir
+    /// el mensaje, y lo único que ese hilo lee es el snapshot publicado — la
+    /// misma razón que trajo aquí al pool y al Groove.
+    public let channel: Channel
+
+    /// De qué escala y qué centro tonal sale el material de este Track.
+    ///
+    /// **Es del Track y no de la app** (v2): la Pre Spec pone los parámetros
+    /// generativos en el Track, y dos Tracks en tonalidades distintas es una
+    /// función y no un accidente. Hasta la v1 había un solo marco para todo, que
+    /// es lo que hacía imposible un bajo en menor bajo un arpegio en mayor.
+    public let frame: TonalFrame
+
+    /// En qué registro está editando los pads este Track.
+    ///
+    /// **Es la única concesión de `Track` a la superficie de control**, y está
+    /// aquí porque tiene que sobrevivir a cambiar de Track: volver a uno y
+    /// encontrarlo dos octavas más abajo de donde se dejó sería perder trabajo.
+    /// La altura de cada pad la sigue calculando `PadSurface`, que es quien sabe
+    /// de pads; esto es solo dónde se dejó.
+    public let padOctaveShift: Int
+
+    public init(
+        shape: Shape,
+        pool: PitchPool = PitchPool(),
+        groove: Groove = .default,
+        channel: Channel = .first,
+        frame: TonalFrame = TonalFrame(scale: .minor, root: .c),
+        padOctaveShift: Int = 0
+    ) {
         self.shape = shape
         self.pool = pool
         self.groove = groove
+        self.channel = channel
+        self.frame = frame
+        self.padOctaveShift = padOctaveShift
+    }
+
+    /// El mismo Track con lo que se le cambie, y **todo lo demás intacto**.
+    ///
+    /// > **Es la única forma legítima de editar un Track, desde el 2026-08-31.**
+    /// > Reconstruirlo con `Track(shape:pool:groove:)` compila, parece correcto y
+    /// > pierde en silencio todo lo que no se nombre. Pasó: `applying(_:to:)` se
+    /// > escribió cuando un Track eran tres campos, y al llegar el canal, el
+    /// > marco tonal y el registro de pads siguió construyendo con tres — así que
+    /// > **girar un knob devolvía el Track al canal 1, a Do menor y a la octava
+    /// > base**. Es exactamente la destrucción de material que
+    /// > `product-guidelines.md` prohíbe, y el compilador no podía verla porque
+    /// > los campos nuevos tenían valor por defecto.
+    /// >
+    /// > Con este método, añadir un campo al Track no puede volver a perderlo:
+    /// > hay un solo sitio que los enumera.
+    public func with(
+        shape: Shape? = nil,
+        pool: PitchPool? = nil,
+        groove: Groove? = nil,
+        channel: Channel? = nil,
+        frame: TonalFrame? = nil,
+        padOctaveShift: Int? = nil
+    ) -> Track {
+        Track(
+            shape: shape ?? self.shape,
+            pool: pool ?? self.pool,
+            groove: groove ?? self.groove,
+            channel: channel ?? self.channel,
+            frame: frame ?? self.frame,
+            padOctaveShift: padOctaveShift ?? self.padOctaveShift
+        )
+    }
+
+    /// El mismo Track emitiendo por otro canal.
+    ///
+    /// Cambiar el canal no toca el material: es configuración, no contenido.
+    public func on(_ channel: Channel) -> Track {
+        with(channel: channel)
     }
 
     /// Indica si el Step dado dispara, combinando Shape y Rotate.

@@ -38,17 +38,16 @@ final class TransportModel {
         return Shape(steps: steps, pulses: Pulses(5)!)
     }()
 
-    /// El marco tonal vigente. Configuración táctil, no de knob
-    /// (`product-guidelines.md`).
-    private(set) var frame = TonalFrame(scale: .minor, root: Root(0)!)
+    /// El marco tonal del Track seleccionado. Configuración táctil, no de knob
+    /// (`product-guidelines.md`), y **de cada Track** desde la v2.
+    var frame: TonalFrame { track.frame }
 
-    /// La superficie de pads vigente: qué altura tiene cada pad ahora mismo.
+    /// La superficie de pads del Track seleccionado: qué altura tiene cada pad
+    /// ahora mismo.
     ///
-    /// **Vive aquí y no dentro de `ControlInput` porque se ve sin controlador
-    /// conectado.** Sin controlador no se edita —como el resto del material
-    /// generativo— pero se lee: es estado del Track, no del cable. Cuando hay
-    /// entrada, la de `ControlInput` es la que manda y esta la sigue.
-    private(set) var surface = PadSurface(frame: TonalFrame(scale: .minor, root: Root(0)!))
+    /// Se calcula del Track, que es donde viven el marco y el registro: guardarla
+    /// aparte sería un segundo sitio donde pueden discrepar.
+    var surface: PadSurface { PadSurface(frame: track.frame, octaveShift: track.padOctaveShift) }
 
     /// Cambia Scale o Root y reencuadra el pool.
     ///
@@ -56,16 +55,35 @@ final class TransportModel {
     /// material generativo, y la frontera de `product-guidelines.md` la pone del
     /// lado de la pantalla.
     func setFrame(_ updated: TonalFrame) {
-        frame = updated
-        guard let controlInput else {
-            // Sin controlador la superficie se recalcula igual: se ve, aunque no
-            // se pueda mover.
-            surface = PadSurface(frame: updated, octaveShift: surface.octaveShift)
-            return
-        }
         controlInput.setFrame(updated)
-        track = controlInput.track
-        surface = controlInput.surface
+        syncFromControlInput()
+    }
+
+    /// Cambia el canal del Track seleccionado.
+    ///
+    /// Táctil, como Scale y Root: es configuración y no material generativo.
+    func setChannel(_ channel: Channel) {
+        controlInput.setChannel(channel)
+        syncFromControlInput()
+    }
+
+    /// Selecciona un Track desde la pantalla.
+    ///
+    /// **Hace lo mismo que su step button.** Sin controlador conectado es la
+    /// única vía, y con controlador las dos tienen que coincidir o la pantalla
+    /// mentiría.
+    func selectTrack(_ index: Int) {
+        controlInput.selectTrack(index)
+        syncFromControlInput()
+    }
+
+    /// Copia el estado de la entrada de control al modelo observable.
+    ///
+    /// Es un solo sitio a propósito: cada camino que edita —knob, pad, pantalla—
+    /// termina aquí, y así no hay ninguno que se olvide de refrescar la mitad.
+    private func syncFromControlInput() {
+        pattern = controlInput.pattern
+        selectedTrackIndex = controlInput.selectedTrackIndex
     }
 
     /// Con qué material arranca la app.
@@ -79,35 +97,15 @@ final class TransportModel {
     /// un pad para que suene no es algo que la pantalla comunique todavía.
     static let initialPool = PitchPool().inserting(Pitch(48)!)
 
-    /// Altura, canal y velocity con los que suena el Track.
+    /// El emisor, que ya no lleva nada dentro.
     ///
-    /// **Ni la altura ni la Velocity están ya aquí: salen del Track.** La
-    /// altura desde Tonal, la Velocity desde Groove. Lo único que queda es el
-    /// canal.
-    ///
-    /// Las dos constantes vivieron aquí y no en `Track` precisamente para que
-    /// nada consolidara un valor musical antes de que existiera el parámetro que
-    /// lo gobierna. Ya existen los dos.
-    ///
-    /// **El canal se queda, y no es una deuda del mismo tipo.** No es un
-    /// parámetro generativo —no lo mueve un knob ni varía por Cycle— sino
-    /// ajuste de Setup, y llega con el preset del BeatStep Pro.
-    ///
-    /// Canal 6 es un literal dentro de su rango (1–16), así que el
-    /// desempaquetado no puede fallar.
-    ///
-    /// **Se construye con la línea de tiempo vigente y no una sola vez.** El
-    /// gate sale de Sustain como porcentaje de la Division, así que el emisor
-    /// necesita saber cuánto dura un Step. La Division la elige el knob, y el
-    /// Creates a note emitter configured for the transport timeline's step duration.
-    /// - Parameter timeline: The timeline that determines the duration of each step.
-    /// - Returns: A note emitter configured for MIDI channel 6 and the timeline's step duration.
-    private static func voice(for timeline: MusicalTimeline) -> NoteEmitter {
-        NoteEmitter(
-            channel: MIDIChannel(6)!,
-            stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds)
-        )
-    }
+    /// > **Cambio de la v2.** Llevaba el canal —6, fijo— y la duración del Step.
+    /// > Los dos pasan a salir del Track en cada pulso: el canal porque cada
+    /// > Track tiene el suyo, y la duración porque cada Track tiene su Division.
+    /// > **Lo que se oye cambia**: el Track 1 emite ahora por el canal 1 y no
+    /// > por el 6, así que el sintetizador hay que ponerlo en el canal del Track
+    /// > —o cambiarle el canal al Track—.
+    private static func voice() -> NoteEmitter { NoteEmitter() }
 
     /// 120 BPM está dentro del rango válido de `Tempo`, así que no puede fallar.
     private static let tempo = Tempo(beatsPerMinute: 120)!
@@ -118,9 +116,23 @@ final class TransportModel {
     /// De dónde llegan los giros de knob.
     private(set) var sourceSelection = MIDIEndpointSelection(.source)
 
-    /// Track vigente, con los giros ya aplicados.
-    private(set) var track = Track(
-        shape: TransportModel.initialShape, pool: TransportModel.initialPool)
+    /// Los dieciséis Tracks, con los giros ya aplicados.
+    private(set) var pattern = Pattern.initial
+
+    /// Cuál se está editando y mostrando.
+    ///
+    /// **Lo mueven los step buttons y también la pantalla**: sin controlador
+    /// conectado hay que poder mirar los otros quince, aunque no se puedan
+    /// editar.
+    private(set) var selectedTrackIndex = 0
+
+    /// El Track seleccionado, que es el que la pantalla muestra.
+    var track: Track { pattern.track(at: selectedTrackIndex)! }
+
+    /// Cuáles tienen material: los vacíos no suenan, y eso se ve.
+    var tracksWithMaterial: [Bool] {
+        (0..<Pattern.trackCount).map { !(pattern.track(at: $0)?.pool.isEmpty ?? true) }
+    }
 
     /// Por qué la salida no está disponible, si no lo está.
     ///
@@ -135,7 +147,28 @@ final class TransportModel {
 
     private var input: CoreMIDIInput?
     private var sourceWatcher: MIDIEndpointWatcher?
-    private var controlInput: ControlInput?
+    /// La entrada de control, que existe **siempre**.
+    ///
+    /// **Antes se creaba al conectar el controlador**, y eso dejaba a la
+    /// pantalla sin nadie a quien pedirle una edición cuando no había cable: el
+    /// modelo tenía que llevar una copia del estado y sincronizarla. Ahora es la
+    /// única fuente, con o sin controlador; lo que llega por CoreMIDI es solo
+    /// otra vía de entrada.
+    private let controlInput: ControlInput
+
+    /// Por dónde la entrada de control llega al transporte.
+    ///
+    /// **Existe porque el transporte puede no existir.** Sin salida MIDI no hay
+    /// transporte, y la app tiene que seguir siendo editable —se ve, no se oye—.
+    /// Un relevo con el destino dentro deja que la entrada publique siempre y
+    /// que el transporte se enchufe cuando aparezca, en vez de repartir esa
+    /// condición por cada camino de edición.
+    private final class TransportRelay: @unchecked Sendable {
+        var transport: Transport?
+        func publish(_ pattern: Pattern) { transport?.publish(pattern) }
+    }
+
+    private let relay = TransportRelay()
 
     /// Endpoint al que se está enviando, leído desde el hilo del scheduler.
     ///
@@ -187,6 +220,15 @@ final class TransportModel {
     var canPlay: Bool { selection.hasEndpoint && transport != nil }
 
     init() {
+        // La entrada de control se construye primero y publica por el relevo:
+        // así no depende de que el transporte exista, ni de que llegue a
+        // existir.
+        let relay = self.relay
+        controlInput = ControlInput(
+            pattern: .initial,
+            publish: { [relay] updated in relay.publish(updated) }
+        )
+
         do {
             let output = try CoreMIDIOutput()
             self.output = output
@@ -203,14 +245,17 @@ final class TransportModel {
             // entrega el cambio en el principal.
             output.onSetupChanged = { [weak watcher] in watcher?.setupChanged() }
 
-            let timeline = MusicalTimeline(tempo: Self.tempo, division: track.shape.division)
-            transport = Transport(
+            let timeline = MusicalTimeline(
+                tempo: Self.tempo, division: Pattern.initial.track(at: 0)!.shape.division)
+            let createdTransport = Transport(
                 configuration: SchedulerConfiguration(timeline: timeline),
-                track: track,
-                emitter: Self.voice(for: timeline)
+                pattern: .initial,
+                emitter: Self.voice()
             ) { [output, activeDestination] message, hostTime in
                 Self.send(message, at: hostTime, through: output, to: activeDestination)
             }
+            transport = createdTransport
+            relay.transport = createdTransport
 
             activeDestination.value = UInt64(selection.selected?.endpoint ?? 0)
         } catch {
@@ -223,16 +268,6 @@ final class TransportModel {
     /// Cablea la entrada de control: los giros publican por el transporte, que
     /// es quien tiene el handoff que lee el scheduler.
     private func connectControlInput() {
-        guard let transport else { return }
-
-        let controlInput = ControlInput(
-            track: track,
-            frame: frame,
-            publish: { [weak transport] updated in transport?.publish(updated) }
-        )
-        self.controlInput = controlInput
-        surface = controlInput.surface
-
         do {
             let input = try CoreMIDIInput { [weak self] message in
                 // El callback llega desde el hilo de recepción de CoreMIDI. El
@@ -253,7 +288,17 @@ final class TransportModel {
                 self?.sourceSelection = selection
                 self?.connectToSelectedSource()
             }
-            input.onSetupChanged = { [weak sourceWatcher] in sourceWatcher?.setupChanged() }
+            // **Además de reconsultar, se vuelve a conectar.** El watcher solo
+            // avisa cuando la *elección* cambia, y CoreMIDI puede tirar la
+            // conexión del puerto sin que la lista de fuentes cambie —el
+            // dispositivo se reenumera y vuelve con el mismo nombre—. Sin esto,
+            // la app se queda con un puerto conectado a nada: los knobs dejan de
+            // llegar y no hay nada que la despierte. Conectar es idempotente y
+            // desconecta la anterior, así que repetirlo no cuesta nada.
+            input.onSetupChanged = { [weak sourceWatcher, weak self] in
+                sourceWatcher?.setupChanged()
+                Task { @MainActor in self?.connectToSelectedSource() }
+            }
         } catch {
             // Sin entrada, la app se queda en solo lectura y transporte. Es un
             // estado previsto, no un fallo que haya que anunciar.
@@ -268,17 +313,17 @@ final class TransportModel {
 
     /// Applies a MIDI message to the track and announces the resulting parameter change.
     private func apply(_ message: MIDIMessage) {
-        guard let controlInput else { return }
         // El Track entero y no solo su Shape: Groove vive dentro, así que
         // comparar Shapes dejaría a Velocity, Sustain y Probability sin poder
         // anunciarse.
         let previous = track
         guard controlInput.receive(message) else { return }
-        track = controlInput.track
-        // Los pads 8 y 16 mueven la superficie sin tocar el Track, así que se
-        // lee por separado: si solo se copiara el Track, la octava en pantalla
-        // se quedaría atrás.
-        surface = controlInput.surface
+        syncFromControlInput()
+
+        // **Solo se anuncia lo del Track que se está mirando.** Un step button
+        // cambia de Track, y comparar el anterior con el nuevo anunciaría como
+        // «giro» toda la diferencia entre dos Tracks distintos.
+        guard controlInput.selectedTrackIndex == selectedTrackIndex else { return }
         announce(ParameterChange(from: previous, to: track))
     }
 

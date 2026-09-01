@@ -1,11 +1,11 @@
 /// Lleva el origen temporal del scheduler a la interfaz, sin lock.
 ///
-/// **Es el camino que faltaba.** `TrackHandoff` publica del hilo de control al
+/// **Es el camino que faltaba.** `PatternHandoff` publica del hilo de control al
 /// del scheduler; esto va en la dirección contraria, que es la que el playhead
 /// necesita. Las reglas son las mismas: el hilo del scheduler no se bloquea, y
 /// quien lea tarde —o no lea— no puede afectarle.
 ///
-/// **Por qué basta un atómico y `TrackHandoff` necesitaba un anillo de
+/// **Por qué basta un atómico y `PatternHandoff` necesitaba un anillo de
 /// ranuras.** Un `Track` son varias palabras de memoria y no hay atómico de ese
 /// tamaño, así que hizo falta disciplina de ranura. Aquí lo publicado es **un
 /// solo entero de 64 bits**, el origen en ticks de host: cabe en el atómico que

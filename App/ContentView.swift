@@ -31,6 +31,14 @@ struct ContentView: View {
                 pattern
                 transport
                 Divider().overlay(Palette.border)
+                TrackSelectorView(
+                    selected: model.selectedTrackIndex,
+                    hasMaterial: model.tracksWithMaterial,
+                    channel: model.track.channel,
+                    onSelect: { model.selectTrack($0) },
+                    onChannelChange: { model.setChannel($0) }
+                )
+                Divider().overlay(Palette.border)
                 TonalView(
                     frame: model.frame,
                     pool: model.track.pool,

@@ -1,3 +1,4 @@
+import Engine
 /// Canal MIDI, 1–16.
 ///
 /// Se presenta 1-indexado, como en el hardware y en la Pre Spec, aunque en el
@@ -8,6 +9,16 @@ public struct MIDIChannel: Equatable, Sendable {
     public init?(_ number: Int) {
         guard (1...16).contains(number) else { return nil }
         self.number = number
+    }
+
+    /// El canal del dominio, traído al protocolo.
+    ///
+    /// **La conversión vive aquí, en la capa que conoce los dos tipos.** `Engine`
+    /// tiene su propio `Channel` porque no importa nada de plataforma —la misma
+    /// frontera que ya se pagó con `Pitch`— y los dos comparten el rango 1–16 por
+    /// construcción, así que no puede fallar.
+    public init(_ channel: Channel) {
+        number = channel.number
     }
 
     /// Vía interna para valores que son literales conocidos, como los del

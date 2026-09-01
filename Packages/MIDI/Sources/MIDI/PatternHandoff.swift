@@ -1,6 +1,6 @@
 import Engine
 
-/// Entrega el estado del Track al hilo del scheduler sin lock.
+/// Entrega el material —los dieciséis Tracks— al hilo del scheduler sin lock.
 ///
 /// **El problema.** El hilo principal edita el Track; el hilo del scheduler lo
 /// lee en cada ventana. Un lock entre ambos bloquearía el camino de timing, que
@@ -27,13 +27,26 @@ import Engine
 /// viejo, que es el problema que resuelven RCU y los hazard pointers. Aquí no
 /// existe: no se libera nada.
 ///
-/// **Qué pasa cuando crezca el modelo.** El protocolo no depende del tamaño del
-/// snapshot: cuando lleguen Tonal y Groove, la ranura simplemente será mayor.
+/// **Qué pasa cuando crece el modelo.** El protocolo no depende del tamaño del
+/// snapshot: llegaron Tonal y Groove, y en la v2 la ranura pasó de un `Track` a
+/// un `Pattern` de dieciséis sin tocar una línea de la disciplina de ranura.
+///
+/// **Lo que cuesta, medido el 2026-08-31**: `Track` son 144 bytes y `Pattern`
+/// 2304, así que el anillo de cuatro ranuras ocupa 9 KB y cada `load()` copia
+/// 2,25 KB. Medido en `debug` con el Track de 112 bytes —antes de que se le
+/// añadiera el marco tonal—, un `load()` completo salía a **274 ns** contra una
+/// ventana de 20 ms: el 0,0014% del presupuesto. Un 28% más de bytes no cambia
+/// el orden de magnitud. No hay nada que decidir aquí, y por eso se copia entero
+/// en vez de publicar por Track.
+///
+/// Lo que sí cambia es la aritmética del riesgo: copiar dieciséis veces más deja
+/// al lector expuesto más tiempo, y por eso el test de concurrencia publica un
+/// Pattern con los dieciséis Tracks correlacionados, no solo con sus campos.
 /// Lo que sí hay que preservar es que `Track` siga siendo un tipo trivial —sin
 /// `Array` ni nada con conteo de referencias—, porque copiarlo ocurre en el hilo
 /// del scheduler y un `retain` ahí es una violación de las reglas de tiempo
 /// real. Hay un test que lo vigila.
-public final class TrackHandoff: @unchecked Sendable {
+public final class PatternHandoff: @unchecked Sendable {
 
     /// Ranuras del anillo. Potencia de dos para indexar con una máscara en vez
     /// de con un módulo, que es una división.
@@ -49,7 +62,7 @@ public final class TrackHandoff: @unchecked Sendable {
     /// `g + slotCount - 1`: el margen seguro es estrictamente menor que eso.
     private static let safeGenerationDistance = UInt64(slotCount - 1)
 
-    private let slots: UnsafeMutablePointer<Track>
+    private let slots: UnsafeMutablePointer<Pattern>
 
     /// Generación publicada. Monótona: solo avanza.
     ///
@@ -59,9 +72,18 @@ public final class TrackHandoff: @unchecked Sendable {
     /// hace visible.
     private let generation = AtomicCounter(0)
 
-    public init(_ initial: Track) {
+    public init(_ initial: Pattern) {
         slots = .allocate(capacity: Self.slotCount)
         slots.initialize(repeating: initial, count: Self.slotCount)
+    }
+
+    /// Arranca con un solo Track en la primera posición y quince vacíos.
+    ///
+    /// > **Puente de la v2, fase 2.** Existe mientras haya quien todavía piense
+    /// > en un Track solo —la interfaz y buena parte de los tests—. La fase 4 lo
+    /// > retira: para entonces todo el mundo publica un Pattern.
+    public convenience init(_ initial: Track) {
+        self.init(Pattern().replacing(initial, at: 0))
     }
 
     deinit {
@@ -69,22 +91,22 @@ public final class TrackHandoff: @unchecked Sendable {
         slots.deallocate()
     }
 
-    /// Publica un Track nuevo.
+    /// Publica material nuevo: los dieciséis Tracks a la vez.
     ///
     /// **Un solo escritor.** Lo llama el hilo principal, que es el único que muta
     /// el estado de edición (`code_styleguides/swift.md`). No es código de tiempo
     /// real y no necesita serlo: publicar es un gesto de usuario.
-    public func publish(_ track: Track) {
+    public func publish(_ pattern: Pattern) {
         let next = generation.value &+ 1
-        slots[Int(next & Self.slotMask)] = track
+        slots[Int(next & Self.slotMask)] = pattern
         generation.value = next
     }
 
-    /// Devuelve el Track publicado, o `nil` si la lectura hay que descartarla.
+    /// Devuelve el material publicado, o `nil` si la lectura hay que descartarla.
     ///
     /// **`nil` no es un error:** significa que el escritor dio la vuelta al
     /// anillo mientras se copiaba la ranura, así que el valor copiado podría
-    /// mezclar dos publicaciones. Quien llama conserva el Track que ya tenía y
+    /// mezclar dos publicaciones. Quien llama conserva el material que ya tenía y
     /// vuelve a intentarlo en la ventana siguiente, unos milisegundos después.
     /// Preferir eso a reintentar aquí es deliberado: un bucle de reintento en el
     /// hilo del scheduler no tiene cota superior, y perder una actualización
@@ -96,13 +118,13 @@ public final class TrackHandoff: @unchecked Sendable {
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
-    public func load() -> Track? {
+    public func load() -> Pattern? {
         let before = generation.value
-        let track = slots[Int(before & Self.slotMask)]
+        let pattern = slots[Int(before & Self.slotMask)]
         let after = generation.value
 
         guard Self.readIsSafe(latched: before, observed: after) else { return nil }
-        return track
+        return pattern
     }
 
     /// Decide si una lectura es fiable, dadas las generaciones vistas antes y

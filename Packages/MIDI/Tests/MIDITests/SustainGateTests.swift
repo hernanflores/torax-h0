@@ -23,12 +23,12 @@ final class SustainGateTests: XCTestCase {
     }
 
     private func gateTicks(sustain: Int) -> UInt64 {
-        let emitter = NoteEmitter(
-            channel: MIDIChannel(1)!,
-            stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds)
-        )
+        let emitter = NoteEmitter()
         var sent: [(MIDIMessage, UInt64)] = []
-        emitter.emit(pitch: Pitch(60)!, groove: groove(sustain: sustain), atHostTime: 0) {
+        emitter.emit(
+            pitch: Pitch(60)!, groove: groove(sustain: sustain), on: MIDIChannel(1)!,
+            stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds), atHostTime: 0
+        ) {
             message, time in
             sent.append((message, time))
         }
@@ -76,12 +76,12 @@ final class SustainGateTests: XCTestCase {
     /// La precisión la da el timestamp, no el momento del envío: los dos
     /// mensajes salen en la **misma** llamada, cada uno con su instante.
     func testBothMessagesAreDeliveredInTheSameCall() {
-        let emitter = NoteEmitter(
-            channel: MIDIChannel(1)!,
-            stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds)
-        )
+        let emitter = NoteEmitter()
         var sent: [(MIDIMessage, UInt64)] = []
-        emitter.emit(pitch: Pitch(60)!, groove: groove(sustain: 200), atHostTime: 7_000) {
+        emitter.emit(
+            pitch: Pitch(60)!, groove: groove(sustain: 200), on: MIDIChannel(1)!,
+            stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds), atHostTime: 7_000
+        ) {
             message, time in
             sent.append((message, time))
         }
@@ -125,10 +125,7 @@ final class StopSilencesEverythingTests: XCTestCase {
                 lookAheadNanoseconds: 20_000_000
             ),
             track: Track(shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!), pool: pool),
-            emitter: NoteEmitter(
-                channel: MIDIChannel(1)!,
-                stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds)
-            ),
+            emitter: NoteEmitter(),
             send: recorder.record
         )
     }

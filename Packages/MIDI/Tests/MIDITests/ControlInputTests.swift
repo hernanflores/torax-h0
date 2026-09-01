@@ -23,8 +23,8 @@ final class ControlInputTests: XCTestCase {
         )
     }
 
-    private func makeInput(_ shape: Shape) -> (ControlInput, TrackHandoff) {
-        let handoff = TrackHandoff(Track(shape: shape))
+    private func makeInput(_ shape: Shape) -> (ControlInput, PatternHandoff) {
+        let handoff = PatternHandoff(Track(shape: shape))
         return (ControlInput(track: Track(shape: shape), publishingTo: handoff), handoff)
     }
 
@@ -36,7 +36,7 @@ final class ControlInputTests: XCTestCase {
         XCTAssertTrue(input.receive(turn(.pulses, by: 0x01)))
 
         XCTAssertEqual(input.track.shape.pulses.count, 5)
-        XCTAssertEqual(handoff.load()?.shape.pulses.count, 5, "no llegó al scheduler")
+        XCTAssertEqual(handoff.load()?.track(at: 0)?.shape.pulses.count, 5, "no llegó al scheduler")
     }
 
     func testTurningBackwardsDecrements() {
@@ -48,7 +48,7 @@ final class ControlInputTests: XCTestCase {
     func testAccumulatedTurnsAddUp() {
         let (input, handoff) = makeInput(shape(pulses: 1))
         for _ in 0..<5 { input.receive(turn(.pulses, by: 0x01)) }
-        XCTAssertEqual(handoff.load()?.shape.pulses.count, 6)
+        XCTAssertEqual(handoff.load()?.track(at: 0)?.shape.pulses.count, 6)
     }
 
     /// Cada parámetro responde a su propio controlador.
@@ -71,7 +71,7 @@ final class ControlInputTests: XCTestCase {
                 probability: Probability(percent: 50)!
             )
             let track = Track(shape: roomy, groove: roomyGroove)
-            let handoff = TrackHandoff(track)
+            let handoff = PatternHandoff(track)
             let input = ControlInput(track: track, publishingTo: handoff)
 
             XCTAssertTrue(input.receive(turn(parameter, by: 0x01)), "\(parameter) no respondió")
@@ -144,7 +144,7 @@ final class ControlInputTests: XCTestCase {
         XCTAssertEqual(input.track.shape.pulses.count, 12, "el giro destruyó Pulses")
 
         for _ in 0..<12 { input.receive(turn(.steps, by: 0x01)) }
-        XCTAssertEqual(handoff.load()?.shape, shape(steps: 16, pulses: 12))
+        XCTAssertEqual(handoff.load()?.track(at: 0)?.shape, shape(steps: 16, pulses: 12))
     }
 
     // MARK: - Extremos

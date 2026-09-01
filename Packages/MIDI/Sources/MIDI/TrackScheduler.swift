@@ -4,7 +4,7 @@ import Engine
 ///
 /// **Existe para que dos significados no compartan un `nil`.** Antes esto era un
 /// `Track?`, y `nil` quería decir «emite todos los Steps». Pero
-/// `TrackHandoff.load()` devuelve `nil` con otro significado —«descarta esta
+/// `PatternHandoff.load()` devuelve `nil` con otro significado —«descarta esta
 /// lectura»—, así que enchufar uno en el otro convertía un descarte en una
 /// ráfaga de notas a densidad máxima. Con dos casos con nombre, esa confusión no
 /// se puede escribir.
@@ -34,6 +34,22 @@ public enum SchedulerMaterial: Equatable, Sendable {
     func triggers(atStep index: Int) -> Bool {
         switch self {
         case .track(let track): track.triggers(atStep: index)
+        case .everyStep: true
+        }
+    }
+
+    /// Si este material puede llegar a sonar.
+    ///
+    /// Un Track con el pool vacío dispara sus Pulses y no tiene nada que emitir,
+    /// así que programarlo es trabajo tirado: es lo que hace que el coste crezca
+    /// con los Tracks que suenan y no con dieciséis siempre (NFR3). El arnés de
+    /// medición siempre suena — mide la rejilla, no el material—.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    var emitsAnything: Bool {
+        switch self {
+        case .track(let track): !track.pool.isEmpty
         case .everyStep: true
         }
     }
@@ -145,6 +161,20 @@ public struct TrackScheduler {
         self.stepDurationNanoseconds = Int64(timeline.stepDurationNanoseconds)
     }
 
+    /// Sustituye el material sin tocar la posición en la rejilla.
+    ///
+    /// Es lo que hace `advance(toHorizon:refreshingFrom:)` cuando el handoff
+    /// trae algo, expuesto aparte para que `PatternScheduler` pueda leer el
+    /// snapshot **una sola vez** y repartirlo entre los dieciséis: si cada uno
+    /// leyera el suyo, dos Tracks podrían tocar material de publicaciones
+    /// distintas.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    mutating func refresh(with track: Track) {
+        material = .track(track)
+    }
+
     /// Cuánto tiempo hay que reservar por delante para que ningún evento
     /// adelantado se pida para un instante que ya pasó.
     ///
@@ -186,11 +216,15 @@ public struct TrackScheduler {
     /// Steps that do not trigger do not consume a probability draw.
     public mutating func advance(
         toHorizon horizonNanoseconds: Int64,
-        refreshingFrom handoff: TrackHandoff?,
+        refreshingFrom handoff: PatternHandoff?,
         emit: (_ step: Int, _ pitch: Pitch?, _ groove: Groove, _ offsetNanoseconds: Int64) -> Void
     ) {
-        if let published = handoff?.load() {
-            material = .track(published)
+        if let published = handoff?.load(), let track = published.track(at: 0) {
+            // > **Puente de la v2, fase 2.** El handoff ya trae los dieciséis
+            // > Tracks y este scheduler todavía emite uno. La fase 3 le da el
+            // > recorrido; hasta entonces lee el Track 1, que es lo que la
+            // > interfaz edita.
+            material = .track(track)
         }
 
         // **El horizonte se amplía con el presupuesto de adelanto.** Sin esto,

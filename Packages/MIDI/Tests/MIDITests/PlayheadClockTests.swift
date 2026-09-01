@@ -4,7 +4,7 @@ import XCTest
 
 /// Tests del ancla temporal del playhead.
 ///
-/// **Es el camino de vuelta que faltaba.** `TrackHandoff` lleva el estado del
+/// **Es el camino de vuelta que faltaba.** `PatternHandoff` lleva el estado del
 /// hilo de control al del scheduler; esto lleva el tiempo del scheduler a la
 /// interfaz. La regla es la misma en ambas direcciones: el hilo del scheduler no
 /// se bloquea, y quien lea tarde o no lea no puede afectarle.

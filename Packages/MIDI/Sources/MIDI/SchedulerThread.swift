@@ -9,7 +9,7 @@ import Foundation
 /// proteger.
 ///
 /// Lo que sí cambia en caliente es el **Track**, y no viaja aquí: llega por
-/// `TrackHandoff`, que el hilo consulta una vez por ventana. Esto sigue siendo
+/// `PatternHandoff`, que el hilo consulta una vez por ventana. Esto sigue siendo
 /// la configuración de la rejilla —tempo, división y tamaño de la ventana—, que
 /// se fija al arrancar el transporte.
 public struct SchedulerConfiguration: Sendable, Equatable {
@@ -54,12 +54,24 @@ public final class SchedulerThread: @unchecked Sendable {
     ///
     /// Altura y Groove salen del **mismo** snapshot, recogido una vez por
     /// ventana: no son dos lecturas que puedan discrepar.
+    /// **Desde la v2 llega también el índice del Track**: quien emite necesita
+    /// saber por qué canal sale cada nota, y el canal es un dato del Track.
     public typealias StepHandler =
-        @Sendable (_ step: Int, _ pitch: Pitch?, _ groove: Groove, _ hostTime: UInt64) -> Void
+        @Sendable (
+            _ track: Int, _ step: Int, _ pitch: Pitch?, _ groove: Groove, _ hostTime: UInt64
+        ) -> Void
 
     private let configuration: SchedulerConfiguration
     private let material: SchedulerMaterial
-    private let handoff: TrackHandoff?
+
+    /// Los dieciséis Tracks, cuando quien arranca el hilo los tiene.
+    ///
+    /// **`nil` es la vía del arnés de medición**, que mide la rejilla y no el
+    /// material: le basta un `SchedulerMaterial` sobre una `MusicalTimeline`. Las
+    /// dos vías construyen el mismo `PatternScheduler`, para que lo que se mide
+    /// pase por el mismo recorrido que lo que suena.
+    private let pattern: Pattern?
+    private let handoff: PatternHandoff?
     private let handler: StepHandler
 
     /// Ancla temporal para el playhead. `nil` cuando nadie la mira.
@@ -78,10 +90,12 @@ public final class SchedulerThread: @unchecked Sendable {
     public init(
         configuration: SchedulerConfiguration,
         material: SchedulerMaterial = .everyStep,
-        handoff: TrackHandoff? = nil,
+        handoff: PatternHandoff? = nil,
         playhead: PlayheadClock? = nil,
+        pattern: Pattern? = nil,
         handler: @escaping StepHandler
     ) {
+        self.pattern = pattern
         self.configuration = configuration
         self.material = material
         self.handoff = handoff
@@ -95,10 +109,12 @@ public final class SchedulerThread: @unchecked Sendable {
         guard !running.value else { return }
         running.value = true
 
-        let thread = Thread { [configuration, material, handoff, playhead, handler, running] in
+        let thread = Thread {
+            [configuration, material, pattern, handoff, playhead, handler, running] in
             SchedulerThread.run(
                 configuration: configuration,
                 material: material,
+                pattern: pattern,
                 handoff: handoff,
                 playhead: playhead,
                 handler: handler,
@@ -146,12 +162,18 @@ public final class SchedulerThread: @unchecked Sendable {
     private static func run(
         configuration: SchedulerConfiguration,
         material: SchedulerMaterial,
-        handoff: TrackHandoff?,
+        pattern: Pattern?,
+        handoff: PatternHandoff?,
         playhead: PlayheadClock?,
         handler: StepHandler,
         running: AtomicFlag
     ) {
-        var scheduler = TrackScheduler(timeline: configuration.timeline, material: material)
+        // Con Pattern se recorren los dieciséis; sin él, la vía del arnés. Las
+        // dos construyen el mismo scheduler.
+        let scheduler =
+            pattern.map {
+                PatternScheduler(tempo: configuration.timeline.tempo, pattern: $0)
+            } ?? PatternScheduler(timeline: configuration.timeline, material: material)
         let startHostTicks = HostClock.now()
         let sleepNanoseconds = UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))
 
@@ -186,7 +208,7 @@ public final class SchedulerThread: @unchecked Sendable {
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
 
             scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) {
-                step, pitch, groove, offset in
+                track, step, pitch, groove, offset in
                 // El offset es relativo al origen de la rejilla, y el
                 // presupuesto es lo que separa ese origen del arranque. Sumarlos
                 // deja la cuenta en positivo sin más conversiones.
@@ -202,7 +224,7 @@ public final class SchedulerThread: @unchecked Sendable {
                     startHostTicks
                     &+ HostClock.hostTicks(
                         fromNanoseconds: UInt64(max(0, budgetNanoseconds + offset)))
-                handler(step, pitch, groove, hostTime)
+                handler(track, step, pitch, groove, hostTime)
             }
 
             usleep(sleepNanoseconds / 1_000)

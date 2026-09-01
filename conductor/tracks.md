@@ -116,7 +116,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: v2 rebanada 1 — Dieciséis Tracks sobre un reloj**
+- [x] **Track: v2 rebanada 1 — Dieciséis Tracks sobre un reloj** — los dieciséis suenan por su canal; jitter CUMPLE: máx 0,598 ms · σ 0,083 ms
   *Link: [conductor/tracks/multi-track_20260831/index.md](./tracks/multi-track_20260831/index.md)*
 
   Abierto el 2026-08-31. El snapshot deja de ser un `Track` y pasa a ser
@@ -129,6 +129,45 @@ escalón es el que se nota.
 
   No es la UI definitiva del handoff —esa es la rebanada siguiente, y es la vista
   de lo que ésta construye— ni Patterns ni Banks, que necesitan persistencia.
+
+  **Cerrado el 2026-09-01.** Las seis fases con checkpoint, `Engine` al 99,42% y
+  `MIDI` al 92,08%, y la verificación en dispositivo sin discrepancias: cada
+  Track por su canal, dos Divisions en fase, dos tonalidades sin contaminarse y
+  `Stop` con Delay positivo sin nada colgado.
+
+  **La medición pasó, con una cola nueva anotada.** Máx 0,598 ms y σ 0,083 ms
+  contra un umbral de 2 ms y 0,5 ms. El exceso está **solo a 174 BPM** —a 60 y
+  120 BPM es indistinguible de la referencia— y **la media no se mueve**, que es
+  lo que descarta un coste sistemático de copiar dieciséis Tracks por ventana.
+  Es la primera cola que se ensancha en seis mediciones: **el sitio por donde
+  mirar si la rebanada 2 o la 3 empeoran el número.** Distinguir unos pocos
+  outliers de un corrimiento de la distribución pide percentiles en el reporte
+  del arnés, que hoy solo persiste n, máximo, media y σ.
+
+---
+
+- [ ] **Track: v2 rebanada 3 — Cycles: el Track varía por vuelta**
+  *Link: [conductor/tracks/cycles_20260901/index.md](./tracks/cycles_20260901/index.md)*
+
+  Planificado el 2026-09-01. Un Track deja de repetir un juego de parámetros
+  idéntico: hasta dieciséis **Cycles** recorridos a cada vuelta del anillo, que
+  es la A/B/C de la Pre Spec y la última de las cuatro capas del motor —Shape,
+  Tonal, Groove y **Cycles**—.
+
+  **El núcleo es que el nivel donde viven los parámetros baja uno.** Lo que hoy
+  se llama `Track` es lo que la Pre Spec llama Cycle; el Track pasa a contenerlos.
+  El avance ocurre en el hilo del scheduler, en el límite de vuelta, así que el
+  snapshot pasa de 2304 bytes a unos 36 KB: **la Fase 1 lo mide y decide** antes
+  de construir encima, y puede cambiar el diseño.
+
+  **Lleva medición de jitter obligatoria**, con los dieciséis sonando y
+  avanzando.
+
+  **No arranca todavía.** Depende de que cierre la Fase 6 de la rebanada 1 —sin
+  esa medición no hay línea base— y de que exista la pantalla de la rebanada 2,
+  que es donde se muestra el Cycle en curso. La primera tarea de su Fase 1
+  —quitar la copia del snapshot por evento en `Transport.play()`— sí es
+  independiente y se puede tomar suelta.
 
 ## Defectos conocidos
 

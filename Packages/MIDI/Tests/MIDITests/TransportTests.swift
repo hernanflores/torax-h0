@@ -30,6 +30,13 @@ final class TransportTests: XCTestCase {
         var allTimes: [UInt64] { lock.withLock { times } }
         var all: [MIDIMessage] { lock.withLock { messages } }
         var noteOnCount: Int { all.filter { if case .noteOn = $0 { true } else { false } }.count }
+
+        /// Los note-on de un canal: es como se distingue qué Track sonó.
+        func noteOnCount(onChannel number: Int) -> Int {
+            all.filter {
+                if case .noteOn(let channel, _, _) = $0 { channel.number == number } else { false }
+            }.count
+        }
         var noteOffCount: Int { all.filter { if case .noteOff = $0 { true } else { false } }.count }
     }
 
@@ -46,10 +53,7 @@ final class TransportTests: XCTestCase {
             // Con el pool vacío el Track dispara y no emite nada, que es
             // comportamiento correcto y no lo que estos tests miden.
             track: Track(shape: Shape(steps: steps, pulses: Pulses(4)!), pool: voicePool),
-            emitter: NoteEmitter(
-                channel: MIDIChannel(1)!,
-                stepDurationNanoseconds: Int64(timeline.stepDurationNanoseconds)
-            ),
+            emitter: NoteEmitter(),
             send: recorder.record
         )
     }
@@ -199,5 +203,44 @@ final class TransportTests: XCTestCase {
         let after = recorder.noteOnCount
         waitUntil { recorder.noteOnCount > after }
         XCTAssertGreaterThan(recorder.noteOnCount, after, "dejó de sonar tras publicar")
+    }
+
+    /// Cada Track suena sobre **su** Division, no sobre la del primero.
+    ///
+    /// El transporte tiene que entregarle los dieciséis al hilo del scheduler:
+    /// sin eso, este caía en la vía del arnés —una sola rejilla, la de la
+    /// configuración— y los quince restantes sonaban al ritmo del Track 1.
+    func testEachTrackRunsOnItsOwnDivision() {
+        let recorder = Recorder()
+
+        // 300 BPM: el Step de 1/16 dura 50 ms y el de 1/1, 800 ms.
+        let fast = Track(shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!), pool: voicePool)
+        let slow = Track(
+            shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!, division: .whole),
+            pool: voicePool
+        ).on(Channel(4)!)
+
+        let transport = Transport(
+            configuration: SchedulerConfiguration(
+                timeline: MusicalTimeline(tempo: Tempo(beatsPerMinute: 300)!, division: .sixteenth),
+                lookAheadNanoseconds: 20_000_000
+            ),
+            pattern: Pattern().replacing(fast, at: 0).replacing(slow, at: 3),
+            emitter: NoteEmitter(),
+            send: recorder.record
+        )
+        defer { transport.stop() }
+
+        transport.play()
+        waitUntil { recorder.noteOnCount(onChannel: 1) >= 8 }
+        transport.stop()
+
+        // En lo que el rápido da ocho pulsos —400 ms— el lento no llega a dos
+        // Steps. El margen es holgado a propósito: lo que se vigila es que no
+        // corran a la misma velocidad, no el conteo exacto.
+        XCTAssertGreaterThanOrEqual(recorder.noteOnCount(onChannel: 1), 8)
+        XCTAssertLessThanOrEqual(
+            recorder.noteOnCount(onChannel: 4), 2,
+            "el Track 4 sonó sobre la Division del Track 1")
     }
 }

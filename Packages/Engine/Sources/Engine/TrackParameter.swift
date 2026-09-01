@@ -108,11 +108,10 @@ extension Track {
     public func applying(_ delta: Int, to parameter: TrackParameter) -> Track {
         switch parameter {
         case .steps, .pulses, .rotate, .division:
-            return Track(
-                shape: shape.applying(delta, to: parameter),
-                pool: pool,
-                groove: groove
-            )
+            // `with(...)` y no `Track(...)`: reconstruir enumerando campos es lo
+            // que hizo que un giro de knob perdiera el canal, el marco tonal y
+            // el registro de pads en cuanto el Track creció.
+            return with(shape: shape.applying(delta, to: parameter))
 
         case .velocity:
             return withGroove(
@@ -170,6 +169,6 @@ extension Track {
     /// - Parameter groove: The replacement groove.
     /// - Returns: A track with the specified groove.
     private func withGroove(_ groove: Groove) -> Track {
-        Track(shape: shape, pool: pool, groove: groove)
+        with(groove: groove)
     }
 }

@@ -1,6 +1,6 @@
 # Track: v2 rebanada 1 — Dieciséis Tracks sobre un reloj
 
-**ID:** `multi-track_20260831` · **Type:** Feature · **Status:** new
+**ID:** `multi-track_20260831` · **Type:** Feature · **Status:** completed
 
 La v1 se redujo a un Track a propósito: validar el motor de punta a punta antes de escalar, porque el mayor riesgo del proyecto es el timing. Está validado en cuatro mediciones. Esta rebanada gasta ese crédito: **de un Track a dieciséis**, que es la estructura que la Pre Spec describe desde su primera línea y la que el preset del BeatStep Pro ya asume —sus dieciséis step buttons seleccionan Track N desde la rebanada 7, y quince no tienen nada detrás—.
 
@@ -15,6 +15,7 @@ La v1 se redujo a un Track a propósito: validar el motor de punta a punta antes
 -   [Specification](./spec.md)
 -   [Implementation Plan](./plan.md)
 -   [Metadata](./metadata.json)
+-   [Verificación en dispositivo](./device-verification.md)
 
 ## Project Context
 

@@ -142,7 +142,7 @@ final class PadPoolInputTests: XCTestCase {
     // MARK: - Publicación
 
     func testEveryAcceptedPadPublishesTheTrack() {
-        let handoff = TrackHandoff(Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)))
+        let handoff = PatternHandoff(Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)))
         let input = ControlInput(
             track: Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
             frame: frame,
@@ -153,7 +153,7 @@ final class PadPoolInputTests: XCTestCase {
         XCTAssertFalse(input.receive(note(35)), "fuera del bloque: no publica")
         XCTAssertTrue(input.receive(pad(2)))
 
-        XCTAssertEqual(handoff.load()?.pool.count, 2)
+        XCTAssertEqual(handoff.load()?.track(at: 0)?.pool.count, 2)
     }
 
     // MARK: - Helpers

@@ -42,12 +42,26 @@ final class FrameChangeTests: XCTestCase {
         XCTAssertEqual(input.track.shape, before)
     }
 
-    /// Si el pool ya cabía en el marco nuevo no se publica nada: mandar un
-    /// snapshot idéntico es trabajo y ruido para nada.
-    func testAFrameThatChangesNothingDoesNotPublish() {
+    /// **Cambiar de escala publica aunque el pool no se mueva** (v2). El marco
+    /// es del Track desde la v2, así que cambiarlo cambia el snapshot: los pads
+    /// pasan a dar otras notas aunque las que ya están dentro sigan cabiendo.
+    ///
+    /// Hasta la v1 esto no publicaba, y era correcto entonces: el marco vivía
+    /// fuera del Track y un pool que no se movía dejaba el snapshot idéntico.
+    func testAFrameThatDoesNotMoveThePoolStillPublishes() {
         let input = makeInput(scale: .major, root: 0)
         input.receive(pad(0))  // el pad 1 da Do, que está en Do mayor y en Do menor
-        XCTAssertFalse(input.setFrame(TonalFrame(scale: .minor, root: Root(0)!)))
+        let pool = input.track.pool
+
+        XCTAssertTrue(input.setFrame(TonalFrame(scale: .minor, root: Root(0)!)))
+        XCTAssertEqual(input.track.pool, pool, "el pool se movió sin necesidad")
+    }
+
+    /// Y volver a fijar el **mismo** marco no publica: ahí sí no cambia nada.
+    func testSettingTheSameFrameDoesNotPublish() {
+        let input = makeInput(scale: .major, root: 0)
+        input.receive(pad(0))
+        XCTAssertFalse(input.setFrame(TonalFrame(scale: .major, root: Root(0)!)))
     }
 
     /// **Tras cambiar el marco, el mismo pad da otra nota.** Ya no hay pads que

@@ -4,20 +4,28 @@ import Engine
 ///
 /// Es la pieza que cierra la cadena del track: decodifica el giro, lo traduce al
 /// parámetro que le toca, se lo aplica al Shape vigente y publica el `Track`
-/// resultante por el `TrackHandoff` que la rebanada 1 dejó probado. Girar un
+/// resultante por el `PatternHandoff` que la rebanada 1 dejó probado. Girar un
 /// knob y publicar un snapshot son, a partir de aquí, la misma cosa.
 ///
 /// **Corre en el hilo de control, nunca en el del scheduler.** Recibir un
 /// mensaje asigna memoria —construir un Shape reparte los Pulses— y eso está
 /// prohibido en el camino de timing. La separación es la misma que ya usa
-/// `TrackHandoff`: un solo escritor publica, el scheduler solo lee.
+/// `PatternHandoff`: un solo escritor publica, el scheduler solo lee.
 public final class ControlInput: @unchecked Sendable {
 
-    /// Track vigente, con los giros ya aplicados.
+    /// Los dieciséis Tracks, con los giros ya aplicados.
     ///
-    /// Se guarda aquí y no se relee del handoff porque `load()` puede descartar
-    /// una lectura, y perder un giro por eso sería un knob que no responde.
-    public private(set) var track: Track
+    /// Se guardan aquí y no se releen del handoff porque `load()` puede
+    /// descartar una lectura, y perder un giro por eso sería un knob que no
+    /// responde.
+    public private(set) var pattern: Pattern
+
+    /// El Track que los knobs y los pads editan.
+    ///
+    /// **Editar es siempre editar el seleccionado.** Los otros quince siguen
+    /// donde estaban: seleccionar no es un modo, es elegir a quién escuchan los
+    /// controles.
+    public var track: Track { pattern.track(at: selectedTrackIndex)! }
 
     /// La superficie de pads vigente: qué altura tiene cada uno de los
     /// dieciséis.
@@ -25,13 +33,21 @@ public final class ControlInput: @unchecked Sendable {
     /// **Es lo que sustituye al filtro cromático.** Hasta la rebanada 7 el
     /// número de nota entrante era la altura y el marco decidía si pasaba;
     /// ahora el número solo dice qué pad se pulsó y la altura sale de aquí.
-    public private(set) var surface: PadSurface
+    ///
+    /// **Se calcula, no se guarda** (v2). El marco y el registro son del Track
+    /// seleccionado, así que guardarla aparte sería un segundo sitio donde
+    /// pueden discrepar: cambiar de Track dejaría la superficie del anterior.
+    public var surface: PadSurface {
+        PadSurface(frame: track.frame, octaveShift: track.padOctaveShift)
+    }
 
-    /// El marco tonal vigente: de qué escala salen los grados de los pads.
+    /// El marco tonal del Track seleccionado: de qué escala salen los grados de
+    /// sus pads.
     ///
     /// Se puede cambiar en caliente porque Scale y Root son configuración
-    /// táctil, y cambiarlas **reencuadra el pool** en vez de vaciarlo.
-    public var frame: TonalFrame { surface.frame }
+    /// táctil, y cambiarlas **reencuadra el pool** en vez de vaciarlo. **Es del
+    /// Track** desde la v2: dos Tracks pueden estar en tonalidades distintas.
+    public var frame: TonalFrame { track.frame }
 
     /// Qué Track está seleccionado, 0 el primero.
     ///
@@ -47,43 +63,94 @@ public final class ControlInput: @unchecked Sendable {
     /// ignoran en silencio, con el mismo criterio que un CC sin asignar.
     private let trackCount: Int
 
-    private let publish: @Sendable (Track) -> Void
+    private let publish: @Sendable (Pattern) -> Void
     private let mapping: ControlMapping
     private let encoding: RelativeEncoding
 
-    /// - Parameter publish: dónde va el Track resultante de cada giro.
+    /// - Parameter publish: dónde van los dieciséis Tracks resultantes de cada
+    ///   giro.
     ///
-    ///   Es un cierre y no un `TrackHandoff` porque quien publica en producto es
+    ///   Es un cierre y no un `PatternHandoff` porque quien publica en producto es
     ///   el transporte, que tiene el suyo propio: pasarle otro haría que el
     ///   scheduler leyera de un sitio y los knobs escribieran en otro.
     public init(
-        track: Track,
+        pattern: Pattern,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
-        publish: @escaping @Sendable (Track) -> Void,
+        publish: @escaping @Sendable (Pattern) -> Void,
         mapping: ControlMapping = .beatStepPro,
         encoding: RelativeEncoding = .twosComplement,
-        trackCount: Int = 1
+        trackCount: Int = Pattern.trackCount
     ) {
-        self.track = track
-        self.surface = PadSurface(frame: frame)
+        // El marco llega por parámetro para no romper a quien construye con uno
+        // suelto, y se reparte a los dieciséis: a partir de aquí cada Track
+        // lleva el suyo.
+        var seeded = pattern
+        for index in 0..<Pattern.trackCount {
+            seeded = seeded.replacing(seeded.track(at: index)!.with(frame: frame), at: index)
+        }
+        self.pattern = seeded
         self.publish = publish
         self.mapping = mapping
         self.encoding = encoding
         self.trackCount = trackCount
     }
 
-    /// Publica directamente en un handoff. Atajo para tests y para quien no
-    /// tenga un transporte de por medio.
+    /// Atajo para quien todavía piensa en un Track: lo pone en la primera
+    /// posición y deja los otros quince vacíos.
+    ///
+    /// Vive para los tests que miden un Track suelto —siguen siendo la mayoría—
+    /// y no para el producto, que publica el Pattern entero.
     public convenience init(
         track: Track,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
-        publishingTo handoff: TrackHandoff,
+        publish: @escaping @Sendable (Pattern) -> Void,
         mapping: ControlMapping = .beatStepPro,
         encoding: RelativeEncoding = .twosComplement,
-        trackCount: Int = 1
+        trackCount: Int = Pattern.trackCount
     ) {
         self.init(
-            track: track,
+            pattern: Pattern().replacing(track, at: 0),
+            frame: frame,
+            publish: publish,
+            mapping: mapping,
+            encoding: encoding,
+            trackCount: trackCount
+        )
+    }
+
+    /// Publica directamente en un handoff. Atajo para tests y para quien no
+    /// tenga un transporte de por medio.
+    /// Atajo para quien todavía piensa en un Track: lo pone en la primera
+    /// posición.
+    public convenience init(
+        track: Track,
+        frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
+        publishingTo handoff: PatternHandoff,
+        mapping: ControlMapping = .beatStepPro,
+        encoding: RelativeEncoding = .twosComplement,
+        trackCount: Int = Pattern.trackCount
+    ) {
+        self.init(
+            pattern: Pattern().replacing(track, at: 0),
+            frame: frame,
+            publishingTo: handoff,
+            mapping: mapping,
+            encoding: encoding,
+            trackCount: trackCount
+        )
+    }
+
+    /// Publica los dieciséis directamente en un handoff.
+    public convenience init(
+        pattern: Pattern,
+        frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
+        publishingTo handoff: PatternHandoff,
+        mapping: ControlMapping = .beatStepPro,
+        encoding: RelativeEncoding = .twosComplement,
+        trackCount: Int = Pattern.trackCount
+    ) {
+        self.init(
+            pattern: pattern,
             frame: frame,
             publish: { handoff.publish($0) },
             mapping: mapping,
@@ -151,8 +218,8 @@ public final class ControlInput: @unchecked Sendable {
         // Girar contra un extremo no mueve nada: el valor ya estaba ahí.
         guard adjusted != track else { return false }
 
-        track = adjusted
-        publish(track)
+        pattern = pattern.replacing(adjusted, at: selectedTrackIndex)
+        publish(pattern)
         return true
     }
 
@@ -184,8 +251,8 @@ public final class ControlInput: @unchecked Sendable {
         // El pool lleno rechaza la novena: no cambió nada que publicar.
         guard adjusted != track.pool else { return false }
 
-        track = Track(shape: track.shape, pool: adjusted)
-        publish(track)
+        pattern = pattern.replacing(track.with(pool: adjusted), at: selectedTrackIndex)
+        publish(pattern)
         return true
     }
 
@@ -195,11 +262,15 @@ public final class ControlInput: @unchecked Sendable {
     /// en silencio, con el mismo criterio que un CC sin asignar. Seleccionar el
     /// que ya estaba tampoco publica: es una operación sin efecto, no un
     /// reinicio.
-    private func selectTrack(_ index: Int) -> Bool {
+    /// Es público porque la pantalla selecciona igual que el step button: sin
+    /// controlador conectado es la única vía, y con controlador las dos tienen
+    /// que llevar al mismo sitio o la pantalla mentiría.
+    @discardableResult
+    public func selectTrack(_ index: Int) -> Bool {
         guard index < trackCount, index != selectedTrackIndex else { return false }
 
         selectedTrackIndex = index
-        publish(track)
+        publish(pattern)
         return true
     }
 
@@ -219,8 +290,27 @@ public final class ControlInput: @unchecked Sendable {
         let moved = move(surface)
         guard moved != surface else { return false }
 
-        surface = moved
-        publish(track)
+        pattern = pattern.replacing(
+            track.with(padOctaveShift: moved.octaveShift), at: selectedTrackIndex)
+        publish(pattern)
+        return true
+    }
+
+    /// Cambia el canal por el que emite el Track seleccionado.
+    ///
+    /// **Se edita en pantalla y no con un knob**: es configuración, no material
+    /// generativo, y `product-guidelines.md` pone esa frontera del lado táctil,
+    /// donde ya están Scale y Root. Ningún CC llega hasta aquí.
+    ///
+    /// Publica porque el scheduler lee el canal del snapshot en cada evento: sin
+    /// publicar, el cambio no se oiría hasta el giro siguiente de cualquier
+    /// knob.
+    @discardableResult
+    public func setChannel(_ channel: Channel) -> Bool {
+        guard channel != track.channel else { return false }
+
+        pattern = pattern.replacing(track.on(channel), at: selectedTrackIndex)
+        publish(pattern)
         return true
     }
 
@@ -231,13 +321,13 @@ public final class ControlInput: @unchecked Sendable {
     /// del marco nuevo.
     @discardableResult
     public func setFrame(_ frame: TonalFrame) -> Bool {
-        surface = PadSurface(frame: frame, octaveShift: surface.octaveShift)
+        // El marco es del Track seleccionado, y el registro de sus pads se
+        // conserva: cambiar de escala no mueve a nadie de octava.
+        let reframed = track.with(pool: track.pool.reframed(to: frame)).with(frame: frame)
+        guard reframed != track else { return false }
 
-        let adjusted = track.pool.reframed(to: frame)
-        guard adjusted != track.pool else { return false }
-
-        track = Track(shape: track.shape, pool: adjusted)
-        publish(track)
+        pattern = pattern.replacing(reframed, at: selectedTrackIndex)
+        publish(pattern)
         return true
     }
 }

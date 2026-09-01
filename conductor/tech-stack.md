@@ -94,7 +94,22 @@ Las dos están registradas como limitaciones conocidas en
 
 Regla derivada: el hilo del scheduler no asigna memoria, no toma locks y no llama a código que pueda bloquear.
 
-**Cómo se cumple (desde 2026-08-27).** Un anillo de cuatro `Track` preasignados más un contador de generación atómico (`TrackHandoff`). El escritor nunca escribe la ranura publicada: rellena la siguiente y solo entonces avanza el contador; el lector late el contador, copia la ranura y comprueba que el escritor no le dio alcance. La seguridad la da la **disciplina de ranura**, no la atomicidad de la copia — copiar un `Track` son varias palabras y no hay atómico de ese tamaño. No hay nada que liberar, así que tampoco aparece el problema de reclamación de memoria que obligaría a RCU o hazard pointers.
+**Cómo se cumple (desde 2026-08-27).** Un anillo de cuatro `Track` preasignados más un contador de generación atómico (`PatternHandoff`, `TrackHandoff` hasta la v2). El escritor nunca escribe la ranura publicada: rellena la siguiente y solo entonces avanza el contador; el lector late el contador, copia la ranura y comprueba que el escritor no le dio alcance. La seguridad la da la **disciplina de ranura**, no la atomicidad de la copia — copiar un `Track` son varias palabras y no hay atómico de ese tamaño. No hay nada que liberar, así que tampoco aparece el problema de reclamación de memoria que obligaría a RCU o hazard pointers.
+
+> **Enmienda del 2026-08-31 — el snapshot son dieciséis Tracks.** La v2 pasa de
+> un Track a un `Pattern` de dieciséis, así que el anillo es de cuatro
+> `Pattern`, no de cuatro `Track`. **El protocolo no cambió ni una línea**: la
+> disciplina de ranura nunca dependió del tamaño, que era exactamente la
+> propiedad que se buscaba al elegirla.
+>
+> Los números, medidos: `Track` 144 bytes —112 antes de que Scale y Root pasaran
+> a ser del Track—, `Pattern` 2304, el anillo 9 KB. Un
+> `load()` completo —dos lecturas atómicas, la copia y la comprobación de
+> generación— cuesta **274 ns** en `debug`, contra una ventana de 20 ms. Se
+> copia el Pattern entero en cada ventana; publicar por Track sería otro diseño y
+> no hace falta.
+>
+> El tipo pasa a llamarse `PatternHandoff`: ya no entrega un Track.
 
 **Restricción derivada, a preservar:** el snapshot debe seguir siendo un tipo **trivial**. Se copia en el hilo del scheduler, y un `Array` metería `retain`/`release` ahí. Cuando llegue Tonal, el pool de pitches tiene que ser almacenamiento inline de 8 huecos, no un array. Un test (`_isPOD`) lo vigila y falla si se rompe.
 
