@@ -28,8 +28,7 @@ struct ContentView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
-                pattern
-                transport
+                stage
                 Divider().overlay(Palette.border)
                 TrackSelectorView(
                     selected: model.selectedTrackIndex,
@@ -56,39 +55,120 @@ struct ContentView: View {
         .onAppear { jitter.startIfRequestedByLaunchArguments() }
     }
 
-    // MARK: - El patrón
+    // MARK: - La composición apaisada
 
-    /// El anillo, con el valor grande encima cuando lo hay.
+    /// **Los anillos a la izquierda, todo lo demás a su derecha** (FR14).
     ///
-    /// **El anillo nunca se oculta.** `product-guidelines.md`: el valor
-    /// transitorio se dibuja *sobre* el patrón, que permanece siempre visible
-    /// bajo él. Nunca se sustituye el contexto por el detalle, así que esto es
-    /// un `ZStack` y no dos estados de la misma vista.
-    private var pattern: some View {
-        ZStack {
-            // `TimelineView` redibuja al ritmo de la pantalla, pero **la
-            // posición no la decide él**: cada fotograma vuelve a preguntar al
-            // modelo, que la resuelve contra el origen que publicó el bucle del
-            // scheduler. El movimiento deriva del reloj musical; lo que el
-            // temporizador decide es cuándo repintar, no dónde está el tiempo.
-            TimelineView(.animation(paused: !model.isPlaying)) { _ in
-                RingStackView(
-                    stack: model.rings,
-                    selected: model.selectedTrackIndex,
-                    playheads: model.playheads
-                )
-            }
+    /// Sustituye a la columna vertical única con el anillo arriba, que era lo
+    /// mínimo para operar de la rebanada 1 y no la pantalla del producto.
+    ///
+    /// **Es lo que hace posible que el valor grande no tape nunca los anillos**
+    /// (FR3). Hoy el valor se dibuja *sobre* el patrón y la guía obliga a que el
+    /// patrón permanezca visible bajo él; con dos regiones que no se solapan la
+    /// regla se cumple sin excepción, y deja de ser algo que hay que recordar.
+    ///
+    /// **El anillo pequeño es intencional.** Ocupa un quinto del ancho porque lo
+    /// que se lee de un vistazo es la *forma* —cuáles tienen material, cuál está
+    /// elegido, por dónde va el tiempo—, no el detalle de un Step. El detalle es
+    /// el panel.
+    private var stage: some View {
+        GeometryReader { geometry in
+            HStack(alignment: .top, spacing: 24) {
+                rings
+                    .frame(width: Self.ringColumnWidth(in: geometry.size.width))
 
-            if let change = model.transientChange {
-                transient(change)
+                readout
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                families
+                    .frame(width: Self.familyColumnWidth(in: geometry.size.width))
             }
         }
-        .frame(maxWidth: 420)
-        .padding(24)
-        // Radio 12 estaba fuera de la escala de 3–8px que fija el sistema.
-        .brutalistPanel()
-        .frame(maxWidth: .infinity, alignment: .center)
+        .frame(height: 420)
     }
+
+    /// Las proporciones del handoff, como fracciones.
+    ///
+    /// El mock mide 924 puntos de ancho y reparte 190 al anillo y 170 a los
+    /// tabs. **Se guardan como fracción y no como puntos** porque el iPad más
+    /// grande es medio ancho mayor que el mock: a puntos fijos, el anillo
+    /// encogería en relativo hasta perderse y el centro se llevaría todo lo que
+    /// sobra.
+    ///
+    /// El mínimo existe porque por debajo de él dieciséis bandas dejan de
+    /// contarse; el máximo, porque el anillo no es el protagonista de la
+    /// superficie aunque lo sea de la lectura.
+    static func ringColumnWidth(in total: CGFloat) -> CGFloat {
+        min(max(total * (190.0 / 924.0), 190), 320)
+    }
+
+    static func familyColumnWidth(in total: CGFloat) -> CGFloat {
+        min(max(total * (170.0 / 924.0), 170), 260)
+    }
+
+    /// La columna izquierda: los dieciséis anillos y nada más.
+    private var rings: some View {
+        // `TimelineView` redibuja al ritmo de la pantalla, pero **la posición no
+        // la decide él**: cada fotograma vuelve a preguntar al modelo, que la
+        // resuelve contra el origen que publicó el bucle del scheduler. El
+        // movimiento deriva del reloj musical; lo que el temporizador decide es
+        // cuándo repintar, no dónde está el tiempo.
+        TimelineView(.animation(paused: !model.isPlaying)) { _ in
+            RingStackView(
+                stack: model.rings,
+                selected: model.selectedTrackIndex,
+                playheads: model.playheads
+            )
+        }
+        .padding(16)
+        .brutalistPanel()
+    }
+
+    /// La columna central: la lectura grande.
+    ///
+    /// En reposo muestra el estado; al girar un knob, el valor transitorio con
+    /// el acento de su familia. **Su contenido en reposo lo construye la tarea
+    /// siguiente de la Fase 3**; por ahora sostiene lo que ya había.
+    private var readout: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            // **El valor grande sustituye al estado en reposo, no lo tapa**, y
+            // sobre todo no tapa los anillos: viven en otra columna (FR14). Con
+            // esto la regla de `product-guidelines.md` —el patrón permanece
+            // visible bajo el valor— deja de ser algo que haya que recordar al
+            // dibujar.
+            if let change = model.transientChange {
+                transient(change)
+            } else {
+                parameters
+            }
+            Spacer(minLength: 0)
+            transport
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(24)
+        .brutalistPanel()
+    }
+
+    /// La columna derecha: los tres tabs de familia.
+    ///
+    /// **Los construye la tercera tarea de la Fase 3.** Aquí están como las tres
+    /// etiquetas que el handoff dibuja, para que la composición se pueda ver y
+    /// medir antes de que sean interactivas.
+    private var families: some View {
+        VStack(spacing: 12) {
+            ForEach(ParameterFamily.allCases, id: \.self) { family in
+                Text(String(describing: family).uppercased())
+                    .font(Typography.captionStrong)
+                    .foregroundStyle(Palette.accent(for: family))
+                    .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .brutalistPanel(radius: Brutalist.radius)
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    // MARK: - El patrón
 
     /// El valor grande.
     ///
@@ -147,7 +227,6 @@ struct ContentView: View {
                 destination
             }
 
-            parameters
             input
         }
     }
