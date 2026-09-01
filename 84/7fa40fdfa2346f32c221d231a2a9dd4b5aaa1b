@@ -1,0 +1,26 @@
+Task: ParameterFamily gana Tonal — Fase 1, v2 rebanada 2
+
+Qué cambia
+- Engine/TrackParameter.swift: ParameterFamily gana el caso .tonal y su
+  documentación explica por qué la lista de familias es mayor que la de
+  familias alcanzables desde un TrackParameter.
+- App/ShapeTheme.swift: Palette.accent(for:) cubre el caso nuevo con
+  Palette.tonal, que ya existía desde la rebanada 4 del MVP.
+- Engine/Tests/TrackParameterTests.swift: tres tests nuevos.
+
+El porqué
+FR4 de la rebanada: el tab TONAL no tiene parámetros de knob detrás, así que
+su lectura en reposo es el marco tonal y el pool. Para que su acento salga por
+la misma vía que Shape y Groove hace falta el caso en la clasificación; sin él
+la vista resolvería ese color con un condicional propio, en App, donde no hay
+tests. Es justo el acoplamiento que ParameterFamily existe para evitar.
+
+Los tests
+- testTheThreeFamiliesExist: CaseIterable devuelve las tres, en orden.
+- testNoKnobParameterIsTonal: ningún TrackParameter cae en .tonal. Scale y Root
+  son táctiles y el pool se edita con pads: ninguno se ajusta con un delta.
+- testAddingTonalDoesNotReclassifyTheNine: la lista entera de familias de los
+  nueve parámetros, para que reordenar el switch se vea.
+
+Verificación
+Engine 344 tests, 0 fallos (eran 341). xcodebuild para iOS compila.
