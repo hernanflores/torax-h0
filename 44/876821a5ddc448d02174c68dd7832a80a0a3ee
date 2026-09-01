@@ -1,0 +1,46 @@
+--- Verificación de fase — Fase 4: La barra, el selector y la navegación ---
+Confirmada por el usuario el 2026-09-01: 'cerra el checkpoint de la fase 4'.
+
+Comandos
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado
+  Engine: 373 tests, 0 fallos. 99,22% líneas / 96,00% regiones.
+  MIDI:   330 tests, 0 fallos, 1 saltado.
+  Build iOS: compila.
+
+Cobertura de los cambios
+  La fase no añadió ningún fichero de código a Engine ni a MIDI: solo
+  App/ContentView.swift, TrackSelectorView.swift, TransportModel.swift y
+  JitterMeasurementModel.swift, que no se miden (workflow.md). De ahí que la
+  cobertura no se mueva respecto a la Fase 3.
+
+Verificación manual
+  Captura simulator-phase4-navigation.png.
+  1. Las cinco pestañas se ven; '1 · Track' y '2 · Scale' navegan y las otras
+     tres llevan borde discontinuo y no responden.
+  2. Los dieciséis Tracks caben en una fila, con su número y su canal.
+  3. La fila de canal es visible entera.
+  4. El arnés no aparece en ninguna de las dos pantallas.
+  5. Cambiar de pantalla con el transporte corriendo y volver deja el playhead
+     donde tiene que estar: el modelo no se reconstruye al navegar.
+
+El fallo que la tarea del arnés evitó
+  Quitar el panel se llevaba el selector de rejilla, que era lo único elegible
+  solo tocando. Sin --grid= el arnés habría quedado midiendo siempre la recta.
+  Se añadió el argumento ANTES de borrar el panel y se comprobó ejecutándolo:
+  harness-still-works.txt, con la rejilla '16 Tracks' elegida por argumento.
+  Son números de simulador y no valen como medición — valen como prueba de que
+  la herramienta de la Fase 6 sigue viva.
+
+Dos correcciones del usuario, ya aplicadas
+  1. BPM y Play pasan a la fila de las pestañas. El handoff los pone en dos
+     renglones y esta pantalla tiene uno de más: esos ~64 puntos eran los que le
+     faltaban al selector para no cortarse.
+  2. Al arreglarlo apareció que el anillo se dimensionaba solo por el ancho y
+     seguía empujando la fila de canal fuera. Ahora lo acota la dimensión más
+     corta.
+
+Confirmación del usuario: 'cerra el checkpoint de la fase 4 y segui'.
