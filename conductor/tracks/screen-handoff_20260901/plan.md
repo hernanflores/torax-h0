@@ -124,19 +124,24 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   > Las anchuras son **fracciones** de las del mock —190 y 170 sobre 924— con
   > suelo y techo, no puntos fijos: el iPad más grande es medio ancho mayor que
   > el mock, y a puntos fijos el anillo encogería en relativo hasta perderse.
-- [ ] Task: Qué dice el panel en reposo
-  - [ ] Tests (Red) en `Engine`: el texto y el valor de cada familia salen de una función pura del Track — SHAPE da su reparto, GROOVE sus cinco parámetros, TONAL el marco y el pool (FR4)
-  - [ ] Tests (Red): con el pool vacío, TONAL lo dice; no se inventa material que no hay
-  - [ ] Implementación (Green): la vista solo compone
-- [ ] Task: El valor transitorio, en el panel
-  - [ ] Al girar, el panel muestra el valor grande con el acento de la familia del parámetro movido, y se desvanece tras la inactividad como hoy (FR3)
-  - [ ] **Los anillos no se tapan en ningún momento** — es criterio de aceptación, y es lo que mejora respecto a hoy
-  - [ ] Girar un knob de una familia que no es la del tab activo: se decide y se escribe qué manda. Por defecto **el giro manda** y el tab sigue al parámetro movido, porque la pantalla es el espejo del controlador
-  - [ ] Tipografía muy grande, legible a un metro, como hoy
-- [ ] Task: Los tres tabs
-  - [ ] Verde, mauve y violeta, con el tratamiento del handoff: borde izquierdo acentuado, contorno y sombra dura en el activo
-  - [ ] Tocar un tab cambia lo que muestra el panel y su color; es navegación, no edición (FR4)
-  - [ ] Sin controlador conectado los tabs siguen funcionando: mirar no es editar
+- [x] Task: Qué dice el panel en reposo — `82b3cce`
+  - [x] Tests (Red) en `Engine`: el texto y el valor de cada familia salen de una función pura del Track — SHAPE da su reparto, GROOVE sus cinco parámetros, TONAL el marco y el pool (FR4)
+  - [x] Tests (Red): con el pool vacío, TONAL lo dice; no se inventa material que no hay
+  - [x] Implementación (Green): la vista solo compone
+
+  > **Qué valor encabeza cada familia es una elección, y queda escrita.** Shape
+  > lleva Pulses —lo que el propio mock pone—, Groove lleva Velocity —el único
+  > de los cinco que se oye en cada nota sin depender de nada más— y Tonal lleva
+  > el marco, donde no hay elección porque no tiene knobs detrás.
+- [x] Task: El valor transitorio, en el panel — `83b5e1d`
+  - [x] Al girar, el panel muestra el valor grande con el acento de la familia del parámetro movido, y se desvanece tras la inactividad como hoy (FR3)
+  - [x] **Los anillos no se tapan en ningún momento** — es criterio de aceptación, y es lo que mejora respecto a hoy — **estructural desde FR14**: están en otra columna
+  - [x] Girar un knob de una familia que no es la del tab activo: se decide y se escribe qué manda. Por defecto **el giro manda** y el tab sigue al parámetro movido, porque la pantalla es el espejo del controlador
+  - [x] Tipografía muy grande, legible a un metro, como hoy — y **la lectura en reposo usa el mismo formato**, así que el panel no cambia de idioma según de dónde venga
+- [x] Task: Los tres tabs — `83b5e1d`
+  - [x] Verde, mauve y violeta, con el tratamiento del handoff: borde izquierdo acentuado, contorno y sombra dura en el activo
+  - [x] Tocar un tab cambia lo que muestra el panel y su color; es navegación, no edición (FR4) — **el toque queda para la verificación manual**: `simctl` no lo simula, y las capturas se hicieron cambiando el estado inicial
+  - [x] Sin controlador conectado los tabs siguen funcionando: mirar no es editar
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: La barra, el selector y la navegación
