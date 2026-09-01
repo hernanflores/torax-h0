@@ -31,6 +31,29 @@ public final class MIDIEndpointWatcher: @unchecked Sendable {
     private let enumerate: () -> [MIDIEndpointInfo]
     private let deliver: (@escaping () -> Void) -> Void
 
+    /// Lo último **calculado**, esté entregado o no.
+    ///
+    /// **No es lo mismo que `selection`, y esa diferencia es el defecto que
+    /// arregla.** La notificación llega del hilo de CoreMIDI y el cambio se
+    /// aplica donde diga `delivering` —el principal, en producto—, así que entre
+    /// las dos cosas hay un hueco. Comparando contra `selection` dentro de ese
+    /// hueco, dos avisos seguidos —desenchufar y volver a enchufar, o un reset
+    /// del bus— se calculan los dos contra el estado viejo: el segundo parece
+    /// «nada que hacer» y la vuelta del dispositivo se pierde. La app se queda
+    /// muda con el cable puesto y sin nada que la despierte hasta el aviso
+    /// siguiente.
+    ///
+    /// Comparar contra esto encadena los avisos: cada uno parte de lo que dejó
+    /// el anterior.
+    private var latest: MIDIEndpointSelection
+
+    /// Protege `latest`, que se toca desde el hilo de CoreMIDI.
+    ///
+    /// No es código de tiempo real —las notificaciones de conexión son
+    /// esporádicas y no ocurren en el camino del scheduler—, así que el lock
+    /// aquí no viola la regla de `swift.md`.
+    private let lock = NSLock()
+
     /// - Parameters:
     ///   - role: si son destinos de salida o fuentes de entrada.
     ///   - enumerating: enumera los endpoints del sistema. En producto,
@@ -47,7 +70,9 @@ public final class MIDIEndpointWatcher: @unchecked Sendable {
     ) {
         self.enumerate = enumerating
         self.deliver = delivering
-        self.selection = MIDIEndpointSelection(role, discovering: enumerating())
+        let discovered = MIDIEndpointSelection(role, discovering: enumerating())
+        self.selection = discovered
+        self.latest = discovered
     }
 
     /// Reacciona a un cambio en el conjunto de dispositivos MIDI.
@@ -60,8 +85,16 @@ public final class MIDIEndpointWatcher: @unchecked Sendable {
     /// memoria. Las notificaciones de conexión son esporádicas y no ocurren en
     /// el camino del scheduler.
     public func setupChanged() {
-        let refreshed = selection.refreshed(with: enumerate())
-        guard refreshed != selection else { return }
+        // La reconsulta y la comparación van juntas bajo el lock: separarlas
+        // dejaría que dos avisos calcularan sobre el mismo punto de partida,
+        // que es justo lo que `latest` existe para evitar.
+        let refreshed: MIDIEndpointSelection? = lock.withLock {
+            let updated = latest.refreshed(with: enumerate())
+            guard updated != latest else { return nil }
+            latest = updated
+            return updated
+        }
+        guard let refreshed else { return }
 
         deliver { [weak self] in
             guard let self else { return }

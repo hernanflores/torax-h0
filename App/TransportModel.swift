@@ -288,7 +288,17 @@ final class TransportModel {
                 self?.sourceSelection = selection
                 self?.connectToSelectedSource()
             }
-            input.onSetupChanged = { [weak sourceWatcher] in sourceWatcher?.setupChanged() }
+            // **Además de reconsultar, se vuelve a conectar.** El watcher solo
+            // avisa cuando la *elección* cambia, y CoreMIDI puede tirar la
+            // conexión del puerto sin que la lista de fuentes cambie —el
+            // dispositivo se reenumera y vuelve con el mismo nombre—. Sin esto,
+            // la app se queda con un puerto conectado a nada: los knobs dejan de
+            // llegar y no hay nada que la despierte. Conectar es idempotente y
+            // desconecta la anterior, así que repetirlo no cuesta nada.
+            input.onSetupChanged = { [weak sourceWatcher, weak self] in
+                sourceWatcher?.setupChanged()
+                Task { @MainActor in self?.connectToSelectedSource() }
+            }
         } catch {
             // Sin entrada, la app se queda en solo lectura y transporte. Es un
             // estado previsto, no un fallo que haya que anunciar.
