@@ -16,16 +16,15 @@ struct TrackSelectorView: View {
     /// Cuáles tienen material. Un Track vacío dispara y no suena, así que la
     /// diferencia importa antes de preguntarse por qué no se oye.
     let hasMaterial: [Bool]
-    let channel: Channel
+    /// Por dónde emite cada uno. Va en la pastilla (FR5).
+    let channels: [Channel]
+    /// El acento de la familia activa, que es el que lleva el elegido (FR5).
+    let accent: Color
     let onSelect: (Int) -> Void
     let onChannelChange: (Channel) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("Tracks")
-                .font(Typography.sectionTitle)
-                .foregroundStyle(Palette.shape)
-
+        VStack(alignment: .leading, spacing: 16) {
             selector
             channelRow
         }
@@ -33,48 +32,56 @@ struct TrackSelectorView: View {
 
     // MARK: - Los dieciséis
 
+    /// **Una fila de dieciséis** (FR5), no dos de ocho.
+    ///
+    /// Dos filas se leían como dos grupos y los Tracks no están agrupados: el 8
+    /// y el 9 son tan contiguos como el 3 y el 4. En una fila el orden es el
+    /// mismo que el de los step buttons del controlador, que es la superficie
+    /// desde la que se seleccionan de verdad.
     private var selector: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            label("Track \(selected + 1)")
-
-            // Dos filas de ocho: dieciséis en una sola quedan estrechos, y el
-            // objetivo táctil manda sobre la rejilla porque se toca de pie.
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(0..<2, id: \.self) { row in
-                    HStack(spacing: 8) {
-                        ForEach(0..<8, id: \.self) { column in
-                            button(for: row * 8 + column)
-                        }
-                    }
-                }
+        HStack(spacing: 6) {
+            ForEach(0..<16, id: \.self) { index in
+                button(for: index)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    /// Una pastilla: **su número y su canal**.
+    ///
+    /// Tres estados que se leen sin texto: el elegido va relleno del acento de
+    /// la familia activa, los que tienen material llevan ese acento en el trazo,
+    /// y los vacíos solo el borde en reposo.
     private func button(for index: Int) -> some View {
         let isSelected = index == selected
         let sounds = hasMaterial.indices.contains(index) && hasMaterial[index]
+        let channel = channels.indices.contains(index) ? channels[index] : .first
 
-        // El borde marca quién suena: relleno de acento para el seleccionado,
-        // contorno de acento para los que tienen material, borde en reposo para
-        // los vacíos. A un metro se distinguen los tres estados.
-        //
-        // **El trazo ya no varía de grosor**: era 2px para los que sonaban y 1px
-        // para el resto, y el sistema lo pone en 2px para todo lo interactivo
-        // (FR9). Lo que distingue sigue siendo el color, que es lo que
-        // `product-guidelines.md` pide que codifique.
-        return Button("\(index + 1)") { onSelect(index) }
-            .font(isSelected ? Typography.bodyStrong : Typography.body).monospacedDigit()
-            .foregroundStyle(
-                isSelected ? Palette.toolbar : (sounds ? Palette.shape : Palette.muted)
-            )
-            .frame(minWidth: 52, minHeight: 52)
-            .brutalistControl(
-                accent: Palette.shape,
-                isSelected: isSelected,
-                isPopulated: sounds,
-                radius: Brutalist.radiusLarge
-            )
+        return Button {
+            onSelect(index)
+        } label: {
+            VStack(spacing: 2) {
+                Text("\(index + 1)")
+                    .font(isSelected ? Typography.bodyStrong : Typography.body)
+                    .foregroundStyle(
+                        isSelected ? Palette.toolbar : (sounds ? accent : Palette.muted))
+                // El canal en pequeño y debajo: es de qué instrumento sale, no
+                // qué Track es. Si compartieran tamaño habría que leer cuál es
+                // cuál.
+                Text("\(channel.number)")
+                    .font(Typography.caption)
+                    .foregroundStyle(isSelected ? Palette.toolbar.opacity(0.7) : Palette.muted)
+            }
+            .monospacedDigit()
+            .frame(maxWidth: .infinity, minHeight: 56)
+        }
+        .buttonStyle(.plain)
+        .brutalistControl(
+            accent: accent,
+            isSelected: isSelected,
+            isPopulated: sounds,
+            radius: Brutalist.radius
+        )
     }
 
     // MARK: - El canal
@@ -83,19 +90,24 @@ struct TrackSelectorView: View {
     ///
     /// **Táctil, como Scale y Root**: es configuración y no material generativo,
     /// y `product-guidelines.md` pone esa frontera del lado de la pantalla.
+    /// El canal del Track elegido, que es el que esta fila edita.
+    private var selectedChannel: Channel {
+        channels.indices.contains(selected) ? channels[selected] : .first
+    }
+
     private var channelRow: some View {
         VStack(alignment: .leading, spacing: 8) {
-            label("Channel")
+            label("Channel · Track \(selected + 1)")
             HStack(spacing: 6) {
                 ForEach(1...16, id: \.self) { number in
-                    let isSelected = number == channel.number
+                    let isSelected = number == selectedChannel.number
                     Button("\(number)") { onChannelChange(Channel(number)!) }
                         .font(isSelected ? Typography.captionBold : Typography.caption)
                         .monospacedDigit()
                         .foregroundStyle(isSelected ? Palette.toolbar : Palette.muted)
                         .frame(minWidth: 34, minHeight: 44)
                         .brutalistControl(
-                            accent: Palette.shape,
+                            accent: accent,
                             isSelected: isSelected,
                             radius: Brutalist.radiusSmall
                         )

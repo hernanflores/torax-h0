@@ -134,6 +134,15 @@ final class TransportModel {
         (0..<Pattern.trackCount).map { !(pattern.track(at: $0)?.pool.isEmpty ?? true) }
     }
 
+    /// Por dónde emite cada Track.
+    ///
+    /// **Los dieciséis, no solo el elegido** (FR5): la pastilla de cada Track
+    /// lleva su canal, así que la pantalla dice de un vistazo si dos Tracks
+    /// comparten instrumento sin tener que seleccionarlos uno a uno.
+    var channels: [Channel] {
+        (0..<Pattern.trackCount).map { pattern.track(at: $0)?.channel ?? .first }
+    }
+
     /// Por qué la salida no está disponible, si no lo está.
     ///
     /// Solo se llena si CoreMIDI no arrancó, que es un fallo real y no una

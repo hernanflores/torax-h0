@@ -52,7 +52,8 @@ struct ContentView: View {
                 TrackSelectorView(
                     selected: model.selectedTrackIndex,
                     hasMaterial: model.tracksWithMaterial,
-                    channel: model.track.channel,
+                    channels: model.channels,
+                    accent: Palette.accent(for: family),
                     onSelect: { model.selectTrack($0) },
                     onChannelChange: { model.setChannel($0) }
                 )
