@@ -94,7 +94,7 @@ regresión la bloquea.
   - [x] Implementación (Green)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 4: La entrada edita el Track seleccionado
+## Phase 4: La entrada edita el Track seleccionado [checkpoint: f1b2d01]
 
 > `MIDI`. Aquí `trackCount` pasa de 1 a 16 y la costura que dejó la rebanada 7 se
 > usa por primera vez. El preset no se toca.
@@ -115,7 +115,7 @@ regresión la bloquea.
   - [x] Tests (Red): la edición del canal no pasa por `ControlMapping` — ningún CC lo mueve
   - [x] Tests (Red): cambiar el canal publica el snapshot, para que el scheduler lo use en el evento siguiente
   - [x] Implementación (Green)
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: La pantalla mínima para operar
 
@@ -124,7 +124,7 @@ regresión la bloquea.
 > —los anillos concéntricos son la rebanada siguiente—; es lo justo para que
 > dieciséis Tracks se puedan usar y verificar.
 
-- [ ] Task: Qué Track está seleccionado y cuáles tienen material
+- [~] Task: Qué Track está seleccionado y cuáles tienen material
   - [ ] Los dieciséis, con el seleccionado marcado y los que tienen material distinguidos de los vacíos
   - [ ] Legible a un metro y tocable de pie, según `product-guidelines.md`
   - [ ] Seleccionar desde la pantalla hace lo mismo que el step button — sin controlador conectado hay que poder mirar
