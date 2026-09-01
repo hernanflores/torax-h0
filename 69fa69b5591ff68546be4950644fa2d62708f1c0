@@ -1,0 +1,24 @@
+Medición de jitter — v2 rebanada 1, dieciséis Tracks sonando
+iPad Air (4ª gen), rejilla recta, 200 eventos por tempo, 2026-09-01.
+
+  60 BPM   n=200  máx 0,151 ms  media +0,116 ms  σ 0,013 ms
+ 120 BPM   n=200  máx 0,144 ms  media +0,105 ms  σ 0,015 ms
+ 174 BPM   n=200  máx 0,598 ms  media +0,121 ms  σ 0,083 ms
+
+VEREDICTO: CUMPLE (umbral máx < 2 ms, σ < 0,5 ms).
+
+Referencia (rebanada 6, 2026-08-30, n=1000): máx 0,151 ms, σ 0,009-0,013 ms.
+
+La diferencia: sube solo a 174 BPM, x4 en máximo y x6,4 en σ. La media no se
+mueve en ninguno de los tres tempos (+0,105 a +0,121 ms), igual que en las cinco
+mediciones anteriores, lo que descarta un coste sistemático de copiar dieciséis
+Tracks por ventana. Se ensanchó la cola en el tempo más rápido.
+
+Es lectura de estadísticos de resumen: writeReport() no persiste las
+desviaciones por evento, así que no se puede distinguir unos pocos outliers de
+un corrimiento de la distribución. Cerrado con esta explicación por decisión del
+2026-09-01.
+
+Verificación funcional: aprobada, sin discrepancias.
+Cobertura: Engine 99,42% líneas, MIDI 92,08% líneas (VirtualLoopbackTests
+excluido por clientCreationFailed(-50), que falla igual en main).
