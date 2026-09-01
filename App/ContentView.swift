@@ -33,9 +33,20 @@ struct ContentView: View {
     @State private var family: ParameterFamily = .shape
 
     var body: some View {
+        // **El ancho se lee una vez, arriba.** La altura del escenario depende
+        // del ancho —el anillo es cuadrado y llena su columna— y un
+        // `GeometryReader` dentro del `ScrollView` no puede dar las dos cosas
+        // sin quedar circular: el `ScrollView` pregunta la altura al contenido y
+        // el contenido la sacaría del `ScrollView`.
+        GeometryReader { screen in
+            content(width: screen.size.width - 64)
+        }
+    }
+
+    private func content(width: CGFloat) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
-                stage
+                stage(width: width)
                 Divider().overlay(Palette.border)
                 TrackSelectorView(
                     selected: model.selectedTrackIndex,
@@ -85,39 +96,47 @@ struct ContentView: View {
     /// que se lee de un vistazo es la *forma* —cuáles tienen material, cuál está
     /// elegido, por dónde va el tiempo—, no el detalle de un Step. El detalle es
     /// el panel.
-    private var stage: some View {
-        GeometryReader { geometry in
-            HStack(alignment: .top, spacing: 24) {
-                rings
-                    .frame(width: Self.ringColumnWidth(in: geometry.size.width))
+    private func stage(width: CGFloat) -> some View {
+        let columns = Self.columns(in: width)
 
-                readout
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+        return HStack(alignment: .top, spacing: Self.gutter) {
+            rings
+                .frame(width: columns.rings, height: columns.rings)
 
-                families
-                    .frame(width: Self.familyColumnWidth(in: geometry.size.width))
-            }
+            readout
+                .frame(width: columns.readout, height: columns.rings)
+
+            families
+                .frame(width: columns.families, height: columns.rings)
         }
-        .frame(height: 420)
     }
 
-    /// Las proporciones del handoff, como fracciones.
-    ///
-    /// El mock mide 924 puntos de ancho y reparte 190 al anillo y 170 a los
-    /// tabs. **Se guardan como fracción y no como puntos** porque el iPad más
-    /// grande es medio ancho mayor que el mock: a puntos fijos, el anillo
-    /// encogería en relativo hasta perderse y el centro se llevaría todo lo que
-    /// sobra.
-    ///
-    /// El mínimo existe porque por debajo de él dieciséis bandas dejan de
-    /// contarse; el máximo, porque el anillo no es el protagonista de la
-    /// superficie aunque lo sea de la lectura.
-    static func ringColumnWidth(in total: CGFloat) -> CGFloat {
-        min(max(total * (190.0 / 924.0), 190), 320)
-    }
+    /// El hueco entre columnas.
+    static let gutter: CGFloat = 24
 
-    static func familyColumnWidth(in total: CGFloat) -> CGFloat {
-        min(max(total * (170.0 / 924.0), 170), 260)
+    /// El reparto horizontal.
+    ///
+    /// > **Aquí el handoff se contradice consigo mismo, y gana la app.** El mock
+    /// > da al anillo 190 puntos de 924 —un quinto— y el resto a la lectura. Esas
+    /// > proporciones se dibujaron para **cinco** anillos; con dieciséis, un
+    /// > quinto del ancho deja cada banda en unos 6 puntos y el mapa deja de
+    /// > poder contarse. El anillo es lo que la pantalla existe para enseñar
+    /// > —`product-guidelines.md`: lo expresivo es el material musical— así que
+    /// > se lleva el ancho grande y la lectura se queda con el estrecho.
+    /// >
+    /// > **Decidido con el usuario el 2026-09-01**, viendo la pantalla:
+    /// > «la columna central es demasiado grande; el ancho del anillo debería ser
+    /// > el ancho actual de la columna central».
+    ///
+    /// La lectura y los tabs se calculan primero y **el anillo se queda con lo
+    /// que sobra**: así, en un iPad más ancho, el espacio de más va a donde se
+    /// nota —más separación entre bandas— y no a estirar un texto que ya cabía.
+    static func columns(in total: CGFloat) -> (rings: CGFloat, readout: CGFloat, families: CGFloat)
+    {
+        let families = min(max(total * (170.0 / 924.0), 170), 260)
+        let readout = min(max(total * (190.0 / 924.0), 190), 320)
+        let rings = max(total - families - readout - gutter * 2, 240)
+        return (rings, readout, families)
     }
 
     /// La columna izquierda: los dieciséis anillos y nada más.
@@ -162,7 +181,7 @@ struct ContentView: View {
             transport
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(24)
+        .padding(20)
         .brutalistPanel()
     }
 
@@ -222,7 +241,9 @@ struct ContentView: View {
                     .foregroundStyle(isActive ? Palette.toolbar : accent)
                 Spacer(minLength: 0)
             }
-            .frame(minHeight: 52)
+            // Alto fijo: sin él, el `VStack` reparte entre los tres el alto de
+            // la columna y los tabs quedan del tamaño del anillo.
+            .frame(height: 64)
             .padding(.trailing, 16)
         }
         .buttonStyle(.plain)
@@ -277,7 +298,10 @@ struct ContentView: View {
             Text("Torax H-0")
                 .font(Typography.appTitle)
 
-            HStack(spacing: 24) {
+            // **En columna y no en fila.** Con el panel de lectura estrecho
+            // (FR14) una fila deja `No MIDI device` partiéndose letra a letra,
+            // que es peor que ocupar dos renglones.
+            VStack(alignment: .leading, spacing: 12) {
                 // **Era `.borderedProminent`, que dibuja una pastilla completa**,
                 // y FR9 lo prohíbe: el radio pequeño y constante es lo que hace
                 // que la pantalla se lea como un aparato y no como un formulario.

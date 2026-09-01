@@ -143,22 +143,20 @@ composición sin mock que la respalde sería inventar producto, que es justo lo
 que esta rebanada dice no hacer. El iPad se usa apaisado, delante del
 controlador.
 
-> **Lo que esto le cuesta a FR2.** En el mock, el anillo ocupa **190px de 924**:
-> una columna izquierda estrecha, no la mitad de la pantalla. Dieciséis bandas en
-> 190px son unos 6px por banda. El riesgo de legibilidad del playhead a un metro
-> es bastante más agudo de lo que sugiere mirar el anillo en grande, y es ahí
-> —a su tamaño real, apaisado— donde la Fase 6 tiene que juzgarlo.
+> **Lo que esto le costaba a FR2, y cómo se resolvió.** Con los 190px de 924 del
+> mock, dieciséis bandas quedaban en unos 6px cada una y el playhead era
+> ilegible por construcción. **FR14 invierte el reparto** y el anillo pasa a
+> llevarse el ancho grande, que es la respuesta a ese riesgo tomada antes de
+> llegar al dispositivo. La Fase 6 lo confirma a un metro.
 
 ### FR14 — Los anillos a la izquierda, todo lo demás a la derecha
 
 **Añadido el 2026-09-01**, junto a FR13 y por la misma razón: estaba supuesto y
 no escrito.
 
-La composición apaisada es la del handoff, y su reparto horizontal es una
-decisión, no una consecuencia del espacio: **los anillos ocupan una columna
-estrecha a la izquierda —190px de 924 en el mock— y todo lo demás vive a su
-derecha**: el panel de lectura en el centro, y los tabs de familia en una
-columna de 170px al borde. El selector de Tracks va debajo, cruzando el ancho.
+**Los anillos a la izquierda y todo lo demás a su derecha**: el panel de lectura
+en el centro y los tabs de familia en la columna del borde. El selector de Tracks
+va debajo, cruzando el ancho.
 
 **Por qué importa que sea izquierda y no centro.** Hoy `ContentView` apila todo
 en una sola columna vertical con el anillo arriba, que es lo que la rebanada 1
@@ -166,9 +164,20 @@ necesitaba para operar y no lo que la pantalla del producto es. Poner los anillo
 a un lado y la lectura al otro es lo que permite que el valor grande no los tape
 nunca (FR3): son dos regiones que no se solapan, en vez de una encima de otra.
 
-**El anillo pequeño es intencional.** Ocupa un quinto del ancho porque lo que se
-lee de un vistazo es *la forma* —cuáles tienen material, cuál está elegido, por
-dónde va el tiempo—, no el detalle de un Step. El detalle es el panel.
+> **Aquí el handoff se contradice consigo mismo, y gana la app.** El mock da al
+> anillo 190px de 924 —un quinto— y el resto a la lectura. Esas proporciones se
+> dibujaron para **cinco** anillos; con dieciséis, un quinto del ancho deja cada
+> banda en unos 6px y el mapa deja de poder contarse — que es exactamente el
+> riesgo que FR2 declara.
+>
+> **Se invierte el reparto, decidido con el usuario el 2026-09-01 viendo la
+> pantalla:** el anillo se lleva el ancho grande y la lectura se queda con el
+> estrecho. Es lo coherente con `product-guidelines.md` —lo expresivo es el
+> material musical, todo lo demás es soporte—: el anillo *es* el material.
+>
+> La lectura y los tabs se calculan primero y **el anillo se queda con lo que
+> sobra**, así que en un iPad más ancho el espacio de más va a donde se nota
+> —más separación entre bandas— y no a estirar un texto que ya cabía.
 
 ### FR9 — El lenguaje neo-brutalista es un sistema, no un estilo por vista
 
