@@ -102,7 +102,7 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   >
   > **Anotado para la Fase 6:** los doce anillos vacíos llenan el interior y el
   > conjunto pesa. Es consecuencia de FR1, no del dibujo.
-- [x] Task: La app se bloquea en landscape — `c303664`
+- [x] Task: La app se bloquea en landscape — `4506bad`
   - [x] Solo `LandscapeLeft` y `LandscapeRight`, en Debug y en Release (FR13)
   - [x] El requisito queda escrito en `spec.md`, que no lo tenía: el supuesto estaba en las seis fases y en ningún requisito
   - [x] La verificación pasa a hacerse apaisada — durante esta fase se juzgó una composición en portrait que no era la que existe
