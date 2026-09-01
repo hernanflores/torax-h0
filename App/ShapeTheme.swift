@@ -65,6 +65,7 @@ enum Palette {
         switch family {
         case .shape: shape
         case .groove: groove
+        case .tonal: tonal
         }
     }
 }

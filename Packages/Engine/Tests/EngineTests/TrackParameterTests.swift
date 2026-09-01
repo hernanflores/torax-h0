@@ -123,9 +123,51 @@ final class ParameterFamilyTests: XCTestCase {
 
     /// Toda la lista está clasificada: un parámetro nuevo sin familia no
     /// compilaría, pero uno mal clasificado sí, y esto lo separa por conteo.
+    ///
+    /// **Cubre solo las dos familias de knob.** Desde que existe `.tonal` la
+    /// lista de familias es mayor que la de familias alcanzables desde un
+    /// parámetro, y esa diferencia es el punto: ver `testNoKnobParameterIsTonal`.
     func testEveryParameterHasAFamilyAndBothAreUsed() {
         let families = Set(TrackParameter.allCases.map(\.family))
         XCTAssertEqual(families, [.shape, .groove])
+    }
+
+    // MARK: - Tonal
+
+    /// Las tres familias existen y `CaseIterable` las devuelve.
+    ///
+    /// **Tonal es una clasificación, no un parámetro** (FR4 de la rebanada 2 de
+    /// la v2): existe para que el tercer tab saque su acento por la misma vía
+    /// que los otros dos —`Palette.accent(for:)`— y no por un condicional en la
+    /// vista, que es donde no hay tests.
+    func testTheThreeFamiliesExist() {
+        XCTAssertEqual(ParameterFamily.allCases, [.shape, .groove, .tonal])
+    }
+
+    /// **Ningún parámetro de knob es Tonal.** Scale y Root son táctiles y el
+    /// pool se edita con pads: ninguno de los tres se ajusta con un delta, así
+    /// que ninguno es un `TrackParameter`. Si algún día uno cae en `.tonal`, o
+    /// es un error de clasificación o el modelo de entrada cambió — y las dos
+    /// cosas merecen que esto falle.
+    func testNoKnobParameterIsTonal() {
+        for parameter in TrackParameter.allCases {
+            XCTAssertNotEqual(parameter.family, .tonal, "\(parameter)")
+        }
+    }
+
+    /// La clasificación de los nueve no se movió al añadir el caso.
+    ///
+    /// Los otros dos tests miran cada familia por separado; éste fija la lista
+    /// entera de una vez, que es lo que se rompería si alguien reordenara los
+    /// casos del `switch`.
+    func testAddingTonalDoesNotReclassifyTheNine() {
+        XCTAssertEqual(
+            TrackParameter.allCases.map(\.family),
+            [
+                .shape, .shape, .shape, .shape,
+                .groove, .groove, .groove, .groove, .groove,
+            ]
+        )
     }
 }
 

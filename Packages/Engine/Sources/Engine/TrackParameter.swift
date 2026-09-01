@@ -43,9 +43,11 @@ public enum TrackParameter: Equatable, Sendable, CaseIterable {
 /// lo sabe el motor; qué color le toca lo decide la vista. Poner el `switch`
 /// allí lo dejaría donde no hay tests, que es lo que `workflow.md` prohíbe.
 ///
-/// **Tonal no está aquí.** Su acento existe y se usa, pero el pool no se ajusta
-/// con un delta sino con pads, así que no es un `TrackParameter` y no tiene por
-/// qué aparecer en esta clasificación.
+/// **No todas las familias son alcanzables desde un `TrackParameter`.** Tonal
+/// no lo es: Scale y Root son táctiles y el pool se edita con pads, así que
+/// ninguno de los tres se ajusta con un delta. Está aquí de todas formas porque
+/// esta lista clasifica *familias*, no parámetros, y el tercer tab de la
+/// pantalla necesita su acento por la misma vía que los otros dos.
 public enum ParameterFamily: Equatable, Sendable, CaseIterable {
 
     /// Cuándo y con qué densidad ocurren los eventos.
@@ -53,6 +55,15 @@ public enum ParameterFamily: Equatable, Sendable, CaseIterable {
 
     /// Cómo se interpreta lo que ocurre.
     case groove
+
+    /// De qué material salen las alturas: Scale, Root y el pool.
+    ///
+    /// **Es una clasificación, no un parámetro.** Ningún `TrackParameter` cae
+    /// aquí y `ParameterFamilyTests` lo fija. Existe para que el tab TONAL saque
+    /// su color de `accent(for:)` como los otros dos, en vez de que la vista
+    /// resuelva ese caso con un condicional propio — que lo dejaría donde no hay
+    /// tests, exactamente lo que esta clasificación existe para evitar.
+    case tonal
 }
 
 extension TrackParameter {
