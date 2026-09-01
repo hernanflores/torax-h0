@@ -81,7 +81,8 @@ struct ContentView: View {
         }
         .frame(maxWidth: 420)
         .padding(24)
-        .background(Palette.inset, in: RoundedRectangle(cornerRadius: 12))
+        // Radio 12 estaba fuera de la escala de 3–8px que fija el sistema.
+        .brutalistPanel()
         .frame(maxWidth: .infinity, alignment: .center)
     }
 
@@ -108,20 +109,36 @@ struct ContentView: View {
 
     // MARK: - Transporte
 
+    /// Si el botón de transporte hace algo ahora mismo.
+    ///
+    /// Se puede parar siempre que esté sonando, y arrancar solo si hay destino.
+    private var canTransport: Bool { model.canPlay || model.isPlaying }
+
     private var transport: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text("Torax H-0")
                 .font(Typography.appTitle)
 
             HStack(spacing: 24) {
+                // **Era `.borderedProminent`, que dibuja una pastilla completa**,
+                // y FR9 lo prohíbe: el radio pequeño y constante es lo que hace
+                // que la pantalla se lea como un aparato y no como un formulario.
+                // Es primario, así que lleva relleno de acento y sombra dura
+                // siempre que se pueda pulsar.
                 Button(model.isPlaying ? "Stop" : "Play") {
                     model.isPlaying ? model.stop() : model.play()
                 }
                 .font(Typography.appTitle)
-                .buttonStyle(.borderedProminent)
-                .disabled(!model.canPlay && !model.isPlaying)
+                .buttonStyle(.plain)
+                .foregroundStyle(canTransport ? Palette.toolbar : Palette.muted)
+                .disabled(!canTransport)
                 // Objetivo táctil holgado: se toca de pie, delante del sintetizador.
                 .frame(minWidth: 160, minHeight: 60)
+                .brutalistControl(
+                    accent: Palette.shape,
+                    isSelected: canTransport,
+                    radius: Brutalist.radiusLarge
+                )
 
                 destination
             }

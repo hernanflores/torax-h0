@@ -55,23 +55,25 @@ struct TrackSelectorView: View {
         let isSelected = index == selected
         let sounds = hasMaterial.indices.contains(index) && hasMaterial[index]
 
+        // El borde marca quién suena: relleno de acento para el seleccionado,
+        // contorno de acento para los que tienen material, borde en reposo para
+        // los vacíos. A un metro se distinguen los tres estados.
+        //
+        // **El trazo ya no varía de grosor**: era 2px para los que sonaban y 1px
+        // para el resto, y el sistema lo pone en 2px para todo lo interactivo
+        // (FR9). Lo que distingue sigue siendo el color, que es lo que
+        // `product-guidelines.md` pide que codifique.
         return Button("\(index + 1)") { onSelect(index) }
             .font(isSelected ? Typography.bodyStrong : Typography.body).monospacedDigit()
-            .foregroundStyle(isSelected ? .white : (sounds ? Palette.shape : Palette.muted))
-            .frame(minWidth: 52, minHeight: 52)
-            .background(
-                isSelected ? Palette.shape : Palette.inset,
-                in: RoundedRectangle(cornerRadius: 8)
+            .foregroundStyle(
+                isSelected ? Palette.toolbar : (sounds ? Palette.shape : Palette.muted)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    // El borde marca quién suena: relleno para el seleccionado,
-                    // contorno para los que tienen material, nada para los
-                    // vacíos. A un metro se distinguen los tres estados.
-                    .stroke(
-                        isSelected ? Palette.shape : (sounds ? Palette.shape : Palette.border),
-                        lineWidth: sounds && !isSelected ? 2 : 1
-                    )
+            .frame(minWidth: 52, minHeight: 52)
+            .brutalistControl(
+                accent: Palette.shape,
+                isSelected: isSelected,
+                isPopulated: sounds,
+                radius: Brutalist.radiusLarge
             )
     }
 
@@ -90,11 +92,12 @@ struct TrackSelectorView: View {
                     Button("\(number)") { onChannelChange(Channel(number)!) }
                         .font(isSelected ? Typography.captionBold : Typography.caption)
                         .monospacedDigit()
-                        .foregroundStyle(isSelected ? .white : Palette.muted)
+                        .foregroundStyle(isSelected ? Palette.toolbar : Palette.muted)
                         .frame(minWidth: 34, minHeight: 44)
-                        .background(
-                            isSelected ? Palette.shape : Palette.inset,
-                            in: RoundedRectangle(cornerRadius: 6)
+                        .brutalistControl(
+                            accent: Palette.shape,
+                            isSelected: isSelected,
+                            radius: Brutalist.radiusSmall
                         )
                 }
             }

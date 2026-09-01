@@ -104,10 +104,11 @@ struct TonalView: View {
                             .foregroundStyle(Palette.tonal)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .background(
-                                Palette.tonal.opacity(0.15),
-                                in: RoundedRectangle(cornerRadius: 6)
-                            )
+                            // **Trazo, no tinte.** Era un relleno del acento al
+                            // 15%, y el handoff no admite tintes: los estados se
+                            // dicen con un bloque plano o con un borde, nunca
+                            // con una transparencia.
+                            .brutalistPanel(radius: Brutalist.radius)
                     }
                 }
             }
@@ -140,10 +141,7 @@ struct TonalView: View {
                     .foregroundStyle(Palette.tonal)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
-                    .background(
-                        Palette.tonal.opacity(0.15),
-                        in: RoundedRectangle(cornerRadius: 6)
-                    )
+                    .brutalistPanel(radius: Brutalist.radius)
 
                 if let limit {
                     Text(limit)
@@ -188,16 +186,13 @@ struct TonalView: View {
     {
         Button(title, action: action)
             .font(isSelected ? Typography.bodyStrong : Typography.body)
-            .foregroundStyle(isSelected ? .white : Palette.muted)
+            .foregroundStyle(isSelected ? Palette.toolbar : Palette.muted)
             // Objetivo táctil holgado: se toca de pie, delante del sintetizador.
             .frame(minWidth: 52, minHeight: 52)
-            .background(
-                isSelected ? Palette.tonal : Palette.inset,
-                in: RoundedRectangle(cornerRadius: 8)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? Palette.tonal : Palette.border, lineWidth: 1)
+            .brutalistControl(
+                accent: Palette.tonal,
+                isSelected: isSelected,
+                radius: Brutalist.radiusLarge
             )
     }
 
