@@ -23,7 +23,7 @@ struct TrackSelectorView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text("Tracks")
-                .font(.title2.weight(.semibold))
+                .font(Typography.sectionTitle)
                 .foregroundStyle(Palette.shape)
 
             selector
@@ -56,7 +56,7 @@ struct TrackSelectorView: View {
         let sounds = hasMaterial.indices.contains(index) && hasMaterial[index]
 
         return Button("\(index + 1)") { onSelect(index) }
-            .font(.body.weight(isSelected ? .bold : .regular).monospacedDigit())
+            .font(isSelected ? Typography.bodyStrong : Typography.body).monospacedDigit()
             .foregroundStyle(isSelected ? .white : (sounds ? Palette.shape : Palette.muted))
             .frame(minWidth: 52, minHeight: 52)
             .background(
@@ -88,7 +88,8 @@ struct TrackSelectorView: View {
                 ForEach(1...16, id: \.self) { number in
                     let isSelected = number == channel.number
                     Button("\(number)") { onChannelChange(Channel(number)!) }
-                        .font(.footnote.weight(isSelected ? .bold : .regular).monospacedDigit())
+                        .font(isSelected ? Typography.captionBold : Typography.caption)
+                        .monospacedDigit()
                         .foregroundStyle(isSelected ? .white : Palette.muted)
                         .frame(minWidth: 34, minHeight: 44)
                         .background(
@@ -102,7 +103,7 @@ struct TrackSelectorView: View {
 
     private func label(_ text: String) -> some View {
         Text(text)
-            .font(.footnote.weight(.semibold))
+            .font(Typography.captionStrong)
             .foregroundStyle(Palette.muted)
     }
 }

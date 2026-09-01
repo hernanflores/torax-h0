@@ -93,7 +93,7 @@ struct ContentView: View {
     /// - Returns: A view showing the change description.
     private func transient(_ change: ParameterChange) -> some View {
         Text(change.description)
-            .font(.system(size: 64, weight: .bold, design: .default))
+            .font(Typography.transientValue)
             .minimumScaleFactor(0.4)
             .lineLimit(1)
             // **El acento es el de la familia del parámetro que se movió**, no
@@ -111,13 +111,13 @@ struct ContentView: View {
     private var transport: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text("Torax H-0")
-                .font(.largeTitle.weight(.semibold))
+                .font(Typography.appTitle)
 
             HStack(spacing: 24) {
                 Button(model.isPlaying ? "Stop" : "Play") {
                     model.isPlaying ? model.stop() : model.play()
                 }
-                .font(.title.weight(.semibold))
+                .font(Typography.appTitle)
                 .buttonStyle(.borderedProminent)
                 .disabled(!model.canPlay && !model.isPlaying)
                 // Objetivo táctil holgado: se toca de pie, delante del sintetizador.
@@ -139,7 +139,7 @@ struct ContentView: View {
     private var input: some View {
         HStack(spacing: 12) {
             Text(model.sourceStatus)
-                .font(.body)
+                .font(Typography.body)
                 .foregroundStyle(
                     model.isReadOnly ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.white))
 
@@ -154,7 +154,7 @@ struct ContentView: View {
 
             if model.isReadOnly {
                 Text("read-only")
-                    .font(.footnote)
+                    .font(Typography.caption)
                     .foregroundStyle(.secondary)
             }
         }
@@ -178,7 +178,7 @@ struct ContentView: View {
     private var destination: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(model.outputUnavailable ?? model.destinationStatus)
-                .font(.title2)
+                .font(Typography.sectionTitle)
                 .foregroundStyle(model.selection.hasEndpoint ? .white : .secondary)
 
             if model.selection.available.count > 1 {
@@ -215,7 +215,7 @@ struct ContentView: View {
     private var parameters: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(model.shapeSummary)
-                .font(.title3.monospaced())
+                .font(Typography.parameterLine)
                 .foregroundStyle(Palette.shape.opacity(0.85))
             // Dos renglones, un solo acento: el color codifica la familia y
             // Groove es una. El corte lo decide `Engine` —por lo que se envía y
@@ -223,7 +223,7 @@ struct ContentView: View {
             // `Delay 0%` colgando solo.
             ForEach(model.grooveSummaryLines, id: \.self) { line in
                 Text(line)
-                    .font(.title3.monospaced())
+                    .font(Typography.parameterLine)
                     .foregroundStyle(Palette.groove.opacity(0.85))
             }
         }
@@ -234,9 +234,9 @@ struct ContentView: View {
     private var measurement: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Jitter")
-                .font(.title2.weight(.semibold))
+                .font(Typography.sectionTitle)
             Text(jitter.statusMessage)
-                .font(.body)
+                .font(Typography.body)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
 
@@ -269,12 +269,12 @@ struct ContentView: View {
             .frame(maxWidth: 520)
 
             Text("Umbral: máx < 2 ms · σ < 0,5 ms")
-                .font(.footnote)
+                .font(Typography.caption)
                 .foregroundStyle(.secondary)
 
             if let failure = jitter.failureMessage {
                 Text(failure)
-                    .font(.body.monospaced())
+                    .font(Typography.body)
                     .foregroundStyle(.orange)
             }
 
@@ -284,7 +284,7 @@ struct ContentView: View {
 
             if let verdict = jitter.overallVerdict {
                 Text(verdict ? "VEREDICTO: CUMPLE" : "VEREDICTO: NO CUMPLE")
-                    .font(.title3.weight(.bold))
+                    .font(Typography.valueTitle)
                     .foregroundStyle(verdict ? .green : .red)
             }
         }
@@ -293,11 +293,11 @@ struct ContentView: View {
     private func row(for measurement: JitterMeasurement) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 16) {
             Text("\(Int(measurement.beatsPerMinute)) BPM")
-                .font(.body.weight(.semibold).monospacedDigit())
+                .font(Typography.bodyMedium).monospacedDigit()
                 .frame(width: 90, alignment: .leading)
 
             Text(measurement.statistics.summary)
-                .font(.callout.monospaced())
+                .font(Typography.reading)
                 .foregroundStyle(measurement.statistics.meetsTrackThreshold ? .green : .red)
         }
     }

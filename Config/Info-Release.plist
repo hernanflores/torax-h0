@@ -20,18 +20,11 @@
 	</array>
 
 	<!--
-	  Solo Debug. Crear endpoints MIDI virtuales en iOS exige declarar el modo
-	  de fondo `audio`: sin él, MIDIDestinationCreateWithProtocol devuelve
-	  kMIDINotPermitted (-10844).
-
-	  Los endpoints virtuales son instrumentación de medición y no forman parte
-	  del producto (ver la enmienda del 2026-08-26 en conductor/tech-stack.md),
-	  así que esta clave NO se aplica a la configuración Release: el binario de
-	  producción no declara modos de fondo que no necesita.
+	  Lo que NO está aquí: `UIBackgroundModes`. Los endpoints MIDI virtuales del
+	  arnés de medición lo exigen y son instrumentación, no producto (enmienda
+	  del 2026-08-26 en conductor/tech-stack.md), así que la clave vive solo en
+	  Info-Debug.plist. El binario de producción no declara modos de fondo que no
+	  necesita.
 	-->
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>audio</string>
-	</array>
 </dict>
 </plist>

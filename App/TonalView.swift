@@ -29,7 +29,7 @@ struct TonalView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text("Tonal")
-                .font(.title2.weight(.semibold))
+                .font(Typography.sectionTitle)
                 .foregroundStyle(Palette.tonal)
 
             scales
@@ -94,13 +94,13 @@ struct TonalView: View {
 
             if pool.isEmpty {
                 Text("No pitches")
-                    .font(.title3.monospaced())
+                    .font(Typography.parameterLine)
                     .foregroundStyle(Palette.muted)
             } else {
                 HStack(spacing: 8) {
                     ForEach(0..<pool.count, id: \.self) { index in
                         Text(pool.pitch(at: index)!.description)
-                            .font(.title3.weight(.semibold).monospaced())
+                            .font(Typography.parameterLineStrong)
                             .foregroundStyle(Palette.tonal)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
@@ -136,7 +136,7 @@ struct TonalView: View {
 
             HStack(spacing: 12) {
                 Text(range)
-                    .font(.title3.weight(.semibold).monospaced())
+                    .font(Typography.parameterLineStrong)
                     .foregroundStyle(Palette.tonal)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
@@ -147,7 +147,7 @@ struct TonalView: View {
 
                 if let limit {
                     Text(limit)
-                        .font(.footnote.weight(.semibold))
+                        .font(Typography.captionStrong)
                         .foregroundStyle(Palette.muted)
                 }
             }
@@ -180,14 +180,14 @@ struct TonalView: View {
 
     private func label(_ text: String) -> some View {
         Text(text)
-            .font(.footnote.weight(.semibold))
+            .font(Typography.captionStrong)
             .foregroundStyle(Palette.muted)
     }
 
     private func button(title: String, isSelected: Bool, action: @escaping () -> Void) -> some View
     {
         Button(title, action: action)
-            .font(.body.weight(isSelected ? .bold : .regular))
+            .font(isSelected ? Typography.bodyStrong : Typography.body)
             .foregroundStyle(isSelected ? .white : Palette.muted)
             // Objetivo táctil holgado: se toca de pie, delante del sintetizador.
             .frame(minWidth: 52, minHeight: 52)
