@@ -111,10 +111,10 @@ regresión la bloquea.
   - [x] Tests (Red): el reencuadre del pool al cambiar de Scale sigue siendo el de la rebanada 4, ahora por Track
   - [x] Implementación (Green): el marco viaja en el Track; `ControlInput` deja de tener uno propio
   - [x] **Documentar la desviación**: `product.md` describe Scale y Root como configuración de la app; pasan a ser del Track, como dice la Pre Spec
-- [~] Task: El canal se edita, y no con un knob
-  - [ ] Tests (Red): la edición del canal no pasa por `ControlMapping` — ningún CC lo mueve
-  - [ ] Tests (Red): cambiar el canal publica el snapshot, para que el scheduler lo use en el evento siguiente
-  - [ ] Implementación (Green)
+- [x] Task: El canal se edita, y no con un knob — `f1b2d01`
+  - [x] Tests (Red): la edición del canal no pasa por `ControlMapping` — ningún CC lo mueve
+  - [x] Tests (Red): cambiar el canal publica el snapshot, para que el scheduler lo use en el evento siguiente
+  - [x] Implementación (Green)
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: La pantalla mínima para operar
