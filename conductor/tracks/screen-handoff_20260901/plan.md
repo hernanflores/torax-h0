@@ -40,11 +40,11 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   - [x] Tests (Red): la clasificación de los nueve parámetros de knob no cambia
   - [x] Implementación (Green): el caso nuevo en `Engine`, y el `switch` de `Palette.accent(for:)` deja de ser exhaustivo con dos casos
   - [x] **Es una clasificación, no un parámetro** (FR4): existe para que el tercer tab tenga su acento por la misma vía que los otros dos y no por un condicional en la vista
-- [ ] Task: Los colores del handoff, y el ámbar que se va
-  - [ ] `Palette` toma los valores finales del handoff: fondos `#211823` / `#1a1420` / `#0e0a10`, bordes `#3a2c3d` y `#4a3d4d`, texto atenuado `#8a7d8d` y `#a99cab`
-  - [ ] **Groove pasa de ámbar `#D99A4E` a mauve `#AA6DA8`** (FR11), y Tonal se queda en `#7C5FD9`
-  - [ ] La documentación de `Palette` deja de decir que los colores son ilustrativos: **el lenguaje visual se cierra aquí**, y se dice de dónde salen
-  - [ ] La razón del ámbar —separarse por tono y no por luminosidad— **no se borra**: queda escrita como lo que hay que volver a comprobar a un metro en la Fase 6
+- [x] Task: Los colores del handoff, y el ámbar que se va — `e52feb4`
+  - [x] `Palette` toma los valores finales del handoff: fondos `#211823` / `#1a1420` / `#0e0a10`, bordes `#3a2c3d` y `#4a3d4d`, texto atenuado `#8a7d8d` y `#a99cab`
+  - [x] **Groove pasa de ámbar `#D99A4E` a mauve `#AA6DA8`** (FR11), y Tonal se queda en `#7C5FD9`
+  - [x] La documentación de `Palette` deja de decir que los colores son ilustrativos: **el lenguaje visual se cierra aquí**, y se dice de dónde salen
+  - [x] La razón del ámbar —separarse por tono y no por luminosidad— **no se borra**: queda escrita como lo que hay que volver a comprobar a un metro en la Fase 6
 - [ ] Task: Figtree, empaquetada
   - [ ] La familia en el bundle y declarada en el `Info.plist`; licencia OFL incluida donde corresponda
   - [ ] Un solo sitio decide la tipografía: pesos 400/600/700 según el handoff, sin que ninguna vista pida una fuente por su cuenta
