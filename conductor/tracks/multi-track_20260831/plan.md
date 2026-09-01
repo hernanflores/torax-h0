@@ -124,15 +124,15 @@ regresión la bloquea.
 > —los anillos concéntricos son la rebanada siguiente—; es lo justo para que
 > dieciséis Tracks se puedan usar y verificar.
 
-- [~] Task: Qué Track está seleccionado y cuáles tienen material
-  - [ ] Los dieciséis, con el seleccionado marcado y los que tienen material distinguidos de los vacíos
-  - [ ] Legible a un metro y tocable de pie, según `product-guidelines.md`
-  - [ ] Seleccionar desde la pantalla hace lo mismo que el step button — sin controlador conectado hay que poder mirar
-- [ ] Task: El estado del Track seleccionado, y su canal
-  - [ ] Anillo, parámetros, pool y octava de pads pasan a ser los del seleccionado
-  - [ ] El canal se lee y se edita, con el mismo criterio táctil que Scale y Root
-  - [ ] Verificación en simulador con captura
-  - [ ] `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'` en verde
+- [x] Task: Qué Track está seleccionado y cuáles tienen material — `1ceb834`
+  - [x] Los dieciséis, con el seleccionado marcado y los que tienen material distinguidos de los vacíos
+  - [x] Legible a un metro y tocable de pie, según `product-guidelines.md`
+  - [x] Seleccionar desde la pantalla hace lo mismo que el step button — sin controlador conectado hay que poder mirar
+- [x] Task: El estado del Track seleccionado, y su canal — `1ceb834`
+  - [x] Anillo, parámetros, pool y octava de pads pasan a ser los del seleccionado
+  - [x] El canal se lee y se edita, con el mismo criterio táctil que Scale y Root
+  - [x] Verificación en simulador con captura
+  - [x] `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'` en verde
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 6: La medición y el dispositivo
