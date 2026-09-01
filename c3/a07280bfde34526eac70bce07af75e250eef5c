@@ -1,0 +1,40 @@
+Task: La composición apaisada, en tres columnas — Fase 3, v2 rebanada 2
+
+Qué cambia
+- App/ContentView.swift, solo. 'pattern' desaparece y se reparte en 'stage',
+  'rings', 'readout' y 'families'.
+- Las anchuras de columna son fracciones de las del mock, con suelo y techo.
+- simulator-phase3-columns.png: la captura apaisada.
+
+El porqué
+FR14, escrito hoy a petición del usuario. El reparto horizontal no es una
+consecuencia del espacio disponible: los anillos a un lado y la lectura al otro
+es lo que permite que el valor grande no los tape NUNCA. Hasta ahora el valor se
+dibujaba encima en un ZStack y la guía obligaba a que el patrón siguiera visible
+debajo; con dos regiones que no se solapan la regla deja de ser algo que haya
+que recordar al dibujar.
+
+Fracciones y no puntos
+El mock mide 924 puntos y da 190 al anillo y 170 a los tabs. El iPad Pro de 13'
+apaisado es medio ancho mayor: a puntos fijos el anillo encogería en relativo
+hasta perderse y el centro se llevaría todo lo que sobra. El suelo existe porque
+por debajo de 190 las dieciséis bandas dejan de contarse; el techo, porque el
+anillo no es el protagonista de la superficie aunque lo sea de la lectura.
+
+Un fallo que la captura encontró
+El primer intento dibujaba el renglón de parámetros dos veces: 'transport'
+seguía incluyendo 'parameters' e 'input' de cuando todo era una columna. Se vio
+en la captura, no compilando.
+
+Lo que NO hace esta tarea
+- El contenido en reposo del panel: es la tarea siguiente.
+- Los tabs interactivos: son la tercera. Aquí son las tres etiquetas del
+  handoff, para poder ver y medir la composición antes de que se comporten.
+- La barra superior y la navegación: Fase 4. Por eso 'Torax H-0' y el botón de
+  transporte siguen dentro del panel central, que no es su sitio definitivo.
+- El selector, Scale & Root y el arnés siguen debajo, en el scroll, hasta que la
+  Fase 4 los coloque.
+
+Verificación
+xcodebuild para iOS compila. Simulador apaisado: anillos al 20% del ancho a la
+izquierda, panel al centro, tres tabs a la derecha — las proporciones del mock.
