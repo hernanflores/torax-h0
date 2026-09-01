@@ -49,10 +49,15 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   - [x] La familia en el bundle y declarada en el `Info.plist`; licencia OFL incluida donde corresponda — **hizo falta un `Info-Release.plist` nuevo**: Release no tenía plist, así que las fuentes se habrían registrado solo en Debug
   - [x] Un solo sitio decide la tipografía: pesos 400/600/700 según el handoff, sin que ninguna vista pida una fuente por su cuenta — las 26 llamadas de las tres vistas pasan por `Typography`
   - [x] Verificado en simulador con captura: si la fuente no carga, iOS cae a la del sistema **en silencio**, y eso hay que verlo, no suponerlo — **y pasó**: `INFOPLIST_KEY_UIAppFonts` compila, mete las caras en el bundle y no las registra. Se vio inspeccionando el `Info.plist` construido. Captura en `simulator-phase1-figtree.png`
-- [ ] Task: El estilo neo-brutalista, como sistema
-  - [ ] Trazos de 2px, radios de 3–8px, rellenos de acento planos, sombra dura `2px 2px 0` sin blur en lo seleccionado, borde discontinuo para lo no disponible, peso 700 en lo activo (FR9)
-  - [ ] Se expresa como estilos y modificadores reutilizables, no como parámetros repetidos en cada vista: **una vista que invente su propio botón es un fallo de esta rebanada**
-  - [ ] Se aplica a lo que ya existe —botones de transporte, selector de Track, `TonalView`— para comprobar que el sistema cubre los casos reales antes de construir los nuevos
+- [x] Task: El estilo neo-brutalista, como sistema — `d39dc0c`
+  - [x] Trazos de 2px, radios de 3–8px, rellenos de acento planos, sombra dura `2px 2px 0` sin blur en lo seleccionado, borde discontinuo para lo no disponible, peso 700 en lo activo (FR9)
+  - [x] Se expresa como estilos y modificadores reutilizables, no como parámetros repetidos en cada vista: **una vista que invente su propio botón es un fallo de esta rebanada** — `Brutalist.swift`, cuatro modificadores. Ningún `cornerRadius` ni `lineWidth` suelto queda en `App`
+  - [x] Se aplica a lo que ya existe —botones de transporte, selector de Track, `TonalView`— para comprobar que el sistema cubre los casos reales antes de construir los nuevos — **y encontró tres cosas**: el transporte era una pastilla completa (`.borderedProminent`), el panel del anillo tenía radio 12 —fuera de la escala— y dos lecturas de `TonalView` usaban un tinte al 15%, que el handoff no admite
+
+  > **Anotado para la Fase 6.** La sombra dura de 2px negro al 40% es casi
+  > invisible sobre el fondo ciruela oscuro. Se implementa como el handoff la
+  > especifica; si a un metro no aporta nada, es una decisión a tomar con la app
+  > en la mano, no ahora.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Dieciséis anillos concéntricos
