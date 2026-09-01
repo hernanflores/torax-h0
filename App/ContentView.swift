@@ -46,6 +46,7 @@ struct ContentView: View {
     private func content(width: CGFloat) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
+                topBar
                 stage(width: width)
                 Divider().overlay(Palette.border)
                 TrackSelectorView(
@@ -157,6 +158,88 @@ struct ContentView: View {
         .brutalistPanel()
     }
 
+    // MARK: - La barra superior
+
+    /// Lo que el handoff pone arriba: a la izquierda la identidad de lo que
+    /// suena, a la derecha el tempo y el transporte (FR6).
+    ///
+    /// **En el sitio de `Bank 1 · Pattern A` va el estado MIDI.** Banks y
+    /// Patterns no existen todavía, y dejar su hueco vacío o rellenarlo con un
+    /// nombre inventado serían las dos maneras de mentir. El estado MIDI es lo
+    /// que de verdad hay que mirar hoy —de dónde llegan los giros y a dónde
+    /// salen las notas— y ocupará otro sitio cuando Banks llegue.
+    private var topBar: some View {
+        HStack(alignment: .center, spacing: 24) {
+            midiStatus
+            Spacer(minLength: 24)
+            // **El punto decimal no depende del locale.** La interfaz va en
+            // inglés y sin traducir (NFR7), y el handoff escribe `120.0 BPM`;
+            // interpolar un `Double` daba `120,0` en un iPad en español, que es
+            // la mitad del texto en un idioma y la otra mitad en otro.
+            Text(
+                String(
+                    format: "%.1f BPM", locale: Locale(identifier: "en_US_POSIX"),
+                    model.beatsPerMinute)
+            )
+            .font(Typography.bodyMedium)
+            .monospacedDigit()
+            .foregroundStyle(Palette.mutedBright)
+            transport
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    /// **Estado, nunca disculpa** (`product-guidelines.md`).
+    ///
+    /// Dice qué hay conectado a cada lado con los textos exactos de la guía. Sin
+    /// controlador, `read-only` explica por qué los knobs no hacen nada, que es
+    /// información y no una excusa.
+    private var midiStatus: some View {
+        HStack(spacing: 16) {
+            // **A dónde salen las notas.**
+            Text(model.outputUnavailable ?? model.destinationStatus)
+                .font(Typography.captionStrong)
+                .foregroundStyle(model.selection.hasEndpoint ? Palette.shape : Palette.muted)
+
+            // El selector aparece **solo si hay algo que elegir**. Con un único
+            // destino, un menú de un elemento sería una decisión que no existe.
+            if model.selection.available.count > 1 {
+                Picker("Destination", selection: destinationBinding) {
+                    ForEach(model.selection.available, id: \.endpoint) { destination in
+                        Text(destination.displayName).tag(destination.endpoint)
+                    }
+                }
+                .pickerStyle(.menu)
+                .tint(Palette.mutedBright)
+            }
+
+            // **De dónde llegan los giros.**
+            Text(model.sourceStatus)
+                .font(Typography.captionStrong)
+                .foregroundStyle(model.isReadOnly ? Palette.muted : Palette.shape)
+
+            if model.sourceSelection.available.count > 1 {
+                Picker("Input", selection: sourceBinding) {
+                    ForEach(model.sourceSelection.available, id: \.endpoint) { source in
+                        Text(source.displayName).tag(source.endpoint)
+                    }
+                }
+                .pickerStyle(.menu)
+                .tint(Palette.mutedBright)
+            }
+
+            // **Sin controlador no se ofrece ninguna vía táctil para suplirlo**:
+            // la app es de solo lectura y transporte, y `read-only` explica por
+            // qué los knobs no hacen nada. Es información, no una excusa.
+            if model.isReadOnly {
+                Text("read-only")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.muted)
+            }
+        }
+        .lineLimit(1)
+    }
+
     /// La columna central: la lectura grande.
     ///
     /// En reposo muestra el estado; al girar un knob, el valor transitorio con
@@ -178,7 +261,6 @@ struct ContentView: View {
             }
 
             Spacer(minLength: 0)
-            transport
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
@@ -298,65 +380,25 @@ struct ContentView: View {
     /// pantallas, y `product-guidelines.md` dice que la app informa —el usuario
     /// ya sabe qué app abrió—. Quitado el 2026-09-01, a petición del usuario.
     private var transport: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // **En columna y no en fila.** Con el panel de lectura estrecho
-            // (FR14) una fila deja `No MIDI device` partiéndose letra a letra,
-            // que es peor que ocupar dos renglones.
-            VStack(alignment: .leading, spacing: 12) {
-                // **Era `.borderedProminent`, que dibuja una pastilla completa**,
-                // y FR9 lo prohíbe: el radio pequeño y constante es lo que hace
-                // que la pantalla se lea como un aparato y no como un formulario.
-                // Es primario, así que lleva relleno de acento y sombra dura
-                // siempre que se pueda pulsar.
-                Button(model.isPlaying ? "Stop" : "Play") {
-                    model.isPlaying ? model.stop() : model.play()
-                }
-                .font(Typography.transportLabel)
-                .buttonStyle(.plain)
-                .foregroundStyle(canTransport ? Palette.toolbar : Palette.muted)
-                .disabled(!canTransport)
-                // Objetivo táctil holgado: se toca de pie, delante del sintetizador.
-                .frame(minWidth: 160, minHeight: 60)
-                .brutalistControl(
-                    accent: Palette.shape,
-                    isSelected: canTransport,
-                    radius: Brutalist.radiusLarge
-                )
-
-                destination
-            }
-
-            input
+        // **Era `.borderedProminent`, que dibuja una pastilla completa**, y FR9
+        // lo prohíbe: el radio pequeño y constante es lo que hace que la
+        // pantalla se lea como un aparato y no como un formulario. Es primario,
+        // así que lleva relleno de acento y sombra dura siempre que se pueda
+        // pulsar.
+        Button(model.isPlaying ? "Stop" : "Play") {
+            model.isPlaying ? model.stop() : model.play()
         }
-    }
-
-    /// De dónde llegan los giros.
-    ///
-    /// Sin controlador conectado se dice el estado y **nada más**: la app es de
-    /// solo lectura y transporte, que es lo que `product-guidelines.md`
-    /// especifica. No se ofrece ninguna vía táctil para suplirlo.
-    private var input: some View {
-        HStack(spacing: 12) {
-            Text(model.sourceStatus)
-                .font(Typography.body)
-                .foregroundStyle(
-                    model.isReadOnly ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.white))
-
-            if model.sourceSelection.available.count > 1 {
-                Picker("Input", selection: sourceBinding) {
-                    ForEach(model.sourceSelection.available, id: \.endpoint) { source in
-                        Text(source.displayName).tag(source.endpoint)
-                    }
-                }
-                .pickerStyle(.menu)
-            }
-
-            if model.isReadOnly {
-                Text("read-only")
-                    .font(Typography.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
+        .font(Typography.transportLabel)
+        .buttonStyle(.plain)
+        .foregroundStyle(canTransport ? Palette.toolbar : Palette.muted)
+        .disabled(!canTransport)
+        // Objetivo táctil holgado: se toca de pie, delante del sintetizador.
+        .frame(minWidth: 160, minHeight: 60)
+        .brutalistControl(
+            accent: Palette.shape,
+            isSelected: canTransport,
+            radius: Brutalist.radiusLarge
+        )
     }
 
     private var sourceBinding: Binding<MIDIEndpointRef> {
@@ -371,24 +413,6 @@ struct ContentView: View {
                 model.selectSource(chosen)
             }
         )
-    }
-
-    /// Estado y elección del destino. Sin destino se informa, no se pide perdón.
-    private var destination: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(model.outputUnavailable ?? model.destinationStatus)
-                .font(Typography.sectionTitle)
-                .foregroundStyle(model.selection.hasEndpoint ? .white : .secondary)
-
-            if model.selection.available.count > 1 {
-                Picker("Destination", selection: destinationBinding) {
-                    ForEach(model.selection.available, id: \.endpoint) { destination in
-                        Text(destination.displayName).tag(destination.endpoint)
-                    }
-                }
-                .pickerStyle(.menu)
-            }
-        }
     }
 
     private var destinationBinding: Binding<MIDIEndpointRef> {

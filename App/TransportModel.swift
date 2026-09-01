@@ -234,6 +234,14 @@ final class TransportModel {
     var rings: RingStack { RingStack(pattern: pattern) }
     var canPlay: Bool { selection.hasEndpoint && transport != nil }
 
+    /// El tempo, en la unidad que la barra muestra.
+    ///
+    /// **De solo lectura** (limitación 4 de la spec): el tempo editable está
+    /// fuera de alcance de esta rebanada, así que la barra lo informa y no lo
+    /// ofrece. Enseñarlo como si fuera un control sería prometer algo que no
+    /// existe.
+    var beatsPerMinute: Double { Self.tempo.beatsPerMinute }
+
     init() {
         // La entrada de control se construye primero y publica por el relevo:
         // así no depende de que el transporte exista, ni de que llegue a
