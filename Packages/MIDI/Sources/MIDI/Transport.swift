@@ -132,11 +132,19 @@ public final class Transport: @unchecked Sendable {
     public func play() {
         guard !isPlaying else { return }
 
+        // Los dieciséis con los que se arranca, leídos una sola vez: el
+        // scheduler construye con ellos **una rejilla por Track**, cada una con
+        // su Division. Sin pasarlos, el hilo caía en la vía del arnés —una sola
+        // rejilla, la de la configuración— y los quince restantes sonaban sobre
+        // la Division del primero.
+        let starting = handoff.load() ?? lastPublishedPattern
+
         let thread = SchedulerThread(
             configuration: configuration,
-            material: .track((handoff.load() ?? lastPublishedPattern).track(at: 0)!),
+            material: .track(starting.track(at: 0)!),
             handoff: handoff,
-            playhead: playheadClock
+            playhead: playheadClock,
+            pattern: starting
         ) {
             [emitter, send, handoff, lastPublishedPattern, tempo = configuration.timeline.tempo]
             track, _, pitch, groove, hostTime in
