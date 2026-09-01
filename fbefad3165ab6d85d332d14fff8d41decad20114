@@ -1,0 +1,53 @@
+Defecto: girar un knob reseteaba el canal, el marco tonal y el registro de pads
+
+Reportado desde el dispositivo
+------------------------------
+'Al mover un knob en un track distinto del 1, el channel de ese track se cambia
+al channel 1 (ej: track 5 comienza en channel 5, pero al mover un knob, pasa a
+channel 1)'.
+
+La causa, que es peor que el sintoma
+-------------------------------------
+Track.applying(_:to:) y su withGroove(_:) reconstruian el Track ENUMERANDO
+campos:
+
+    Track(shape: ..., pool: pool, groove: groove)
+
+Se escribieron cuando un Track eran esos tres. Al llegar el canal (4b92603) y
+luego el marco tonal y el registro de pads (cae4703), esa llamada siguio
+construyendo con tres: cada giro devolvia el Track al canal 1, a Do menor y a la
+octava base. El sintoma visible era el canal; el marco y el registro se perdian
+igual.
+
+El compilador no podia verlo porque los campos nuevos tienen valor por defecto —
+que es justo lo que los hizo comodos de anadir.
+
+El arreglo
+----------
+No anadir tres campos a esa llamada: eso vuelve a fallar con el cuarto. Se deja
+UN solo sitio que los enumere, Track.with(...) con todos los campos opcionales, y
+todas las ediciones pasan por el. on(_:) y with(pool:) se reescriben encima.
+
+La red
+------
+TrackEditsKeepEverythingElseTests: los nueve parametros x cuatro deltas,
+comparando canal, marco, registro y pool. Mas una comprobacion por cada otra
+edicion y with() sin argumentos como identidad — ese ultimo falla si alguien
+anade un campo al Track y se olvida de with(...).
+
+COMPROBADO QUE FALLA SIN EL ARREGLO: revirtiendo applying(_:to:) a la version
+vieja, 48 aserciones rojas. Una regresion que no se ve fallar no es una red.
+Y hay un test de que el knob SIGUE moviendo lo suyo: una red que apaga la funcion
+no sirve.
+
+Un test propio pasaba por la razon equivocada
+----------------------------------------------
+SelectedTrackEditingTests.testTurningAKnobMovesOnlyTheSelectedTrack giraba Steps
+y Probability sobre Tracks que ya estaban en su tope: no movian nada, y el Track
+'cambiaba' unicamente porque perdia el canal. Con el arreglo, el test empezo a
+fallar y tenia razon en fallar. Ahora usa un Track lejos de los extremos y
+comprueba ademas que el canal sobrevive al giro.
+
+Verde
+-----
+Engine 341, MIDI 311, BUILD SUCCEEDED.
