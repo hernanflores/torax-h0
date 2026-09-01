@@ -1,0 +1,47 @@
+Tasks: Que Track esta seleccionado + El estado del Track seleccionado y su canal (Fase 5, v2 rebanada 1)
+
+Las dos tareas de la fase entran juntas: la selección no se puede ver sin que el
+resto de la pantalla siga al seleccionado, y al reves tampoco.
+
+Que se hizo
+-----------
+- App/TrackSelectorView.swift: dieciseis botones en dos filas de ocho, el
+  seleccionado relleno y los que tienen material con contorno; debajo, los
+  dieciseis canales.
+- TransportModel guarda el Pattern y el indice seleccionado. frame, surface y
+  track se CALCULAN del seleccionado; el anillo, los parametros y el pool ya
+  leian de track, asi que siguieron al cambio sin tocarlos.
+
+Dos decisiones de estructura
+-----------------------------
+1. ControlInput existe SIEMPRE. Antes se creaba al conectar el controlador, lo
+   que dejaba a la pantalla sin nadie a quien pedirle una edicion cuando no habia
+   cable: el modelo llevaba una copia del estado y la sincronizaba a mano. Ahora
+   es la unica fuente y lo que llega por CoreMIDI es solo otra via de entrada.
+2. TransportRelay. La entrada publica siempre, y el transporte se enchufa al
+   relevo cuando existe. Sin salida MIDI no hay transporte y la app tiene que
+   seguir siendo editable -se ve, no se oye-; con el relevo esa condicion vive en
+   un sitio en vez de repartida por cada camino de edicion. Resuelve ademas el
+   orden de inicializacion: la entrada se construye antes que el transporte sin
+   tocar self.
+
+Un detalle que habria sido un defecto
+--------------------------------------
+El valor grande transitorio solo se anuncia si el evento es del Track que se esta
+mirando. Un step button cambia de Track, y comparar el Track anterior con el
+nuevo anunciaria como 'giro' toda la diferencia entre dos Tracks distintos: la
+pantalla diria que alguien movio Steps, Pulses y Velocity a la vez.
+
+Sin tests, a proposito
+----------------------
+Es App: cableado y presentacion (workflow.md). Lo que decide que altura tiene
+cada pad, quien suena y quien no, esta cubierto en Engine y MIDI.
+
+Verificacion en simulador
+-------------------------
+iPad Pro 11-inch. Se lee la seccion Tracks con los dieciseis, el 1 seleccionado
+-el unico con material al arrancar- y la fila de canales con el 1 marcado.
+Captura en el track: track-selector-simulator.png.
+
+xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: BUILD
+SUCCEEDED.
