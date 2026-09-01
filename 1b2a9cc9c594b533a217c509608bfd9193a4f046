@@ -1,0 +1,30 @@
+Preparacion de la Fase 6: el arnes mide con dieciseis Tracks (v2 rebanada 1)
+
+Que se hizo
+-----------
+JitterConfiguration.trackCount. Con mas de uno, el arnes construye un Pattern de
+N Tracks con el anillo lleno y la misma altura; SchedulerThread acepta un Pattern
+opcional y, sin el, sigue la via de un material sobre una rejilla. Las dos
+construyen el mismo PatternScheduler.
+
+En la app es un quinto escenario del selector de medicion, '16 Tracks', con
+Groove recto: lo unico que cambia respecto a la referencia de la rebanada 6 son
+los dieciseis Tracks, asi que la diferencia que salga es atribuible.
+
+Por que asi
+-----------
+Medir por un camino propio -un bucle de prueba paralelo- mediria otra cosa. Que
+el arnes pase por el mismo PatternScheduler que suena es lo que hace que el
+numero signifique algo.
+
+Con dieciseis Tracks cada Step entrega dieciseis mensajes con el MISMO instante
+programado. Eso es la carga real: el hilo tiene que recorrer dieciseis rejillas y
+sellar dieciseis mensajes dentro de la misma ventana.
+
+Ficheros
+--------
+- Packages/MIDI/Sources/MIDI/JitterHarness.swift    (trackCount, pattern(forTrackCount:groove:))
+- Packages/MIDI/Sources/MIDI/SchedulerThread.swift  (via de Pattern)
+- App/JitterMeasurementModel.swift                  (escenario '16 Tracks')
+
+Queda pendiente lo unico que no se puede hacer aqui: correrlo en el iPad.
