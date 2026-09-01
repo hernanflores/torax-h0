@@ -132,6 +132,30 @@ escalón es el que se nota.
 
 ---
 
+- [ ] **Track: v2 rebanada 2 — La pantalla del handoff**
+  *Link: [conductor/tracks/screen-handoff_20260901/index.md](./tracks/screen-handoff_20260901/index.md)*
+
+  Planificado el 2026-09-01. La pantalla definitiva de la rebanada 1: **dieciséis
+  Tracks como anillos concéntricos**, el seleccionado en su acento, la lectura
+  grande en el panel lateral y los tabs SHAPE/GROOVE/TONAL. Más Scale & Root
+  reconstruida y la navegación de cinco pestañas, con tres deshabilitadas en
+  borde discontinuo.
+
+  **Cierra el lenguaje visual**, que `ShapeTheme` declara ilustrativo hasta que
+  esto ocurra: Figtree, el sistema neo-brutalista en un solo sitio, y el acento
+  de Groove pasando de ámbar a mauve.
+
+  **No inventa modelo.** Sin mute/solo, sin nombres de Track, sin Banks ni
+  Patterns — las tres pantallas que los necesitan quedan fuera.
+
+  **Lleva medición de jitter**, y no por tocar el scheduler: dieciséis anillos
+  redibujándose al ritmo del reloj son la «carga visual nueva» que `workflow.md`
+  obliga a medir. Referencia: la rebanada 3 del MVP, con **un** anillo.
+
+  Depende de que cierre la rebanada 1. **Desbloquea a la 3.**
+
+---
+
 - [ ] **Track: v2 rebanada 3 — Cycles: el Track varía por vuelta**
   *Link: [conductor/tracks/cycles_20260901/index.md](./tracks/cycles_20260901/index.md)*
 
@@ -150,8 +174,9 @@ escalón es el que se nota.
   avanzando.
 
   **No arranca todavía.** Depende de que cierre la Fase 6 de la rebanada 1 —sin
-  esa medición no hay línea base— y de que exista la pantalla de la rebanada 2,
-  que es donde se muestra el Cycle en curso. La primera tarea de su Fase 1
+  esa medición no hay línea base— y de la
+  [rebanada 2](./tracks/screen-handoff_20260901/index.md), que es donde se
+  muestra el Cycle en curso. La primera tarea de su Fase 1
   —quitar la copia del snapshot por evento en `Transport.play()`— sí es
   independiente y se puede tomar suelta.
 
