@@ -44,3 +44,45 @@ pesa. Es consecuencia directa de FR1 —los dieciséis se dibujan siempre, o los
 demás se moverían de sitio— y no de una decisión de dibujo. Si a un metro
 estorba, la respuesta escrita en la spec es el anillo grande aparte para el
 Track elegido, no dibujar menos anillos.
+
+--- Verificación de fase — Fase 2: Dieciséis anillos concéntricos ---
+Confirmada por el usuario el 2026-09-01: 'el anillo esta excelente'.
+
+Comandos
+  swift test --package-path Packages/Engine
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado
+  Engine: 362 tests, 0 fallos (eran 344 al cerrar la Fase 1).
+  MIDI:   330 tests, 0 fallos, 1 saltado. VirtualLoopbackTests excluido por el
+          clientCreationFailed(-50), que sigue fallando idéntico en main.
+  Build iOS: compila.
+
+Cobertura de los cambios
+  Engine/RingStack.swift  -> RingStackTests.swift (12 tests)
+  Engine/Playhead.swift   -> PatternPlayheadTests.swift (6 tests)
+  MIDI/Transport.swift    -> playheads, cubierto por los de Engine; la propiedad
+                             solo compone lo que Playhead.forEachTrack calcula.
+  App/RingView.swift, ContentView.swift, TransportModel.swift -> App no se mide.
+
+Verificación manual
+  1. simulator-phase2-landscape.png: los dieciséis anillos apaisados.
+  2. simulator-phase2-distributions.png: 16/4, 16/5, 12/7 y 8/3 a la vez. El 16/4
+     da la cruz regular y los otros tres se ven asimétricos y distintos.
+  3. El Track elegido en verde, los quince restantes en gris tenue.
+  4. Los que tienen material se distinguen de los vacíos sin leer texto.
+
+Lo que la verificación encontró, y que no habría salido sin ella
+  - Los anillos dibujados con puntos se leían como radios. Corregido a arcos.
+  - Las capturas estaban en portrait. El usuario lo señaló: la app se bloquea en
+    landscape (FR13) y la verificación pasa a hacerse apaisada.
+  - El reparto horizontal quedó escrito como FR14: anillos a la izquierda, el
+    resto a la derecha.
+
+Pendiente para la Fase 6
+  Los doce anillos vacíos llenan el interior. A 190px de ancho —el tamaño real
+  del mock— son unos 6px por banda, así que el riesgo de FR2 es más agudo de lo
+  que sugieren las capturas donde el anillo se ve grande.
+
+Confirmación del usuario: 'avancemos'.
