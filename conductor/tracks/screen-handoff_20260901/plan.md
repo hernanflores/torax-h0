@@ -182,24 +182,34 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   > `harness-still-works.txt`, con la rejilla `16 Tracks` por argumento.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 5: Scale & Root
+## Phase 5: Scale & Root [checkpoint: 35bd402]
 
 > La segunda pantalla. Cambia la representación, no el comportamiento: lo que
 > hace ya lo hace hoy `TonalView`.
 
-- [ ] Task: La rejilla de escalas
-  - [ ] Seis botones con el tratamiento del handoff: relleno violeta sólido el activo, contorno los demás
-  - [ ] `+User` va con borde discontinuo — escala de usuario no está en esta rebanada, y ese es el signo que el handoff define para «todavía no»
-  - [ ] Tocar una escala reencuadra el pool y **nunca lo vacía**, como hoy y como manda la guía
-- [ ] Task: El gráfico de notas y la raíz
-  - [ ] Tests (Red) en `Engine`: qué notas están en la escala y cuál es la raíz salen del marco tonal, no de la vista
-  - [ ] Las notas de la escala, altas e interactivas; las de fuera, cortas, oscuras y no interactivas
-  - [ ] La raíz elegida con borde de 3px y etiqueta destacada: **distinta de «está en la escala»**, que es la confusión que el handoff se molesta en señalar
-  - [ ] Línea de estado `Scale · <nombre>  Root · <nota>`, con la raíz en color
-- [ ] Task: El pool, en su sitio
-  - [ ] Se sigue mostrando **solo el pool sobre la escala**, nunca una nota por paso: es fidelidad al modelo y un antipatrón declarado de la guía
-  - [ ] La superficie de pads y el registro se siguen viendo, como hoy
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: La rejilla de escalas — `35bd402`
+  - [x] Seis botones con el tratamiento del handoff: relleno violeta sólido el activo, contorno los demás
+  - [x] `+User` va con borde discontinuo — escala de usuario no está en esta rebanada, y ese es el signo que el handoff define para «todavía no»
+  - [x] Tocar una escala reencuadra el pool y **nunca lo vacía**, como hoy y como manda la guía
+- [x] Task: El gráfico de notas y la raíz — `35bd402`
+  - [x] Tests (Red) en `Engine`: qué notas están en la escala y cuál es la raíz salen del marco tonal, no de la vista — `TonalKeyboard`, 10 tests, 100% de cobertura
+  - [~] Las notas de la escala, altas e interactivas; las de fuera, cortas, oscuras y no interactivas — **cortas y oscuras sí; no interactivas no.** Ver abajo
+  - [x] La raíz elegida con borde de 3px y etiqueta destacada: **distinta de «está en la escala»**, que es la confusión que el handoff se molesta en señalar
+  - [x] Línea de estado `Scale · <nombre>  Root · <nota>`, con la raíz en color
+
+  > **Las doce siguen siendo tocables, y el mock se descarta aquí a propósito.**
+  > Hacer no interactivas las de fuera confunde dos preguntas: «¿está C# en Do
+  > menor?» es sobre el marco *actual*, y elegir C# como raíz construye un marco
+  > *nuevo* donde es la fundamental y está dentro por definición. Con la regla
+  > del mock, qué tonalidades son alcanzables dependería de la vigente —desde Do
+  > menor no se llegaría a Do sostenido menor— y el rodeo sería distinto según
+  > dónde se esté: «de una manera que no se puede aprender», que es el reproche
+  > que la Pre Spec le hace al mecanismo de pads que descartó. La altura de la
+  > barra informa; no restringe. Razón y test en `Key.canBecomeRoot`.
+- [x] Task: El pool, en su sitio — `35bd402`
+  - [x] Se sigue mostrando **solo el pool sobre la escala**, nunca una nota por paso: es fidelidad al modelo y un antipatrón declarado de la guía
+  - [x] La superficie de pads y el registro se siguen viendo, como hoy
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 6: La medición y el dispositivo
 
