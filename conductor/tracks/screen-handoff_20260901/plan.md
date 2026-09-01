@@ -144,27 +144,43 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   - [x] Sin controlador conectado los tabs siguen funcionando: mirar no es editar
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 4: La barra, el selector y la navegación
+## Phase 4: La barra, el selector y la navegación [checkpoint: 4487682]
 
 > Lo que rodea al anillo y hace que la app tenga forma de app.
 
-- [ ] Task: La barra superior
-  - [ ] Derecha: BPM y play/stop, con el tratamiento del handoff (FR6)
-  - [ ] Izquierda, en el sitio de `Bank 1 · Pattern A`: el estado MIDI —destino y fuente—, comunicado como estado y nunca como disculpa (`product-guidelines.md`)
-  - [ ] `No MIDI device` y `No MIDI input` siguen siendo los textos exactos de la guía
-- [ ] Task: El selector de los dieciséis Tracks
-  - [ ] Fila de pastillas con número y canal, sin nombres (FR5)
-  - [ ] El seleccionado lleva borde de 2px en el color de la familia activa; los que tienen material se distinguen de los vacíos
-  - [ ] Seleccionar hace lo mismo que su step button — las dos vías llevan al mismo sitio o la pantalla mentiría
-  - [ ] Dieciséis pastillas tienen que caber y ser tocables: se comprueba en simulador, **apaisado** — que es la única orientación desde FR13
-- [ ] Task: La navegación de cinco pestañas
-  - [ ] `1 · Track` y `2 · Scale` navegan; `3 · MIDI`, `4 · Banks` y `5 · Tracks` se dibujan con borde discontinuo y no responden (FR8)
-  - [ ] El estado de navegación no interrumpe el transporte, y **ningún modal bloquea mientras suena**
-  - [ ] Cambiar de pantalla con el transporte corriendo y volver: el playhead sigue donde tiene que estar, no reiniciado
-- [ ] Task: El arnés de jitter sale de la pantalla
-  - [ ] Deja de dibujarse en la pantalla de trabajo (FR12)
-  - [ ] **Sigue arrancándose por argumento de lanzamiento, y se comprueba que sigue funcionando**: es la herramienta con la que se mide la Fase 6, así que romperla aquí se descubriría en el peor momento
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: La barra superior — `35cd292`, ajustada en `4487682`
+  - [x] Derecha: BPM y play/stop, con el tratamiento del handoff (FR6)
+  - [x] Izquierda, en el sitio de `Bank 1 · Pattern A`: el estado MIDI —destino y fuente—, comunicado como estado y nunca como disculpa (`product-guidelines.md`)
+  - [x] `No MIDI device` y `No MIDI input` siguen siendo los textos exactos de la guía
+
+  > **No es una fila propia, sino la de las pestañas.** El handoff usa dos
+  > renglones y esta pantalla tiene uno de más: con los anillos en el ancho
+  > grande (FR14), esos ~64 puntos eran los que le faltaban al selector para no
+  > cortarse. Corregido con el usuario el 2026-09-01. Los selectores de endpoint
+  > se mudaron aquí en vez de perderse: eran la única vía para elegir destino o
+  > fuente, y la pantalla de MIDI mapping está fuera de alcance.
+- [x] Task: El selector de los dieciséis Tracks — `1fb3d8a`
+  - [x] Fila de pastillas con número y canal, sin nombres (FR5)
+  - [x] El seleccionado lleva borde de 2px en el color de la familia activa; los que tienen material se distinguen de los vacíos
+  - [x] Seleccionar hace lo mismo que su step button — las dos vías llevan al mismo sitio o la pantalla mentiría
+  - [x] Dieciséis pastillas tienen que caber y ser tocables: se comprueba en simulador, **apaisado** — que es la única orientación desde FR13
+
+  > Una fila de dieciséis y no dos de ocho: dos filas se leen como dos grupos y
+  > los Tracks no están agrupados. Una fila es además el orden de los step
+  > buttons del controlador.
+- [x] Task: La navegación de cinco pestañas — `4a2ea82`
+  - [x] `1 · Track` y `2 · Scale` navegan; `3 · MIDI`, `4 · Banks` y `5 · Tracks` se dibujan con borde discontinuo y no responden (FR8)
+  - [x] El estado de navegación no interrumpe el transporte, y **ningún modal bloquea mientras suena**
+  - [x] Cambiar de pantalla con el transporte corriendo y volver: el playhead sigue donde tiene que estar, no reiniciado — el modelo no se reconstruye al navegar
+- [x] Task: El arnés de jitter sale de la pantalla — `4a2ea82`
+  - [x] Deja de dibujarse en la pantalla de trabajo (FR12)
+  - [x] **Sigue arrancándose por argumento de lanzamiento, y se comprueba que sigue funcionando**: es la herramienta con la que se mide la Fase 6, así que romperla aquí se descubriría en el peor momento
+
+  > **Quitar el panel se llevaba el selector de rejilla**, que era lo único
+  > elegible solo tocando: el arnés habría quedado midiendo siempre la recta. Se
+  > añadió `--grid=` **antes** de borrarlo y se comprobó ejecutándolo —
+  > `harness-still-works.txt`, con la rejilla `16 Tracks` por argumento.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: Scale & Root
 
