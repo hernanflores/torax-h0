@@ -28,7 +28,7 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
 
 ---
 
-## Phase 1: El lenguaje visual, en un sitio
+## Phase 1: El lenguaje visual, en un sitio [checkpoint: d39dc0c]
 
 > `Engine` para la clasificación, `App` para el sistema. Ninguna pantalla cambia
 > todavía: al terminar esta fase la app se ve casi igual, con Groove en mauve y
@@ -58,7 +58,7 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   > invisible sobre el fondo ciruela oscuro. Se implementa como el handoff la
   > especifica; si a un metro no aporta nada, es una decisión a tomar con la app
   > en la mano, no ahora.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: Dieciséis anillos concéntricos
 
