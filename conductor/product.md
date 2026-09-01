@@ -93,7 +93,7 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 **Fuera de v1:**
 
 - Acordes polifónicos simultáneos (Style *Poly*) — explícitamente fuera de scope en la Pre Spec.
-- Múltiples Tracks, Patterns, Banks; guardado/Autosave/Backup Project.
+- Patterns, Banks; guardado/Autosave/Backup Project. *(Múltiples Tracks salieron de aquí el 2026-09-01: la v2 rebanada 1 entrega los dieciséis.)*
 - Cycles; Note Repeater (Repeats/Time/Ramp/Pace); Harmony; Voicing/Style; Range/Phrase; LFO y Random Modulation.
 - Ableton Link, MIDI Program Change, encadenado de Patterns.
 
@@ -114,6 +114,22 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > la Fase 6 en el plan de `mvp-groove-temporal_20260830`.
 >
 > **Cierre (2026-08-28): medido con el anillo.** Era la carga visual que faltaba. Con el anillo circular y el playhead redibujándose: máximo **0,134 ms** y σ hasta **0,020 ms**, contra 0,127 ms y 0,015 ms sin él. El redibujado cuesta unos 5 µs de σ en el peor tempo —mismo orden que el salto anterior, e inaudible—, y la σ queda 25 veces por debajo del umbral de 0,5 ms. **La arquitectura de look-ahead aguanta también la carga de dibujo.** Ver la git note de `9189aec` (track `mvp-ring-feedback_20260828`).
+>
+> **v2 rebanada 1 (2026-09-01): medido con los dieciséis sonando.** Es la
+> medición que la v1 existió para poder hacer. Con 200 eventos por tempo:
+> máximo **0,598 ms** y σ hasta **0,083 ms**, contra los 0,151 ms y 0,013 ms de
+> la referencia. **CUMPLE**, con el máximo 3,3 veces por debajo del umbral y la
+> σ 6 veces. El exceso está **solo a 174 BPM**; a 60 y 120 BPM la medición es
+> indistinguible de la referencia. Lo que absuelve al cambio es que **la media
+> no se mueve** —entre +0,105 y +0,121 ms en los tres tempos, igual que en las
+> cinco mediciones anteriores—: copiar dieciséis Tracks por ventana costaría
+> tiempo de forma sistemática, y eso subiría la media y degradaría los tres
+> tempos a la vez. Lo que se ensanchó es la cola en el tempo más rápido.
+> **La arquitectura de look-ahead aguanta dieciséis voces sobre un hilo.** Ver
+> [`device-verification.md`](./tracks/multi-track_20260831/device-verification.md),
+> que deja anotado que los estadísticos de resumen no distinguen unos pocos
+> outliers de un corrimiento de la distribución, y que hacerlo pide percentiles
+> en el reporte del arnés.
 
 Secundarios:
 

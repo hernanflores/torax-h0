@@ -141,23 +141,23 @@ regresión la bloquea.
 > acotar se cobra aquí**: dieciséis voces sobre un hilo, medidas contra el mismo
 > umbral de siempre.
 
-- [ ] Task: Jitter con los dieciséis sonando
-  - [ ] iPad real, con el arnés, en la división más rápida y el tempo más alto ya usados —comparable con las cuatro mediciones anteriores—
-  - [ ] Umbral: **máximo < 2 ms, σ < 0,5 ms**. Se registra el número, no la impresión
-  - [ ] Se compara contra la referencia de la rebanada 6 —máx 0,151 ms, σ 0,009–0,013 ms— y **la diferencia se explica**, tanto si sube como si no
-  - [ ] Si hay regresión: **la rebanada se para**, y se bisecta con el arnés antes de seguir. No se cierra con una medición mala explicada
-  - [ ] El resultado va a `product.md`, junto a las otras cuatro
-- [ ] Task: Verificación en dispositivo
-  - [ ] BeatStep Pro y varios instrumentos —o un multitímbrico— en canales distintos
-  - [ ] Seleccionar Tracks con los step buttons y darles material: cada uno suena por su canal
-  - [ ] Dos Tracks en Divisions distintas: se oye que están en fase
-  - [ ] Dos Tracks en tonalidades distintas: la Scale de uno no mueve al otro
-  - [ ] `Stop` con los dieciséis sonando y con Delay positivo: nada queda colgado
-  - [ ] Se registra en un `device-verification.md` del track y en la git note
-- [ ] Task: Cerrar la rebanada
-  - [ ] Cobertura de `Engine` ≥90% y de `MIDI` ≥80%, medidas como dice `workflow.md`
-  - [ ] `product.md` refleja que múltiples Tracks dejan de estar fuera de alcance, y qué queda de la v2
-  - [ ] `tracks.md` deja descrita la rebanada siguiente —la UI del handoff—
+- [x] Task: Jitter con los dieciséis sonando
+  - [x] iPad real, con el arnés, en la división más rápida y el tempo más alto ya usados —comparable con las cuatro mediciones anteriores—
+  - [x] Umbral: **máximo < 2 ms, σ < 0,5 ms**. Se registra el número, no la impresión
+  - [x] Se compara contra la referencia de la rebanada 6 —máx 0,151 ms, σ 0,009–0,013 ms— y **la diferencia se explica**, tanto si sube como si no — sube solo a 174 BPM, y **la media plana** descarta un coste sistemático de copiar dieciséis Tracks. Ver `device-verification.md`
+  - [x] Si hay regresión: **la rebanada se para**, y se bisecta con el arnés antes de seguir. No se cierra con una medición mala explicada — **no la hubo**: CUMPLE con el máximo 3,3 veces bajo el umbral
+  - [x] El resultado va a `product.md`, junto a las otras cuatro
+- [x] Task: Verificación en dispositivo
+  - [x] BeatStep Pro y varios instrumentos —o un multitímbrico— en canales distintos
+  - [x] Seleccionar Tracks con los step buttons y darles material: cada uno suena por su canal
+  - [x] Dos Tracks en Divisions distintas: se oye que están en fase
+  - [x] Dos Tracks en tonalidades distintas: la Scale de uno no mueve al otro
+  - [x] `Stop` con los dieciséis sonando y con Delay positivo: nada queda colgado
+  - [x] Se registra en un `device-verification.md` del track y en la git note
+- [~] Task: Cerrar la rebanada
+  - [x] Cobertura de `Engine` ≥90% y de `MIDI` ≥80%, medidas como dice `workflow.md` — **99,42%** y **92,08%** de líneas. La de `MIDI` es conservadora: `VirtualLoopbackTests` excluido por el `-50`, que **falla igual en `main`**
+  - [x] `product.md` refleja que múltiples Tracks dejan de estar fuera de alcance, y qué queda de la v2
+  - [x] `tracks.md` deja descrita la rebanada siguiente —la UI del handoff—
   - [ ] Pull Request contra `main`, con los checks en verde
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 

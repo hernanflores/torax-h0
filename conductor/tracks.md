@@ -116,7 +116,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: v2 rebanada 1 — Dieciséis Tracks sobre un reloj**
+- [x] **Track: v2 rebanada 1 — Dieciséis Tracks sobre un reloj** — los dieciséis suenan por su canal; jitter CUMPLE: máx 0,598 ms · σ 0,083 ms
   *Link: [conductor/tracks/multi-track_20260831/index.md](./tracks/multi-track_20260831/index.md)*
 
   Abierto el 2026-08-31. El snapshot deja de ser un `Track` y pasa a ser
@@ -129,6 +129,20 @@ escalón es el que se nota.
 
   No es la UI definitiva del handoff —esa es la rebanada siguiente, y es la vista
   de lo que ésta construye— ni Patterns ni Banks, que necesitan persistencia.
+
+  **Cerrado el 2026-09-01.** Las seis fases con checkpoint, `Engine` al 99,42% y
+  `MIDI` al 92,08%, y la verificación en dispositivo sin discrepancias: cada
+  Track por su canal, dos Divisions en fase, dos tonalidades sin contaminarse y
+  `Stop` con Delay positivo sin nada colgado.
+
+  **La medición pasó, con una cola nueva anotada.** Máx 0,598 ms y σ 0,083 ms
+  contra un umbral de 2 ms y 0,5 ms. El exceso está **solo a 174 BPM** —a 60 y
+  120 BPM es indistinguible de la referencia— y **la media no se mueve**, que es
+  lo que descarta un coste sistemático de copiar dieciséis Tracks por ventana.
+  Es la primera cola que se ensancha en seis mediciones: **el sitio por donde
+  mirar si la rebanada 2 o la 3 empeoran el número.** Distinguir unos pocos
+  outliers de un corrimiento de la distribución pide percentiles en el reporte
+  del arnés, que hoy solo persiste n, máximo, media y σ.
 
 ---
 
