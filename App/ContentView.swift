@@ -293,11 +293,12 @@ struct ContentView: View {
     /// Se puede parar siempre que esté sonando, y arrancar solo si hay destino.
     private var canTransport: Bool { model.canPlay || model.isPlaying }
 
+    /// **Sin el nombre de la app.** Estaba desde la rebanada 1 y no lo pide
+    /// ningún requisito: el handoff no lo dibuja en ninguna de sus cinco
+    /// pantallas, y `product-guidelines.md` dice que la app informa —el usuario
+    /// ya sabe qué app abrió—. Quitado el 2026-09-01, a petición del usuario.
     private var transport: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text("Torax H-0")
-                .font(Typography.appTitle)
-
             // **En columna y no en fila.** Con el panel de lectura estrecho
             // (FR14) una fila deja `No MIDI device` partiéndose letra a letra,
             // que es peor que ocupar dos renglones.
@@ -310,7 +311,7 @@ struct ContentView: View {
                 Button(model.isPlaying ? "Stop" : "Play") {
                     model.isPlaying ? model.stop() : model.play()
                 }
-                .font(Typography.appTitle)
+                .font(Typography.transportLabel)
                 .buttonStyle(.plain)
                 .foregroundStyle(canTransport ? Palette.toolbar : Palette.muted)
                 .disabled(!canTransport)

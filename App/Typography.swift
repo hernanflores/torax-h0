@@ -75,8 +75,13 @@ extension Typography {
     /// El valor transitorio, el que se lee a un metro mientras se gira un knob.
     static var transientValue: Font { bold(64) }
 
-    /// El nombre de la app en la barra.
-    static var appTitle: Font { semibold(34) }
+    /// El botón de transporte, que es el control más grande de la pantalla.
+    ///
+    /// **Se llamaba `appTitle`** y lo usaba el nombre de la app, que se quitó de
+    /// la interfaz el 2026-09-01: el handoff no lo dibuja en ninguna de sus cinco
+    /// pantallas. El tamaño se queda porque el transporte se toca de pie y de
+    /// lejos; el nombre cambia para que no describa algo que ya no existe.
+    static var transportLabel: Font { semibold(34) }
 
     /// Cabecera de sección: Tracks, Tonal, Channel.
     static var sectionTitle: Font { semibold(22) }
