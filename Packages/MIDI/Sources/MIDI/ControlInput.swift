@@ -262,7 +262,11 @@ public final class ControlInput: @unchecked Sendable {
     /// en silencio, con el mismo criterio que un CC sin asignar. Seleccionar el
     /// que ya estaba tampoco publica: es una operación sin efecto, no un
     /// reinicio.
-    private func selectTrack(_ index: Int) -> Bool {
+    /// Es público porque la pantalla selecciona igual que el step button: sin
+    /// controlador conectado es la única vía, y con controlador las dos tienen
+    /// que llevar al mismo sitio o la pantalla mentiría.
+    @discardableResult
+    public func selectTrack(_ index: Int) -> Bool {
         guard index < trackCount, index != selectedTrackIndex else { return false }
 
         selectedTrackIndex = index

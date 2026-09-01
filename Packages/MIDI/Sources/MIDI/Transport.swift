@@ -73,17 +73,34 @@ public final class Transport: @unchecked Sendable {
         )
     }
 
+    /// Arranca con los dieciséis Tracks.
     public init(
         configuration: SchedulerConfiguration,
-        track: Track,
+        pattern: Pattern,
         emitter: NoteEmitter,
         send: @escaping Send
     ) {
         self.configuration = configuration
         self.emitter = emitter
         self.send = send
-        self.handoff = PatternHandoff(Pattern().replacing(track, at: 0))
-        self.lastPublishedPattern = Pattern().replacing(track, at: 0)
+        self.handoff = PatternHandoff(pattern)
+        self.lastPublishedPattern = pattern
+    }
+
+    /// Atajo para quien todavía piensa en un Track: lo pone en la primera
+    /// posición y deja los otros quince vacíos.
+    public convenience init(
+        configuration: SchedulerConfiguration,
+        track: Track,
+        emitter: NoteEmitter,
+        send: @escaping Send
+    ) {
+        self.init(
+            configuration: configuration,
+            pattern: Pattern().replacing(track, at: 0),
+            emitter: emitter,
+            send: send
+        )
     }
 
     deinit {
