@@ -32,6 +32,13 @@ struct ContentView: View {
     /// es editar — y por eso vive en la vista y no en el modelo.
     @State private var family: ParameterFamily = .shape
 
+    /// En qué pantalla está.
+    ///
+    /// **El estado vive aquí y las pantallas no se destruyen** al cambiar: el
+    /// modelo del transporte es el mismo, así que el playhead sigue donde tiene
+    /// que estar al volver, no reiniciado. Navegar no toca el reloj.
+    @State private var screen: Screen = .track
+
     var body: some View {
         // **El ancho se lee una vez, arriba.** La altura del escenario depende
         // del ancho —el anillo es cuadrado y llena su columna— y un
@@ -44,32 +51,17 @@ struct ContentView: View {
     }
 
     private func content(width: CGFloat) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 28) {
-                topBar
-                stage(width: width)
-                Divider().overlay(Palette.border)
-                TrackSelectorView(
-                    selected: model.selectedTrackIndex,
-                    hasMaterial: model.tracksWithMaterial,
-                    channels: model.channels,
-                    accent: Palette.accent(for: family),
-                    onSelect: { model.selectTrack($0) },
-                    onChannelChange: { model.setChannel($0) }
-                )
-                Divider().overlay(Palette.border)
-                TonalView(
-                    frame: model.frame,
-                    pool: model.track.pool,
-                    surface: model.surface,
-                    onFrameChange: { model.setFrame($0) }
-                )
-                Divider().overlay(Palette.border)
-                measurement
+        VStack(alignment: .leading, spacing: 20) {
+            navigation
+            ScrollView {
+                switch screen {
+                case .track: trackScreen(width: width)
+                case .scale: scaleScreen
+                }
             }
-            .padding(32)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .padding(32)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Palette.background)
         .foregroundStyle(.white)
         .onAppear { jitter.startIfRequestedByLaunchArguments() }
@@ -80,6 +72,90 @@ struct ContentView: View {
         .onChange(of: model.transientChange) { _, change in
             if let change { family = change.parameter.family }
         }
+    }
+
+    // MARK: - Las cinco pestañas
+
+    /// Las cinco pantallas del handoff.
+    ///
+    /// **Las tres que no existen se ven igualmente** (FR8). No es un adorno: el
+    /// borde discontinuo es el signo que el propio handoff define para «no
+    /// disponible todavía», y enseñar la forma completa de la app es más honesto
+    /// que fingir que tiene dos pantallas.
+    private enum Screen: CaseIterable {
+        case track
+        case scale
+
+        var label: String {
+            switch self {
+            case .track: "1 · Track"
+            case .scale: "2 · Scale"
+            }
+        }
+    }
+
+    /// Las que el handoff dibuja y esta rebanada no entrega.
+    ///
+    /// MIDI Learn es la rebanada 8 de la v1; Banks necesita persistencia y
+    /// Track × Pattern necesita Patterns, y ninguna de las dos existe.
+    private static let unavailableScreens = ["3 · MIDI", "4 · Banks", "5 · Tracks"]
+
+    private var navigation: some View {
+        HStack(spacing: 8) {
+            ForEach(Screen.allCases, id: \.self) { candidate in
+                Button {
+                    screen = candidate
+                } label: {
+                    Text(candidate.label)
+                        .font(
+                            screen == candidate ? Typography.captionBold : Typography.captionStrong
+                        )
+                        .foregroundStyle(
+                            screen == candidate ? Palette.toolbar : Palette.mutedBright
+                        )
+                        .padding(.horizontal, 20)
+                        .frame(height: 44)
+                }
+                .buttonStyle(.plain)
+                .brutalistControl(accent: Palette.shape, isSelected: screen == candidate)
+            }
+
+            ForEach(Self.unavailableScreens, id: \.self) { label in
+                Text(label)
+                    .font(Typography.captionStrong)
+                    .padding(.horizontal, 20)
+                    .frame(height: 44)
+                    .brutalistUnavailable()
+            }
+
+            Spacer(minLength: 0)
+        }
+    }
+
+    // MARK: - Las dos pantallas
+
+    private func trackScreen(width: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: 24) {
+            topBar
+            stage(width: width)
+            TrackSelectorView(
+                selected: model.selectedTrackIndex,
+                hasMaterial: model.tracksWithMaterial,
+                channels: model.channels,
+                accent: Palette.accent(for: family),
+                onSelect: { model.selectTrack($0) },
+                onChannelChange: { model.setChannel($0) }
+            )
+        }
+    }
+
+    private var scaleScreen: some View {
+        TonalView(
+            frame: model.frame,
+            pool: model.track.pool,
+            surface: model.surface,
+            onFrameChange: { model.setFrame($0) }
+        )
     }
 
     // MARK: - La composición apaisada
@@ -453,78 +529,6 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Medición de jitter
-
-    private var measurement: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Jitter")
-                .font(Typography.sectionTitle)
-            Text(jitter.statusMessage)
-                .font(Typography.body)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
-
-            HStack(spacing: 20) {
-                Button(jitter.isRunning ? "Detener" : "Medir") {
-                    jitter.isRunning ? jitter.stop() : jitter.start()
-                }
-                .buttonStyle(.bordered)
-
-                Picker("Eventos por tempo", selection: $jitter.sampleCount) {
-                    ForEach(JitterMeasurementModel.sampleCountOptions, id: \.self) { count in
-                        Text("\(count) eventos").tag(count)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .disabled(jitter.isRunning)
-                .frame(maxWidth: 320)
-            }
-
-            // La rejilla con la que medir. La recta es la de siempre, y es la
-            // que se compara contra la referencia; las otras tres son las que la
-            // rebanada 6 tiene que demostrar.
-            Picker("Rejilla", selection: $jitter.grid) {
-                ForEach(JitterMeasurementModel.Grid.allCases) { grid in
-                    Text(grid.rawValue).tag(grid)
-                }
-            }
-            .pickerStyle(.segmented)
-            .disabled(jitter.isRunning)
-            .frame(maxWidth: 520)
-
-            Text("Umbral: máx < 2 ms · σ < 0,5 ms")
-                .font(Typography.caption)
-                .foregroundStyle(.secondary)
-
-            if let failure = jitter.failureMessage {
-                Text(failure)
-                    .font(Typography.body)
-                    .foregroundStyle(.orange)
-            }
-
-            ForEach(jitter.measurements, id: \.beatsPerMinute) { measurement in
-                row(for: measurement)
-            }
-
-            if let verdict = jitter.overallVerdict {
-                Text(verdict ? "VEREDICTO: CUMPLE" : "VEREDICTO: NO CUMPLE")
-                    .font(Typography.valueTitle)
-                    .foregroundStyle(verdict ? .green : .red)
-            }
-        }
-    }
-
-    private func row(for measurement: JitterMeasurement) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 16) {
-            Text("\(Int(measurement.beatsPerMinute)) BPM")
-                .font(Typography.bodyMedium).monospacedDigit()
-                .frame(width: 90, alignment: .leading)
-
-            Text(measurement.statistics.summary)
-                .font(Typography.reading)
-                .foregroundStyle(measurement.statistics.meetsTrackThreshold ? .green : .red)
-        }
-    }
 }
 
 #Preview {
