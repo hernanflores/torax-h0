@@ -72,7 +72,11 @@ struct ContentView: View {
             // scheduler. El movimiento deriva del reloj musical; lo que el
             // temporizador decide es cuándo repintar, no dónde está el tiempo.
             TimelineView(.animation(paused: !model.isPlaying)) { _ in
-                RingView(ring: model.ring, playhead: model.playhead)
+                RingStackView(
+                    stack: model.rings,
+                    selected: model.selectedTrackIndex,
+                    playheads: model.playheads
+                )
             }
 
             if let change = model.transientChange {

@@ -1,84 +1,187 @@
 import Engine
 import SwiftUI
 
-/// El anillo del Track: dónde cae cada Step, cuáles disparan y dónde está el
-/// tiempo.
+/// Los dieciséis Tracks como anillos concéntricos.
 ///
-/// **Es el protagonista de la pantalla.** `product-guidelines.md`: lo expresivo
-/// es el material musical, y todo lo demás es soporte. La forma circular hace
-/// evidentes la naturaleza cíclica del Track y la simetría del reparto
-/// euclidiano — 16/4 se ve regular, 16/5 equilibrado pero asimétrico.
+/// **Es el protagonista de la pantalla** y el núcleo de esta rebanada: la
+/// diferencia entre un panel de estado y un instrumento. Hoy hay que leer para
+/// saber qué Track está seleccionado y qué tiene dentro; aquí se ve de un
+/// vistazo cuáles tienen material, cuál está elegido y por dónde va el tiempo.
 ///
-/// **No calcula nada.** Las posiciones y las marcas vienen de `Ring`, y el
+/// `product-guidelines.md`: lo expresivo es el material musical, y todo lo demás
+/// es soporte. La forma circular hace evidentes la naturaleza cíclica del Track
+/// y la simetría del reparto euclidiano — 16/4 se ve regular, 16/5 equilibrado
+/// pero asimétrico.
+///
+/// **No calcula nada.** Los radios y el reparto vienen de `RingStack`, y el
 /// playhead de `Playhead`, ambos en `Engine` y cubiertos por tests. Aquí solo se
-/// convierte fracción de vuelta en ángulo y se dibuja.
-struct RingView: View {
+/// convierte fracción de vuelta en ángulo y fracción de radio en puntos.
+///
+/// **Un solo `Canvas` para los dieciséis** (NFR4). Dieciséis Tracks de hasta 64
+/// Steps son mil posiciones por fotograma: una vista de SwiftUI por posición
+/// sería mil vistas que el sistema tendría que diffear en cada redibujado, y el
+/// redibujado ocurre al ritmo del reloj.
+struct RingStackView: View {
 
-    let ring: Ring
-    let playhead: Playhead?
+    let stack: RingStack
+    let selected: Int
+
+    /// Dónde está el tiempo en cada Track, o `nil` con el transporte parado.
+    ///
+    /// **Uno por Track y no uno solo**: cada Track tiene su Division y sus
+    /// Steps, así que sus anillos no van en fase y un playhead compartido
+    /// mentiría en quince de los dieciséis.
+    let playheads: [Playhead?]
 
     var body: some View {
         Canvas { context, size in
-            let radius = min(size.width, size.height) / 2
-            let center = CGPoint(x: size.width / 2, y: size.height / 2)
-            let ringRadius = radius * 0.82
-            let stepRadius = radius * 0.075
-            let pulseRadius = radius * 0.13
+            let available = min(size.width, size.height) / 2
+            let centre = CGPoint(x: size.width / 2, y: size.height / 2)
 
-            for position in ring.positions {
-                let point = point(at: position.turn, center: center, radius: ringRadius)
-                let size = position.isPulse ? pulseRadius : stepRadius
-                let box = CGRect(
-                    x: point.x - size, y: point.y - size, width: size * 2, height: size * 2
-                )
-                context.fill(
-                    Path(ellipseIn: box),
-                    with: .color(position.isPulse ? Palette.shape : Palette.step)
-                )
+            for band in stack.bands {
+                draw(band, in: &context, centre: centre, available: available)
             }
 
-            if let playhead {
-                drawPlayhead(
-                    playhead, in: &context, center: center, radius: ringRadius, size: radius)
-            }
+            drawHub(in: &context, centre: centre, available: available)
         }
         .aspectRatio(1, contentMode: .fit)
     }
 
-    /// El playhead es una aguja desde el centro, no otra marca sobre el anillo.
+    // MARK: - Un anillo
+
+    /// **El elegido en su acento; los quince restantes en gris tenue con el
+    /// mismo patrón de arcos**, como el handoff especifica.
     ///
-    /// Una marca más entre las marcas obligaría a distinguirla por color, y a un
-    /// metro eso no se lee. La aguja se ve por forma, que es lo que sobrevive a
-    /// la distancia.
+    /// Y entre los no elegidos, los que tienen material se distinguen de los
+    /// vacíos sin leer texto: es la tercera lectura que la pantalla tiene que
+    /// dar de un vistazo, junto a «cuál está elegido» y «por dónde va el
+    /// tiempo».
+    private func draw(
+        _ band: RingStack.Band,
+        in context: inout GraphicsContext,
+        centre: CGPoint,
+        available: CGFloat
+    ) {
+        let isSelected = band.track == selected
+        let radius = available * band.radius
+        let width = available * RingStack.bandWidth
+        let pulseColour = pulseColour(isSelected: isSelected, hasMaterial: band.hasMaterial)
+        let gapColour = isSelected ? Palette.step.opacity(0.55) : Palette.border.opacity(0.55)
+
+        // **Arcos y no puntos.** Se dibujó primero con una marca por Step, como
+        // el anillo único de la v1, y con dieciséis anillos no funciona: los
+        // dieciséis Tracks arrancan con los mismos 16 Steps, así que sus marcas
+        // se alinean radialmente y el ojo lee dieciséis **radios** en lugar de
+        // dieciséis círculos. El arco ocupa su tramo de vuelta, y un tramo
+        // continuo se lee como anillo aunque el de al lado empiece en el mismo
+        // ángulo. Es también lo que el handoff especifica: «a conic-gradient of
+        // colored arcs vs dark gaps».
+        let count = band.ring.positions.count
+        let slice = 1.0 / Double(count)
+        // Un respiro entre arcos para que se cuenten los Steps sin contarlos.
+        let gap = min(slice * 0.18, 0.006)
+
+        for position in band.ring.positions {
+            var arc = Path()
+            arc.addArc(
+                center: centre,
+                radius: radius,
+                startAngle: .radians(angle(at: position.turn + gap / 2)),
+                endAngle: .radians(angle(at: position.turn + slice - gap / 2)),
+                clockwise: false
+            )
+            context.stroke(
+                arc,
+                with: .color(position.isPulse ? pulseColour : gapColour),
+                style: StrokeStyle(lineWidth: width, lineCap: .butt)
+            )
+        }
+
+        if let playhead = playheads.indices.contains(band.track) ? playheads[band.track] : nil {
+            drawPlayhead(
+                playhead,
+                in: &context,
+                centre: centre,
+                radius: radius,
+                width: width,
+                isSelected: isSelected
+            )
+        }
+    }
+
+    /// El color de un Pulse, que es donde se leen los tres estados.
+    ///
+    /// El acento solo lo lleva el elegido: si lo llevaran los dieciséis, el
+    /// color dejaría de codificar «cuál estoy editando» y volvería a ser
+    /// decoración, que es lo que `product-guidelines.md` dice que el color no es.
+    private func pulseColour(isSelected: Bool, hasMaterial: Bool) -> Color {
+        if isSelected { return Palette.shape }
+        return hasMaterial ? Palette.step : Palette.border
+    }
+
+    // MARK: - El playhead
+
+    /// El playhead es un arco corto **sobre su propio anillo**, no una aguja
+    /// desde el centro.
+    ///
+    /// **Con un anillo la aguja funcionaba; con dieciséis, no.** Una aguja
+    /// desde el centro cruza los dieciséis anillos y solo dice la posición del
+    /// suyo, así que en cuanto dos Tracks están en Divisions distintas se ven
+    /// dieciséis agujas girando a velocidades distintas sobre el mismo centro —
+    /// y ninguna se puede atribuir a su anillo. El arco se lee sobre la banda a
+    /// la que pertenece, que es la información que hace falta.
+    ///
+    /// **La legibilidad a un metro es el riesgo declarado de la rebanada**
+    /// (FR2), y se juzga en dispositivo en la Fase 6. Si no se lee, la respuesta
+    /// escrita es dibujar el anillo del Track elegido aparte y grande — no
+    /// reducir el número de anillos.
     private func drawPlayhead(
         _ playhead: Playhead,
         in context: inout GraphicsContext,
-        center: CGPoint,
+        centre: CGPoint,
         radius: CGFloat,
-        size: CGFloat
+        width: CGFloat,
+        isSelected: Bool
     ) {
-        var needle = Path()
-        needle.move(to: center)
-        needle.addLine(to: point(at: playhead.turn, center: center, radius: radius))
-        context.stroke(needle, with: .color(.white.opacity(0.75)), lineWidth: size * 0.02)
+        let sweep = 0.02 * 2 * Double.pi
+        let centreAngle = angle(at: playhead.turn)
 
-        let hub = size * 0.035
-        context.fill(
-            Path(
-                ellipseIn: CGRect(
-                    x: center.x - hub, y: center.y - hub, width: hub * 2, height: hub * 2
-                )),
-            with: .color(.white.opacity(0.75))
+        var arc = Path()
+        arc.addArc(
+            center: centre,
+            radius: radius,
+            startAngle: .radians(centreAngle - sweep / 2),
+            endAngle: .radians(centreAngle + sweep / 2),
+            clockwise: false
+        )
+        context.stroke(
+            arc,
+            with: .color(.white.opacity(isSelected ? 0.95 : 0.4)),
+            style: StrokeStyle(lineWidth: width, lineCap: .butt)
         )
     }
 
-    /// Convierte fracción de vuelta en un punto de la circunferencia.
+    /// El punto oscuro del centro, que el handoff dibuja y que el hueco central
+    /// de `RingStack` reserva.
+    private func drawHub(in context: inout GraphicsContext, centre: CGPoint, available: CGFloat) {
+        let hub = available * RingStack.centreHole * 0.5
+        context.fill(
+            Path(
+                ellipseIn: CGRect(
+                    x: centre.x - hub, y: centre.y - hub, width: hub * 2, height: hub * 2
+                )),
+            with: .color(Palette.toolbar)
+        )
+    }
+
+    // MARK: - Geometría
+
+    /// Convierte fracción de vuelta en un ángulo.
     ///
     /// **El Step 0 arriba y el giro en sentido horario.** Es la convención del
     /// reloj, que es la metáfora que la forma circular pide prestada: si el
     /// tiempo girase al revés, la representación contradiría lo que significa.
-    private func point(at turn: Double, center: CGPoint, radius: CGFloat) -> CGPoint {
-        let angle = turn * 2 * .pi - .pi / 2
-        return CGPoint(x: center.x + cos(angle) * radius, y: center.y + sin(angle) * radius)
+    private func angle(at turn: Double) -> Double {
+        turn * 2 * .pi - .pi / 2
     }
 }

@@ -51,3 +51,40 @@ public struct Playhead: Equatable, Sendable {
         step = min(Int(turn * Double(steps.count)), steps.count - 1)
     }
 }
+
+extension Playhead {
+
+    /// Dónde está el tiempo en **cada uno** de los dieciséis Tracks.
+    ///
+    /// **Los dieciséis anillos no van en fase, y por eso hacen falta dieciséis
+    /// playheads.** Cada Track tiene su Division y sus Steps, así que su vuelta
+    /// dura otra cosa: a la misma marca de tiempo, dos Tracks pueden estar en
+    /// puntos muy distintos de sus respectivas vueltas. Un solo playhead sería
+    /// correcto para uno y mentiría sobre los otros quince.
+    ///
+    /// **Los dieciséis siempre, tengan material o no.** El anillo de un Track
+    /// vacío se dibuja igual —si apareciera y desapareciera, los demás se
+    /// moverían de sitio— y su rejilla avanza igual: lo único que no hace es
+    /// emitir.
+    ///
+    /// La rejilla de cada Track es la misma que le da `PatternScheduler` al
+    /// programarlo —`MusicalTimeline(tempo:division:)` con la Division del
+    /// Track—, y eso es lo que garantiza que lo que se ve y lo que suena no
+    /// puedan discrepar.
+    ///
+    /// No es código de tiempo real: lo consulta la interfaz al redibujar.
+    public static func forEachTrack(
+        in pattern: Pattern,
+        tempo: Tempo,
+        elapsedNanoseconds: Int64
+    ) -> [Playhead] {
+        (0..<Pattern.trackCount).map { index in
+            let track = pattern.track(at: index) ?? Pattern.emptyTrack
+            return Playhead(
+                elapsedNanoseconds: elapsedNanoseconds,
+                timeline: MusicalTimeline(tempo: tempo, division: track.shape.division),
+                steps: track.shape.steps
+            )
+        }
+    }
+}

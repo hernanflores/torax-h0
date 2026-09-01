@@ -217,6 +217,21 @@ final class TransportModel {
     /// aquí; el valor que recibe deriva del reloj musical, no del temporizador
     /// que provocó el redibujado.
     var playhead: Playhead? { transport?.playhead }
+
+    /// Dónde está el playhead en cada uno de los dieciséis anillos.
+    ///
+    /// Mismo criterio que `playhead`: no es estado observable, se consulta al
+    /// dibujar. Con el transporte parado son dieciséis `nil`, y no una lista
+    /// vacía, para que quien dibuja indexe por Track sin comprobar longitudes.
+    var playheads: [Playhead?] {
+        guard let running = transport?.playheads else {
+            return Array(repeating: nil, count: Pattern.trackCount)
+        }
+        return running.map(Optional.some)
+    }
+
+    /// Los dieciséis anillos, dispuestos.
+    var rings: RingStack { RingStack(pattern: pattern) }
     var canPlay: Bool { selection.hasEndpoint && transport != nil }
 
     init() {

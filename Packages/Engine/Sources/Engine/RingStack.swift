@@ -110,3 +110,14 @@ public struct RingStack: Equatable, Sendable {
         }
     }
 }
+
+extension RingStack {
+
+    /// El grosor del arco de un anillo, como fracción del radio disponible.
+    ///
+    /// **Es una fracción del paso**, no un valor suelto: si fuera absoluto,
+    /// cambiar el número de anillos lo dejaría o solapado o flotando. Se queda
+    /// por debajo del paso para que quede una separación oscura entre bandas,
+    /// que es lo que las hace contables.
+    public static var bandWidth: Double { spacing * 0.62 }
+}
