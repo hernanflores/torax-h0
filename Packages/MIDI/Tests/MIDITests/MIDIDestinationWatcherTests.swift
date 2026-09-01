@@ -165,4 +165,36 @@ final class MIDIEndpointWatcherTests: XCTestCase {
             }
         }
     }
+
+    /// Dos notificaciones seguidas no se pierden entre ellas.
+    ///
+    /// La notificación llega del hilo de CoreMIDI y el cambio se aplica en el
+    /// principal, así que dos avisos rápidos —desenchufar y volver a enchufar,
+    /// o un reset del bus— se calculan los dos contra el estado **todavía sin
+    /// aplicar**. Si la comparación mira solo a lo ya entregado, el segundo
+    /// aviso parece «nada que hacer» y la vuelta del dispositivo se pierde: la
+    /// app se queda muda con el cable puesto.
+    func testTwoNotificationsBeforeDeliveryDoNotLoseTheDevice() {
+        let system = FakeSystem()
+        system.destinations = [synth]
+
+        var pending: [() -> Void] = []
+        let watcher = MIDIEndpointWatcher(
+            .destination,
+            enumerating: system.enumerate,
+            delivering: { work in pending.append(work) }
+        )
+        XCTAssertEqual(watcher.selection.selected, synth)
+
+        system.destinations = []
+        watcher.setupChanged()
+        system.destinations = [synth]
+        watcher.setupChanged()
+
+        for work in pending { work() }
+
+        XCTAssertEqual(
+            watcher.selection.selected, synth,
+            "el dispositivo volvió y el watcher se quedó sin él")
+    }
 }
