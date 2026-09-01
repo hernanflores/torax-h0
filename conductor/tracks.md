@@ -146,7 +146,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: v2 rebanada 2 — La pantalla del handoff**
+- [~] **Track: v2 rebanada 2 — La pantalla del handoff**
   *Link: [conductor/tracks/screen-handoff_20260901/index.md](./tracks/screen-handoff_20260901/index.md)*
 
   Planificado el 2026-09-01. La pantalla definitiva de la rebanada 1: **dieciséis
