@@ -1,0 +1,39 @@
+--- Verificación de fase — Fase 5: Scale & Root ---
+Confirmada por el usuario el 2026-09-01: 'cerra el checkpoint'.
+
+Comandos
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado
+  Engine: 383 tests, 0 fallos (eran 373 al cerrar la Fase 4).
+          99,26% líneas / 96,14% regiones. TonalKeyboard al 100% de las dos.
+  MIDI:   330 tests, 0 fallos, 1 saltado.
+  Build iOS: compila.
+
+Cobertura de los cambios
+  Engine/TonalKeyboard.swift -> TonalKeyboardTests.swift (10 tests).
+  App/TonalView.swift -> App no se mide.
+
+Verificación manual
+  Captura simulator-phase5-scale.png, apaisada.
+  1. Seis botones de escala; +User con borde discontinuo y sin responder.
+  2. Las siete alturas de Do menor altas; las otras cinco cortas y oscuras.
+  3. La raíz con relleno y trazo blanco de 3px, distinta de 'está en la escala'.
+  4. Línea 'Scale · Minor  Root · C', con la raíz en color.
+  5. El pool sigue siendo pool: C3, nunca una nota por paso.
+  El toque no se pudo automatizar; la captura se hizo con la pantalla inicial en
+  .scale y se revirtió.
+
+Desviación del handoff, decidida y escrita
+  El plan pedía que las notas fuera de la escala fueran NO interactivas. No se
+  siguió, y la razón está en TonalKeyboard.Key.canBecomeRoot con un test que la
+  fija: '¿está C# en Do menor?' es una pregunta sobre el marco actual, mientras
+  que elegir C# como raíz construye un marco nuevo donde es la fundamental. Con
+  la regla del mock, qué tonalidades son alcanzables dependería de la vigente y
+  el rodeo sería distinto según dónde se esté — 'de una manera que no se puede
+  aprender', el reproche que la Pre Spec le hace al mecanismo de pads que
+  descartó. Se le comunicó al usuario al cerrar la fase.
+
+Confirmación del usuario: 'cerra el checkpoint'.
