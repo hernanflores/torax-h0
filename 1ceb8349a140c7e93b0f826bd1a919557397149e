@@ -45,3 +45,30 @@ Captura en el track: track-selector-simulator.png.
 
 xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: BUILD
 SUCCEEDED.
+
+Phase Verification & Checkpoint — Fase 5: La pantalla minima para operar
+=======================================================================
+
+Tests automaticos
+-----------------
+  MIDI, particion logica    -> 311, 0 fallos
+  Engine                    -> 334, 0 fallos
+  xcodebuild build          -> BUILD SUCCEEDED
+
+Sin tests propios, a proposito: es App, cableado y dibujo (workflow.md).
+
+Verificacion en simulador
+-------------------------
+iPad Pro 11-inch: seccion Tracks con los dieciseis en dos filas de ocho, el 1
+relleno por seleccionado, y la fila de Channel con el 1 marcado. Captura en
+track-selector-simulator.png.
+
+Verificacion manual propuesta
+-----------------------------
+Tocar los botones 1-16 cambia el Track mostrado y el anillo, los parametros y el
+pool cambian con el; tocar un canal lo marca; los Tracks vacios se distinguen de
+los que tienen material.
+
+Confirmacion del usuario
+------------------------
+2026-08-31: 'go'.
