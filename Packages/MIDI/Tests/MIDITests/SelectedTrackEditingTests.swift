@@ -65,8 +65,24 @@ final class SelectedTrackEditingTests: XCTestCase {
     // MARK: - Girar un knob mueve el seleccionado y solo ése
 
     func testTurningAKnobMovesOnlyTheSelectedTrack() {
+        // **El Track de prueba está lejos de los extremos a propósito.** Con los
+        // valores por defecto, Steps y Probability ya están en su tope y girar
+        // hacia arriba no mueve nada: el test pasaba por la razón equivocada
+        // —el giro «cambiaba» el Track porque le perdía el canal, que es el
+        // defecto del 2026-08-31—.
+        let midRange = Track(
+            shape: Shape(steps: Steps(8)!, pulses: Pulses(4)!),
+            pool: PitchPool().inserting(Pitch(60)!),
+            groove: Groove(
+                velocity: Velocity(64)!,
+                sustain: Sustain(percent: 100)!,
+                probability: Probability(percent: 50)!
+            ),
+            channel: Channel(8)!
+        )
+
         for parameter in TrackParameter.allCases {
-            let input = input()
+            let input = input(Pattern.initial.replacing(midRange, at: 7))
             input.receive(stepButton(7))
             let before = input.pattern
 
@@ -74,6 +90,9 @@ final class SelectedTrackEditingTests: XCTestCase {
 
             XCTAssertNotEqual(
                 input.pattern.track(at: 7), before.track(at: 7), "\(parameter) no movió el Track 8")
+            XCTAssertEqual(
+                input.pattern.track(at: 7)?.channel, Channel(8)!,
+                "\(parameter) perdió el canal del Track 8")
             for other in 0..<16 where other != 7 {
                 XCTAssertEqual(
                     input.pattern.track(at: other), before.track(at: other),

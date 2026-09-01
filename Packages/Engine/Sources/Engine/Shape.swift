@@ -226,36 +226,43 @@ public struct Track: Equatable, Sendable {
         self.padOctaveShift = padOctaveShift
     }
 
-    /// El mismo Track con otro pool.
+    /// El mismo Track con lo que se le cambie, y **todo lo demás intacto**.
     ///
-    /// Existe para que editar el material no obligue a repetir los otros tres
-    /// campos en cada sitio: repetirlos es como se acaba perdiendo uno al añadir
-    /// el quinto, que es la destrucción que `product-guidelines.md` prohíbe.
-    public func with(pool: PitchPool) -> Track {
+    /// > **Es la única forma legítima de editar un Track, desde el 2026-08-31.**
+    /// > Reconstruirlo con `Track(shape:pool:groove:)` compila, parece correcto y
+    /// > pierde en silencio todo lo que no se nombre. Pasó: `applying(_:to:)` se
+    /// > escribió cuando un Track eran tres campos, y al llegar el canal, el
+    /// > marco tonal y el registro de pads siguió construyendo con tres — así que
+    /// > **girar un knob devolvía el Track al canal 1, a Do menor y a la octava
+    /// > base**. Es exactamente la destrucción de material que
+    /// > `product-guidelines.md` prohíbe, y el compilador no podía verla porque
+    /// > los campos nuevos tenían valor por defecto.
+    /// >
+    /// > Con este método, añadir un campo al Track no puede volver a perderlo:
+    /// > hay un solo sitio que los enumera.
+    public func with(
+        shape: Shape? = nil,
+        pool: PitchPool? = nil,
+        groove: Groove? = nil,
+        channel: Channel? = nil,
+        frame: TonalFrame? = nil,
+        padOctaveShift: Int? = nil
+    ) -> Track {
         Track(
-            shape: shape, pool: pool, groove: groove, channel: channel, frame: frame,
-            padOctaveShift: padOctaveShift)
-    }
-
-    /// El mismo Track con otro marco tonal y otro registro de pads.
-    ///
-    /// Los dos van juntos porque cambian juntos: la superficie se recalcula con
-    /// el marco nuevo **conservando** el desplazamiento, y quien cambia el
-    /// desplazamiento no toca el marco.
-    public func with(frame: TonalFrame? = nil, padOctaveShift: Int? = nil) -> Track {
-        Track(
-            shape: shape, pool: pool, groove: groove, channel: channel,
+            shape: shape ?? self.shape,
+            pool: pool ?? self.pool,
+            groove: groove ?? self.groove,
+            channel: channel ?? self.channel,
             frame: frame ?? self.frame,
-            padOctaveShift: padOctaveShift ?? self.padOctaveShift)
+            padOctaveShift: padOctaveShift ?? self.padOctaveShift
+        )
     }
 
     /// El mismo Track emitiendo por otro canal.
     ///
     /// Cambiar el canal no toca el material: es configuración, no contenido.
     public func on(_ channel: Channel) -> Track {
-        Track(
-            shape: shape, pool: pool, groove: groove, channel: channel, frame: frame,
-            padOctaveShift: padOctaveShift)
+        with(channel: channel)
     }
 
     /// Indica si el Step dado dispara, combinando Shape y Rotate.
