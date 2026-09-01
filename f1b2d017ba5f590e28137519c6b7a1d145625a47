@@ -28,3 +28,39 @@ tarda en aplicarse sin motivo visible.
 Verde
 -----
 MIDI 311 tests en la particion logica.
+
+Phase Verification & Checkpoint — Fase 4: La entrada edita el Track seleccionado
+===============================================================================
+
+Tests automaticos
+-----------------
+  MIDI, particion logica de CI    -> 311, 0 fallos
+  MIDI, particion CoreMIDI        ->  21, 0 fallos
+  Engine                          -> 334, 0 fallos
+  xcodebuild build (generic/iOS)  -> BUILD SUCCEEDED
+
+Lo construido
+-------------
+ControlInput guarda los dieciseis y edita el seleccionado; trackCount a 16 sin
+tocar el preset; el marco tonal y el registro de pads pasan al Track; el canal se
+edita en pantalla y ningun CC lo mueve. Los tres puentes de la fase 2, retirados.
+
+Lo que el usuario tiene que saber
+---------------------------------
+1. Un test de la v1 cambio de expectativa: cambiar de Scale sin mover el pool
+   ahora publica, porque el marco es parte del snapshot. Se anadio el caso que
+   sigue sin publicar -fijar el mismo marco-.
+2. El snapshot crecio: Track 112 -> 144, Pattern 1792 -> 2304, anillo 9 KB. No
+   cambia el orden de magnitud del load().
+3. product.md lleva la nota fechada: Scale y Root son de cada Track; donde se
+   editan no cambia, cambia a quien afectan.
+
+Verificacion manual
+-------------------
+Sin superficie hasta la fase 5. Lo comprobable a mano es lo que la pantalla
+mostrara entonces: seleccionar Tracks con los step buttons, editar cada uno y ver
+que los demas no se mueven.
+
+Confirmacion del usuario
+------------------------
+2026-08-31: 'Confirmo, sigamos'.
