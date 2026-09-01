@@ -1,0 +1,30 @@
+Task: El canal se edita, y no con un knob (Fase 4, v2 rebanada 1)
+
+Que se hizo
+-----------
+ControlInput.setChannel(_:), en la misma familia que setFrame(_:): las dos son
+configuracion tactil del Track seleccionado y ninguna pasa por ControlMapping.
+
+Ficheros
+--------
+- Packages/MIDI/Sources/MIDI/ControlInput.swift                  (setChannel)
+- Packages/MIDI/Tests/MIDITests/SelectedTrackEditingTests.swift  (4 tests)
+
+Los tests
+---------
+- Los 128 CC, uno a uno, sin mover el canal de ninguno de los dieciseis Tracks.
+  El barrido completo y no un caso: 'ningun CC lo mueve' es la afirmacion, y solo
+  se prueba probandolos todos.
+- Cambiar el canal publica, y lo publicado lo lee el handoff.
+- Fijar el canal que ya tenia no publica.
+- Cambiar el de uno no toca el de los otros quince.
+
+Por que publica
+---------------
+El scheduler lee el canal del snapshot en CADA evento. Sin publicar, cambiar el
+canal no se oiria hasta que un knob publicara por otra razon: un ajuste que
+tarda en aplicarse sin motivo visible.
+
+Verde
+-----
+MIDI 311 tests en la particion logica.
