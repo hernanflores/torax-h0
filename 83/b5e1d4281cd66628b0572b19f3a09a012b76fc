@@ -1,0 +1,35 @@
+Tasks: Qué dice el panel en reposo · El valor transitorio · Los tres tabs — Fase 3
+
+Qué cambia
+- Engine/FamilyReadout.swift: nuevo, con 9 tests en FamilyReadoutTests. 371 en
+  total.
+- App/ContentView.swift: 'resting', 'tab(_:)', el estado 'family' y el
+  onChange que hace que el giro mande.
+- Tres capturas: simulator-phase3-shape/groove/tonal.png.
+
+Decisiones escritas
+1. Qué valor encabeza cada familia. Es una elección —una familia tiene varios
+   parámetros y la lectura grande es uno— así que queda en la documentación del
+   tipo: Shape lleva Pulses, que es lo que el propio mock del handoff pone y lo
+   que da carácter al reparto una vez fijados los Steps; Groove lleva Velocity,
+   el único de los cinco que se oye en cada nota sin depender de nada más;
+   Tonal lleva el marco, donde no hay elección porque no tiene knobs detrás.
+2. La lectura grande usa el MISMO formato que un valor transitorio. Girar el
+   knob de Pulses hasta 6 y estar en reposo con Pulses 6 dan el mismo texto, así
+   que el panel no cambia de idioma según de dónde venga lo que muestra. Hay un
+   test que lo fija comparando contra ParameterChange.
+3. El pool vacío se dice ('Pool · empty'), no se cuenta como cero. Es el estado
+   de quince Tracks al arrancar. Y el singular es un test: '1 pitches'
+   delataría una plantilla en vez de una app que informa.
+4. El giro manda sobre el tab. La alternativa —mostrar el valor con el acento de
+   su familia dentro de un panel de otra— haría que dos colores discreparan en
+   la misma región. La pantalla es el espejo del controlador: sigue a la mano.
+5. Los nombres de tab se escriben, no salen de String(describing:). El nombre
+   del caso de Swift es un detalle del lenguaje.
+
+Verificación
+Engine 371 tests, 0 fallos. xcodebuild para iOS compila.
+Las tres capturas se hicieron cambiando el estado inicial de 'family' y
+revirtiendo: simctl no puede simular un toque, así que **el toque en sí queda
+para la verificación manual**. Lo que las capturas prueban es el contenido y el
+tratamiento visual de cada familia, no el gesto.
