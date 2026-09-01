@@ -1,0 +1,29 @@
+Task: Los colores del handoff, y el ámbar que se va — Fase 1, v2 rebanada 2
+
+Qué cambia
+- App/ShapeTheme.swift, solo. Ninguna vista se toca: los seis valores que ya
+  coincidían con el handoff se quedan como estaban.
+- Groove: #D99A4E (ámbar) → #AA6DA8 (mauve). FR11.
+- Nuevos: toolbar #1a1420, borderBright #4a3d4d, mutedBright #a99cab.
+- La cabecera del tipo deja de decir que los colores son ilustrativos.
+
+El porqué
+El handoff se contradice a sí mismo: la tabla se titula 'Design Tokens
+(illustrative — not final)' y la sección Fidelity dice 'Colors ... and font
+(Figtree) are final'. Gana Fidelity, que es la más reciente, y queda anotado en
+la documentación del tipo para que nadie lo vuelva a mirar y dude.
+
+toolbar tiene dos papeles en el handoff —fondo de la barra y color del texto
+sobre un relleno de acento— y es un solo valor porque es el mismo gesto.
+
+El riesgo, escrito
+La razón del ámbar no se borró. Se separaba de Shape y de Tonal por tono y no
+por luminosidad, que es el criterio de product-guidelines.md para leer de reojo
+y con poca luz. Mauve renuncia a eso: queda del mismo lado del círculo que el
+violeta de Tonal y se diferencia más por saturación que por tono. Es el riesgo
+6 de la spec. Se comprueba a un metro en la Fase 6; no se revierte por
+precaución ni se deja pasar por deferencia al handoff.
+
+Verificación
+xcodebuild para iOS compila. App no se mide (workflow.md), así que no hay tests
+nuevos: no hay lógica, son constantes.
