@@ -195,6 +195,56 @@ final class SelectedTrackEditingTests: XCTestCase {
 
     private func padOctaveUp() -> MIDIMessage { pad(PadSurface.octaveUpIndex) }
 
+    // MARK: - El canal se edita, y no con un knob
+
+    /// **Ningún CC mueve el canal.** Es configuración, no material generativo, y
+    /// `product-guidelines.md` pone esa frontera del lado táctil, donde ya están
+    /// Scale y Root.
+    func testNoControllerChangesTheChannel() throws {
+        let input = input()
+        let before = (0..<16).map { input.pattern.track(at: $0)!.channel }
+
+        for number in 0...127 {
+            input.receive(
+                .controlChange(
+                    channel: MIDIChannel(1)!,
+                    controller: try XCTUnwrap(MIDIController(number)),
+                    value: 1
+                ))
+        }
+
+        XCTAssertEqual((0..<16).map { input.pattern.track(at: $0)!.channel }, before)
+    }
+
+    /// Cambiar el canal publica: el scheduler lo usa en el evento siguiente.
+    func testChangingTheChannelPublishes() {
+        let handoff = PatternHandoff(Pattern.initial)
+        let input = ControlInput(pattern: Pattern.initial, publishingTo: handoff)
+        input.receive(stepButton(2))
+
+        XCTAssertTrue(input.setChannel(Channel(12)!))
+        XCTAssertEqual(handoff.load()?.track(at: 2)?.channel, Channel(12)!)
+    }
+
+    /// Y fijar el canal que ya tenía no publica: no cambia nada.
+    func testSettingTheSameChannelDoesNotPublish() {
+        let input = input()
+        XCTAssertFalse(input.setChannel(input.track.channel))
+    }
+
+    /// Cambiar el canal de uno no toca el de los otros quince.
+    func testChangingTheChannelLeavesTheOthersAlone() {
+        let input = input()
+        input.receive(stepButton(9))
+        let before = input.pattern
+
+        XCTAssertTrue(input.setChannel(Channel(3)!))
+        for other in 0..<16 where other != 9 {
+            XCTAssertEqual(
+                input.pattern.track(at: other), before.track(at: other), "Track \(other + 1)")
+        }
+    }
+
     // MARK: - Publicar
 
     /// Lo que se publica son los dieciséis, no el editado suelto: el scheduler

@@ -292,6 +292,24 @@ public final class ControlInput: @unchecked Sendable {
         return true
     }
 
+    /// Cambia el canal por el que emite el Track seleccionado.
+    ///
+    /// **Se edita en pantalla y no con un knob**: es configuración, no material
+    /// generativo, y `product-guidelines.md` pone esa frontera del lado táctil,
+    /// donde ya están Scale y Root. Ningún CC llega hasta aquí.
+    ///
+    /// Publica porque el scheduler lee el canal del snapshot en cada evento: sin
+    /// publicar, el cambio no se oiría hasta el giro siguiente de cualquier
+    /// knob.
+    @discardableResult
+    public func setChannel(_ channel: Channel) -> Bool {
+        guard channel != track.channel else { return false }
+
+        pattern = pattern.replacing(track.on(channel), at: selectedTrackIndex)
+        publish(pattern)
+        return true
+    }
+
     /// Cambia el marco tonal y reencuadra el pool.
     ///
     /// **Reencuadra, no vacía** (`product-guidelines.md`). Publicar solo si algo
