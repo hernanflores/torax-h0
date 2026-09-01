@@ -1,0 +1,31 @@
+Task: La app se bloquea en landscape — Fase 2, v2 rebanada 2
+
+Qué cambia
+- ToraxH0.xcodeproj: INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad pasa de
+  las cuatro orientaciones a LandscapeLeft y LandscapeRight, en Debug y Release.
+- spec.md: FR13 nuevo, y NFR8 gana que la verificación se hace apaisada.
+- Un criterio de aceptación nuevo.
+- simulator-phase2-landscape.png: los anillos apaisados.
+
+Cómo salió
+El usuario lo señaló al verificar la Fase 2: 'el caso de uso principal es con el
+ipad en landscape mode, como muestran los mock ups del handoff'. Tenía razón y
+las capturas de verificación de las Fases 1 y 2 estaban todas en portrait, así
+que se juzgó una composición que no existe.
+
+Lo que hay detrás
+Las cinco capturas del handoff son 924x540 y su pantalla 1 es un layout de tres
+columnas —anillo 190px | panel de lectura | tabs 170px— que no cabe en portrait.
+Las seis fases del plan lo dan por supuesto. El requisito no estaba escrito en
+ninguna parte, y las cuatro orientaciones venían del andamiaje inicial del
+proyecto, no de una decisión sobre esta pantalla.
+
+Consecuencia para FR2, anotada en la spec
+El anillo ocupa 190px de 924 en el mock: dieciséis bandas son unos 6px cada una.
+El riesgo de legibilidad del playhead a un metro es más agudo de lo que sugieren
+las capturas donde el anillo se ve grande. La Fase 6 tiene que juzgarlo a su
+tamaño real y apaisado.
+
+Verificación
+xcodebuild para iOS compila. Captura apaisada en el simulador con los dieciséis
+anillos dibujados correctamente.
