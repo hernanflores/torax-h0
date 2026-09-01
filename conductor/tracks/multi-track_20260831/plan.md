@@ -117,7 +117,7 @@ regresión la bloquea.
   - [x] Implementación (Green)
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 5: La pantalla mínima para operar
+## Phase 5: La pantalla mínima para operar [checkpoint: 1ceb834]
 
 > `App`. Cableado y dibujo, sin lógica nueva: si algo de esta fase merece un
 > test, está en el sitio equivocado (`workflow.md`). **No es la UI del handoff**
@@ -133,7 +133,7 @@ regresión la bloquea.
   - [x] El canal se lee y se edita, con el mismo criterio táctil que Scale y Root
   - [x] Verificación en simulador con captura
   - [x] `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'` en verde
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 6: La medición y el dispositivo
 
