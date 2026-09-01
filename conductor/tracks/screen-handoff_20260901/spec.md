@@ -149,6 +149,27 @@ controlador.
 > es bastante más agudo de lo que sugiere mirar el anillo en grande, y es ahí
 > —a su tamaño real, apaisado— donde la Fase 6 tiene que juzgarlo.
 
+### FR14 — Los anillos a la izquierda, todo lo demás a la derecha
+
+**Añadido el 2026-09-01**, junto a FR13 y por la misma razón: estaba supuesto y
+no escrito.
+
+La composición apaisada es la del handoff, y su reparto horizontal es una
+decisión, no una consecuencia del espacio: **los anillos ocupan una columna
+estrecha a la izquierda —190px de 924 en el mock— y todo lo demás vive a su
+derecha**: el panel de lectura en el centro, y los tabs de familia en una
+columna de 170px al borde. El selector de Tracks va debajo, cruzando el ancho.
+
+**Por qué importa que sea izquierda y no centro.** Hoy `ContentView` apila todo
+en una sola columna vertical con el anillo arriba, que es lo que la rebanada 1
+necesitaba para operar y no lo que la pantalla del producto es. Poner los anillos
+a un lado y la lectura al otro es lo que permite que el valor grande no los tape
+nunca (FR3): son dos regiones que no se solapan, en vez de una encima de otra.
+
+**El anillo pequeño es intencional.** Ocupa un quinto del ancho porque lo que se
+lee de un vistazo es *la forma* —cuáles tienen material, cuál está elegido, por
+dónde va el tiempo—, no el detalle de un Step. El detalle es el panel.
+
 ### FR9 — El lenguaje neo-brutalista es un sistema, no un estilo por vista
 
 Trazos sólidos de 2px en todo lo interactivo (3px en la raíz elegida), radios de
@@ -235,6 +256,8 @@ Además:
 - [ ] Figtree se usa en toda la app.
 - [ ] La app solo gira a landscape, y todas las capturas de verificación son
       apaisadas.
+- [ ] Los anillos ocupan la columna izquierda y el resto de la información vive a
+      su derecha; las dos regiones no se solapan en ningún momento.
 - [ ] El arnés de jitter no aparece en la pantalla y sigue arrancándose por
       argumento de lanzamiento.
 - [ ] **Jitter con los dieciséis anillos redibujándose dentro del umbral**,

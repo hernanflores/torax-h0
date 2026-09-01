@@ -115,6 +115,11 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
 > taparse nunca, que es lo que `product-guidelines.md` pide y hoy se cumple a
 > medias.
 
+- [ ] Task: La composición apaisada, en tres columnas
+  - [ ] **Los anillos a la izquierda en columna estrecha, el resto a su derecha** (FR14): panel de lectura en el centro, tabs de familia en la columna del borde, selector de Tracks debajo cruzando el ancho
+  - [ ] Sustituye a la columna vertical única de la rebanada 1, con el anillo arriba: era lo mínimo para operar, no la pantalla del producto
+  - [ ] **Es lo que hace posible que el valor grande no tape los anillos** (FR3): dos regiones que no se solapan, en vez de una encima de otra
+  - [ ] Captura apaisada en simulador contra `design_handoff/screenshots/01-track.png`, que es la referencia de proporciones
 - [ ] Task: Qué dice el panel en reposo
   - [ ] Tests (Red) en `Engine`: el texto y el valor de cada familia salen de una función pura del Track — SHAPE da su reparto, GROOVE sus cinco parámetros, TONAL el marco y el pool (FR4)
   - [ ] Tests (Red): con el pool vacío, TONAL lo dice; no se inventa material que no hay
@@ -142,7 +147,7 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   - [ ] Fila de pastillas con número y canal, sin nombres (FR5)
   - [ ] El seleccionado lleva borde de 2px en el color de la familia activa; los que tienen material se distinguen de los vacíos
   - [ ] Seleccionar hace lo mismo que su step button — las dos vías llevan al mismo sitio o la pantalla mentiría
-  - [ ] Dieciséis pastillas tienen que caber y ser tocables: se comprueba en simulador, en las dos orientaciones
+  - [ ] Dieciséis pastillas tienen que caber y ser tocables: se comprueba en simulador, **apaisado** — que es la única orientación desde FR13
 - [ ] Task: La navegación de cinco pestañas
   - [ ] `1 · Track` y `2 · Scale` navegan; `3 · MIDI`, `4 · Banks` y `5 · Tracks` se dibujan con borde discontinuo y no responden (FR8)
   - [ ] El estado de navegación no interrumpe el transporte, y **ningún modal bloquea mientras suena**
