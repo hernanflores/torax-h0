@@ -109,7 +109,7 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
 
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: El panel de lectura y los tres tabs
+## Phase 3: El panel de lectura y los tres tabs [checkpoint: 66aff5d]
 
 > Lo que sustituye al valor grande sobre el anillo. Con esto los anillos dejan de
 > taparse nunca, que es lo que `product-guidelines.md` pide y hoy se cumple a
@@ -142,7 +142,7 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   - [x] Verde, mauve y violeta, con el tratamiento del handoff: borde izquierdo acentuado, contorno y sombra dura en el activo
   - [x] Tocar un tab cambia lo que muestra el panel y su color; es navegación, no edición (FR4) — **el toque queda para la verificación manual**: `simctl` no lo simula, y las capturas se hicieron cambiando el estado inicial
   - [x] Sin controlador conectado los tabs siguen funcionando: mirar no es editar
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: La barra, el selector y la navegación
 
