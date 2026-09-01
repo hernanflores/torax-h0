@@ -279,38 +279,22 @@ struct ContentView: View {
     /// controlador, `read-only` explica por qué los knobs no hacen nada, que es
     /// información y no una excusa.
     private var midiStatus: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 14) {
             // **A dónde salen las notas.**
-            Text(model.outputUnavailable ?? model.destinationStatus)
-                .font(Typography.captionStrong)
-                .foregroundStyle(model.selection.hasEndpoint ? Palette.shape : Palette.muted)
-
-            // El selector aparece **solo si hay algo que elegir**. Con un único
-            // destino, un menú de un elemento sería una decisión que no existe.
-            if model.selection.available.count > 1 {
-                Picker("Destination", selection: destinationBinding) {
-                    ForEach(model.selection.available, id: \.endpoint) { destination in
-                        Text(destination.displayName).tag(destination.endpoint)
-                    }
-                }
-                .pickerStyle(.menu)
-                .tint(Palette.mutedBright)
-            }
+            endpoint(
+                label: model.outputUnavailable ?? model.destinationStatus,
+                isConnected: model.selection.hasEndpoint,
+                choices: model.selection.available,
+                selection: destinationBinding
+            )
 
             // **De dónde llegan los giros.**
-            Text(model.sourceStatus)
-                .font(Typography.captionStrong)
-                .foregroundStyle(model.isReadOnly ? Palette.muted : Palette.shape)
-
-            if model.sourceSelection.available.count > 1 {
-                Picker("Input", selection: sourceBinding) {
-                    ForEach(model.sourceSelection.available, id: \.endpoint) { source in
-                        Text(source.displayName).tag(source.endpoint)
-                    }
-                }
-                .pickerStyle(.menu)
-                .tint(Palette.mutedBright)
-            }
+            endpoint(
+                label: model.sourceStatus,
+                isConnected: !model.isReadOnly,
+                choices: model.sourceSelection.available,
+                selection: sourceBinding
+            )
 
             // **Sin controlador no se ofrece ninguna vía táctil para suplirlo**:
             // la app es de solo lectura y transporte, y `read-only` explica por
@@ -319,9 +303,55 @@ struct ContentView: View {
                 Text("read-only")
                     .font(Typography.caption)
                     .foregroundStyle(Palette.muted)
+                    .fixedSize()
             }
         }
         .lineLimit(1)
+        // **La barra no puede crecer.** Sin un techo, el nombre largo de un
+        // endpoint —los de CoreMIDI lo son— empujaba las tres columnas hacia
+        // abajo y cortaba la interfaz por el borde inferior. El estado cede
+        // primero: es lo único de esta fila que se puede acortar sin perder una
+        // función.
+        .frame(maxWidth: 420, alignment: .leading)
+    }
+
+    /// El estado de un endpoint, y su selector si hay algo que elegir.
+    ///
+    /// **El nombre se escribe una sola vez.** El `Picker` de menú repetía el
+    /// nombre completo del dispositivo elegido junto al texto que ya lo decía,
+    /// así que la barra lo mostraba dos veces y encima crecía. El estado es el
+    /// texto; el selector es solo la vía para cambiarlo, y con una flecha basta.
+    ///
+    /// **Aparece solo si hay más de uno.** Con un único destino, un menú de un
+    /// elemento sería una decisión que no existe.
+    private func endpoint(
+        label: String,
+        isConnected: Bool,
+        choices: [MIDIEndpointInfo],
+        selection: Binding<MIDIEndpointRef>
+    ) -> some View {
+        HStack(spacing: 4) {
+            Text(label)
+                .font(Typography.captionStrong)
+                .foregroundStyle(isConnected ? Palette.shape : Palette.muted)
+                .truncationMode(.tail)
+
+            if choices.count > 1 {
+                Menu {
+                    Picker("", selection: selection) {
+                        ForEach(choices, id: \.endpoint) { choice in
+                            Text(choice.displayName).tag(choice.endpoint)
+                        }
+                    }
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .font(Typography.caption)
+                        .foregroundStyle(Palette.mutedBright)
+                        .frame(width: 28, height: 28)
+                }
+                .fixedSize()
+            }
+        }
     }
 
     /// La columna central: la lectura grande.
@@ -358,10 +388,16 @@ struct ContentView: View {
     private var resting: some View {
         let readout = FamilyReadout(track: model.track, family: family)
         return VStack(alignment: .leading, spacing: 8) {
+            // **Dos líneas antes que cortarse.** En la columna estrecha
+            // `Probability 100` no cabe en una, y truncar una lectura que existe
+            // para leerse a un metro la inutiliza. Parte por el espacio, que
+            // deja el nombre del parámetro arriba y su valor debajo — el mismo
+            // orden en que se lee.
             Text(readout.headline)
-                .font(Typography.transientValue)
-                .minimumScaleFactor(0.4)
-                .lineLimit(1)
+                .font(Typography.readout)
+                .minimumScaleFactor(0.5)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(Palette.accent(for: family))
             Text(readout.detail)
                 .font(Typography.parameterLine)
@@ -439,9 +475,10 @@ struct ContentView: View {
     /// - Returns: A view showing the change description.
     private func transient(_ change: ParameterChange) -> some View {
         Text(change.description)
-            .font(Typography.transientValue)
-            .minimumScaleFactor(0.4)
-            .lineLimit(1)
+            .font(Typography.readout)
+            .minimumScaleFactor(0.5)
+            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
             // **El acento es el de la familia del parámetro que se movió**, no
             // uno fijo: `product-guidelines.md` pide que el color codifique qué
             // tipo de parámetro es. Girar Velocity y girar Steps tienen que

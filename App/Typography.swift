@@ -72,8 +72,17 @@ extension Typography {
     // cambia lo que se ve: cambia de qué familia sale. El 46 del handoff para la
     // lectura grande llega con el panel lateral, en la Fase 3.
 
-    /// El valor transitorio, el que se lee a un metro mientras se gira un knob.
-    static var transientValue: Font { bold(64) }
+    /// La lectura grande del panel: el valor en reposo y el transitorio.
+    ///
+    /// **Eran 64 puntos y se bajan a 44 el 2026-09-01.** Los 64 se eligieron
+    /// cuando el panel de lectura era la columna ancha; al invertir el reparto
+    /// (FR14) el panel pasó a ser el estrecho y el tamaño dejó de caber:
+    /// `Probability 100` se cortaba en `Probabilit…` en el iPad. 44 es además lo
+    /// que el handoff usa —46px— para esta lectura.
+    ///
+    /// Sigue siendo el texto más grande de la pantalla, que es lo que la
+    /// legibilidad a un metro pide de él.
+    static var readout: Font { bold(44) }
 
     /// El botón de transporte, que es el control más grande de la pantalla.
     ///
