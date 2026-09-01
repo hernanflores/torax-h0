@@ -45,10 +45,10 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   - [x] **Groove pasa de ámbar `#D99A4E` a mauve `#AA6DA8`** (FR11), y Tonal se queda en `#7C5FD9`
   - [x] La documentación de `Palette` deja de decir que los colores son ilustrativos: **el lenguaje visual se cierra aquí**, y se dice de dónde salen
   - [x] La razón del ámbar —separarse por tono y no por luminosidad— **no se borra**: queda escrita como lo que hay que volver a comprobar a un metro en la Fase 6
-- [ ] Task: Figtree, empaquetada
-  - [ ] La familia en el bundle y declarada en el `Info.plist`; licencia OFL incluida donde corresponda
-  - [ ] Un solo sitio decide la tipografía: pesos 400/600/700 según el handoff, sin que ninguna vista pida una fuente por su cuenta
-  - [ ] Verificado en simulador con captura: si la fuente no carga, iOS cae a la del sistema **en silencio**, y eso hay que verlo, no suponerlo
+- [x] Task: Figtree, empaquetada — `5ae0c15`
+  - [x] La familia en el bundle y declarada en el `Info.plist`; licencia OFL incluida donde corresponda — **hizo falta un `Info-Release.plist` nuevo**: Release no tenía plist, así que las fuentes se habrían registrado solo en Debug
+  - [x] Un solo sitio decide la tipografía: pesos 400/600/700 según el handoff, sin que ninguna vista pida una fuente por su cuenta — las 26 llamadas de las tres vistas pasan por `Typography`
+  - [x] Verificado en simulador con captura: si la fuente no carga, iOS cae a la del sistema **en silencio**, y eso hay que verlo, no suponerlo — **y pasó**: `INFOPLIST_KEY_UIAppFonts` compila, mete las caras en el bundle y no las registra. Se vio inspeccionando el `Info.plist` construido. Captura en `simulator-phase1-figtree.png`
 - [ ] Task: El estilo neo-brutalista, como sistema
   - [ ] Trazos de 2px, radios de 3–8px, rellenos de acento planos, sombra dura `2px 2px 0` sin blur en lo seleccionado, borde discontinuo para lo no disponible, peso 700 en lo activo (FR9)
   - [ ] Se expresa como estilos y modificadores reutilizables, no como parámetros repetidos en cada vista: **una vista que invente su propio botón es un fallo de esta rebanada**
