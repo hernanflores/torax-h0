@@ -64,21 +64,44 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
 
 > El corazón de la rebanada. La geometría a `Engine`, el dibujo a `Canvas`.
 
-- [ ] Task: La geometría de los anillos, en `Engine`
-  - [ ] Tests (Red): con dieciséis Tracks, el anillo N tiene su radio y el orden es exterior→interior, Track 1 al 16 (FR1)
-  - [ ] Tests (Red): los radios no dependen del material — un Track vacío ocupa su sitio igual, o los demás se moverían (FR1)
-  - [ ] Tests (Red): cada anillo reparte sus **propios** Steps: 16/5 y 12/7 en dos anillos distintos dan dos repartos distintos y correctos
-  - [ ] Tests (Red): la geometría escala con el tamaño disponible sin solaparse ni dejar el centro invadido
-  - [ ] Implementación (Green): funciones puras. `App` no calcula nada (NFR5)
-- [ ] Task: Los dieciséis, dibujados
-  - [ ] Un solo `Canvas` para los dieciséis: sin una vista por posición (NFR4) — dieciséis Tracks de hasta 64 Steps son mil posiciones por fotograma
-  - [ ] El seleccionado en su acento; los quince restantes en gris tenue con el mismo patrón de arcos, como el handoff especifica
-  - [ ] Los que tienen material se distinguen de los vacíos sin leer texto
-  - [ ] Capturas en simulador de varios repartos —16/4, 16/5, 12/7— para comprobar que la simetría euclidiana se sigue viendo, que es lo que la guía pide del anillo
-- [ ] Task: El playhead sobre dieciséis anillos
-  - [ ] Sigue derivando del reloj: se consulta al dibujar y se resuelve contra el origen del scheduler (NFR3). **Ningún temporizador inventa posición**
-  - [ ] Tests (Red) en `Engine` de lo calculable: dónde cae el playhead de cada Track sobre su anillo, con Divisions distintas
-  - [ ] **Legibilidad a un metro: se resuelve dibujando y se juzga en la Fase 6** (FR2). Si no se lee, la respuesta es un anillo grande aparte para el Track seleccionado — y eso es superficie que el diseño no reserva, así que se decide con la app en la mano y se anota
+- [x] Task: La geometría de los anillos, en `Engine` — `9c3863f`
+  - [x] Tests (Red): con dieciséis Tracks, el anillo N tiene su radio y el orden es exterior→interior, Track 1 al 16 (FR1)
+  - [x] Tests (Red): los radios no dependen del material — un Track vacío ocupa su sitio igual, o los demás se moverían (FR1)
+  - [x] Tests (Red): cada anillo reparte sus **propios** Steps: 16/5 y 12/7 en dos anillos distintos dan dos repartos distintos y correctos
+  - [x] Tests (Red): la geometría escala con el tamaño disponible sin solaparse ni dejar el centro invadido
+  - [x] Implementación (Green): funciones puras. `App` no calcula nada (NFR5)
+
+  > **Las proporciones no son las del handoff, y no pueden serlo.** El
+  > click-through dibuja **cinco** anillos con un paso de 16px de radio;
+  > dieciséis con ese paso pedirían un lienzo tres veces mayor del que la
+  > pantalla reserva. Se conserva lo que el handoff decide —orden, paso
+  > constante, hueco central— y se recalcula la escala.
+- [x] Task: Los dieciséis, dibujados — `86bac46`
+  - [x] Un solo `Canvas` para los dieciséis: sin una vista por posición (NFR4) — dieciséis Tracks de hasta 64 Steps son mil posiciones por fotograma
+  - [x] El seleccionado en su acento; los quince restantes en gris tenue con el mismo patrón de arcos, como el handoff especifica
+  - [x] Los que tienen material se distinguen de los vacíos sin leer texto
+  - [x] Capturas en simulador de varios repartos —16/4, 16/5, 12/7— para comprobar que la simetría euclidiana se sigue viendo, que es lo que la guía pide del anillo — `simulator-phase2-distributions.png`, con 16/4, 16/5, 12/7 y 8/3 a la vez
+
+  > **Arcos, no puntos — y la captura fue lo que lo dijo.** Se dibujó primero con
+  > una marca por Step, heredando el anillo único de la v1. Los dieciséis Tracks
+  > arrancan con los mismos 16 Steps, así que las marcas se alinean radialmente y
+  > la pantalla se lee como dieciséis **radios**, no como dieciséis círculos. El
+  > handoff ya lo decía —«a conic-gradient of colored arcs vs dark gaps»— y se
+  > había leído como una técnica de CSS en vez de como la decisión de diseño que
+  > es.
+- [x] Task: El playhead sobre dieciséis anillos — `86bac46`
+  - [x] Sigue derivando del reloj: se consulta al dibujar y se resuelve contra el origen del scheduler (NFR3). **Ningún temporizador inventa posición**
+  - [x] Tests (Red) en `Engine` de lo calculable: dónde cae el playhead de cada Track sobre su anillo, con Divisions distintas — `Playhead.forEachTrack`, 6 tests
+  - [x] **Legibilidad a un metro: se resuelve dibujando y se juzga en la Fase 6** (FR2). Si no se lee, la respuesta es un anillo grande aparte para el Track seleccionado — y eso es superficie que el diseño no reserva, así que se decide con la app en la mano y se anota
+
+  > **La aguja desde el centro se cambió por un arco sobre la banda.** Con un
+  > anillo la aguja estaba justificada —se ve por forma, que es lo que sobrevive
+  > a la distancia—; con dieciséis cruza todos e informa de uno, y con Divisions
+  > distintas serían dieciséis agujas a dieciséis velocidades sobre el mismo
+  > centro.
+  >
+  > **Anotado para la Fase 6:** los doce anillos vacíos llenan el interior y el
+  > conjunto pesa. Es consecuencia de FR1, no del dibujo.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: El panel de lectura y los tres tabs
