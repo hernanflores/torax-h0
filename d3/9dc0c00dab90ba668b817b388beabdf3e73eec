@@ -1,0 +1,41 @@
+Task: El estilo neo-brutalista, como sistema — Fase 1, v2 rebanada 2
+
+Qué cambia
+- App/Brutalist.swift: nuevo. Tokens de trazo, radio y sombra, más cuatro
+  modificadores: brutalistControl, brutalistPanel, brutalistUnavailable y
+  brutalistShadow.
+- ContentView: el botón de transporte y el panel del anillo.
+- TrackSelectorView: los dieciséis botones de Track y las dieciséis pastillas
+  de canal.
+- TonalView: los botones de escala y raíz, y las dos lecturas con relleno.
+
+Decisiones
+1. La sombra se dibuja como una copia desplazada de la forma, no con
+   .shadow(radius:), que siempre difumina. El handoff pide 2px 2px 0 sin blur.
+2. Solo lo elegido lleva sombra. Dársela a todo la convertiría en textura y
+   dejaría de señalar nada.
+3. El texto sobre un relleno de acento pasa de .white a Palette.toolbar
+   (#1a1420), que es lo que el handoff especifica: bloque plano saturado con
+   texto oscuro encima.
+4. brutalistUnavailable lleva allowsHitTesting(false) dentro: el signo visual y
+   el hecho de no responder son la misma decisión, y separarlos dejaría un
+   borde discontinuo sobre algo pulsable. Lo usará la Fase 4 para las tres
+   pestañas que no existen.
+
+Lo que NO se tocó
+- La sección de Jitter y su botón .bordered: FR12 la saca de la pantalla, así
+  que estilarla sería trabajo que se borra en la Fase 4.
+- RingView: su lineWidth es geometría de dibujo proporcional al tamaño, no
+  cromo de control, y la vista se reescribe entera en la Fase 2.
+
+Observación para la Fase 6
+La sombra dura de 2px negro al 40% es casi invisible sobre el fondo ciruela
+oscuro. El handoff la especifica y se implementa como dice, pero su aporte real
+sobre esta paleta está por verse a un metro.
+
+Verificación
+xcodebuild para iOS compila. Simulador iPad Pro 13': captura en
+simulator-phase1-brutalist.png — la pastilla del transporte es ahora un
+rectángulo de radio 8 con trazo de 2px, y los estados elegidos son bloques
+planos. Ningún cornerRadius ni lineWidth suelto queda en App fuera de
+Brutalist.swift y de RingView.
