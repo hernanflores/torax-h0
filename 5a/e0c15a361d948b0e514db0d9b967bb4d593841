@@ -1,0 +1,40 @@
+Task: Figtree, empaquetada — Fase 1, v2 rebanada 2
+
+Qué cambia
+- App/Resources/Fonts/: Figtree-Regular, -SemiBold, -Bold (.ttf) y OFL.txt.
+  Bajadas de github.com/erikdkennedy/figtree (rama master), que es el upstream
+  que google/fonts referencia. 57 KB cada una.
+- App/Typography.swift: nuevo. Los tres pesos y una escala semántica.
+- Config/Info-Debug.plist: gana UIAppFonts.
+- Config/Info-Release.plist: nuevo.
+- ToraxH0.xcodeproj: Release gana INFOPLIST_FILE.
+- Las tres vistas: sus 26 llamadas a fuente pasan por Typography.
+- App/ToraxH0App.swift: comprobación de arranque.
+
+Decisiones
+1. Estáticas y no variable. google/fonts solo publica Figtree[wght].ttf; los
+   pesos estáticos están en el upstream. La variable obligaría a seleccionar el
+   eje wght en tiempo de ejecución, que en iOS no es fiable desde SwiftUI.
+   Tres caras de 57 KB es más barato que esa incertidumbre.
+2. Por nombre PostScript. Figtree-SemiBold declara familia 'Figtree SemiBold',
+   no 'Figtree' con subfamilia SemiBold — pedirle .semibold a la familia
+   'Figtree' sintetizaría un falso semibold en silencio.
+3. Plist y no INFOPLIST_KEY_. Se intentó INFOPLIST_KEY_UIAppFonts primero:
+   Xcode la descarta sin avisar. La app compilaba, las tres caras estaban
+   dentro del .app y UIAppFonts no existía en el Info.plist construido. Se vio
+   inspeccionando el bundle, que es justo lo que el plan pedía no dar por
+   supuesto.
+4. Release tenía GENERATE_INFOPLIST_FILE sin INFOPLIST_FILE, así que sin este
+   fichero nuevo las fuentes se habrían registrado solo en Debug.
+
+Barrido de tipografía
+Las lecturas de parámetros usaban .monospaced(), y el handoff dice que no se
+usa monoespaciada. Ahora son Figtree proporcional. Se conserva
+.monospacedDigit() donde el número cambia en vivo, para que no baile.
+
+Verificación
+- Info.plist del .app construido, en Debug y en Release: UIAppFonts con las
+  tres. UIBackgroundModes solo en Debug, como estaba.
+- Simulador iPad Pro 13' (iOS 26.3): la app arranca y no imprime el aviso de
+  tipografía. Captura en simulator-phase1-figtree.png.
+- xcodebuild para iOS compila; Engine 344 tests verdes.
