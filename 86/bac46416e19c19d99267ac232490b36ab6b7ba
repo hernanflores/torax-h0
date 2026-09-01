@@ -1,0 +1,46 @@
+Tasks: Los dieciséis, dibujados · El playhead sobre dieciséis anillos — Fase 2
+
+Qué cambia
+- App/RingView.swift: RingView pasa a ser RingStackView. Un solo Canvas.
+- Engine/Playhead.swift: Playhead.forEachTrack(in:tempo:elapsedNanoseconds:).
+- Engine/RingStack.swift: bandWidth, el grosor del arco.
+- MIDI/Transport.swift: playheads, uno por Track. El playhead singular se queda.
+- App/TransportModel.swift: rings y playheads. Ninguno observable.
+- 6 tests nuevos en PatternPlayheadTests. 362 en total.
+
+El error que hubo que corregir, y la evidencia
+Se dibujó primero con una marca por Step, heredando el anillo único de la v1.
+La captura del simulador mostró que no funciona: los dieciséis Tracks arrancan
+con los mismos 16 Steps, así que sus marcas se alinean radialmente y la pantalla
+se lee como dieciséis RADIOS, no como dieciséis círculos. No es un ajuste de
+tamaño: es que el punto no tiene extensión angular y el arco sí. Un arco ocupa
+su tramo de vuelta y se lee como anillo aunque el vecino empiece en el mismo
+ángulo.
+
+El handoff ya lo decía —'a conic-gradient of colored arcs vs dark gaps'— y se
+había leído como descripción de una técnica CSS en vez de como la decisión de
+diseño que es.
+
+El playhead
+Con un anillo, la aguja desde el centro funcionaba y estaba justificada por
+escrito: se ve por forma, que es lo que sobrevive a la distancia. Con dieciséis
+deja de valer, porque cruza los dieciséis y solo informa de uno. Con Divisions
+distintas serían dieciséis agujas a dieciséis velocidades sobre el mismo centro.
+Ahora es un arco sobre su propia banda.
+
+Verificación de los repartos
+Capturas en simulator-phase2-rings.png (16/5 en el Track 1) y
+simulator-phase2-distributions.png (16/4, 16/5, 12/7 y 8/3 a la vez). El 16/4 da
+la cruz regular y los otros tres se ven asimétricos y distintos entre sí, que es
+lo que product-guidelines.md pide que el anillo comunique.
+
+Steps y Pulses son solo de knob, así que para la segunda captura se compiló con
+un Pattern.initial de prueba de cuatro Tracks y se revirtió inmediatamente. El
+fichero está sin cambios en el commit.
+
+Pendiente para la Fase 6
+Los doce anillos vacíos llenan el interior de líneas concéntricas y el conjunto
+pesa. Es consecuencia directa de FR1 —los dieciséis se dibujan siempre, o los
+demás se moverían de sitio— y no de una decisión de dibujo. Si a un metro
+estorba, la respuesta escrita en la spec es el anillo grande aparte para el
+Track elegido, no dibujar menos anillos.
