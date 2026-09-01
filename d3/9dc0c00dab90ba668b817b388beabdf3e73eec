@@ -39,3 +39,41 @@ simulator-phase1-brutalist.png — la pastilla del transporte es ahora un
 rectángulo de radio 8 con trazo de 2px, y los estados elegidos son bloques
 planos. Ningún cornerRadius ni lineWidth suelto queda en App fuera de
 Brutalist.swift y de RingView.
+
+--- Verificación de fase — Fase 1: El lenguaje visual, en un sitio ---
+Confirmada por el usuario el 2026-09-01.
+
+Comandos
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI --enable-code-coverage --skip VirtualLoopbackTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado
+  Engine: 344 tests, 0 fallos. 99,42% líneas / 97,31% regiones (umbral 90%).
+  MIDI:   330 tests, 0 fallos, 1 saltado. 92,08% líneas / 87,85% regiones
+          (umbral 80%). Medido con VirtualLoopbackTests excluido por el
+          clientCreationFailed(-50), que sigue fallando idéntico en main.
+          Ningún fichero de MIDI se tocó en esta fase.
+  Build iOS: compila.
+
+Cobertura de los cambios
+  El único fichero de código fuera de App que tocó la fase es
+  Engine/TrackParameter.swift, cubierto por TrackParameterTests.swift con tres
+  tests nuevos. Los otros seis son de App, que workflow.md no mide.
+
+Verificación manual propuesta
+  1. Captura simulator-phase1-brutalist.png, o la app en el iPad.
+  2. Figtree en todo el texto, incluidos los renglones de parámetros, que antes
+     eran monoespaciados.
+  3. Los dos renglones de Groove en mauve, no en ámbar.
+  4. El botón de transporte deja de ser una pastilla: radio 8, trazo 2px.
+  5. Los estados elegidos son bloques planos con texto oscuro, sin tintes.
+  6. Ningún cambio de comportamiento: anillo, reparto, selección y Scale & Root
+     funcionan igual.
+
+Puntos levantados al usuario, sin resolver aquí
+  - El mauve de Groove contra el violeta de Tonal: riesgo 6 de la spec, se
+    decide a un metro en la Fase 6.
+  - La sombra dura de 2px negro al 40% es casi invisible sobre el fondo ciruela.
+
+Confirmación del usuario: 'Si, avancemos'.
