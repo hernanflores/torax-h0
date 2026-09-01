@@ -60,7 +60,7 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   > en la mano, no ahora.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: Dieciséis anillos concéntricos
+## Phase 2: Dieciséis anillos concéntricos [checkpoint: 4506bad]
 
 > El corazón de la rebanada. La geometría a `Engine`, el dibujo a `Canvas`.
 
@@ -107,7 +107,7 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   - [x] El requisito queda escrito en `spec.md`, que no lo tenía: el supuesto estaba en las seis fases y en ningún requisito
   - [x] La verificación pasa a hacerse apaisada — durante esta fase se juzgó una composición en portrait que no era la que existe
 
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: El panel de lectura y los tres tabs
 
