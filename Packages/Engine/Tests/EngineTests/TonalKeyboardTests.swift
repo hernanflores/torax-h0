@@ -117,4 +117,23 @@ final class TonalKeyboardTests: XCTestCase {
             TonalKeyboard(frame: TonalFrame(scale: .dorian, root: Root(2)!)).statusLine,
             "Scale · Dorian   Root · D")
     }
+
+    /// **Las cinco escalas tienen nombre**, en inglés y sin traducir (NFR7).
+    /// Una que se quedara sin él no fallaría al dibujarse: saldría el nombre del
+    /// caso de Swift, que es un detalle del lenguaje y no vocabulario de dominio.
+    func testEveryScaleHasItsPreSpecName() {
+        let names = Scale.ordered.map {
+            TonalKeyboard(frame: TonalFrame(scale: $0, root: .c)).statusLine
+        }
+
+        XCTAssertEqual(
+            names,
+            [
+                "Scale · Minor   Root · C",
+                "Scale · Major   Root · C",
+                "Scale · Dorian   Root · C",
+                "Scale · Phrygian   Root · C",
+                "Scale · Pentatonic   Root · C",
+            ])
+    }
 }
