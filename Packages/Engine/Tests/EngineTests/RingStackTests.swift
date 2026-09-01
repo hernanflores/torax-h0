@@ -146,4 +146,20 @@ final class RingStackTests: XCTestCase {
         XCTAssertGreaterThan(RingStack.pulseMarkRadius, RingStack.stepMarkRadius)
         XCTAssertGreaterThan(RingStack.stepMarkRadius, 0)
     }
+
+    /// **El arco de una banda no llega a tocar el de la de al lado.** Es la misma
+    /// invariante que `testAdjacentBandsDoNotOverlap`, sobre el grosor con el que
+    /// se dibuja de verdad: la separación oscura entre bandas es lo que las hace
+    /// contables, y sin ella dieciséis anillos son un disco.
+    func testABandsArcLeavesADarkGapToTheNextOne() {
+        XCTAssertLessThan(RingStack.bandWidth, RingStack.spacing)
+        XCTAssertGreaterThan(RingStack.bandWidth, 0)
+    }
+
+    /// Un índice fuera de rango no existe: las bandas son exactamente dieciséis,
+    /// como los Tracks, y no hay una decimoséptima que dibujar.
+    func testThereIsNoSeventeenthBand() {
+        XCTAssertEqual(RingStack(pattern: .initial).bands.count, Pattern.trackCount)
+        XCTAssertNil(RingStack(pattern: .initial).bands.first { $0.track >= Pattern.trackCount })
+    }
 }
