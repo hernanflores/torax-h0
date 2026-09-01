@@ -33,3 +33,46 @@ Las tres capturas se hicieron cambiando el estado inicial de 'family' y
 revirtiendo: simctl no puede simular un toque, así que **el toque en sí queda
 para la verificación manual**. Lo que las capturas prueban es el contenido y el
 tratamiento visual de cada familia, no el gesto.
+
+--- Verificación de fase — Fase 3: El panel de lectura y los tres tabs ---
+Confirmada por el usuario el 2026-09-01.
+
+Comandos
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado
+  Engine: 373 tests, 0 fallos (eran 362 al cerrar la Fase 2).
+          99,22% líneas / 96,00% regiones.
+  MIDI:   330 tests, 0 fallos, 1 saltado. Ningún fichero de MIDI se tocó.
+  Build iOS: compila.
+
+Cobertura de los cambios
+  Engine/FamilyReadout.swift -> FamilyReadoutTests.swift (9 tests), 100% líneas.
+  Engine/RingStack.swift     -> bandWidth ganó su test al medir: solo lo leía
+                                App, y la separación entre bandas es lo que hace
+                                contables los dieciséis anillos.
+  App/ContentView.swift, Typography.swift -> App no se mide.
+
+Verificación manual
+  Capturas simulator-phase3-shape/groove/tonal.png y -columns.png.
+  El toque en los tabs no se pudo automatizar: simctl no simula gestos, así que
+  las capturas por familia se hicieron cambiando el estado inicial. Lo que
+  prueban es el contenido y el tratamiento visual, no el gesto.
+
+Lo que la verificación cambió, a petición del usuario
+  1. El reparto de columnas se invirtió: el anillo se lleva el ancho grande y la
+     lectura el estrecho. Las proporciones del handoff se dibujaron para cinco
+     anillos; con dieciséis dejaban cada banda en 6px. Esto resuelve el riesgo
+     de FR2 antes de llegar al dispositivo, y quedó escrito en la spec.
+  2. Se quitó 'Torax H-0' de la interfaz. El handoff no lo dibuja en ninguna de
+     sus cinco pantallas.
+  Dos fallos que la columna estrecha reveló y se arreglaron: 'No MIDI device'
+  partiéndose letra a letra, y los tabs estirándose al alto del anillo.
+
+Pendiente, deliberado
+  El transporte y el estado MIDI siguen dentro del panel de lectura. Su sitio es
+  la barra superior, que es la Fase 4.
+
+Confirmación del usuario: 'Avancemos'.
