@@ -46,19 +46,20 @@ struct ContentView: View {
         // sin quedar circular: el `ScrollView` pregunta la altura al contenido y
         // el contenido la sacaría del `ScrollView`.
         GeometryReader { screen in
-            content(width: screen.size.width - 64)
+            content(width: screen.size.width - 64, height: screen.size.height - 64)
         }
     }
 
-    private func content(width: CGFloat) -> some View {
+    private func content(width: CGFloat, height: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             navigation
             ScrollView {
                 switch screen {
-                case .track: trackScreen(width: width)
+                case .track: trackScreen(width: width, height: height)
                 case .scale: scaleScreen
                 }
             }
+            .scrollBounceBehavior(.basedOnSize)
         }
         .padding(32)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -100,6 +101,13 @@ struct ContentView: View {
     /// Track × Pattern necesita Patterns, y ninguna de las dos existe.
     private static let unavailableScreens = ["3 · MIDI", "4 · Banks", "5 · Tracks"]
 
+    /// **Una sola fila arriba, no dos.**
+    ///
+    /// El handoff dibuja las pestañas y debajo una barra con el tempo y el
+    /// transporte. Son dos renglones y esta pantalla tiene uno de más: con los
+    /// anillos ocupando el ancho grande (FR14), esos ~64 puntos eran justo los
+    /// que le faltaban al selector de Tracks y de canal para caber sin cortarse.
+    /// Decidido con el usuario el 2026-09-01, viendo la pantalla.
     private var navigation: some View {
         HStack(spacing: 8) {
             ForEach(Screen.allCases, id: \.self) { candidate in
@@ -128,16 +136,32 @@ struct ContentView: View {
                     .brutalistUnavailable()
             }
 
-            Spacer(minLength: 0)
+            Spacer(minLength: 16)
+
+            midiStatus
+
+            // **El punto decimal no depende del locale.** La interfaz va en
+            // inglés y sin traducir (NFR7), y el handoff escribe `120.0 BPM`;
+            // interpolar un `Double` daba `120,0` en un iPad en español, que es
+            // la mitad del texto en un idioma y la otra mitad en otro.
+            Text(
+                String(
+                    format: "%.1f BPM", locale: Locale(identifier: "en_US_POSIX"),
+                    model.beatsPerMinute)
+            )
+            .font(Typography.captionStrong)
+            .monospacedDigit()
+            .foregroundStyle(Palette.mutedBright)
+
+            transport
         }
     }
 
     // MARK: - Las dos pantallas
 
-    private func trackScreen(width: CGFloat) -> some View {
+    private func trackScreen(width: CGFloat, height: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 24) {
-            topBar
-            stage(width: width)
+            stage(width: width, height: height)
             TrackSelectorView(
                 selected: model.selectedTrackIndex,
                 hasMaterial: model.tracksWithMaterial,
@@ -174,20 +198,32 @@ struct ContentView: View {
     /// que se lee de un vistazo es la *forma* —cuáles tienen material, cuál está
     /// elegido, por dónde va el tiempo—, no el detalle de un Step. El detalle es
     /// el panel.
-    private func stage(width: CGFloat) -> some View {
+    private func stage(width: CGFloat, height: CGFloat) -> some View {
         let columns = Self.columns(in: width)
+        // **El anillo es cuadrado, así que lo acota la dimensión más corta.**
+        // Con solo el ancho crecía hasta empujar el selector y la fila de canal
+        // fuera de la pantalla, y esas dos son controles: quedarse sin verlos es
+        // peor que un anillo algo menor.
+        let side = min(columns.rings, height - Self.reservedBelowStage)
 
         return HStack(alignment: .top, spacing: Self.gutter) {
             rings
-                .frame(width: columns.rings, height: columns.rings)
+                .frame(width: side, height: side)
 
             readout
-                .frame(width: columns.readout, height: columns.rings)
+                .frame(width: columns.readout, height: side)
 
             families
-                .frame(width: columns.families, height: columns.rings)
+                .frame(width: columns.families, height: side)
         }
     }
+
+    /// Lo que hay que dejar libre debajo del escenario: la fila de navegación,
+    /// el selector de los dieciséis y la fila de canal, con sus separaciones.
+    ///
+    /// Es una suma de constantes de layout y no una medida: si alguna de las
+    /// tres cambia de alto, este número cambia con ella.
+    static let reservedBelowStage: CGFloat = 260
 
     /// El hueco entre columnas.
     static let gutter: CGFloat = 24
@@ -235,36 +271,7 @@ struct ContentView: View {
         .brutalistPanel()
     }
 
-    // MARK: - La barra superior
-
-    /// Lo que el handoff pone arriba: a la izquierda la identidad de lo que
-    /// suena, a la derecha el tempo y el transporte (FR6).
-    ///
-    /// **En el sitio de `Bank 1 · Pattern A` va el estado MIDI.** Banks y
-    /// Patterns no existen todavía, y dejar su hueco vacío o rellenarlo con un
-    /// nombre inventado serían las dos maneras de mentir. El estado MIDI es lo
-    /// que de verdad hay que mirar hoy —de dónde llegan los giros y a dónde
-    /// salen las notas— y ocupará otro sitio cuando Banks llegue.
-    private var topBar: some View {
-        HStack(alignment: .center, spacing: 24) {
-            midiStatus
-            Spacer(minLength: 24)
-            // **El punto decimal no depende del locale.** La interfaz va en
-            // inglés y sin traducir (NFR7), y el handoff escribe `120.0 BPM`;
-            // interpolar un `Double` daba `120,0` en un iPad en español, que es
-            // la mitad del texto en un idioma y la otra mitad en otro.
-            Text(
-                String(
-                    format: "%.1f BPM", locale: Locale(identifier: "en_US_POSIX"),
-                    model.beatsPerMinute)
-            )
-            .font(Typography.bodyMedium)
-            .monospacedDigit()
-            .foregroundStyle(Palette.mutedBright)
-            transport
-        }
-        .frame(maxWidth: .infinity)
-    }
+    // MARK: - Estado MIDI
 
     /// **Estado, nunca disculpa** (`product-guidelines.md`).
     ///
@@ -465,12 +472,12 @@ struct ContentView: View {
         Button(model.isPlaying ? "Stop" : "Play") {
             model.isPlaying ? model.stop() : model.play()
         }
-        .font(Typography.transportLabel)
+        .font(Typography.bodyStrong)
         .buttonStyle(.plain)
         .foregroundStyle(canTransport ? Palette.toolbar : Palette.muted)
         .disabled(!canTransport)
         // Objetivo táctil holgado: se toca de pie, delante del sintetizador.
-        .frame(minWidth: 160, minHeight: 60)
+        .frame(minWidth: 130, minHeight: 44)
         .brutalistControl(
             accent: Palette.shape,
             isSelected: canTransport,
