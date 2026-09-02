@@ -57,10 +57,15 @@ regresión la bloquea.
   veces más bytes cuestan **siete** veces más tiempo, no dieciséis: la
   extrapolación lineal de la nota de riesgo 1 era pesimista por un factor de
   cinco.
-- [ ] Task: La decisión, tomada con el dato delante
-  - [ ] Presupuesto: un `load()` **por debajo del 1% de la ventana**. Por encima, se para y se decide explícitamente
-  - [ ] Si no cabe, la alternativa está escrita y es otro diseño, no un ajuste: el avance pasa al hilo principal (FR5 cambia) o se publica por Track en vez de entero. **Se elige aquí, no a mitad de la Fase 3**
-  - [ ] La decisión y su porqué van al `spec.md` como enmienda fechada, con el número
+- [x] Task: La decisión, tomada con el dato delante — `3640edd`
+  - [x] Presupuesto: un `load()` **por debajo del 1% de la ventana**. Por encima, se para y se decide explícitamente
+  - [x] Si no cabe, la alternativa está escrita y es otro diseño, no un ajuste: el avance pasa al hilo principal (FR5 cambia) o se publica por Track en vez de entero. **Se elige aquí, no a mitad de la Fase 3**
+  - [x] La decisión y su porqué van al `spec.md` como enmienda fechada, con el número
+
+  **Cabe, y por tres órdenes de magnitud: 0,0044% contra un presupuesto del 1%.**
+  El diseño se queda como estaba —FR5 intacto, se publica el Pattern entero— y
+  las dos alternativas quedan descartadas por escrito, para no reabrirlas a
+  mitad de la Fase 3. Enmienda fechada en el NFR2 del `spec.md`.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: El Cycle es el valor, el Track lo contiene

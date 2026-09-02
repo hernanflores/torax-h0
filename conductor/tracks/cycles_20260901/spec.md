@@ -152,6 +152,31 @@ pantalla.
   salen ~4,4 µs contra una ventana de 20 ms, el 0,02%. **Es una extrapolación, no
   una medida**: la primera fase la convierte en un número real. Presupuesto: un
   `load()` por debajo del 1% de la ventana.
+
+  > **Medido el 2026-09-02, y el diseño se queda como está.** El snapshot con los
+  > 256 Cycles son **36 992 bytes** y el anillo **147 968**. Un `load()` cuesta
+  > **~870 ns**, el **0,0044%** de la ventana —presupuesto: 1%—, medido sobre un
+  > tipo de prueba con la forma que tendrá el modelo y una copia del protocolo de
+  > ranura del handoff, con 200 000 lecturas por pasada y tres pasadas
+  > (848–907 ns).
+  >
+  > La comparación honesta no es contra los 274 ns del 2026-08-31 —otra máquina y
+  > un Track de 112 bytes—, sino contra el snapshot de hoy medido en la misma
+  > pasada: **~125 ns**. Así que **16,05× más bytes cuestan 6,9× más tiempo**, no
+  > dieciséis: una copia grande amortiza mejor que una pequeña, y la
+  > extrapolación lineal era pesimista por un factor de cinco.
+  >
+  > **Consecuencia: FR5 no cambia.** El avance del Cycle se queda en el hilo del
+  > scheduler y se sigue publicando el Pattern entero. Las dos alternativas que
+  > el plan tenía escritas para el caso contrario —mover el avance al hilo
+  > principal, o publicar por Track— **quedan descartadas aquí y no se vuelven a
+  > abrir a mitad de la Fase 3**: harían falta tres órdenes de magnitud de
+  > diferencia para que el presupuesto se rozara.
+  >
+  > Lo que este número **no** dice: es una copia de memoria en `debug` sobre
+  > macOS, no jitter en un iPad. El coste real del hilo con los dieciséis
+  > avanzando lo mide la Fase 6, que es la que puede bloquear la rebanada. Lo que
+  > esta medición descarta es que el **tamaño** sea el problema.
 - **NFR3 — El snapshot deja de copiarse una vez por evento.** `Transport.play()`
   llama hoy a `handoff.load()` dentro del cierre de emisión, para leer el canal y
   la Division del Track que emite: una copia del snapshot entero **por nota**.
