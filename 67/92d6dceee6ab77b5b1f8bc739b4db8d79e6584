@@ -1,0 +1,29 @@
+Task: Los step buttons 15 y 16 como modificadores (FR7, FR8)
+
+Fase 5 del track mute-solo_20260902. TDD: 11 tests en rojo, implementacion, 11
+en verde + los 8 de StepButtonInputTests intactos. Suite MIDI 437, 0 fallos.
+
+Ficheros:
+- Packages/MIDI/Sources/MIDI/ControlInput.swift: enum MixGesture, el cierre
+  opcional 'mix', el estado de los dos modificadores, stepButton(_:value:) que
+  reemplaza al despacho inline, y releaseModifiers() para FR8.
+- Packages/MIDI/Tests/MIDITests/MixModifierInputTests.swift (nuevo).
+- preset/README.md: la tabla de step buttons decia 'Seleccionar Track 2-16, sin
+  Track detras en v1', desactualizada desde la bajada a doce. Ahora dice 1-12
+  seleccion, 13-14 nada, 15 solo, 16 mute, con nota fechada.
+
+El orden del despacho es la parte con criterio: primero los modificadores —que
+no hacen nada por si solos— y solo despues se mira si hay uno mantenido.
+
+El caso que casi se escapa: sin oyente del gesto, el step button NO cae de vuelta
+a seleccionar. Con el modificador hundido el usuario no esta pidiendo cambiar de
+Track; mover la seleccion porque nadie recoja el gesto seria la peor forma de
+fallar. Hay test.
+
+FR8 se resuelve con releaseModifiers(), que llamara quien reconecte la entrada
+en la fase 6: un cable desenchufado con el boton hundido deja el modificador
+pegado, porque la soltada que lo levantaria ya no llega.
+
+ControlMapping no cambia (describe el hardware) y el .beatstep tampoco.
+
+Cobertura MIDI 92,19%; ControlInput.swift 100% de lineas.
