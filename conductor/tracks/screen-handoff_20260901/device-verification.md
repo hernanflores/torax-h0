@@ -111,7 +111,51 @@ cualquier ejecución posterior arrancará midiendo.
 | σ peor pero bajo umbral | Se registra y se explica. La causa probable es dibujar de más por fotograma, **no el scheduler**: se ataca ahí antes de tocar nada de timing. |
 | Umbral superado | **La rebanada se para.** Se bisecta quitando carga de dibujo —empezando por reconstruir el `RingStack` en cada fotograma— antes de mirar el camino de envío. |
 
-- [ ] El número va a `product.md`, junto a las anteriores, y a la git note.
+- [x] El número va a `product.md`, junto a las anteriores, y a la git note.
+
+### Resultado — 2026-09-02, iPad Air (4ª gen)
+
+Rejilla recta, **1000 eventos por tempo**, con el transporte de la app corriendo
+y los dieciséis anillos repintándose.
+
+| Tempo | n | máx | media | σ |
+|---|---|---|---|---|
+| 60 BPM | 1000 | 0,158 ms | +0,094 ms | 0,013 ms |
+| 120 BPM | 1000 | 0,141 ms | +0,091 ms | 0,013 ms |
+| 174 BPM | 1000 | 0,141 ms | +0,088 ms | 0,014 ms |
+
+**VEREDICTO: CUMPLE.** El peor máximo queda **12,6 veces** por debajo del umbral
+de 2 ms y la peor σ **35 veces** por debajo del de 0,5 ms.
+
+**Los dieciséis anillos no cuestan timing.** La σ es de 0,013–0,014 ms en los
+tres tempos: **mejor que los 0,020 ms de la rebanada 3, que medía un solo
+anillo**. Dibujar quince anillos más no solo no degrada la rejilla — el número
+queda por debajo del de entonces. Es lo que la arquitectura predice: el dibujo
+va en el hilo principal y el scheduler en el suyo, y el punto de esta medición
+era comprobar que esa separación aguanta y no suponerlo.
+
+La media es plana —de +0,088 a +0,094 ms— y coincide con la de las seis
+mediciones anteriores. El desplazamiento constante es del camino de envío, no de
+la carga.
+
+> **Y la cola de la rebanada 1 no se reprodujo.** Aquella medición dio a 174 BPM
+> máx 0,598 ms y σ 0,083 ms, y quedó anotada como «la primera cola que se
+> ensancha en seis mediciones» y como el sitio por donde mirar si esta rebanada
+> empeoraba el número. **No aparece aquí**: a 174 BPM el máximo es 0,141 ms y la
+> σ 0,014 ms.
+>
+> Y no es que se haya mirado menos: esta pasada usó **cinco veces más muestras**
+> —1000 contra 200— y **más carga**, con dos schedulers corriendo y los anillos
+> animándose. Con más eventos y peores condiciones la cola desaparece, así que lo
+> más probable es que fuera un episodio puntual de aquella pasada y no una
+> propiedad de los dieciséis Tracks. **No se puede afirmar más que eso** —no se
+> repitió la medición de la rebanada 1 en sus mismas condiciones— pero el aviso
+> que quedó en `tracks.md` puede leerse con esto al lado.
+
+> **Sobre la sospecha de la rebanada 3.** Su σ era 0,020 ms y ésta 0,013–0,014
+> ms, con carga visual mayor. Eso no confirma ni descarta que aquel anillo
+> estuviera animándose: quedan seis rebanadas de diferencia en el camino de
+> envío. Se deja como estaba anotado, sin resolver.
 
 > **Una sospecha que conviene tener delante al leer el resultado.** La rebanada 3
 > registró «jitter con carga visual: máx 0,134 ms · σ 0,020 ms» y atribuyó +5 µs

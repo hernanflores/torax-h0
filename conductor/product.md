@@ -130,6 +130,23 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > que deja anotado que los estadísticos de resumen no distinguen unos pocos
 > outliers de un corrimiento de la distribución, y que hacerlo pide percentiles
 > en el reporte del arnés.
+>
+> **v2 rebanada 2 (2026-09-02): medido con los dieciséis anillos
+> repintándose.** La carga visual de la pantalla del handoff, con 1000 eventos
+> por tempo: máximo **0,158 ms** y σ **0,013–0,014 ms**. CUMPLE con el máximo
+> 12,6 veces por debajo del umbral y la σ 35 veces. **Dibujar dieciséis anillos
+> sale más barato que dibujar uno**: la σ de la rebanada 3, con un solo anillo,
+> era 0,020 ms. El dibujo va en el hilo principal y el scheduler en el suyo, y
+> esta medición existía para comprobar esa separación en vez de suponerla.
+>
+> Dos cosas que conviene leer junto al número. **La medición es conservadora a
+> propósito**: el arnés por sí solo no produce carga visual —no toca el
+> transporte de la app, así que los anillos se quedan quietos y SwiftUI no
+> repinta lo que no cambia—, de modo que se mide con el transporte corriendo a la
+> vez, y eso pone dos schedulers en vuelo, más carga de la que el producto tiene
+> nunca. Y **la cola de la rebanada 1 no se reprodujo**: sus 0,598 ms a 174 BPM
+> aquí son 0,141 ms, con cinco veces más muestras y más carga. Ver
+> [`device-verification.md`](./tracks/screen-handoff_20260901/device-verification.md).
 
 Secundarios:
 
