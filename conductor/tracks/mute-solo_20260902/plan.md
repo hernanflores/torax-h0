@@ -107,25 +107,25 @@ revisar el diseño antes de seguir.
 
 ## FASE 5: EL GESTO DEL CONTROLADOR
 
-- [~] Task: Los step buttons 15 y 16 como modificadores (FR7, FR8)
-  - [ ] Tests (Red): step 16 mantenido + step 3 alterna el mute del Track 3 y
+- [x] Task: Los step buttons 15 y 16 como modificadores (FR7, FR8) [6792d6d]
+  - [x] Tests (Red): step 16 mantenido + step 3 alterna el mute del Track 3 y
         **no** cambia la selección; al soltar el 16, el step 3 vuelve a
         seleccionar.
-  - [ ] Tests (Red): step 15 mantenido hace lo mismo con el solo; los dos
+  - [x] Tests (Red): step 15 mantenido hace lo mismo con el solo; los dos
         mantenidos a la vez, manda mute.
-  - [ ] Tests (Red): step 15 o 16 pulsados y soltados solos no cambian nada — ni
+  - [x] Tests (Red): step 15 o 16 pulsados y soltados solos no cambian nada — ni
         selección, ni máscara.
-  - [ ] Tests (Red): reconectar la entrada suelta los modificadores, aunque no
+  - [x] Tests (Red): reconectar la entrada suelta los modificadores, aunque no
         haya llegado su soltada (FR8).
-  - [ ] Implementación (Green): estado de "mantenido" en `ControlInput`, movido
+  - [x] Implementación (Green): estado de "mantenido" en `ControlInput`, movido
         por el valor del CC —127 al pulsar, 0 al soltar—, **sin temporizador**;
         una salida nueva para los cambios de máscara, que no son del `Track`
         publicado.
-  - [ ] `ControlMapping` no cambia: sigue describiendo las dieciséis del
+  - [x] `ControlMapping` no cambia: sigue describiendo las dieciséis del
         hardware. Quien acota es el consumidor, como en FR3 de `ui-declutter`.
-  - [ ] `preset/` no cambia; comprobar que su README sigue siendo cierto y
+  - [x] `preset/` no cambia; comprobar que su README sigue siendo cierto y
         anotar ahí el gesto nuevo si lo describe.
-  - [ ] Cobertura `MIDI` ≥80%.
+  - [x] Cobertura `MIDI` ≥80%.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: LA PANTALLA
