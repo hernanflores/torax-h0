@@ -34,6 +34,13 @@ con el hardware, que es la que se ejecutó.
 
 ### La rejilla es nueva, y por qué
 
+> **Nota del 2026-09-02 — los nombres de rejilla de esta página son los de
+> entonces.** Al bajar a doce Tracks (`ui-declutter_20260902`), `16 Tracks` y
+> `16 Tracks · 4 Cycles` pasaron a llamarse `12 Tracks` y `12 Tracks · 4 Cycles`,
+> con sufijos `12-tracks` y `12-tracks-cycles`. Aquí se dejan sin tocar porque
+> este documento **registra una ejecución que ocurrió**, y con dieciséis: para
+> repetir el procedimiento hoy, sustituye el nombre en los comandos.
+
 La rejilla `16 Tracks` de la rebanada 1 deja **un Cycle por Track**, así que
 mediría los dieciséis quietos: el trabajo que esta rebanada añade no se
 ejercería nunca y el CUMPLE no diría nada.

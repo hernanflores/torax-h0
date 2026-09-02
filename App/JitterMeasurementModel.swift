@@ -34,11 +34,18 @@ final class JitterMeasurementModel {
         case dragged = "Delay +50%"
         case pushed = "Delay −50%"
 
-        /// **El peor caso realista de la v2**: los dieciséis Tracks sonando a la
+        /// **El peor caso realista de la v2**: todos los Tracks sonando a la
         /// vez. Es lo que decide si la rebanada de múltiples Tracks vale, y no
         /// se puede deducir de la medición de uno.
-        case sixteenTracks = "16 Tracks"
-        case sixteenTracksWithCycles = "16 Tracks · 4 Cycles"
+        ///
+        /// > **Eran dieciséis y son doce desde el 2026-09-02.** La rejilla pide
+        /// > `Pattern.trackCount` Tracks, así que una app de doce ya no puede
+        /// > construir la de dieciséis y la herramienta se quedaría rota
+        /// > esperando a que alguien la corriera. **No se mide**: las mediciones
+        /// > de jitter están suspendidas y esto solo deja el arnés coherente por
+        /// > si se retoman.
+        case everyTrack = "12 Tracks"
+        case everyTrackWithCycles = "12 Tracks · 4 Cycles"
 
         var id: String { rawValue }
 
@@ -50,8 +57,8 @@ final class JitterMeasurementModel {
             case .swung: "timing-67"
             case .dragged: "delay-mas-50"
             case .pushed: "delay-menos-50"
-            case .sixteenTracks: "16-tracks"
-            case .sixteenTracksWithCycles: "16-tracks-cycles"
+            case .everyTrack: "12-tracks"
+            case .everyTrackWithCycles: "12-tracks-cycles"
             }
         }
 
@@ -61,7 +68,7 @@ final class JitterMeasurementModel {
         /// Cuántos Tracks suenan durante la medición.
         var trackCount: Int {
             switch self {
-            case .sixteenTracks, .sixteenTracksWithCycles: 16
+            case .everyTrack, .everyTrackWithCycles: Pattern.trackCount
             default: 1
             }
         }
@@ -75,7 +82,7 @@ final class JitterMeasurementModel {
         /// pasada sin ejercer nada nuevo.
         var cycleCount: Int {
             switch self {
-            case .sixteenTracksWithCycles: 4
+            case .everyTrackWithCycles: 4
             default: 1
             }
         }
@@ -90,9 +97,9 @@ final class JitterMeasurementModel {
                 return groove(timing: 50, delay: 50)
             case .pushed:
                 return groove(timing: 50, delay: -50)
-            case .sixteenTracks, .sixteenTracksWithCycles:
+            case .everyTrack, .everyTrackWithCycles:
                 // Recta, para que lo único que cambie respecto a la referencia
-                // sean los dieciséis Tracks y sus Cycles, y no el Groove.
+                // sean los Tracks y sus Cycles, y no el Groove.
                 return nil
             }
         }
