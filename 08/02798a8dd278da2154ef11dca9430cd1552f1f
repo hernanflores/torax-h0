@@ -42,3 +42,48 @@ VERIFICACIÓN
   cada Play arranca un hilo a prioridad máxima y acumularlos dispara
   `midi-test-flake`.
 - Engine 410, MIDI 365 (21 + 344), 0 fallos. iOS BUILD SUCCEEDED.
+
+---
+
+VERIFICACIÓN DE FASE — Phase 3: El scheduler avanza en el límite de vuelta
+Fecha: 2026-09-02
+
+COMANDOS EJECUTADOS
+  swift test --package-path Packages/Engine
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+RESULTADO
+  Engine: 410 tests, 0 fallos, cobertura 99,14% de líneas.
+  MIDI:   365 tests (21 + 344, partición de CI), 0 fallos,
+          cobertura 92,04% de líneas en un proceso con el profdata fusionado.
+  App:    BUILD SUCCEEDED.
+  23 tests nuevos en CycleAdvanceTests, CurrentCycleDecidesEverythingTests,
+  WhatChangesWithTheCycleTests y PlayRestartsCyclesTests.
+  Sin aparición del flake clientCreationFailed(-50).
+
+LO QUE LA FASE ENCONTRÓ
+Cuatro fallos reales, los cuatro en rojo antes de arreglarlos: la decisión de
+emitir tomada una vez por ventana, `restartCycles` mirando el cursor de
+edición, `Stop` barriendo solo el Cycle vigente, y la Division que no puede
+cambiar y ahora está acotada por escrito.
+
+VERIFICACIÓN MANUAL PROPUESTA
+La app todavía no expone Cycles —todos los Tracks arrancan con uno activo—,
+así que lo que se pide confirmar es que NADA cambió, más que el barrido de
+Stop manda muchos más mensajes:
+  1. BeatStep Pro al iPad, iPad a un multitímbrico.
+  2. Play: suena como en la fase anterior; anillos y playhead igual.
+  3. Knobs y pads responden en el Step siguiente.
+  4. Varios minutos sonando sin derivar ni cortarse. El avance de Cycle corre
+     en el hilo del scheduler en cada vuelta aunque con un Cycle no mueva nada.
+  5. Stop: nada queda sonando.
+
+CONFIRMACIÓN DEL USUARIO
+  "sigue funcionando todo ok" — 2026-09-02.
+
+SIN MEDICIÓN DE JITTER EN ESTA FASE
+Se toca el hilo del scheduler, y por eso la medición de la Fase 6 es
+obligatoria y bloqueante. Medir por tarea sería medir tres veces lo mismo; lo
+que la Fase 6 juzga es esta fase.
