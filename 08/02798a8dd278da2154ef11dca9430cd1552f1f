@@ -1,0 +1,44 @@
+Task: Play reinicia los dieciséis al Cycle 1
+Fase 3 — v2 rebanada 3 (Cycles)
+
+QUÉ SE FIJA
+- Tras Play los dieciséis arrancan en su Cycle 1 (FR6), comprobado sobre lo
+  que emite el scheduler recién construido.
+- Dos pasadas dan la misma secuencia de Cycles y las mismas omisiones.
+- Cambiar de Cycle no resiembra el generador (NFR5). Se comprueba por su
+  EFECTO y no mirando el generador: un Track de tres Cycles idénticos tiene
+  que omitir exactamente lo mismo que uno de un solo Cycle a lo largo de diez
+  vueltas. Si el avance resembrara, las omisiones se repetirían por vuelta.
+- Stop no deja notas colgadas, con Delay positivo y canales distintos por
+  Cycle.
+
+DOS FALLOS QUE ESTO ENCONTRÓ
+
+1. `restartCycles()` pedía el Cycle con `track.current`, que mira el cursor
+   DEL SNAPSHOT — que es el de edición. Un Track dejado editando el Cycle 3
+   arrancaba sonando el 3, no el 1. Se pide por índice 0. Mismo arreglo en
+   `refresh(with:)` y en el avance: `current` no se usa en ningún sitio donde
+   mande el cursor de este hilo.
+
+2. `Transport.stop()` barría solo el Cycle vigente de cada Track —vigente
+   según el snapshot, además— y dejaba sonando las notas de los otros quince,
+   por sus canales. Ahora barre los dieciséis Cycles de cada Track.
+
+   Por qué los dieciséis y no solo los activos: bajar el número mientras suena
+   deja el cursor fuera del rango A PROPÓSITO (FR9), así que un Cycle que ya no
+   se recorre puede ser justo el que está sonando.
+
+   Por qué no se sabe cuál sonaba: el cursor vive en el hilo del scheduler, y
+   publicarlo exigiría trabajo en el camino de tiempo real para resolver un
+   caso de parada. Es el mismo razonamiento que ya justificaba barrer el pool
+   entero en vez de recordar la última altura.
+
+   Se deduplican los pares canal+altura: dieciséis Tracks por dieciséis Cycles
+   por ocho alturas serían dos mil mensajes, y en la práctica casi todos son
+   el mismo.
+
+VERIFICACIÓN
+- 4 tests nuevos. Tres sin hilos; el de Stop en una sola reproducción, porque
+  cada Play arranca un hilo a prioridad máxima y acumularlos dispara
+  `midi-test-flake`.
+- Engine 410, MIDI 365 (21 + 344), 0 fallos. iOS BUILD SUCCEEDED.
