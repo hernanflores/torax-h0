@@ -129,6 +129,16 @@ public struct Pattern: Equatable, Sendable {
         track(at: index)?.current
     }
 
+    /// El Cycle que se está editando en esa posición, o `nil` fuera de 0–15.
+    ///
+    /// **No es el mismo que `cycle(at:)`, y esa es la función.** Uno es el que
+    /// suena y otro el que se edita: mientras suena el Cycle A se construye el
+    /// B, que es la forma natural de trabajar (FR7). Con un solo Cycle activo
+    /// los dos son el mismo.
+    public func editingCycle(at index: Int) -> Cycle? {
+        track(at: index)?.editingCycle
+    }
+
     /// El Pattern con ese Track en esa posición y los otros quince intactos.
     ///
     /// Fuera de rango devuelve el Pattern tal cual: nada que cambiar.
@@ -144,9 +154,14 @@ public struct Pattern: Equatable, Sendable {
         return updated
     }
 
-    /// El Pattern con ese Cycle sustituyendo al que suena en esa posición, y
-    /// **todo lo demás del Track intacto**: sus otros quince Cycles, cuántos
-    /// están activos y por cuál va.
+    /// El Pattern con ese Cycle sustituyendo al **que se edita** en esa
+    /// posición, y **todo lo demás del Track intacto**: sus otros quince Cycles,
+    /// cuántos están activos y los dos cursores.
+    ///
+    /// Es el camino de la edición, y por eso apunta al Cycle en edición y no al
+    /// que suena (FR8): construir el B mientras suena el A es la forma natural
+    /// de trabajar. Con un solo Cycle activo los dos son el mismo, así que nada
+    /// cambia para quien no use Cycles.
     ///
     /// **Es el camino de la edición.** Girar un knob cambia el material vigente
     /// de un Track, no su estructura. Que exista esta sobrecarga es lo que evita
@@ -155,7 +170,7 @@ public struct Pattern: Equatable, Sendable {
     /// `Cycle.applying(_:to:)` ya advierte.
     public func replacing(_ cycle: Cycle, at index: Int) -> Pattern {
         guard let track = track(at: index) else { return self }
-        return replacing(track.replacingCurrent(cycle), at: index)
+        return replacing(track.replacingEditing(cycle), at: index)
     }
 
     public static func == (lhs: Pattern, rhs: Pattern) -> Bool {

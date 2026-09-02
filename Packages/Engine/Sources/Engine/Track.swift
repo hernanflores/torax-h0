@@ -140,6 +140,21 @@ public struct Track: Equatable, Sendable {
         return updated
     }
 
+    /// El Cycle que se está editando.
+    ///
+    /// **Es al que escuchan los knobs, los pads y las ediciones táctiles**
+    /// (FR8), y no tiene por qué ser el que suena: esa es toda la gracia de
+    /// tener dos cursores.
+    public var editingCycle: Cycle { cycle(at: editing) ?? cycle(at: 0)! }
+
+    /// El mismo Track con el Cycle en edición sustituido.
+    ///
+    /// Es el camino de toda edición: girar un knob, pulsar un pad o cambiar el
+    /// canal en pantalla cambian **este** Cycle y ninguno de los otros quince.
+    public func replacingEditing(_ cycle: Cycle) -> Track {
+        replacing(cycle, at: editing)
+    }
+
     /// El mismo Track con el Cycle que suena sustituido.
     ///
     /// Es el camino de la edición en caliente mientras no exista el cursor de

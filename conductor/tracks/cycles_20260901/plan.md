@@ -187,7 +187,7 @@ regresión la bloquea.
 > `MIDI`, en `ControlInput`. Dos cursores conviviendo: el que suena lo mueve el
 > scheduler, el que se edita lo mueve el knob 10.
 
-- [ ] Task: El knob 10 mueve el Cycle en edición
+- [~] Task: El knob 10 mueve el Cycle en edición
   - [ ] Tests (Red): el knob 10 del preset mueve el Cycle en edición del **Track seleccionado**, dentro del rango activo y frenando en los extremos
   - [ ] Tests (Red): mover el Cycle en edición **no altera** el cursor de reproducción ni lo que suena (FR7)
   - [ ] Tests (Red): cambiar de Track con un step button deja cada Track con **su** Cycle en edición donde estaba

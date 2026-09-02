@@ -106,6 +106,27 @@ public struct ControlMapping: Equatable, Sendable {
         )
     }
 
+    /// CC del knob que mueve el Cycle en edición: el décimo del bloque.
+    ///
+    /// **No es un `TrackParameter`, y por eso no está en `assignments`.** Los
+    /// nueve primeros knobs mueven parámetros del Cycle; este mueve *a cuál* de
+    /// ellos se está apuntando, que es una operación de otro orden. Meterlo en
+    /// la tabla obligaría a inventarle un caso al enum que el modelo no tiene.
+    ///
+    /// El número cae en el 79 con el bloque por defecto, que es el último del
+    /// rango de propósito general de la especificación MIDI: el sitio sigue
+    /// siendo el correcto.
+    ///
+    /// > **Desviación de la Pre Spec, anotada el 2026-09-02.** La tabla de Shape
+    /// > dice «Cycles: selecciona/edita el Cycle actual; **con CTRL** ajusta 1–16
+    /// > Cycles activos». El BeatStep Pro no tiene CTRL, así que el knob se queda
+    /// > con la mitad primaria —mover el Cycle en edición— y cuántos hay activos
+    /// > se ajusta táctilmente, que es donde `product-guidelines.md` pone la
+    /// > configuración. La nota fechada está en la Pre Spec.
+    public var editingCycleController: MIDIController? {
+        MIDIController(knobBlock.number + 9)
+    }
+
     /// Índice 0–15 del step button que envió ese CC, o `nil` fuera del bloque.
     public func stepButtonIndex(for controller: MIDIController) -> Int? {
         let offset = controller.number - stepButtonBlock.number

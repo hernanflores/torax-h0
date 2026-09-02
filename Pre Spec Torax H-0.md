@@ -167,6 +167,24 @@ En la práctica: Steps largos contra una Phrase de 16 posiciones generan desfase
 | Voicing | Cantidad de movimiento del acorde. | **Style** decide el patrón de movimiento. |
 | Range | Cantidad de variación de pitch. | **Phrase** decide la forma melódica y su longitud. |
 
+> **Nota del 2026-09-02 — el gesto de CTRL se parte en dos.** La rebanada 3 de
+> la v2 (`cycles_20260901`) implementa Cycles sobre el BeatStep Pro, **que no
+> tiene CTRL**. El knob se queda con la función primaria —mover el Cycle en
+> edición del Track seleccionado— y **cuántos Cycles hay activos se ajusta
+> táctilmente**, en pantalla, junto a Scale, Root y el canal.
+>
+> **No es una concesión al hardware sino la frontera que el producto ya tenía
+> trazada.** `product-guidelines.md` pone la configuración del lado táctil y el
+> material generativo del lado de los knobs; cuántos Cycles recorre un Track es
+> configuración, igual que por qué canal sale. El gesto de CTRL agrupaba las dos
+> cosas porque en el hardware de la Pre Spec había un modificador que lo hacía
+> barato, no porque sean lo mismo.
+>
+> Lo mismo aplica al «17–64 con CTRL» de Steps, que sigue fuera de alcance.
+>
+> Es el mismo tipo de desviación que la nota del 2026-08-31 sobre los pads: el
+> mecanismo de la Pre Spec supone un controlador que no es el que hay delante.
+
 **Retrigger:** reinicia la secuencia al llegar a ese Step; también reinicia Random, Range, Accent y Voicing desde ese punto.
 
 ### Groove — interpretación temporal y dinámica

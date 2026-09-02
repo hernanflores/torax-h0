@@ -20,12 +20,16 @@ public final class ControlInput: @unchecked Sendable {
     /// responde.
     public private(set) var pattern: Pattern
 
-    /// El Track que los knobs y los pads editan.
+    /// El Cycle que los knobs y los pads editan.
     ///
-    /// **Editar es siempre editar el seleccionado.** Los otros quince siguen
-    /// donde estaban: seleccionar no es un modo, es elegir a quién escuchan los
-    /// controles.
-    public var track: Cycle { pattern.cycle(at: selectedTrackIndex)! }
+    /// **Editar es siempre editar el seleccionado.** Los otros quince Tracks
+    /// siguen donde estaban: seleccionar no es un modo, es elegir a quién
+    /// escuchan los controles.
+    ///
+    /// **Y dentro de ese Track, es el Cycle en edición y no el que suena**
+    /// (FR8). Con un solo Cycle activo son el mismo, así que nada cambia para
+    /// quien no use Cycles.
+    public var track: Cycle { pattern.editingCycle(at: selectedTrackIndex)! }
 
     /// La superficie de pads vigente: qué altura tiene cada uno de los
     /// dieciséis.
@@ -204,6 +208,12 @@ public final class ControlInput: @unchecked Sendable {
     ///   - value: The controller value used to calculate the parameter adjustment.
     /// - Returns: `true` if the track changed and was published, `false` otherwise.
     private func turn(_ controller: MIDIController, by value: UInt8) -> Bool {
+        // El knob del Cycle se despacha antes: no mueve un parámetro del Cycle
+        // sino a cuál de ellos apuntan los demás.
+        if controller == mapping.editingCycleController {
+            return moveEditingCycle(by: encoding.delta(from: value))
+        }
+
         guard let parameter = mapping.parameter(for: controller) else { return false }
 
         let delta = encoding.delta(from: value)
@@ -292,6 +302,27 @@ public final class ControlInput: @unchecked Sendable {
 
         pattern = pattern.replacing(
             track.with(padOctaveShift: moved.octaveShift), at: selectedTrackIndex)
+        publish(pattern)
+        return true
+    }
+
+    /// Mueve el Cycle en edición del Track seleccionado.
+    ///
+    /// **Mueve el cursor de edición y nada más** (FR7): ni el de reproducción,
+    /// que es del scheduler, ni una sola nota de material. Se acota al rango
+    /// activo, no a los dieciséis: no se edita un Cycle que no se recorre.
+    ///
+    /// Girar contra un extremo no publica, por la misma razón que Steps o
+    /// Division: mandar un snapshot idéntico es trabajo y ruido para nada.
+    private func moveEditingCycle(by delta: Int) -> Bool {
+        guard delta != 0, let current = pattern.track(at: selectedTrackIndex) else {
+            return false
+        }
+
+        let moved = current.withEditing(current.editing + delta)
+        guard moved != current else { return false }
+
+        pattern = pattern.replacing(moved, at: selectedTrackIndex)
         publish(pattern)
         return true
     }
