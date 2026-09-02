@@ -1,0 +1,20 @@
+Task: El anillo del Track inaudible se atenua (FR6)
+
+Fase 6 del track mute-solo_20260902. Sin tests, por lo mismo: aqui solo se
+dibuja.
+
+Ficheros:
+- App/RingView.swift: parametro 'audible' y atenuacion de los arcos.
+- App/TransportModel.swift: audibleTracks, derivado de mix.
+- App/ContentView.swift: lo pasa.
+
+Atenuar y no borrar. Un anillo que desapareciera diria que el Track se paro, que
+es lo contrario de lo que pasa. Los arcos bajan al 30% y el playhead se queda a
+plena intensidad: ahi se lee 'corre y no suena'.
+
+La decision no se calcula en la vista. audibleTracks pregunta doce veces a la
+regla que vive en MIDI, y no guarda una segunda copia del estado — dos sitios
+con la misma respuesta son dos sitios que pueden discrepar.
+
+Sin repintado nuevo por fotograma: la atenuacion cambia con el gesto, no con el
+reloj.
