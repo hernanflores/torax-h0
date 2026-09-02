@@ -192,7 +192,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: v2 rebanada 3 — Cycles: el Track varía por vuelta**
+- [x] **Track: v2 rebanada 3 — Cycles: el Track varía por vuelta** — el desarrollo A/B/C suena en dispositivo; **cerrada sin medición de jitter**
   *Link: [conductor/tracks/cycles_20260901/index.md](./tracks/cycles_20260901/index.md)*
 
   Planificado el 2026-09-01. Un Track deja de repetir un juego de parámetros
@@ -206,8 +206,8 @@ escalón es el que se nota.
   snapshot pasa de 2304 bytes a unos 36 KB: **la Fase 1 lo mide y decide** antes
   de construir encima, y puede cambiar el diseño.
 
-  **Lleva medición de jitter obligatoria**, con los dieciséis sonando y
-  avanzando.
+  **Llevaba medición de jitter obligatoria**, con los dieciséis sonando y
+  avanzando. **Retirada el 2026-09-02** — ver el cierre.
 
   **Desbloqueado el 2026-09-02.** Sus dos dependencias están cerradas: la Fase 6
   de la rebanada 1 dejó la línea base, y la
@@ -219,6 +219,51 @@ escalón es el que se nota.
   carga visual, que no era obvio**: el arnés por sí solo deja la pantalla quieta,
   así que hay que medir con el transporte de la app corriendo. Está en el
   `device-verification.md` de la 2.
+
+  **Cerrada el 2026-09-02**, PR [#27](https://github.com/hernanflores/torax-h0/pull/27).
+  Seis fases, `Engine` al 99,14% y `MIDI` al 92,19%. El renombrado `Track` →
+  `Cycle` tocó 54 ficheros sin cambiar una aserción; el nivel nuevo dejó el
+  snapshot en 37 248 bytes.
+
+  **La Fase 1 hizo su trabajo: el tamaño no era el problema.** Un `load()` cuesta
+  ~870 ns, el 0,0044% de la ventana contra un presupuesto del 1%, así que FR5 no
+  cambió y las dos alternativas de diseño quedaron descartadas por escrito antes
+  de construir nada. Y dieciséis veces más bytes cuestan **siete** veces más
+  tiempo, no dieciséis.
+
+  **Cuatro fallos encontrados por los tests de la Fase 3** —la decisión de emitir
+  tomada una vez por ventana, `restartCycles` mirando el cursor de edición,
+  `Stop` barriendo solo el Cycle vigente— y **uno en dispositivo**: la pantalla
+  enseñaba el Cycle que suena en vez del que se edita, que se leía como «el Track
+  dejó de responder a los knobs».
+
+  **Dos cosas acotadas por escrito.** La Division no cambia de Cycle a Cycle
+  —resolverlo exigiría una línea de tiempo rebasable por Track, que rompe el
+  invariante que mantiene en fase a los dieciséis—; y la pila del hilo del
+  scheduler pasó a 1 MB, porque la de por defecto son 512 KB y el snapshot ya no
+  cabía con holgura.
+
+  **Cerrada sin medición de jitter, y es la primera.** La medición era obligatoria
+  y bloqueante por su NFR4; se retiró el 2026-09-02 por decisión del usuario,
+  después de que la recogida del informe del dispositivo fallara. Queda sin
+  comprobar el trabajo que la Fase 3 añadió al hilo del scheduler. El porqué y el
+  coste están en `workflow.md`, en *Medición de jitter: suspendida*.
+
+---
+
+- [ ] **Track: v2 rebanada 4 — Persistencia: Patterns y Banks**
+
+  Por planificar. Es el escalón que la Pre Spec pone encima —dieciséis Patterns
+  por Bank— y **el primero que necesita disco**: hasta ahora cerrar la app pierde
+  todo, y con Cycles dentro eso son dieciséis veces más trabajo que se pierde.
+
+  **No es una rebanada de motor.** Lo que cruza al hilo del scheduler sigue
+  siendo un Pattern de 37 KB; lo que cambia es cuántos hay y de dónde salen. Por
+  eso el detector de tamaño del snapshot no le aplica: guardar no es copiar en
+  tiempo real.
+
+  Arrastra las tres pantallas que la rebanada 2 dejó fuera —Banks, Patterns y la
+  lista de Tracks— y la limitación 1 de Cycles, que era «sin persistencia».
 
 ## Defectos conocidos
 

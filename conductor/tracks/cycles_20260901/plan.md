@@ -248,7 +248,7 @@ regresión la bloquea.
   relleno se verifica en dispositivo, en la Fase 6.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 6: La medición y el dispositivo
+## Phase 6: La medición y el dispositivo [checkpoint: 74c9b44]
 
 > La fase que decide si la rebanada vale. El snapshot es dieciséis veces mayor y
 > hay una decisión nueva en el límite de vuelta: las dos se cobran aquí.
@@ -265,21 +265,25 @@ regresión la bloquea.
   —`16 Tracks · 4 Cycles`, porque la de `16 Tracks` dejaba un Cycle por Track y
   habría medido los dieciséis quietos— y el procedimiento entero escrito en
   `device-verification.md`. La herramienta queda lista por si se retoma.
-- [ ] Task: Verificación en dispositivo
-  - [ ] BeatStep Pro y un multitímbrico
-  - [ ] Un Track con 3 Cycles distintos: se oye el desarrollo A/B/C y el retorno a A, sin tocar nada
-  - [ ] Dos Tracks de longitudes distintas con Cycles: desarrollan a ritmos distintos y **no se desalinean** al cabo de varios minutos
-  - [ ] Construir el Cycle B con el knob 10 mientras suena el A, y oírlo entrar en su vuelta
-  - [ ] Play dos veces: el desarrollo se repite igual
-  - [ ] `Stop` con Cycles avanzando: nada queda colgado
-  - [ ] Se registra en un `device-verification.md` del track y en la git note
-- [ ] Task: Cerrar la rebanada
-  - [ ] Cobertura de `Engine` ≥90% y de `MIDI` ≥80%, medidas como dice `workflow.md`
-  - [ ] `product.md` refleja que Cycles deja de estar fuera de alcance, y qué queda de la v2
-  - [ ] La Pre Spec queda con su nota fechada sobre el gesto de CTRL
-  - [ ] `tracks.md` deja descrita la rebanada siguiente
-  - [ ] Pull Request contra `main`, con los checks en verde
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Verificación en dispositivo
+  - [x] BeatStep Pro y un multitímbrico
+  - [x] Un Track con 3 Cycles distintos: se oye el desarrollo A/B/C y el retorno a A, sin tocar nada
+  - [x] Dos Tracks de longitudes distintas con Cycles: desarrollan a ritmos distintos y **no se desalinean** al cabo de varios minutos
+  - [x] Construir el Cycle B con el knob 10 mientras suena el A, y oírlo entrar en su vuelta
+  - [x] Play dos veces: el desarrollo se repite igual
+  - [x] `Stop` con Cycles avanzando: nada queda colgado
+  - [x] Se registra en un `device-verification.md` del track y en la git note
+
+  **Encontró un fallo de pantalla**, no de motor: la vista enseñaba el Cycle que
+  suena en vez del que se edita, y se leía como «el Track dejó de responder a
+  los knobs». Arreglado en `c9f5b2a`, con la regla escrita y cuatro tests.
+- [x] Task: Cerrar la rebanada
+  - [x] Cobertura de `Engine` ≥90% y de `MIDI` ≥80%, medidas como dice `workflow.md` — **99,14%** y **92,19%**
+  - [x] `product.md` refleja que Cycles deja de estar fuera de alcance, y qué queda de la v2
+  - [x] La Pre Spec queda con su nota fechada sobre el gesto de CTRL
+  - [x] `tracks.md` deja descrita la rebanada siguiente — persistencia: Patterns y Banks
+  - [x] Pull Request contra `main`, con los checks en verde — [#27](https://github.com/hernanflores/torax-h0/pull/27)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Notas de riesgo
 
