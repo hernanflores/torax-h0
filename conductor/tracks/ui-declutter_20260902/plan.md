@@ -104,7 +104,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
     de quedarse en blanco.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 4: LA PANTALLA MIDI
+## FASE 4: LA PANTALLA MIDI [checkpoint: f12fa56]
 
 - [x] Task: `3 · MIDI` deja de estar en discontinuo (FR5) [38d846f]
   - [ ] Añadir el caso a `Screen` con su etiqueta; `unavailableScreens` queda en
@@ -118,7 +118,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
         sabe del Track seleccionado.
   - [ ] Si esa función necesita lógica —acotar índice, validar canal—, va a `MIDI`
         o `Engine` con test, no a `App` (regla de cobertura del `workflow.md`).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: EL ARNÉS QUEDA COHERENTE
 
