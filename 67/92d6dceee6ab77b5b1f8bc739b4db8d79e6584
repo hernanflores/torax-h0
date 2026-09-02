@@ -27,3 +27,22 @@ pegado, porque la soltada que lo levantaria ya no llega.
 ControlMapping no cambia (describe el hardware) y el .beatstep tampoco.
 
 Cobertura MIDI 92,19%; ControlInput.swift 100% de lineas.
+
+--- Verificación de fase (Fase 5) — 2026-09-02 ---
+
+Comando:
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests \
+    --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+                                                              → 437 tests, 0 fallos
+
+Cobertura MIDI: 92,19% de líneas. ControlInput.swift 100%.
+
+Cobertura del diff: ControlInput.swift, cubierto por MixModifierInputTests (11)
+más los 8 de StepButtonInputTests que no cambiaron.
+
+Verificación manual: el gesto existe pero no está cableado a la app hasta la
+Fase 6, así que se verificó por lectura — el orden del despacho (modificadores
+primero, sin actuar), el caso de no haber oyente (tampoco selecciona) y la tabla
+de preset/README.md, que estaba desactualizada desde la bajada a doce Tracks.
+
+Confirmación del usuario: «avancemos con la fase 6».
