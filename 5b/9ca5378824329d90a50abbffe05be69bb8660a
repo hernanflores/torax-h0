@@ -1,0 +1,33 @@
+Task: Cuántos Cycles activos, y qué pasa al moverlo
+Fase 2 — v2 rebanada 3 (Cycles)
+
+QUÉ CAMBIA
+`Track` gana `editing` —el segundo cursor, el de edición (FR7)— y tres
+métodos: `withActiveCount(_:)`, `withEditing(_:)` y `withCursor(_:)`.
+
+LAS REGLAS, Y POR QUÉ CADA UNA
+- Rango 1-16 que se frena en los extremos, como Steps y Division y al revés
+  que Rotate. Envolver haría que un giro de más saltara de dieciséis Cycles a
+  uno: destruir un desarrollo por un descuido.
+- Subir copia el Cycle EN EDICIÓN (FR3), no el primero ni el que suena. Es la
+  diferencia que se nota trabajando: se duplica lo que se tiene delante.
+  Copia en TODOS los huecos que empiezan a existir, no solo en el primero.
+- Bajar descarta por el final. Por delante renumeraría el desarrollo entero.
+  Lo que queda fuera se deja como esté: al volver a subir, la regla de FR3 lo
+  sobrescribe, que es lo que alguien espera.
+- Bajar acota `editing` de inmediato (pantalla) y NO toca `cursor` (sonido).
+  Esa asimetría es FR9 entera: la vuelta en curso se termina con el Cycle que
+  sonaba, y el avance siguiente entra en el rango. `withCursor` también acota,
+  que es donde se resuelve.
+
+EL TAMAÑO
+Un contador más deja el Track en 2328 bytes y el Pattern en 37 248, contra
+los 36 992 del tipo de prueba de la Fase 1 (que llevaba dos contadores). Un
+0,7% más: no mueve la decisión ni un orden de magnitud. Las dos aserciones de
+tamaño quedan actualizadas con la comparación escrita.
+
+VERIFICACIÓN
+- Engine: 404 tests (11 nuevos en `TrackActiveCountTests`), 0 fallos.
+- MIDI: 342 tests, 0 fallos.
+- xcodebuild para iOS: BUILD SUCCEEDED.
+- Sin medición de jitter: `Engine` puro, no se mueve ningún instante.
