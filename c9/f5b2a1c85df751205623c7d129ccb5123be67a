@@ -33,3 +33,39 @@ mismo en ese estado: sin él, los otros tres pasarían por casualidad.
 VERIFICACIÓN
 - Engine 422 tests, MIDI 385, 0 fallos. iOS BUILD SUCCEEDED.
 - Confirmado en dispositivo: "ahora sí, funciona todo bien".
+
+---
+
+VERIFICACIÓN DE FASE — Phase 5: La pantalla muestra el desarrollo
+Fecha: 2026-09-02
+
+COMANDOS EJECUTADOS
+  swift test --package-path Packages/Engine
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+RESULTADO
+  Engine: 422 tests, 0 fallos, cobertura 99,14% de líneas.
+  MIDI:   385 tests (21 + 364, partición de CI), 0 fallos, cobertura 92,19%.
+  App:    BUILD SUCCEEDED. `App` no lleva cobertura: la lógica está en
+          `CyclePosition` y en `Pattern`, con tests.
+  Capturas de simulador en `captures/`.
+
+VERIFICACIÓN MANUAL
+Primera pasada: encontró el fallo de la vista (ver la nota de arriba).
+Segunda pasada, con el arreglo:
+  1. Stop; pulsar el «3» de la fila Cycles.
+  2. Knob 10 al Cycle 2: el contorno duro se mueve.
+  3. Girar Pulses: el anillo y la lectura grande cambian — se está viendo el
+     Cycle 2.
+  4. Volver al Cycle 1: el anillo vuelve a lo suyo; la edición se quedó en el 2.
+  5. Play: el desarrollo suena, el relleno avanza y el contorno se queda donde
+     se dejó.
+
+CONFIRMACIÓN DEL USUARIO
+  "ahora sí, funciona todo bien" — 2026-09-02.
+
+SIN MEDICIÓN DE JITTER EN ESTA FASE
+La fila se refresca a 10 Hz y no toca el hilo del scheduler. La carga visual
+nueva entra en la medición de la Fase 6, que es obligatoria y bloqueante.
