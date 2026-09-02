@@ -165,10 +165,8 @@ struct ContentView: View {
             TrackSelectorView(
                 selected: model.selectedTrackIndex,
                 hasMaterial: model.tracksWithMaterial,
-                channels: model.channels,
                 accent: Palette.accent(for: family),
                 onSelect: { model.selectTrack($0) },
-                onChannelChange: { model.setChannel($0) },
                 activeCycles: model.activeCycleCount,
                 editingCycle: model.editingCycle,
                 cycleInCourse: { model.cycleInCourse },
