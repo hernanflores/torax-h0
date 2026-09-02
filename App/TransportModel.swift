@@ -77,6 +77,36 @@ final class TransportModel {
         syncFromControlInput()
     }
 
+    /// Qué Tracks se oyen: la mezcla vigente.
+    ///
+    /// **Es una copia de lo que tiene el transporte**, refrescada en cada gesto.
+    /// La máscara de verdad vive ahí porque quien la lee es el hilo del
+    /// scheduler; esto es lo que dibuja la pantalla.
+    private(set) var mix = MuteState()
+
+    /// Alterna el mute de un Track desde la pantalla.
+    ///
+    /// **Hace lo mismo que el gesto del controlador**, por la misma razón que
+    /// `selectTrack`: si no coincidieran, la pantalla mentiría sobre lo que el
+    /// hardware acaba de hacer. Las dos vías terminan en el transporte, que es
+    /// quien apaga lo que deje de sonar.
+    func toggleMute(_ index: Int) {
+        transport?.toggleMute(index)
+        syncMix()
+    }
+
+    /// Alterna el solo de un Track desde la pantalla.
+    func toggleSolo(_ index: Int) {
+        transport?.toggleSolo(index)
+        syncMix()
+    }
+
+    /// Copia la mezcla del transporte al modelo observable.
+    private func syncMix() {
+        guard let transport else { return }
+        mix = transport.mix
+    }
+
     /// Selecciona un Track desde la pantalla.
     ///
     /// **Hace lo mismo que su step button.** Sin controlador conectado es la
@@ -194,6 +224,17 @@ final class TransportModel {
     private final class TransportRelay: @unchecked Sendable {
         var transport: Transport?
         func publish(_ pattern: Pattern) { transport?.publish(pattern) }
+
+        /// El gesto del controlador desemboca en el transporte, que es quien
+        /// apaga lo que deje de sonar. **No hay un segundo camino**: si la
+        /// pantalla y el controlador tocaran la máscara por su cuenta, uno de
+        /// los dos se saltaría el apagado.
+        func apply(_ gesture: MixGesture) {
+            switch gesture {
+            case .mute(let index): transport?.toggleMute(index)
+            case .solo(let index): transport?.toggleSolo(index)
+            }
+        }
     }
 
     private let relay = TransportRelay()
@@ -304,7 +345,8 @@ final class TransportModel {
         let relay = self.relay
         controlInput = ControlInput(
             pattern: .initial,
-            publish: { [relay] updated in relay.publish(updated) }
+            publish: { [relay] updated in relay.publish(updated) },
+            mix: { [relay] gesture in relay.apply(gesture) }
         )
 
         do {
@@ -386,6 +428,10 @@ final class TransportModel {
 
     private func connectToSelectedSource() {
         guard let endpoint = sourceSelection.selected?.endpoint else { return }
+        // **Reconectar suelta los modificadores** (FR8). Si el cable se fue con
+        // un step button hundido, la soltada que lo levantaría ya no va a llegar
+        // por ningún sitio y el modificador se quedaría pegado para siempre.
+        controlInput.releaseModifiers()
         input?.connect(to: endpoint)
     }
 
@@ -397,6 +443,9 @@ final class TransportModel {
         let previous = track
         guard controlInput.receive(message) else { return }
         syncFromControlInput()
+        // El gesto de mezcla ya llegó al transporte por el relevo; lo que falta
+        // es traerse la foto nueva para que la pantalla la dibuje.
+        syncMix()
 
         // **Solo se anuncia lo del Track que se está mirando.** Un step button
         // cambia de Track, y comparar el anterior con el nuevo anunciaría como
