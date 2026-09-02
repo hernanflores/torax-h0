@@ -241,7 +241,7 @@ regresión la bloquea.
   **suma las vueltas de los Cycles activos en vez de dividir**, porque dos
   Cycles pueden tener Steps distintos y entonces sus vueltas duran distinto. Se
   refresca a 10 Hz y no a 60 — lo que se mueve cambia cada varios segundos, y
-  esta rebanada tiene medición de jitter obligatoria.
+  la medición de jitter quedó diferida y no bloquea esta rebanada.
 
   **El simulador no puede enseñar el Cycle sonando**: sin destinos MIDI no hay
   transporte ni reloj del que deducir. Las capturas están en `captures/`; el

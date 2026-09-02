@@ -97,6 +97,58 @@ final class CyclePositionTests: XCTestCase {
         XCTAssertEqual(cycleInCourse(track, at: hour + turnNanoseconds), 1)
     }
 
+    /// Al cambiar activeCount manda la fase conservada por el scheduler, no un
+    /// módulo nuevo sobre todo el tiempo transcurrido.
+    func testPublishedPhaseSurvivesAnActiveCountChange() {
+        let reduced = track([16, 16, 16, 16]).withActiveCount(2)
+        let phase = CyclePosition.Phase(cycle: 3, previousCycle: 2, turnStartStep: 48)
+
+        let beforeBoundary = CyclePosition(
+            elapsedNanoseconds: 7_000_000_000,
+            track: reduced,
+            tempo: tempo,
+            phase: phase)
+        let afterBoundary = CyclePosition(
+            elapsedNanoseconds: 8_000_000_000,
+            track: reduced,
+            tempo: tempo,
+            phase: phase)
+
+        XCTAssertEqual(beforeBoundary.cycle, 3, "cortó el Cycle retirado antes del límite")
+        XCTAssertEqual(afterBoundary.cycle, 0, "no volvió al nuevo rango al cerrar la vuelta")
+    }
+
+    /// El cursor publicado puede pertenecer a una vuelta que el look-ahead ya
+    /// calculó pero que aún no suena; hasta el límite manda el anterior.
+    func testPublishedPhaseDoesNotExposeTheLookAheadEarly() {
+        let track = track([16, 16])
+        let phase = CyclePosition.Phase(cycle: 1, previousCycle: 0, turnStartStep: 16)
+
+        let position = CyclePosition(
+            elapsedNanoseconds: turnNanoseconds - 1,
+            track: track,
+            tempo: tempo,
+            phase: phase)
+
+        XCTAssertEqual(position.cycle, 0)
+    }
+
+    /// En el extremo de Cycles de un Step, el look-ahead puede cruzar dos
+    /// límites; la fase conserva también el cursor que aún está sonando.
+    func testPublishedPhaseCanStayTwoBoundariesAhead() {
+        let reduced = track([1, 1, 1, 1]).withActiveCount(2)
+        let phase = CyclePosition.Phase(
+            cycle: 1, previousCycle: 0, earlierCycle: 3, turnStartStep: 50)
+
+        let position = CyclePosition(
+            elapsedNanoseconds: 48 * stepNanoseconds + stepNanoseconds / 2,
+            track: reduced,
+            tempo: tempo,
+            phase: phase)
+
+        XCTAssertEqual(position.cycle, 3)
+    }
+
     // MARK: - Los bordes
 
     /// Un tiempo negativo o nulo se resuelve al origen. Ocurre de verdad: el

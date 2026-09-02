@@ -182,13 +182,12 @@ pantalla.
   la Division del Track que emite: una copia del snapshot entero **por nota**.
   Con 2,25 KB pasaba desapercibido; con 36 KB no. Se corrige en esta rebanada,
   que es la que lo vuelve caro.
-- **NFR4 — ~~Medición de jitter obligatoria y bloqueante.~~ Retirado el
-  2026-09-02.** Decía: con los dieciséis Tracks sonando y los dieciséis
-  avanzando de Cycle, umbral máximo < 2 ms y σ < 0,5 ms, y una regresión bloquea
-  la rebanada.
+- **NFR4 — Medición de jitter diferida y no bloqueante.** Los umbrales con los
+  dieciséis Tracks sonando y avanzando de Cycle —máximo < 2 ms y σ < 0,5 ms—
+  quedan fuera de los criterios de aceptación de esta rebanada.
 
-  > **Por qué se retira.** Decisión del usuario del 2026-09-02, después de que
-  > la recogida del informe del dispositivo fallara: no se hacen más mediciones
+  > **Por qué se difiere.** Decisión del usuario del 2026-09-02, después de que
+  > la recogida del informe del dispositivo fallara: se suspenden las mediciones
   > de jitter en el proyecto. Está escrita en `workflow.md`, en *Medición de
   > jitter: suspendida*, con el coste de la decisión detallado.
   >

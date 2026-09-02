@@ -6,12 +6,10 @@
 /// que `product-guidelines.md` nombra como antipatrón. Aquí el reloj es la única
 /// fuente: quien dibuja pregunta cuando va a dibujar.
 ///
-/// **Y por qué se deduce en vez de leerse.** El cursor de reproducción vive en
-/// el hilo del scheduler, que es su único dueño; publicarlo obligaría a ese hilo
-/// a escribir algo en cada vuelta, y eso es trabajo en el camino de tiempo real
-/// para que la pantalla no tenga que hacer una división. La deducción es exacta
-/// porque el avance lo es: la vuelta *i* dura sus Steps por la duración del
-/// Step, y las duraciones se suman.
+/// **La fase viene del scheduler y la posición se deduce.** El hilo de audio
+/// publica una palabra atómica solo cuando cambia de Cycle; la interfaz combina
+/// ese cursor y el inicio de vuelta con el reloj real. Así un cambio de
+/// `activeCount` no reinventa el recorrido y el look-ahead no adelanta la vista.
 ///
 /// **La rejilla sale del Cycle 1 y no del que esté sonando.** Es la limitación 8
 /// del track `cycles_20260901`: la Division de un Cycle posterior se ignora, así
@@ -20,6 +18,28 @@
 ///
 /// No es código de tiempo real: lo consulta la interfaz al redibujar.
 public struct CyclePosition: Equatable, Sendable {
+
+    /// Fase publicada por el scheduler en el último límite de vuelta que
+    /// calculó. Incluye los dos cursores anteriores porque el look-ahead puede
+    /// calcular más de un límite antes de que el primero llegue a sonar.
+    public struct Phase: Equatable, Sendable {
+        public let cycle: Int
+        public let previousCycle: Int
+        public let earlierCycle: Int
+        public let turnStartStep: Int
+
+        public init(
+            cycle: Int,
+            previousCycle: Int,
+            earlierCycle: Int? = nil,
+            turnStartStep: Int
+        ) {
+            self.cycle = cycle
+            self.previousCycle = previousCycle
+            self.earlierCycle = earlierCycle ?? previousCycle
+            self.turnStartStep = turnStartStep
+        }
+    }
 
     /// Índice del Cycle que está sonando, 0 el primero.
     public let cycle: Int
@@ -36,8 +56,13 @@ public struct CyclePosition: Equatable, Sendable {
     /// Un tiempo negativo o nulo se trata como el origen: es el margen que el
     /// scheduler reserva para el Delay negativo, y ahí todavía no ha sonado
     /// nada.
-    public init(elapsedNanoseconds: Int64, track: Track, tempo: Tempo) {
-        guard elapsedNanoseconds > 0, track.activeCount > 1 else {
+    public init(
+        elapsedNanoseconds: Int64,
+        track: Track,
+        tempo: Tempo,
+        phase: Phase? = nil
+    ) {
+        guard elapsedNanoseconds > 0 else {
             cycle = 0
             turn = 0
             return
@@ -48,6 +73,47 @@ public struct CyclePosition: Equatable, Sendable {
             tempo: tempo,
             division: track.cycle(at: 0)!.shape.division
         ).stepDurationNanoseconds
+
+        if let phase,
+            (0..<Track.cycleCount).contains(phase.cycle),
+            (0..<Track.cycleCount).contains(phase.previousCycle),
+            (0..<Track.cycleCount).contains(phase.earlierCycle)
+        {
+            let elapsedStep = Double(elapsedNanoseconds) / stepDuration
+            var current = phase.cycle
+            var turnStart = Double(phase.turnStartStep)
+
+            // El scheduler trabaja por adelantado. Mientras el límite publicado
+            // siga en el futuro, todavía suena el cursor anterior.
+            if elapsedStep < turnStart {
+                current = phase.previousCycle
+                turnStart -= Double(track.cycle(at: current)!.shape.steps.count)
+                if elapsedStep < turnStart {
+                    current = phase.earlierCycle
+                    turnStart -= Double(track.cycle(at: current)!.shape.steps.count)
+                }
+            }
+
+            // Si la interfaz consulta después del estado publicado, se avanza
+            // desde esa ancla. `cursorAfter` conserva la regla del scheduler
+            // cuando activeCount se redujo y el cursor quedó fuera del rango.
+            var duration = Double(track.cycle(at: current)!.shape.steps.count)
+            while elapsedStep >= turnStart + duration {
+                turnStart += duration
+                current = Track.cursorAfter(current, activeCount: track.activeCount)
+                duration = Double(track.cycle(at: current)!.shape.steps.count)
+            }
+
+            cycle = current
+            turn = max(0, elapsedStep - turnStart) / duration
+            return
+        }
+
+        guard track.activeCount > 1 else {
+            cycle = 0
+            turn = 0
+            return
+        }
 
         // Una pasada completa es la suma de las vueltas de los Cycles activos.
         // No se puede dividir sin más: dos Cycles pueden tener Steps distintos,

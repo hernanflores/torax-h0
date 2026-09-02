@@ -201,6 +201,7 @@ public struct TrackScheduler {
     /// Del snapshot se toma el **material** y **cuántos Cycles hay activos**;
     /// por cuál va, lo decide este hilo.
     private var cursor = 0
+    private var previousCursor = 0
 
     /// Primer Step de la vuelta en curso.
     ///
@@ -209,6 +210,11 @@ public struct TrackScheduler {
     /// el Cycle A mide 16 Steps y el B mide 12, el B tiene que durar doce y no
     /// los ocho que quedaran hasta el múltiplo siguiente de dieciséis.
     private var turnStartStep: Int
+
+    /// Salida lock-free del cursor para la interfaz. `nil` en los schedulers
+    /// aislados y en la vía directa del arnés.
+    private var playbackClock: CyclePlaybackClock?
+    private var playbackTrack = 0
 
     public init(
         timeline: MusicalTimeline,
@@ -221,6 +227,15 @@ public struct TrackScheduler {
         self.random = SeededRandom(seed: seed)
         self.stepDurationNanoseconds = Int64(timeline.stepDurationNanoseconds)
         self.turnStartStep = startingStep
+        self.playbackClock = nil
+    }
+
+    mutating func reportPlayback(to clock: CyclePlaybackClock, track index: Int) {
+        playbackClock = clock
+        playbackTrack = index
+        clock.publish(
+            track: index, cycle: cursor, previousCycle: cursor, earlierCycle: cursor,
+            turnStartStep: turnStartStep)
     }
 
     /// Sustituye el material sin tocar la posición en la rejilla.
@@ -262,11 +277,14 @@ public struct TrackScheduler {
     /// siempre por el mismo Cycle.
     mutating func restartCycles() {
         cursor = 0
+        previousCursor = 0
         // El Cycle 1 se pide por índice y no con `track.current`: `current` mira
-        // el cursor **del snapshot**, que es el de edición y puede estar en
-        // cualquier sitio. El que manda aquí es el de este hilo, que se acaba de
-        // poner a cero.
+        // el cursor **del snapshot**, que puede estar en cualquier sitio. El que
+        // manda aquí es el de este hilo, que se acaba de poner a cero.
         if let track, let first = track.cycle(at: 0) { material = .cycle(first) }
+        playbackClock?.publish(
+            track: playbackTrack, cycle: cursor, previousCycle: cursor, earlierCycle: cursor,
+            turnStartStep: turnStartStep)
     }
 
     /// Cuánto tiempo hay que reservar por delante para que ningún evento
@@ -336,8 +354,9 @@ public struct TrackScheduler {
 
         for step in lookAhead.advance(toHorizon: horizonNanoseconds + budget) {
             advanceCycleIfTheTurnClosed(before: step)
+            let cycleStep = step - turnStartStep
 
-            guard material.triggers(atStep: step) else { continue }
+            guard material.triggers(atStep: cycleStep) else { continue }
 
             // **El orden importa: primero dispara, después decide si suena.** Un
             // Step que no dispara no es un Pulse omitido, es un silencio del
@@ -367,11 +386,11 @@ public struct TrackScheduler {
             emit(
                 material.cycle,
                 step,
-                material.pitch(atStep: step),
+                material.pitch(atStep: cycleStep),
                 groove,
                 lookAhead.timeline.nanosecondOffset(forStep: step)
                     + groove.shiftNanoseconds(
-                        atStep: step, stepDurationNanoseconds: stepDurationNanoseconds)
+                        atStep: cycleStep, stepDurationNanoseconds: stepDurationNanoseconds)
             )
         }
     }
@@ -400,8 +419,14 @@ public struct TrackScheduler {
         guard let track, let stepCount = material.stepCount else { return }
         guard step - turnStartStep >= stepCount else { return }
 
+        let earlierCursor = previousCursor
+        previousCursor = cursor
         turnStartStep = step
         cursor = Track.cursorAfter(cursor, activeCount: track.activeCount)
         if let cycle = track.cycle(at: cursor) { material = .cycle(cycle) }
+        playbackClock?.publish(
+            track: playbackTrack, cycle: cursor, previousCycle: previousCursor,
+            earlierCycle: earlierCursor,
+            turnStartStep: turnStartStep)
     }
 }

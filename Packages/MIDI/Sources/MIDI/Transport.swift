@@ -32,6 +32,7 @@ public final class Transport: @unchecked Sendable {
     /// crea y se tira en cada Play; el reloj tiene que sobrevivir a eso para que
     /// quien dibuja consulte siempre al mismo sitio.
     private let playheadClock = PlayheadClock()
+    private let cyclePlaybackClock = CyclePlaybackClock()
 
     private var scheduler: SchedulerThread?
 
@@ -104,23 +105,19 @@ public final class Transport: @unchecked Sendable {
     /// Por qué Cycle va **cada uno** de los dieciséis, o `nil` con el transporte
     /// parado.
     ///
-    /// **Se deduce del reloj, no se lee del scheduler.** El cursor de
-    /// reproducción vive en el hilo que suena y es suyo; publicarlo obligaría a
-    /// ese hilo a escribir algo en cada vuelta, que es trabajo en el camino de
-    /// tiempo real para que la pantalla no tenga que dividir. La deducción es
-    /// exacta porque el avance lo es — la aritmética y su porqué están en
-    /// `CyclePosition`.
+    /// **Se deduce del reloj anclado a la fase del scheduler.** El hilo que
+    /// suena publica una palabra atómica al cambiar de Cycle; `CyclePosition`
+    /// combina ese cursor con el reloj real, sin locks y sin confundir el
+    /// horizonte de look-ahead con lo que ya está sonando.
     ///
     /// Se calcula al preguntar, por la misma razón que `playheads`: guardarlo
     /// obligaría a un temporizador de interfaz a refrescarlo, y eso es una
     /// animación no derivada del reloj musical.
     public var cyclesInCourse: [CyclePosition]? {
         guard let elapsed = playheadClock.elapsedNanoseconds() else { return nil }
-        return CyclePosition.forEachTrack(
-            in: lastPublishedPattern,
-            tempo: configuration.timeline.tempo,
-            elapsedNanoseconds: elapsed
-        )
+        return cyclePlaybackClock.positions(
+            in: lastPublishedPattern, tempo: configuration.timeline.tempo,
+            elapsedNanoseconds: elapsed)
     }
 
     /// Arranca con los dieciséis Tracks.
@@ -194,6 +191,7 @@ public final class Transport: @unchecked Sendable {
             material: .cycle(starting.cycle(at: 0)!),
             handoff: handoff,
             playhead: playheadClock,
+            cyclePlaybackClock: cyclePlaybackClock,
             pattern: starting
         ) {
             [emitter, send, tempo = configuration.timeline.tempo]

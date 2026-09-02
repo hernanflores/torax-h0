@@ -43,24 +43,39 @@ public final class PatternScheduler {
     ///   - pattern: con qué material se arranca.
     ///   - seed: semilla base del aleatorio. Cada Track deriva la suya, para que
     ///     dos Tracks con la misma Probability no omitan los mismos Pulses.
-    public init(
+    public convenience init(
         tempo: Tempo,
         pattern: Pattern,
         startingAtStep startingStep: Int = 0,
         seed: UInt64 = SeededRandom.defaultSeed
+    ) {
+        self.init(
+            tempo: tempo, pattern: pattern, startingAtStep: startingStep,
+            seed: seed, playbackClock: nil)
+    }
+
+    init(
+        tempo: Tempo,
+        pattern: Pattern,
+        startingAtStep startingStep: Int = 0,
+        seed: UInt64 = SeededRandom.defaultSeed,
+        playbackClock: CyclePlaybackClock?
     ) {
         self.pattern = pattern
         schedulers = .allocate(capacity: Pattern.trackCount)
 
         for index in 0..<Pattern.trackCount {
             let track = pattern.track(at: index)!
-            let cycle = track.current
+            let cycle = track.cycle(at: 0)!
             var scheduler = TrackScheduler(
                 timeline: MusicalTimeline(tempo: tempo, division: cycle.shape.division),
                 material: .cycle(cycle),
                 startingAtStep: startingStep,
                 seed: Self.seed(seed, forTrack: index)
             )
+            if let playbackClock {
+                scheduler.reportPlayback(to: playbackClock, track: index)
+            }
             // **Play arranca los dieciséis en su Cycle 1** (FR6): construir esto
             // es lo que hace Play, así que el reinicio va aquí y no en otro
             // sitio que hubiera que acordarse de llamar.

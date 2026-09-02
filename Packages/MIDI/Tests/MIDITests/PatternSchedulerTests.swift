@@ -83,6 +83,29 @@ final class PatternSchedulerTests: XCTestCase {
         XCTAssertTrue(events.allSatisfy { $0.track == 0 })
     }
 
+    /// Play siempre reinicia en el Cycle 1, así que también debe construir su
+    /// rejilla con ese Cycle aunque el snapshot conserve otro cursor.
+    func testRestartUsesTheFirstCyclesGridInsteadOfTheSnapshotsCursor() {
+        let first = track(steps: 16, pulses: 16, division: .sixteenth)
+        let later = track(steps: 16, pulses: 16, division: .eighth)
+        let moved =
+            Track(first)
+            .withActiveCount(2)
+            .replacing(later, at: 1)
+            .withCursor(1)
+            .withEditing(1)
+        var scheduler = PatternScheduler(
+            tempo: tempo, pattern: Pattern().replacing(moved, at: 0))
+
+        var offsets: [Int64] = []
+        scheduler.advance(toHorizon: 2 * stepNanoseconds, refreshingFrom: nil) {
+            track, _, _, _, _, offset in
+            if track == 0 { offsets.append(offset) }
+        }
+
+        XCTAssertEqual(offsets, [0, stepNanoseconds])
+    }
+
     // MARK: - Varios Tracks
 
     func testTwoTracksBothEmitAtTheirOwnPositions() {

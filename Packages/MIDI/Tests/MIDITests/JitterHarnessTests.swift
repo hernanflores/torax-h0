@@ -190,4 +190,14 @@ final class JitterHarnessCyclesGridTests: XCTestCase {
 
         XCTAssertEqual(pattern.track(at: 0)?.activeCount, 1)
     }
+
+    /// Un solo Track también necesita el camino de Pattern cuando recorre más
+    /// de un Cycle; la vía directa no tiene un Track cuyo cursor pueda avanzar.
+    func testOneTrackWithSeveralCyclesBuildsAPattern() throws {
+        let pattern = try XCTUnwrap(
+            JitterHarness.pattern(forTrackCount: 1, groove: nil, cycleCount: 4))
+
+        XCTAssertEqual(pattern.track(at: 0)?.activeCount, 4)
+        XCTAssertEqual(pattern.track(at: 1)?.activeCount, 1)
+    }
 }

@@ -204,7 +204,7 @@ public enum JitterHarness {
     static func pattern(forTrackCount count: Int, groove: Groove?, cycleCount: Int = 1)
         -> Pattern?
     {
-        guard count > 1 else { return nil }
+        guard count > 1 || cycleCount > 1 else { return nil }
 
         guard let steps = Steps(16), let pulses = Pulses(16), let pitch = Pitch(60) else {
             return nil

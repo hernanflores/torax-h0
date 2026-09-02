@@ -120,6 +120,40 @@ final class CycleAdvanceTests: XCTestCase {
         XCTAssertEqual(second.first(where: { $0.pitch == 38 })?.step, 12)
     }
 
+    /// Cada Cycle empieza su Shape, su pool y su Groove en su propio Step 0,
+    /// aunque el Cycle anterior tenga una longitud que no sea múltiplo suyo.
+    func testConsecutiveUnequalCyclesUseCycleRelativeMaterialIndexes() {
+        let first = cycle(steps: 13, pitch: 48)
+        let second = Cycle(
+            shape: Shape(steps: Steps(8)!, pulses: Pulses(4)!),
+            pool: PitchPool().inserting(Pitch(60)!).inserting(Pitch(72)!),
+            groove: Groove(
+                velocity: .default,
+                sustain: .default,
+                probability: .default,
+                timing: Timing(percent: 75)!,
+                delay: .default
+            )
+        )
+        let unequal =
+            Track(first)
+            .withActiveCount(2)
+            .replacing(second, at: 1)
+        let scheduler = PatternScheduler(tempo: tempo, pattern: pattern([0: unequal]))
+
+        var events: [(step: Int, pitch: Int?, offset: Int64)] = []
+        scheduler.advance(toHorizon: 21 * stepNanoseconds, refreshingFrom: nil) {
+            track, _, step, pitch, _, offset in
+            if track == 0, step >= 13 {
+                events.append((step, pitch?.value, offset))
+            }
+        }
+
+        XCTAssertEqual(events.map(\.step), [13, 15, 17, 19])
+        XCTAssertEqual(events.map(\.pitch), [60, 72, 60, 72])
+        XCTAssertEqual(events.map(\.offset), [13, 15, 17, 19].map { Int64($0) * stepNanoseconds })
+    }
+
     /// Con Divisions distintas cada uno avanza según **su** vuelta, no según el
     /// tiempo del otro: un Track en 1/8 cierra su anillo en el doble de tiempo
     /// que uno en 1/16, y su Cycle cambia ahí.

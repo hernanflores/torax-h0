@@ -83,6 +83,7 @@ public final class SchedulerThread: @unchecked Sendable {
 
     /// Ancla temporal para el playhead. `nil` cuando nadie la mira.
     private let playhead: PlayheadClock?
+    private let cyclePlaybackClock: CyclePlaybackClock?
     private let running = AtomicFlag(false)
     private var thread: Thread?
 
@@ -94,11 +95,30 @@ public final class SchedulerThread: @unchecked Sendable {
     ///   - playhead: dónde se publica el origen temporal para la interfaz.
     ///     `nil` cuando nadie dibuja un playhead — el arnés de medición, por
     ///     ejemplo, que no tiene pantalla.
-    public init(
+    public convenience init(
         configuration: SchedulerConfiguration,
         material: SchedulerMaterial = .everyStep,
         handoff: PatternHandoff? = nil,
         playhead: PlayheadClock? = nil,
+        pattern: Pattern? = nil,
+        handler: @escaping StepHandler
+    ) {
+        self.init(
+            configuration: configuration,
+            material: material,
+            handoff: handoff,
+            playhead: playhead,
+            cyclePlaybackClock: nil,
+            pattern: pattern,
+            handler: handler)
+    }
+
+    init(
+        configuration: SchedulerConfiguration,
+        material: SchedulerMaterial = .everyStep,
+        handoff: PatternHandoff? = nil,
+        playhead: PlayheadClock? = nil,
+        cyclePlaybackClock: CyclePlaybackClock?,
         pattern: Pattern? = nil,
         handler: @escaping StepHandler
     ) {
@@ -107,6 +127,7 @@ public final class SchedulerThread: @unchecked Sendable {
         self.material = material
         self.handoff = handoff
         self.playhead = playhead
+        self.cyclePlaybackClock = cyclePlaybackClock
         self.handler = handler
     }
 
@@ -117,13 +138,17 @@ public final class SchedulerThread: @unchecked Sendable {
         running.value = true
 
         let thread = Thread {
-            [configuration, material, pattern, handoff, playhead, handler, running] in
+            [
+                configuration, material, pattern, handoff, playhead, cyclePlaybackClock,
+                handler, running,
+            ] in
             SchedulerThread.run(
                 configuration: configuration,
                 material: material,
                 pattern: pattern,
                 handoff: handoff,
                 playhead: playhead,
+                cyclePlaybackClock: cyclePlaybackClock,
                 handler: handler,
                 running: running
             )
@@ -185,6 +210,7 @@ public final class SchedulerThread: @unchecked Sendable {
         pattern: Pattern?,
         handoff: PatternHandoff?,
         playhead: PlayheadClock?,
+        cyclePlaybackClock: CyclePlaybackClock?,
         handler: StepHandler,
         running: AtomicFlag
     ) {
@@ -192,7 +218,9 @@ public final class SchedulerThread: @unchecked Sendable {
         // dos construyen el mismo scheduler.
         let scheduler =
             pattern.map {
-                PatternScheduler(tempo: configuration.timeline.tempo, pattern: $0)
+                PatternScheduler(
+                    tempo: configuration.timeline.tempo, pattern: $0,
+                    playbackClock: cyclePlaybackClock)
             } ?? PatternScheduler(timeline: configuration.timeline, material: material)
         let startHostTicks = HostClock.now()
         let sleepNanoseconds = UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))
