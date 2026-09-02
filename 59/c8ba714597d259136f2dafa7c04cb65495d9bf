@@ -1,0 +1,28 @@
+Task: Factorizar el barrido de silencio de Transport.stop() (FR4)
+
+Fase 4 del track mute-solo_20260902. TDD: 7 tests en rojo, implementacion, 7 en
+verde + los 4 de StopWithEveryTrackTests intactos.
+
+Ficheros:
+- Packages/MIDI/Sources/MIDI/Transport.swift: silence(tracks:atHostTime:) y
+  silenceHostTime extraidos de stop(), que ahora pasa Set(0..<trackCount).
+- Packages/MIDI/Tests/MIDITests/TrackSilenceTests.swift (nuevo).
+
+Lo que los tests fijan del ambito: apagar un Track manda su all notes off por su
+canal y por ninguno mas; barre sus alturas y no las de los otros once; un
+conjunto vacio no manda nada (el caso de desmutear); varios a la vez se cubren
+todos (el caso de soltar un solo).
+
+Lo que hereda de stop() y sigue siendo cierto: se barren los dieciseis Cycles y
+no solo el vigente, el all notes off va antes que el barrido, y un par
+canal+altura no se repite.
+
+Un test partio de una premisa equivocada: Pattern.replacing(cycle:at:) sustituye
+un Cycle, no el Track, asi que los otros quince conservan su canal por defecto y
+el barrido tocaba tres canales. El barrido hacia bien —esos Cycles pueden ser
+los que suenan— y el test se corrigio usando Track(shared), con la razon escrita
+al lado.
+
+Limitacion documentada en el metodo: el canal compartido se apaga entero, porque
+el all notes off es un mensaje de canal. El otro Track vuelve en su siguiente
+pulso.
