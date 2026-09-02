@@ -1,0 +1,27 @@
+Task: El recorrido, como función pura
+Fase 2 — v2 rebanada 3 (Cycles)
+
+QUÉ CAMBIA
+`Track.advanced()` y `Track.cursorAfter(_:activeCount:)`, que es la
+aritmética suelta: `next = cursor + 1; next < activeCount ? next : 0`.
+
+POR QUÉ ESTÁ EN ENGINE
+El recorrido es una regla del modelo —qué sigue a qué— y no del reloj: quién
+decide CUÁNDO se avanza es el scheduler, en el límite de vuelta, y eso se
+testea en MIDI con el horizonte dado a mano. Separarlas deja el recorrido
+comprobable con aritmética, sin hilos y sin relojes.
+
+POR QUÉ NO HAY CASO APARTE PARA FR9
+Un cursor fuera de rango —lo deja así bajar el número mientras suena— entra
+en 0 sin rama dedicada: si ya está fuera, sumarle uno lo deja igual de fuera
+y la comparación lo devuelve a 0. Menos código y un caso menos que olvidar.
+
+VERIFICACIÓN
+- Engine: 410 tests (6 nuevos en `TrackTraversalTests`), 0 fallos. El
+  recorrido se comprueba sobre DOS vueltas completas para los dieciséis
+  tamaños de rango: una sola vuelta no distingue un recorrido de un contador
+  que sigue subiendo.
+- MIDI: 342 tests, 0 fallos.
+- xcodebuild para iOS: BUILD SUCCEEDED.
+- Sin medición de jitter: Engine puro. Nada de esto corre todavía en el hilo
+  del scheduler; eso es la Fase 3.
