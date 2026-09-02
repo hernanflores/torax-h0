@@ -1,0 +1,35 @@
+Task: `Track` pasa a llamarse `Cycle`
+Fase 2 — v2 rebanada 3 (Cycles)
+
+QUÉ CAMBIA
+El tipo `Track` de `Engine` pasa a llamarse `Cycle`. Con él:
+- `SchedulerMaterial.track(_)` -> `.cycle(_)`, y sus bindings.
+- `Pattern.emptyTrack` -> `Pattern.emptyCycle`.
+- Ficheros de test renombrados: TrackTests -> CycleTests, TrackChannelTests ->
+  CycleChannelTests, TrackEditsKeepEverythingElseTests ->
+  CycleEditsKeepEverythingElseTests, con sus clases.
+- La prosa de la documentación que describía el VALOR pasa a decir Cycle; la
+  que describe los dieciséis carriles sigue diciendo Track, porque ese
+  concepto no se ha movido.
+
+QUÉ NO CAMBIA, Y POR QUÉ
+- `Pattern.track(at:)`, `Pattern.trackCount`, `Transport.track`,
+  `ControlInput.track`, `FamilyReadout(track:)`: conservan el nombre. Hoy
+  devuelven el único Cycle de ese Track; la tarea siguiente solo tendrá que
+  cambiar el tipo, no todas las llamadas. Hay una nota fechada en `Pattern`
+  que declara este estado intermedio para que no se lea como un descuido.
+- `TrackScheduler` y `TrackParameter`: siguen siendo lo que dicen ser —el
+  scheduler de un carril y el parámetro de un carril—, así que no se tocan.
+
+CÓMO SE HIZO
+Renombrado del identificador solo en posiciones de código: un script que
+salta comentarios y literales de cadena, para no corromper documentación que
+en este repositorio es carga útil. Después, repaso a mano de la prosa y de
+los mensajes de aserción, que el script deja intactos por diseño.
+
+VERIFICACIÓN
+- Engine: 383 tests, 0 fallos. Ni una aserción cambiada.
+- MIDI: 342 tests (21 + 321, partición de CI), 0 fallos.
+- `_isPOD(Cycle.self)` sigue siendo verdadero, vigilado desde cinco sitios.
+- xcodebuild para iOS: BUILD SUCCEEDED.
+- Sin medición de jitter: no se mueve ningún instante.
