@@ -32,7 +32,7 @@ revisar el diseño antes de seguir.
 
 ## FASE 2: LA MÁSCARA Y LA REGLA
 
-- [ ] Task: `MuteMask` — doce mutes y doce solos en una palabra (FR1)
+- [~] Task: `MuteMask` — doce mutes y doce solos en una palabra (FR1)
   - [ ] Tests (Red): alternar el mute del Track 0 y del 11 no toca a los demás;
         mute y solo del mismo Track son independientes; los bits por encima de
         `Pattern.trackCount` no se pueden encender; el valor inicial es todo a
