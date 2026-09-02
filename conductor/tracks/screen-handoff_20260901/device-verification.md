@@ -50,15 +50,46 @@ De ahí que haya que **pulsar Play mientras el arnés mide**.
 
 ### El procedimiento
 
-- [ ] Lanzar con el arnés y la rejilla recta, 1000 eventos por tempo:
+**Son argumentos de lanzamiento, no algo que se teclee en la app.** Hasta la
+Fase 4 el arnés tenía panel en pantalla y bastaba con pulsar *Medir*; FR12 lo
+sacó, así que los argumentos son ahora la única vía. Hay dos formas:
 
-      --auto-measure --samples=1000 --grid=recta
+**Por línea de comandos** (recomendada: deja el veredicto en la terminal además
+de en el fichero).
 
+```bash
+# 1. Instalar la build en el iPad, desde la raíz del repo
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' \
+  -derivedDataPath build/device
+xcrun devicectl device install app --device <ID> \
+  build/device/Build/Products/Debug-iphoneos/ToraxH0.app
+
+# 2. Lanzarla con el arnés. --console deja la salida en la terminal
+xcrun devicectl device process launch --device <ID> --console \
+  com.toraxh0.ToraxH0 --auto-measure --samples=1000 --grid=recta
+```
+
+El `<ID>` sale de `xcrun devicectl list devices` (columna *Identifier*).
+
+**Desde Xcode**, si se prefiere: *Product ▸ Scheme ▸ Edit Scheme… ▸ Run ▸
+Arguments ▸ Arguments Passed On Launch*, se añaden los tres, se elige el iPad
+como destino y se pulsa Run. **Hay que acordarse de quitarlos después**, o
+cualquier ejecución posterior arrancará midiendo.
+
+- [ ] Lanzada con `--auto-measure --samples=1000 --grid=recta`.
 - [ ] **Pulsar Play en la app en cuanto arranque**, y dejarlo sonando toda la
       pasada. Los anillos tienen que verse moviéndose: si el playhead no corre,
       la medición no vale y hay que repetirla.
 - [ ] Dejar la pantalla `1 · Track` a la vista. Son unos 8 minutos, tres tempos.
-- [ ] Recoger `Documents/jitter-report-recta.txt`.
+- [ ] Recoger `Documents/jitter-report-recta.txt`:
+
+      xcrun devicectl device info files --device <ID> \
+        --domain-type appDataContainer --domain-identifier com.toraxh0.ToraxH0 \
+        --username mobile Documents
+
+      xcrun devicectl device copy from --device <ID> \
+        --domain-type appDataContainer --domain-identifier com.toraxh0.ToraxH0 \
+        --source Documents/jitter-report-recta.txt --destination .
 
 > **Esto hace correr dos schedulers a la vez** —el de la app y el del arnés—, que
 > es más carga de la que el producto tiene nunca. **La medición queda
