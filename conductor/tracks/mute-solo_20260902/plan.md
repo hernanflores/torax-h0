@@ -105,7 +105,7 @@ revisar el diseño antes de seguir.
   - [x] Cobertura `MIDI` ≥80%.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 5: EL GESTO DEL CONTROLADOR
+## FASE 5: EL GESTO DEL CONTROLADOR [checkpoint: 6792d6d]
 
 - [x] Task: Los step buttons 15 y 16 como modificadores (FR7, FR8) [6792d6d]
   - [x] Tests (Red): step 16 mantenido + step 3 alterna el mute del Track 3 y
@@ -126,11 +126,11 @@ revisar el diseño antes de seguir.
   - [x] `preset/` no cambia; comprobar que su README sigue siendo cierto y
         anotar ahí el gesto nuevo si lo describe.
   - [x] Cobertura `MIDI` ≥80%.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: LA PANTALLA
 
-- [ ] Task: Cablear el estado en `TransportModel` (FR9, FR10)
+- [~] Task: Cablear el estado en `TransportModel` (FR9, FR10)
   - [ ] Los dos vectores de doce publicados para la vista, espejados al
         `MuteMask` en un solo sitio — el mismo criterio que ya rige para la
         selección de Track: táctil y controlador entran por la misma puerta.
