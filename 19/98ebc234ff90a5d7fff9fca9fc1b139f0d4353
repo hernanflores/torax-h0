@@ -1,0 +1,37 @@
+Task: Cuánto cuesta un snapshot con los 256 Cycles
+Fase 1 — v2 rebanada 3 (Cycles)
+
+QUÉ SE MIDIÓ
+Un tipo de prueba con la forma que tendrá el modelo tras la Fase 2:
+  ProbeCycle  = el `Track` de hoy (144 B)
+  ProbeTrack  = 16 Cycles + activeCount + cursor (2312 B)
+  ProbePattern= 16 ProbeTracks (36 992 B)
+y una copia del protocolo de ranura de `PatternHandoff` —cuatro ranuras,
+contador de generación atómico, lectura que copia y revalida—, para que el
+banco mida lo mismo que se pagará y no una versión simplificada.
+
+LOS NÚMEROS (debug, misma máquina, misma pasada; 200 000 lecturas, 3 pasadas)
+  Hoy:        2304 B, load() 123 / 124 / 126 / 131 ns
+  Con Cycles: 36 992 B, load() 848 / 849 / 859 / 907 ns  → 0,0042–0,0045%
+              de la ventana de 20 ms
+  Anillo de cuatro ranuras: 147 968 B, reservados una vez al construir.
+
+LO QUE DICEN
+- 16,05x más bytes cuestan 6,9x más tiempo. Una copia grande amortiza mejor
+  que una pequeña, así que la extrapolación lineal de la nota de riesgo 1 del
+  plan (~4,4 us) era pesimista por un factor de cinco.
+- La referencia del 2026-08-31 —2,25 KB en 274 ns— no es comparable
+  directamente: otra máquina y un Track de 112 bytes. Por eso se midió el
+  snapshot de hoy en la misma pasada, y es contra esos ~125 ns contra lo que
+  se compara.
+- El anillo son 144,5 KB residentes mientras viva el transporte. No es coste
+  por ventana; es la cifra a tener delante si alguna vez se sube el número de
+  ranuras.
+
+DÓNDE QUEDAN REGISTRADOS
+En la documentación de `PatternHandoff`, con la tabla, y en
+`CycleSnapshotCostTests`, que es el test que los produce.
+
+VERIFICACIÓN
+- Los 5 tests nuevos pasan; la suite de `PatternHandoff` sigue pasando.
+- Sin medición de jitter: no se toca el camino de emisión.
