@@ -267,17 +267,41 @@ escalón es el que se nota.
 
 ---
 
-- [x] **Track: Doce Tracks, pantalla MIDI y limpieza del selector** — doce anillos más anchos, el canal en su pantalla y la pastilla con un solo número
+- [x] **Track: Doce Tracks, pantalla MIDI y limpieza del selector** — doce anillos más anchos, el canal en su pantalla y la pastilla con un solo número; verificado en dispositivo
   *Link: [conductor/tracks/ui-declutter_20260902/index.md](./tracks/ui-declutter_20260902/index.md)*
 
-  Tres ajustes de superficie sobre la pantalla de las rebanadas 1–3, todos para
-  bajar el ruido visual: el **canal** se va a la pantalla `3 · MIDI` —que aquí
-  empieza a existir— y se edita para los doce a la vez; el **botón de Track**
-  deja de decir dos veces el mismo número; y los Tracks pasan de dieciséis a
-  **doce**, que es lo que ensancha los anillos.
+  Planificado y cerrado el 2026-09-02, en cinco fases. Tres ajustes de superficie
+  sobre la pantalla de las rebanadas 1–3, todos en la misma dirección: **menos
+  ruido para que el protagonista —los anillos— tenga sitio**. El **canal** se va
+  a la pantalla `3 · MIDI`, que aquí empieza a existir, y se edita para los doce a
+  la vez; el **botón de Track** deja de decir dos veces el mismo número; y los
+  Tracks pasan de dieciséis a **doce**, que es lo que ensancha los anillos.
 
-  Lleva una **desviación de la Pre Spec** —«hasta 16 Tracks por Pattern»— y por
-  eso su Fase 1 la escribe antes de tocar código. Sin medición de jitter.
+  **Es una desviación de la Pre Spec** —«hasta 16 Tracks por Pattern»— y la Fase 1
+  la escribe, fechada, antes de tocar código. La nota deja la decisión reversible:
+  doce es un límite de legibilidad puesto sobre `Pattern.trackCount`, no un
+  concepto nuevo. Con ella se sincronizaron `product.md` y, al cerrar,
+  `product-guidelines.md`: el canal entra en la tabla del reparto táctil y la nota
+  de legibilidad explica por qué doce.
+
+  **Tres cosas salieron por el camino y no estaban en el plan.** `RingStack`
+  calculaba el radio acumulando restas y el anillo interior invadía el hueco
+  central por un bit —con dieciséis no se veía, con doce sí—; ahora interpola y el
+  test exige igualdad exacta. `reservedBelowStage` era un literal que seguía
+  reservando la fila de canal y una pastilla de 56 puntos, y el anillo pagaba 108
+  puntos: salió de la verificación manual, que el usuario rechazó. Y la rejilla
+  del arnés no era cosmética: `min(count, trackCount)` habría medido doce bajo una
+  etiqueta que decía dieciséis.
+
+  **Sin medición de jitter**, suspendida el 2026-09-02. La rejilla pasa a
+  `12-tracks-cycles` para que el arnés siga listo si se retoma.
+
+  **Deja sin tocar** MIDI Learn —rebanada 8 de la v1, y entra en esta misma
+  pantalla— y el preset del BeatStep Pro: los step buttons 13–16 dejan de
+  seleccionar, pero la acotación vive en quien selecciona y `ControlMapping` sigue
+  describiendo los dieciséis del hardware.
+
+  Integrado por [PR #28](https://github.com/hernanflores/torax-h0/pull/28).
 
 ## Defectos conocidos
 
