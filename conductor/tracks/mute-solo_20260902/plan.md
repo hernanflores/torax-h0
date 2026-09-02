@@ -19,14 +19,14 @@ revisar el diseño antes de seguir.
 
 ## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
 
-- [~] Task: Anotar mute/solo en la Pre Spec y el sitio del par en el handoff (FR11)
-  - [ ] Nota fechada 2026-09-02 en `Pre Spec Torax H-0.md`: mute y solo por
+- [x] Task: Anotar mute/solo en la Pre Spec y el sitio del par en el handoff (FR11) [e7f0571]
+  - [x] Nota fechada 2026-09-02 en `Pre Spec Torax H-0.md`: mute y solo por
         Track, qué son y —lo que importa— que **viven fuera del material**, por
         encima del Pattern. La Pre Spec no los tenía en absoluto.
-  - [ ] Nota fechada en `design_handoff/README.md`: el par M/S está en la
+  - [x] Nota fechada en `design_handoff/README.md`: el par M/S está en la
         pantalla Track y no en la `5 · Tracks`, que no existe; cuando exista,
         enseñará **este mismo** estado, no otro.
-  - [ ] Dejar dicho en las dos que el solo es **aditivo** y que el mute manda
+  - [x] Dejar dicho en las dos que el solo es **aditivo** y que el mute manda
         sobre él, que es la regla que un lector daría por supuesta al revés.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
