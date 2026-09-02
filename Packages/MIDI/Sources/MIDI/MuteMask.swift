@@ -52,6 +52,30 @@ public struct MuteState: Equatable, Sendable {
         return solos & bit != 0
     }
 
+    /// **Si ese Track se oye ahora mismo.** La regla entera, en un sitio:
+    ///
+    /// ```
+    /// audible(i) = !mute(i) && (soloMask == 0 || solo(i))
+    /// ```
+    ///
+    /// **Sin ningún solo suenan todos**, no ninguno: el solo solo significa algo
+    /// cuando alguien lo pide, y hasta entonces la mitad derecha de la regla es
+    /// cierta para los doce.
+    ///
+    /// **El mute manda sobre el solo.** Un Track soleado *y* muteado calla, que
+    /// es lo que hace un mixer. Al revés —que el solo levantara el mute— daría
+    /// el estado imposible de «está en solo, no suena, y no se ve por qué».
+    ///
+    /// Un índice que no es de ningún Track no es audible: no hay nada que oír.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func isAudible(_ index: Int) -> Bool {
+        guard Self.bit(index) != nil else { return false }
+        guard !isMuted(index) else { return false }
+        return !hasAnySolo || isSoloed(index)
+    }
+
     /// Si hay **algún** solo activo, que es lo que cambia el significado de todo
     /// lo demás: con uno encendido, callar es lo normal y sonar la excepción.
     ///
