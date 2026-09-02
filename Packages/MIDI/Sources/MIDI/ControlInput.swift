@@ -338,9 +338,30 @@ public final class ControlInput: @unchecked Sendable {
     /// knob.
     @discardableResult
     public func setChannel(_ channel: Channel) -> Bool {
-        guard channel != track.channel else { return false }
+        setChannel(channel, forTrack: selectedTrackIndex)
+    }
 
-        pattern = pattern.replacing(track.on(channel), at: selectedTrackIndex)
+    /// Cambia el canal de **cualquier** Track, sin seleccionarlo antes.
+    ///
+    /// **Es lo que necesita la pantalla MIDI** (FR6), que enseña el ruteo de los
+    /// doce a la vez. Pasar por la selección para ajustar un canal movería
+    /// también a dónde apuntan los knobs y los pads, que es un efecto que nadie
+    /// pidió: elegir instrumento y elegir a quién se edita son dos cosas
+    /// distintas y esta pantalla solo hace la primera.
+    ///
+    /// Un índice fuera de los doce no publica y no es un error — mismo criterio
+    /// que un CC sin asignar o un step button sin Track detrás.
+    ///
+    /// Publica porque el scheduler lee el canal del snapshot en cada evento: sin
+    /// publicar, el cambio no se oiría hasta el giro siguiente de cualquier
+    /// knob.
+    @discardableResult
+    public func setChannel(_ channel: Channel, forTrack index: Int) -> Bool {
+        guard let cycle = pattern.editingCycle(at: index), channel != cycle.channel else {
+            return false
+        }
+
+        pattern = pattern.replacing(cycle.on(channel), at: index)
         publish(pattern)
         return true
     }

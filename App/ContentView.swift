@@ -204,13 +204,12 @@ struct ContentView: View {
     /// estado que se mira de reojo mientras se toca, no configuración que se
     /// visita.
     private var midiScreen: some View {
-        // El contenido lo pone la tarea siguiente. Esta solo abre la pestaña,
-        // para que el cambio de navegación se verifique sin nada más de por
-        // medio.
-        Text("Channel")
-            .font(Typography.captionStrong)
-            .foregroundStyle(Palette.muted)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        ChannelMapView(
+            channels: model.channels,
+            selected: model.selectedTrackIndex,
+            accent: Palette.accent(for: family),
+            onChannelChange: { model.setChannel($1, forTrack: $0) }
+        )
     }
 
     // MARK: - La composición apaisada

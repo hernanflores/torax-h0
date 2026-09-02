@@ -285,6 +285,91 @@ final class SelectedTrackEditingTests: XCTestCase {
         }
     }
 
+    // MARK: - El canal de cualquier Track, no solo del elegido
+
+    /// **La pantalla MIDI edita los doce, no el seleccionado** (FR6).
+    ///
+    /// Es la diferencia con `setChannel(_:)`: aquel edita el Track elegido,
+    /// porque vivía pegado a la fila de selección. La pantalla MIDI enseña el
+    /// ruteo entero, así que tiene que poder tocar cualquier fila sin cambiar
+    /// antes de Track — cambiar la selección para ajustar un canal movería
+    /// también a dónde apuntan los knobs, que es un efecto que nadie pidió.
+    func testTheChannelOfAnyTrackCanBeSet() {
+        let input = input()
+
+        // **El 16 a propósito.** Con doce Tracks ninguno lo trae de fábrica, así
+        // que los doce cambian de verdad; con un canal del 1 al 12, el Track que
+        // ya lo tuviera devolvería `false` por no cambiar nada y el test estaría
+        // midiendo esa coincidencia en vez de la función.
+        let unused = Channel(16)!
+
+        for index in 0..<Pattern.trackCount {
+            XCTAssertTrue(input.setChannel(unused, forTrack: index), "Track \(index + 1)")
+            XCTAssertEqual(
+                input.pattern.cycle(at: index)?.channel, unused, "Track \(index + 1)")
+        }
+    }
+
+    /// Y no mueve la selección: los knobs siguen apuntando a donde apuntaban.
+    func testSettingAnotherTracksChannelDoesNotChangeTheSelection() {
+        let input = input()
+        input.receive(stepButton(2))
+
+        XCTAssertTrue(input.setChannel(Channel(7)!, forTrack: 9))
+        XCTAssertEqual(input.selectedTrackIndex, 2)
+        XCTAssertEqual(input.pattern.cycle(at: 9)?.channel, Channel(7)!)
+    }
+
+    /// Cambiar el de uno no toca a los demás, ni su canal ni su material.
+    func testSettingOneChannelLeavesEveryOtherTrackAlone() {
+        let input = input()
+        let before = input.pattern
+
+        XCTAssertTrue(input.setChannel(Channel(16)!, forTrack: 5))
+        for other in 0..<Pattern.trackCount where other != 5 {
+            XCTAssertEqual(
+                input.pattern.cycle(at: other), before.cycle(at: other), "Track \(other + 1)")
+        }
+    }
+
+    /// Fijar el que ya tenía no publica: no cambia nada.
+    func testSettingTheChannelATrackAlreadyHasDoesNotPublish() {
+        let input = input()
+        XCTAssertFalse(input.setChannel(Channel(4)!, forTrack: 3), "el Track 4 ya emite por el 4")
+    }
+
+    /// Un índice fuera de los doce no publica y no rompe — mismo criterio que un
+    /// CC sin asignar o un step button sin Track.
+    func testSettingTheChannelOfATrackThatDoesNotExistChangesNothing() {
+        let input = input()
+        let before = input.pattern
+
+        for index in [-1, Pattern.trackCount, Pattern.trackCount + 3, Int.max] {
+            XCTAssertFalse(input.setChannel(Channel(9)!, forTrack: index), "\(index)")
+            XCTAssertEqual(input.pattern, before, "\(index)")
+        }
+    }
+
+    /// **Dos Tracks pueden compartir canal.** Dos capas rítmicas sobre el mismo
+    /// sinte es un caso real, y la pantalla MIDI existe en parte para verlo — no
+    /// para impedirlo.
+    func testTwoTracksCanShareAChannelFromTheMidiScreen() {
+        let input = input()
+
+        XCTAssertTrue(input.setChannel(Channel(1)!, forTrack: 4))
+        XCTAssertEqual(input.pattern.cycle(at: 0)?.channel, Channel(1)!)
+        XCTAssertEqual(input.pattern.cycle(at: 4)?.channel, Channel(1)!)
+    }
+
+    /// Y lo que se publica sigue siendo el Pattern entero.
+    func testSettingAnotherTracksChannelPublishesThePattern() {
+        let handoff = PatternHandoff(Pattern.initial)
+        let input = ControlInput(pattern: Pattern.initial, publishingTo: handoff)
+
+        XCTAssertTrue(input.setChannel(Channel(11)!, forTrack: 8))
+        XCTAssertEqual(handoff.load()?.cycle(at: 8)?.channel, Channel(11)!)
+    }
+
     // MARK: - Publicar
 
     /// Lo que se publica son los doce, no el editado suelto: el scheduler

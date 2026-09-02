@@ -67,6 +67,16 @@ final class TransportModel {
         syncFromControlInput()
     }
 
+    /// Cambia el canal de cualquier Track, desde la pantalla MIDI.
+    ///
+    /// **No mueve la selección**: ajustar el ruteo no debería cambiar a dónde
+    /// apuntan los knobs. La regla y su prueba viven en `ControlInput`, que es
+    /// donde se testean sin pantalla de por medio.
+    func setChannel(_ channel: Channel, forTrack index: Int) {
+        controlInput.setChannel(channel, forTrack: index)
+        syncFromControlInput()
+    }
+
     /// Selecciona un Track desde la pantalla.
     ///
     /// **Hace lo mismo que su step button.** Sin controlador conectado es la
@@ -145,9 +155,9 @@ final class TransportModel {
 
     /// Por dónde emite cada Track.
     ///
-    /// **Los dieciséis, no solo el elegido** (FR5): la pastilla de cada Track
-    /// lleva su canal, así que la pantalla dice de un vistazo si dos Tracks
-    /// comparten instrumento sin tener que seleccionarlos uno a uno.
+    /// **Los doce, no solo el elegido**: la pantalla MIDI enseña el ruteo
+    /// entero, así que dice de un vistazo si dos Tracks comparten instrumento
+    /// sin tener que seleccionarlos uno a uno.
     var channels: [Channel] {
         (0..<Pattern.trackCount).map { pattern.editingCycle(at: $0)?.channel ?? .first }
     }
