@@ -1,5 +1,49 @@
 # Handoff: Torax H-0 App Screens
 
+> ## Implementado — v2 rebanada 2 (2026-09-02)
+>
+> Este handoff se implementó en `screen-handoff_20260901`. Lo que sigue es el
+> documento original, sin tocar; esta nota dice qué entró, qué no y en qué se
+> divergió, para que quien lo lea después no tenga que deducirlo.
+>
+> **Entró:** la pantalla 1 (Track/anillos) y la 2 (Scale & Root), enteras. El
+> lenguaje visual completo — Figtree, los acentos definitivos y el tratamiento
+> neo-brutalista como sistema.
+>
+> **No entró:** las pantallas 3 (MIDI/Learn), 4 (Banks) y 5 (Track × Pattern).
+> Se dibujan como pestañas deshabilitadas con borde discontinuo, que es el signo
+> que este mismo documento define para «todavía no». MIDI Learn es la rebanada 8
+> de la v1; Banks necesita persistencia y Track × Pattern necesita Patterns, y
+> ninguna de las dos existe todavía.
+>
+> **Tres divergencias, decididas y escritas:**
+>
+> 1. **El anillo se lleva la columna ancha, no la estrecha.** El mock le da 190px
+>    de 924, proporción dibujada para **cinco** anillos; con dieciséis cada banda
+>    quedaba en unos 6px y dejaba de contarse. Se invierte el reparto con la
+>    lectura.
+> 2. **Los anillos son arcos y no puntos** — como este documento dice
+>    («a conic-gradient of colored arcs vs dark gaps»), y no como se implementó
+>    primero. Con una marca por Step, los dieciséis Tracks alinean sus marcas
+>    radialmente y la pantalla se lee como dieciséis *radios*.
+> 3. **Las notas fuera de la escala siguen siendo tocables** en el gráfico de
+>    Root, donde el mock las dibuja inertes. «¿Está C# en Do menor?» es una
+>    pregunta sobre el marco actual; elegir C# como raíz construye un marco nuevo
+>    donde es la fundamental. Con la regla del mock, qué tonalidades son
+>    alcanzables dependería de la vigente.
+>
+> **Dos cosas que el documento no decía y hubo que decidir:** la app se bloquea
+> en **landscape** —las cinco capturas son 924×540 y el layout de tres columnas
+> no cabe en portrait— y no lleva el nombre de la app en pantalla, porque ninguna
+> de las cinco lo dibuja.
+>
+> **Sobre los tokens:** la tabla se titula «illustrative — not final» y la
+> sección *Fidelity* dice que los colores y la fuente son definitivos. Gana
+> *Fidelity*, que es lo más reciente.
+>
+> Detalle completo en
+> [`conductor/tracks/screen-handoff_20260901/spec.md`](../conductor/tracks/screen-handoff_20260901/spec.md).
+
 ## Overview
 Wireframes and an interactive click-through for the Torax H-0 iPad app — a MIDI algorithmic sequencer controlled primarily by an external hardware controller (BeatStep Pro), with the iPad screen as a secondary mirror/detail view. Covers 5 screens: Track/ring view, Scale & Root, MIDI mapping, Bank save/load, and Track×Pattern browser.
 

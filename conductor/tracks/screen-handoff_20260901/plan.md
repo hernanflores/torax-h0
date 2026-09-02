@@ -217,23 +217,49 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
 > puede responder: si el jitter aguanta la carga visual nueva, y si esto se lee a
 > un metro.
 
-- [ ] Task: Jitter con los dieciséis anillos redibujándose
-  - [ ] iPad real, con el arnés, con los dieciséis Tracks sonando y la pantalla nueva delante
-  - [ ] Umbral: **máximo < 2 ms, σ < 0,5 ms**. Se registra el número, no la impresión
-  - [ ] Se compara contra la rebanada 3 —máx 0,134 ms, σ 0,020 ms, que midió **un** anillo— y contra la que deje la Fase 6 de `multi-track`, y la diferencia se explica
-  - [ ] Si hay regresión: **la rebanada se para**. La causa probable sería dibujar de más por fotograma, no el scheduler; se ataca ahí antes de tocar nada de timing
-  - [ ] El resultado va a `product.md`, junto a las anteriores
-- [ ] Task: Verificación a un metro
-  - [ ] **El playhead se lee a un metro sobre dieciséis anillos** (FR2). Si no, se decide ahí el anillo grande aparte y se anota como enmienda del spec
-  - [ ] El valor grande del panel se lee a un metro
-  - [ ] **Los tres acentos se distinguen de reojo y con poca luz** (FR11). Si mauve y violeta se confunden, se registra y se decide: volver al ámbar es una opción legítima y documentada
-  - [ ] Se comprueba con el BeatStep Pro: girar un knob de cada familia y ver que el panel responde con su color en el Step siguiente
-  - [ ] Se registra en un `device-verification.md` del track, con fotos si hacen falta, y en la git note
-- [ ] Task: Cerrar la rebanada
-  - [ ] Cobertura de `Engine` ≥90% y de `MIDI` ≥80%, medidas como dice `workflow.md`
-  - [ ] `product-guidelines.md` recoge lo que esta rebanada cierra: el lenguaje visual deja de ser ilustrativo
-  - [ ] El handoff queda anotado con lo que se implementó y lo que no, y con cualquier desviación decidida en dispositivo
-  - [ ] `tracks.md` deja descrita la rebanada siguiente, y `cycles_20260901` deja de estar bloqueado por ésta
+- [x] Task: Jitter con los dieciséis anillos redibujándose — medido el 2026-09-02 en iPad Air (4ª gen)
+  - [x] iPad real, con el arnés, con los dieciséis Tracks sonando y la pantalla nueva delante
+  - [x] Umbral: **máximo < 2 ms, σ < 0,5 ms**. Se registra el número, no la impresión
+  - [x] Se compara contra la rebanada 3 —máx 0,134 ms, σ 0,020 ms, que midió **un** anillo— y contra la que deje la Fase 6 de `multi-track`, y la diferencia se explica
+  - [x] Si hay regresión: **la rebanada se para**. La causa probable sería dibujar de más por fotograma, no el scheduler; se ataca ahí antes de tocar nada de timing — **no la hubo**
+  - [x] El resultado va a `product.md`, junto a las anteriores
+
+  > **CUMPLE, y mejor que la referencia.** Máx **0,158 ms** y σ **0,013–0,014 ms**
+  > con 1000 eventos por tempo, contra los 0,020 ms de σ de la rebanada 3 —que
+  > medía **un** anillo—. Dibujar quince anillos más no cuesta timing: el dibujo
+  > va en el hilo principal y el scheduler en el suyo, y esta medición existía
+  > para comprobar esa separación en vez de suponerla.
+  >
+  > **El procedimiento tuvo que cambiar, y sin eso el número no habría valido
+  > nada.** El arnés corre su propio scheduler y no toca `TransportModel`, así
+  > que los playheads son `nil`, los anillos son idénticos fotograma a fotograma
+  > y SwiftUI no repinta lo que no cambia — comprobado con una sonda: menos de 30
+  > ejecuciones del `Canvas` en 8 segundos incluso forzando `paused: false`. Se
+  > mide con el transporte de la app corriendo a la vez, lo que pone dos
+  > schedulers en vuelo y hace la medición **conservadora**.
+  >
+  > **La cola de la rebanada 1 no se reprodujo**: sus 0,598 ms a 174 BPM aquí son
+  > 0,141 ms, con cinco veces más muestras y más carga.
+- [x] Task: Verificación a un metro — verificada el 2026-09-02 con BeatStep Pro
+  - [x] **El playhead se lee a un metro sobre dieciséis anillos** (FR2). Si no, se decide ahí el anillo grande aparte y se anota como enmienda del spec — **se lee**; el anillo grande aparte no hizo falta
+  - [x] El valor grande del panel se lee a un metro
+  - [x] **Los tres acentos se distinguen de reojo y con poca luz** (FR11). Si mauve y violeta se confunden, se registra y se decide: volver al ámbar es una opción legítima y documentada — **se distinguen**; el mauve se queda
+  - [x] Se comprueba con el BeatStep Pro: girar un knob de cada familia y ver que el panel responde con su color en el Step siguiente
+  - [x] Se registra en un `device-verification.md` del track, con fotos si hacen falta, y en la git note
+
+  > **Los dos riesgos declarados de la rebanada se cerraron sin materializarse.**
+  > El del playhead lo resolvió la inversión de columnas de la Fase 3, decidida
+  > antes de llegar al dispositivo. Ninguna decisión de la spec hubo que
+  > enmendar.
+  >
+  > La verificación anterior, el 2026-09-01, sí encontró dos defectos —la lectura
+  > truncándose y la barra MIDI empujando las columnas—, corregidos y verificados
+  > de nuevo.
+- [~] Task: Cerrar la rebanada
+  - [x] Cobertura de `Engine` ≥90% y de `MIDI` ≥80%, medidas como dice `workflow.md` — **99,26%** y **91,59%** de líneas
+  - [x] `product-guidelines.md` recoge lo que esta rebanada cierra: el lenguaje visual deja de ser ilustrativo
+  - [x] El handoff queda anotado con lo que se implementó y lo que no, y con cualquier desviación decidida en dispositivo
+  - [x] `tracks.md` deja descrita la rebanada siguiente, y `cycles_20260901` deja de estar bloqueado por ésta
   - [ ] Pull Request contra `main`, con los checks en verde
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 

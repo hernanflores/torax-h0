@@ -146,7 +146,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: v2 rebanada 2 — La pantalla del handoff**
+- [x] **Track: v2 rebanada 2 — La pantalla del handoff** — se lee a un metro; jitter máx 0,158 ms · σ 0,013–0,014 ms
   *Link: [conductor/tracks/screen-handoff_20260901/index.md](./tracks/screen-handoff_20260901/index.md)*
 
   Planificado el 2026-09-01. La pantalla definitiva de la rebanada 1: **dieciséis
@@ -168,6 +168,28 @@ escalón es el que se nota.
 
   Depende de que cierre la rebanada 1. **Desbloquea a la 3.**
 
+  **Cerrado el 2026-09-02.** Las seis fases con checkpoint, `Engine` al 99,26% y
+  `MIDI` al 91,59%, y la verificación en dispositivo completa. **Ninguno de los
+  dos riesgos declarados se materializó**: el playhead se lee a un metro sobre
+  dieciséis anillos —así que el anillo grande aparte que la spec guardaba de
+  reserva no hizo falta— y el mauve se separa del violeta de Tonal de reojo y con
+  poca luz, que era la pregunta que el ámbar dejó abierta.
+
+  **La medición salió mejor que la referencia.** Máx 0,158 ms y σ 0,013–0,014 ms
+  con 1000 eventos por tempo, contra los 0,020 ms de σ de la rebanada 3 —que
+  medía **un** anillo—. Dibujar quince anillos más no cuesta timing.
+
+  **Y la cola de la rebanada 1 no se reprodujo**: sus 0,598 ms a 174 BPM aquí son
+  0,141 ms, con cinco veces más muestras y más carga. Apunta a un episodio
+  puntual de aquella pasada y no a una propiedad de los dieciséis Tracks; no se
+  afirma más, porque no se repitió aquella medición en sus condiciones.
+
+  **Tres divergencias del handoff, decididas y escritas** en su README: el anillo
+  se lleva la columna ancha —las proporciones del mock eran para cinco anillos—,
+  los anillos son arcos y no puntos, y las notas fuera de la escala siguen
+  pudiendo ser raíz. Y dos cosas que el handoff no decía: la app se bloquea en
+  landscape y no lleva su propio nombre en pantalla.
+
 ---
 
 - [ ] **Track: v2 rebanada 3 — Cycles: el Track varía por vuelta**
@@ -187,12 +209,16 @@ escalón es el que se nota.
   **Lleva medición de jitter obligatoria**, con los dieciséis sonando y
   avanzando.
 
-  **No arranca todavía.** Depende de que cierre la Fase 6 de la rebanada 1 —sin
-  esa medición no hay línea base— y de la
-  [rebanada 2](./tracks/screen-handoff_20260901/index.md), que es donde se
-  muestra el Cycle en curso. La primera tarea de su Fase 1
-  —quitar la copia del snapshot por evento en `Transport.play()`— sí es
-  independiente y se puede tomar suelta.
+  **Desbloqueado el 2026-09-02.** Sus dos dependencias están cerradas: la Fase 6
+  de la rebanada 1 dejó la línea base, y la
+  [rebanada 2](./tracks/screen-handoff_20260901/index.md) entregó la pantalla
+  donde se mostrará el Cycle en curso. Es la rebanada siguiente.
+
+  Lleva de la 2 una referencia de jitter recién medida —máx 0,158 ms, σ 0,013–0,014
+  ms con los dieciséis anillos repintándose— y **el procedimiento para medir la
+  carga visual, que no era obvio**: el arnés por sí solo deja la pantalla quieta,
+  así que hay que medir con el transporte de la app corriendo. Está en el
+  `device-verification.md` de la 2.
 
 ## Defectos conocidos
 
