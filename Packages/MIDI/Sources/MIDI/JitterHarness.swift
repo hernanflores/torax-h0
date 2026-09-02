@@ -42,6 +42,15 @@ public struct JitterMeasurementConfiguration: Sendable {
     /// número con las dieciséis dentro.
     public let trackCount: Int
 
+    /// Cuántos Cycles recorre cada Track durante la medición.
+    ///
+    /// **Uno deja los Tracks quietos; varios los hacen avanzar.** Es la carga
+    /// que introduce la rebanada 3 de la v2: una decisión en el hilo del
+    /// scheduler en el límite de cada vuelta, y un cambio de material justo
+    /// ahí. Medirlo con uno solo daría un CUMPLE que no dice nada de esta
+    /// rebanada.
+    public let cycleCount: Int
+
     public init(
         tempo: Tempo,
         division: Division = .sixteenth,
@@ -49,7 +58,8 @@ public struct JitterMeasurementConfiguration: Sendable {
         lookAheadNanoseconds: Int64 = 20_000_000,
         timeoutSeconds: Double = 120,
         groove: Groove? = nil,
-        trackCount: Int = 1
+        trackCount: Int = 1,
+        cycleCount: Int = 1
     ) {
         self.tempo = tempo
         self.division = division
@@ -58,6 +68,7 @@ public struct JitterMeasurementConfiguration: Sendable {
         self.timeoutSeconds = timeoutSeconds
         self.groove = groove
         self.trackCount = trackCount
+        self.cycleCount = cycleCount
     }
 }
 
@@ -136,7 +147,11 @@ public enum JitterHarness {
         let thread = SchedulerThread(
             configuration: schedulerConfiguration,
             material: material(for: configuration.groove),
-            pattern: pattern(forTrackCount: configuration.trackCount, groove: configuration.groove)
+            pattern: pattern(
+                forTrackCount: configuration.trackCount,
+                groove: configuration.groove,
+                cycleCount: configuration.cycleCount
+            )
         ) {
             _, _, _, _, _, hostTime in
             // Realtime: hilo del scheduler.
@@ -178,23 +193,42 @@ public enum JitterHarness {
     /// fijo y lo que mide es *cuándo* sale, no qué suena. Con dieciséis, cada
     /// Step entrega dieciséis mensajes con el mismo instante programado, que es
     /// exactamente la carga que la v2 introduce.
-    static func pattern(forTrackCount count: Int, groove: Groove?) -> Pattern? {
+    ///
+    /// **`cycleCount` mayor que uno hace que los Tracks avancen de Cycle**, que
+    /// es la carga que introduce la rebanada 3 de la v2: una decisión en el
+    /// hilo del scheduler en el límite de cada vuelta, y un Cycle nuevo que
+    /// pasa a ser el material vigente. Los Cycles llevan el mismo Shape —así la
+    /// vuelta dura lo mismo y los dieciséis siguen comparables— y alturas
+    /// distintas, para que el cambio sea real y no una copia que el compilador
+    /// pudiera dar por equivalente.
+    static func pattern(forTrackCount count: Int, groove: Groove?, cycleCount: Int = 1)
+        -> Pattern?
+    {
         guard count > 1 else { return nil }
 
         guard let steps = Steps(16), let pulses = Pulses(16), let pitch = Pitch(60) else {
             return nil
         }
 
+        func cycle(_ offset: Int) -> Cycle? {
+            guard let pitch = Pitch(pitch.value + offset) else { return nil }
+            return Cycle(
+                shape: Shape(steps: steps, pulses: pulses),
+                pool: PitchPool().inserting(pitch),
+                groove: groove ?? .default
+            )
+        }
+
+        guard let first = cycle(0) else { return nil }
+
         var pattern = Pattern()
         for index in 0..<min(count, Pattern.trackCount) {
-            pattern = pattern.replacing(
-                Cycle(
-                    shape: Shape(steps: steps, pulses: pulses),
-                    pool: PitchPool().inserting(pitch),
-                    groove: groove ?? .default
-                ),
-                at: index
-            )
+            var track = Track(first).withActiveCount(max(1, min(cycleCount, Track.cycleCount)))
+            for slot in 0..<track.activeCount {
+                guard let voice = cycle(slot) else { continue }
+                track = track.replacing(voice, at: slot)
+            }
+            pattern = pattern.replacing(track, at: index)
         }
         return pattern
     }
