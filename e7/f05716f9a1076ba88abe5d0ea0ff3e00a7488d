@@ -1,0 +1,21 @@
+Task: Anotar mute/solo en la Pre Spec y el sitio del par en el handoff (FR11)
+
+Fase 1 del track mute-solo_20260902. Task Workflow §8: la desviación se
+documenta antes de tocar código.
+
+Cambios:
+- 'Pre Spec Torax H-0.md' §2: nota fechada 2026-09-02. Mute y solo no existían
+  en el documento. La nota los define y argumenta por qué no entran en el árbol
+  Project/Bank/Pattern/Track: ese árbol es material, esto es mezcla. Fija que el
+  mute no para el Track (la rejilla avanza, vuelve en fase), que el solo es
+  aditivo y que el mute manda sobre el solo. Anota el gesto de hardware: step
+  buttons 15 y 16 como modificadores, libres desde la bajada a doce Tracks.
+- 'design_handoff/README.md' §5: nota fechada. El prototipo pone el par M/S en
+  la pantalla 5 (Track × Pattern browser), que no está construida. Se implementa
+  en la pantalla 1 · Track, bajo la fila de pastillas. Cuando la 5 exista, será
+  otra vista del mismo estado, no un segundo estado. Se conserva su vocabulario
+  de color (M mauve = GROOVE, S purple = TONAL).
+
+El porqué: sin estas dos notas, el lector de la Pre Spec encontraría en la app
+un concepto que el documento no tiene, y el siguiente que construya la pantalla
+5 duplicaría el estado en vez de reusarlo.
