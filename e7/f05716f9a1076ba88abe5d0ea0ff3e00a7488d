@@ -19,3 +19,21 @@ Cambios:
 El porqué: sin estas dos notas, el lector de la Pre Spec encontraría en la app
 un concepto que el documento no tiene, y el siguiente que construya la pantalla
 5 duplicaría el estado en vez de reusarlo.
+
+--- Verificación de fase (Fase 1) — 2026-09-02 ---
+
+Comando: 'swift test' en Packages/Engine y Packages/MIDI.
+- Engine: 427 tests, 0 fallos.
+- MIDI: 400 tests, 1 omitido, 7 fallos — todos el flake conocido de CoreMIDI
+  (VirtualLoopbackTests × 4, clientCreationFailed(-50)), registrado en
+  conductor/tracks.md y aplazado a después de la v2. Ningún otro test falla.
+  El diff de la fase son dos .md, así que no puede ser su causa.
+
+Diff de la fase: 'Pre Spec Torax H-0.md' y 'design_handoff/README.md'. Sin
+código, luego sin tests nuevos que escribir.
+
+Verificación manual propuesta: leer las dos notas y comprobar que dejan la
+decisión reversible — qué se decidió, por qué, y qué haría falta para
+deshacerlo.
+
+Confirmación del usuario: «sí, seguí con la fase 2».
