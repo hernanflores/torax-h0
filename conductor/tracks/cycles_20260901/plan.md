@@ -30,7 +30,7 @@ regresión la bloquea.
 > de 20 ms? Y para quitar de en medio una copia que hoy pasa desapercibida y con
 > Cycles no pasaría.
 
-- [ ] Task: El snapshot deja de copiarse una vez por evento (NFR3)
+- [~] Task: El snapshot deja de copiarse una vez por evento (NFR3)
   - [ ] Tests (Red): emitir N eventos hace **como mucho una** lectura del handoff por ventana, no una por evento — hoy `Transport.play()` llama a `handoff.load()` dentro del cierre de emisión, para leer el canal y la Division del Track
   - [ ] Tests (Red): el canal y la Division con que sale cada nota siguen siendo los del **mismo** snapshot que produjo el evento, que es la razón por la que aquella lectura existía
   - [ ] Tests (Red): cambiar el canal mientras suena se sigue oyendo en el evento siguiente

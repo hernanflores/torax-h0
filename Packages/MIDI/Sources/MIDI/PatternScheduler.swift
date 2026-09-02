@@ -127,9 +127,17 @@ public final class PatternScheduler {
     /// Recoge el snapshot pendiente y emite lo que dispare hasta el horizonte,
     /// Track por Track.
     ///
-    /// `emit` recibe el índice del Track además de lo que ya recibía: quien
-    /// emite necesita saber por qué canal sale cada nota, y el canal es un dato
-    /// del Track.
+    /// `emit` recibe el índice del Track y **el Track que produjo el evento**.
+    /// Quien emite necesita el canal y la Division, que son datos del Track, y
+    /// entregárselos aquí es lo que le evita volver a leer el snapshot: la
+    /// lectura se hace una vez por ventana, no una por nota. Con 2,25 KB esa
+    /// diferencia era invisible; con Cycles el snapshot es dieciséis veces mayor
+    /// y sería una copia de decenas de kilobytes por nota, en el hilo de tiempo
+    /// real.
+    ///
+    /// Es además lo que garantiza que el canal y la Division con que sale una
+    /// nota sean los del **mismo** snapshot que la produjo, y no los de una
+    /// publicación que haya caído entre medias.
     ///
     /// **Un Track sin material no programa nada** (NFR3): su rejilla avanza
     /// —para que no pierda la fase si alguien le da alturas mientras suena— pero
@@ -142,7 +150,7 @@ public final class PatternScheduler {
         toHorizon horizonNanoseconds: Int64,
         refreshingFrom handoff: PatternHandoff?,
         emit: (
-            _ track: Int, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
+            _ track: Int, _ source: Track, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
             _ offsetNanoseconds: Int64
         ) -> Void
     ) {
@@ -160,10 +168,16 @@ public final class PatternScheduler {
             // arnés de medición no tiene Track detrás: mide la rejilla.
             let emits = schedulers[index].material.emitsAnything
 
+            // Una copia por Track y por ventana, fuera del cierre: dentro sería
+            // una por evento, que es justo la lectura que esta firma existe para
+            // quitar. El índice no puede fallar: el Pattern siempre tiene
+            // dieciséis.
+            let source = pattern.track(at: index)!
+
             schedulers[index].advance(toHorizon: horizonNanoseconds, refreshingFrom: nil) {
                 step, pitch, groove, offset in
                 guard emits else { return }
-                emit(index, step, pitch, groove, offset)
+                emit(index, source, step, pitch, groove, offset)
             }
         }
     }

@@ -56,9 +56,16 @@ public final class SchedulerThread: @unchecked Sendable {
     /// ventana: no son dos lecturas que puedan discrepar.
     /// **Desde la v2 llega también el índice del Track**: quien emite necesita
     /// saber por qué canal sale cada nota, y el canal es un dato del Track.
+    ///
+    /// **Y llega el Track entero, no solo su índice.** Con el índice, quien
+    /// emitía tenía que volver al snapshot a buscar el canal y la Division, una
+    /// vez por nota. Recibirlo aquí lo deja en una lectura por ventana y, de
+    /// paso, garantiza que lo que sella la nota sea el mismo snapshot que la
+    /// produjo.
     public typealias StepHandler =
         @Sendable (
-            _ track: Int, _ step: Int, _ pitch: Pitch?, _ groove: Groove, _ hostTime: UInt64
+            _ track: Int, _ source: Track, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
+            _ hostTime: UInt64
         ) -> Void
 
     private let configuration: SchedulerConfiguration
@@ -208,7 +215,7 @@ public final class SchedulerThread: @unchecked Sendable {
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
 
             scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) {
-                track, step, pitch, groove, offset in
+                track, source, step, pitch, groove, offset in
                 // El offset es relativo al origen de la rejilla, y el
                 // presupuesto es lo que separa ese origen del arranque. Sumarlos
                 // deja la cuenta en positivo sin más conversiones.
@@ -224,7 +231,7 @@ public final class SchedulerThread: @unchecked Sendable {
                     startHostTicks
                     &+ HostClock.hostTicks(
                         fromNanoseconds: UInt64(max(0, budgetNanoseconds + offset)))
-                handler(track, step, pitch, groove, hostTime)
+                handler(track, source, step, pitch, groove, hostTime)
             }
 
             usleep(sleepNanoseconds / 1_000)

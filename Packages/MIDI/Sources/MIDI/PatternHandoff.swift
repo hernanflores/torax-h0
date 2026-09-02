@@ -72,6 +72,21 @@ public final class PatternHandoff: @unchecked Sendable {
     /// hace visible.
     private let generation = AtomicCounter(0)
 
+    #if DEBUG
+        /// Cuántas veces se ha leído la ranura publicada.
+        ///
+        /// **Existe para que «una lectura por ventana» sea comprobable**, que es
+        /// la propiedad que la rebanada de Cycles necesita mantener: con 2,25 KB
+        /// una lectura de más por evento era invisible; con un snapshot dieciséis
+        /// veces mayor es una copia por nota. Sin contador, un retroceso a leer
+        /// por evento no lo vería nadie hasta medir jitter en dispositivo.
+        ///
+        /// **Solo en DEBUG.** En release no se compila ni el incremento, así que
+        /// el camino de tiempo real queda exactamente como estaba. El
+        /// `fetch_add` que se paga en los tests es una vez por ventana.
+        let loadCount = AtomicCounter(0)
+    #endif
+
     public init(_ initial: Pattern) {
         slots = .allocate(capacity: Self.slotCount)
         slots.initialize(repeating: initial, count: Self.slotCount)
@@ -119,6 +134,9 @@ public final class PatternHandoff: @unchecked Sendable {
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
     public func load() -> Pattern? {
+        #if DEBUG
+            loadCount.increment()
+        #endif
         let before = generation.value
         let pattern = slots[Int(before & Self.slotMask)]
         let after = generation.value

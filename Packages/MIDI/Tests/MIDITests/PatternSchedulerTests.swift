@@ -54,7 +54,7 @@ final class PatternSchedulerTests: XCTestCase {
         scheduler.advance(
             toHorizon: Int64(stepIndex) * stepNanoseconds,
             refreshingFrom: handoff
-        ) { track, step, pitch, _, _ in
+        ) { track, _, step, pitch, _, _ in
             events.append((track, step, pitch?.value))
         }
         return events
@@ -152,7 +152,7 @@ final class PatternSchedulerTests: XCTestCase {
         // Cien ciclos de dieciséis Steps a 1/16.
         var offsets: [Int: [Int64]] = [0: [], 1: []]
         scheduler.advance(toHorizon: 1_600 * stepNanoseconds, refreshingFrom: nil) {
-            track, _, _, _, offset in
+            track, _, _, _, _, offset in
             offsets[track]?.append(offset)
         }
 
@@ -181,7 +181,7 @@ final class PatternSchedulerTests: XCTestCase {
 
         var offsets: [Int: [Int64]] = [0: [], 1: []]
         scheduler.advance(toHorizon: 480 * stepNanoseconds, refreshingFrom: nil) {
-            track, _, _, _, offset in
+            track, _, _, _, _, offset in
             offsets[track]?.append(offset)
         }
 
@@ -243,7 +243,7 @@ final class PatternSchedulerTests: XCTestCase {
 
         var steps: [Int: [Int]] = [0: [], 1: []]
         scheduler.advance(toHorizon: 12 * stepNanoseconds, refreshingFrom: nil) {
-            track, step, _, _, _ in
+            track, _, step, _, _, _ in
             steps[track]?.append(step)
         }
 
@@ -359,7 +359,7 @@ final class PatternSchedulerTests: XCTestCase {
     ) -> [(track: Int, step: Int)] {
         var events: [(track: Int, step: Int)] = []
         scheduler.advance(toHorizon: Int64(stepIndex) * stepNanoseconds, refreshingFrom: nil) {
-            track, step, _, _, _ in
+            track, _, step, _, _, _ in
             events.append((track, step))
         }
         return events
@@ -370,7 +370,7 @@ final class PatternSchedulerTests: XCTestCase {
     ) -> [Int64] {
         var found: [Int64] = []
         scheduler.advance(toHorizon: Int64(stepIndex) * stepNanoseconds, refreshingFrom: nil) {
-            track, _, _, _, offset in
+            track, _, _, _, _, offset in
             if track == wanted { found.append(offset) }
         }
         return found

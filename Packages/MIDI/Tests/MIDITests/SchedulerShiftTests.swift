@@ -292,7 +292,7 @@ final class SchedulerOriginTests: XCTestCase {
             configuration: configuration,
             material: .track(track),
             playhead: playhead
-        ) { _, step, _, _, hostTime in
+        ) { _, _, step, _, _, hostTime in
             events.record(
                 step: step,
                 hostTime: hostTime,

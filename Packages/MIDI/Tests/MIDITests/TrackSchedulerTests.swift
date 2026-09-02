@@ -233,7 +233,7 @@ final class SchedulerThreadSnapshotTests: XCTestCase {
             configuration: configuration(),
             material: .track(track(rotate: 0)),
             handoff: handoff
-        ) { _, step, _, _, _ in
+        ) { _, _, step, _, _, _ in
             if UInt64(step % 4) != expectedOffset.value { unexpectedPosition.value = true }
             emitted.increment()
         }

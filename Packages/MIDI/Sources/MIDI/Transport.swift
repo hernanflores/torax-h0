@@ -35,6 +35,14 @@ public final class Transport: @unchecked Sendable {
 
     private var scheduler: SchedulerThread?
 
+    #if DEBUG
+        /// Cuántas veces se ha copiado el snapshot desde que existe el
+        /// transporte. Ver `PatternHandoff.loadCount`: existe para que «una
+        /// lectura por ventana» sea una propiedad comprobable y no una
+        /// intención escrita en un comentario.
+        var handoffLoadCount: UInt64 { handoff.loadCount.value }
+    #endif
+
     /// Último material publicado: los dieciséis Tracks.
     ///
     /// Se guarda aparte del handoff porque `load()` puede descartar una lectura,
@@ -166,15 +174,18 @@ public final class Transport: @unchecked Sendable {
             playhead: playheadClock,
             pattern: starting
         ) {
-            [emitter, send, handoff, lastPublishedPattern, tempo = configuration.timeline.tempo]
-            track, _, pitch, groove, hostTime in
+            [emitter, send, tempo = configuration.timeline.tempo]
+            _, source, _, pitch, groove, hostTime in
             // El canal y la duración del Step son del Track que emite: dieciséis
             // Tracks pueden estar en dieciséis canales y en Divisions distintas.
-            // Se leen del snapshot vigente, que es el mismo que produjo el
-            // evento.
-            let pattern = handoff.load() ?? lastPublishedPattern
-            guard let source = pattern.track(at: track) else { return }
-
+            //
+            // **Llegan con el evento, no se releen.** Antes se volvía al
+            // snapshot por cada nota para buscarlos, que con 2,25 KB era
+            // invisible y con Cycles sería una copia de decenas de kilobytes por
+            // nota dentro del hilo de tiempo real. El scheduler ya lo tiene
+            // recogido una vez por ventana, así que lo entrega: además de barato
+            // es lo que garantiza que el canal sea el del **mismo** snapshot que
+            // produjo el evento.
             emitter.emit(
                 pitch: pitch,
                 groove: groove,

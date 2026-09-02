@@ -138,7 +138,7 @@ public enum JitterHarness {
             material: material(for: configuration.groove),
             pattern: pattern(forTrackCount: configuration.trackCount, groove: configuration.groove)
         ) {
-            _, _, _, _, hostTime in
+            _, _, _, _, _, hostTime in
             // Realtime: hilo del scheduler.
             output.send(message, to: endpoint, atHostTime: hostTime)
         }
