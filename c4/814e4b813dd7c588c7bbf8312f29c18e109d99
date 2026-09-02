@@ -1,0 +1,27 @@
+Task: Cablear el estado en TransportModel (FR9, FR10)
+
+Fase 6 del track mute-solo_20260902. Sin tests nuevos, por la regla del
+workflow: App no se mide, y si algo aqui mereciera un test estaria en el sitio
+equivocado. Lo que hay es cableado. xcodebuild BUILD SUCCEEDED.
+
+Ficheros:
+- App/TransportModel.swift: TransportRelay.apply(_:) para el gesto del
+  controlador; 'mix' observable; toggleMute/toggleSolo desde la pantalla;
+  syncMix(); releaseModifiers() al reconectar la fuente.
+
+Una sola puerta. Las dos vias —dedo y controlador— terminan en
+Transport.toggleMute/toggleSolo, que es quien compara las dos fotos y apaga. Que
+la pantalla tocara la mascara por su cuenta seria un segundo camino sin apagado,
+que es la nota colgada que la fase 4 existe para evitar.
+
+El gesto del controlador entra por el TransportRelay que ya existia para
+publicar Patterns. No hace falta una via nueva y ademas resuelve el mismo
+problema de siempre: la entrada de control se construye antes que el transporte
+y no debe depender de que llegue a existir.
+
+FR8 se cierra aqui, no en la fase 5: ControlInput.releaseModifiers() existia
+desde entonces pero nadie lo llamaba. Lo llama connectToSelectedSource, que es
+el punto por el que pasa toda reconexion.
+
+FR10 no necesito codigo: la mezcla vive en el transporte y nada de lo que ya
+habia la toca.
