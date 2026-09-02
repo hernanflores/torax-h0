@@ -14,6 +14,24 @@
 
 **Lo expresivo es el material musical; el resto es discreto.**
 
+> **Cerrado el 2026-09-02, con la rebanada 2 de la v2.** Hasta entonces los
+> valores concretos —colores, tipografía, tratamiento de los controles— eran
+> ilustrativos y vivían en un solo sitio «para poder cambiarlos cuando el
+> lenguaje visual se cierre». Se cierra aquí:
+>
+> - **Figtree** (400/600/700) en todo el texto de la interfaz.
+> - Los **acentos definitivos**: Shape `#9AAB79`, Groove `#AA6DA8`, Tonal
+>   `#7C5FD9`. Groove era ámbar y pasó a mauve; se comprobó a un metro y con
+>   poca luz que sigue separándose del violeta de Tonal.
+> - Un **tratamiento neo-brutalista** que es un sistema y no un estilo por
+>   vista: trazos de 2px —3px en la raíz elegida—, radios de 3 a 8px, rellenos
+>   de acento planos, sombras duras sin blur en lo seleccionado, y **borde
+>   discontinuo para lo que existe pero todavía no se puede usar**.
+>
+> Los tres viven cada uno en un solo fichero de `App`. **Una vista que invente
+> su propio color, su propia fuente o su propio borde es un fallo**, no una
+> variación.
+
 - **Protagonista:** la visualización del patrón. Todo lo demás es soporte.
 - **Secundario:** controles, etiquetas y chrome. Neutros, planos, sin competir por atención.
 - **Color por familia funcional:** Shape, Groove y Tonal tienen cada una su acento cromático, consistente en toda la app. El color codifica *qué tipo de parámetro es*; nunca es decorativo.
@@ -46,6 +64,22 @@ Debe leerse a un metro:
 2. **El valor grande transitorio** al girar un knob.
 
 Eso obliga a tipografía muy grande en el overlay de valor y a una jerarquía visual muy marcada. El resto del estado (pool, parámetros en reposo, configuración) puede requerir mirar de cerca.
+
+> **Con dieciséis anillos, esto decide el reparto de la pantalla** (2026-09-02).
+> El handoff daba al anillo un quinto del ancho, proporción dibujada para
+> **cinco** anillos; con dieciséis, cada banda quedaba en unos 6 puntos y el
+> playhead era ilegible por construcción. El anillo pasa a llevarse la columna
+> ancha y la lectura la estrecha, que es lo que este apartado implica: el
+> protagonista es la visualización del patrón, y el ancho se reparte según eso y
+> no según cuánto texto hay que poner.
+>
+> **El valor grande dejó de dibujarse sobre el patrón.** Vive en su propia
+> columna, así que la regla de que el patrón permanezca visible debajo deja de
+> ser algo que haya que recordar al dibujar: son dos regiones que no se solapan.
+>
+> Y una consecuencia práctica: **una lectura que se corta no se lee**. Envolver
+> a dos líneas es preferible a truncar, porque el texto grande existe para
+> leerse de lejos y `Probabilit…` no cumple eso.
 
 ## Reglas de interacción
 

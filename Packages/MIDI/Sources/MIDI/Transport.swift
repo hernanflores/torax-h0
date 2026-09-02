@@ -73,6 +73,26 @@ public final class Transport: @unchecked Sendable {
         )
     }
 
+    /// Dónde está el playhead de **cada uno** de los dieciséis, o `nil` con el
+    /// transporte parado.
+    ///
+    /// **Es lo que la pantalla de anillos concéntricos necesita.** `playhead`
+    /// resuelve el del primer Track sobre la Division común, que valía cuando el
+    /// Pattern era uno; con dieciséis anillos, cada uno cae sobre su propia
+    /// rejilla y un playhead compartido mentiría en quince.
+    ///
+    /// Se calcula al preguntar, por la misma razón que el otro: guardarlo
+    /// obligaría a un temporizador de interfaz a refrescarlo, y eso es una
+    /// animación no derivada del reloj musical.
+    public var playheads: [Playhead]? {
+        guard let elapsed = playheadClock.elapsedNanoseconds() else { return nil }
+        return Playhead.forEachTrack(
+            in: lastPublishedPattern,
+            tempo: configuration.timeline.tempo,
+            elapsedNanoseconds: elapsed
+        )
+    }
+
     /// Arranca con los dieciséis Tracks.
     public init(
         configuration: SchedulerConfiguration,

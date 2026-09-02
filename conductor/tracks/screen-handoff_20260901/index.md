@@ -1,6 +1,6 @@
 # Track: v2 rebanada 2 — La pantalla del handoff
 
-**ID:** `screen-handoff_20260901` · **Type:** Feature · **Status:** new
+**ID:** `screen-handoff_20260901` · **Type:** Feature · **Status:** completed
 
 La rebanada 1 construyó dieciséis Tracks sobre un reloj y les dio la pantalla **mínima para operar**. El handoff de diseño lleva cerrado desde antes —cinco pantallas, estructura y flujo decididos, colores y tipografía finales, lenguaje neo-brutalista— y su pantalla 1 es exactamente la vista de lo que aquella rebanada construyó: **dieciséis Tracks como anillos concéntricos**, uno de ellos en detalle. Esta la implementa.
 

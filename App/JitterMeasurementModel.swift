@@ -198,8 +198,24 @@ final class JitterMeasurementModel {
         {
             sampleCount = parsed
         }
-        print("[jitter] arranque automático · \(sampleCount) eventos por tempo")
-        writeTrace("arranque automático · \(sampleCount) eventos por tempo")
+
+        // **La rejilla también, desde que el arnés dejó de tener pantalla**
+        // (FR12 de la rebanada 2 de la v2). Era lo único que solo se podía
+        // elegir tocando, así que quitar la UI sin esto habría dejado el arnés
+        // midiendo siempre la recta — y las otras cuatro rejillas existen
+        // precisamente para lo que no se puede deducir de ella.
+        if let raw = arguments.first(where: { $0.hasPrefix("--grid=") }) {
+            let name = String(raw.dropFirst("--grid=".count))
+            if let chosen = Grid.allCases.first(where: { $0.fileNameSuffix == name }) {
+                grid = chosen
+            } else {
+                let names = Grid.allCases.map(\.fileNameSuffix).joined(separator: ", ")
+                print("[jitter] rejilla desconocida '\(name)'. Válidas: \(names)")
+            }
+        }
+
+        print("[jitter] arranque automático · \(sampleCount) eventos por tempo · \(grid.rawValue)")
+        writeTrace("arranque automático · \(sampleCount) eventos por tempo · \(grid.rawValue)")
         start()
     }
 

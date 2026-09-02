@@ -126,6 +126,59 @@ comportamiento.** Cambiar de Scale reencuadra el pool, nunca lo vacía.
 primeras navegan; las tres restantes se dibujan con borde discontinuo y no
 responden. Ningún modal bloquea mientras el transporte corre.
 
+### FR13 — La app es de landscape, y solo de landscape
+
+**Añadido el 2026-09-01, durante la Fase 2.** Ni la spec original ni el plan
+decían nada de la orientación, y las seis fases daban por supuesto el layout de
+tres columnas del handoff —anillo | panel de lectura | tabs, con el selector de
+Tracks abajo— que **es landscape por construcción**. Las cinco capturas del
+handoff son 924×540. El supuesto estaba en todas partes y escrito en ninguna.
+
+La app declaraba las cuatro orientaciones, heredadas del andamiaje inicial del
+proyecto: nadie lo decidió para esta pantalla. Pasa a declarar solo
+`LandscapeLeft` y `LandscapeRight`, en Debug y en Release.
+
+**No hay layout de portrait y no se inventa uno.** Diseñar una segunda
+composición sin mock que la respalde sería inventar producto, que es justo lo
+que esta rebanada dice no hacer. El iPad se usa apaisado, delante del
+controlador.
+
+> **Lo que esto le costaba a FR2, y cómo se resolvió.** Con los 190px de 924 del
+> mock, dieciséis bandas quedaban en unos 6px cada una y el playhead era
+> ilegible por construcción. **FR14 invierte el reparto** y el anillo pasa a
+> llevarse el ancho grande, que es la respuesta a ese riesgo tomada antes de
+> llegar al dispositivo. La Fase 6 lo confirma a un metro.
+
+### FR14 — Los anillos a la izquierda, todo lo demás a la derecha
+
+**Añadido el 2026-09-01**, junto a FR13 y por la misma razón: estaba supuesto y
+no escrito.
+
+**Los anillos a la izquierda y todo lo demás a su derecha**: el panel de lectura
+en el centro y los tabs de familia en la columna del borde. El selector de Tracks
+va debajo, cruzando el ancho.
+
+**Por qué importa que sea izquierda y no centro.** Hoy `ContentView` apila todo
+en una sola columna vertical con el anillo arriba, que es lo que la rebanada 1
+necesitaba para operar y no lo que la pantalla del producto es. Poner los anillos
+a un lado y la lectura al otro es lo que permite que el valor grande no los tape
+nunca (FR3): son dos regiones que no se solapan, en vez de una encima de otra.
+
+> **Aquí el handoff se contradice consigo mismo, y gana la app.** El mock da al
+> anillo 190px de 924 —un quinto— y el resto a la lectura. Esas proporciones se
+> dibujaron para **cinco** anillos; con dieciséis, un quinto del ancho deja cada
+> banda en unos 6px y el mapa deja de poder contarse — que es exactamente el
+> riesgo que FR2 declara.
+>
+> **Se invierte el reparto, decidido con el usuario el 2026-09-01 viendo la
+> pantalla:** el anillo se lleva el ancho grande y la lectura se queda con el
+> estrecho. Es lo coherente con `product-guidelines.md` —lo expresivo es el
+> material musical, todo lo demás es soporte—: el anillo *es* el material.
+>
+> La lectura y los tabs se calculan primero y **el anillo se queda con lo que
+> sobra**, así que en un iPad más ancho el espacio de más va a donde se nota
+> —más separación entre bandas— y no a estirar un texto que ya cabía.
+
 ### FR9 — El lenguaje neo-brutalista es un sistema, no un estilo por vista
 
 Trazos sólidos de 2px en todo lo interactivo (3px en la raíz elegida), radios de
@@ -178,7 +231,9 @@ ocupar sitio en la pantalla de trabajo: es instrumentación, no producto.
 - **NFR7 — Vocabulario de la Pre Spec en pantalla**, en inglés y sin traducir.
 - **NFR8 — Verificación en dispositivo y a un metro**, que es el criterio de
   legibilidad de `product-guidelines.md`. El simulador sirve para la composición;
-  no sirve para juzgar ni el playhead en movimiento ni el color.
+  no sirve para juzgar ni el playhead en movimiento ni el color. **Y se verifica
+  apaisado** (FR13): una captura en portrait no enseña la composición que existe,
+  y durante la Fase 2 se juzgó una que no era.
 
 ## Acceptance Criteria
 
@@ -208,6 +263,10 @@ Además:
 - [ ] El sistema visual vive en un sitio: ninguna vista define su propio borde,
       radio o sombra.
 - [ ] Figtree se usa en toda la app.
+- [ ] La app solo gira a landscape, y todas las capturas de verificación son
+      apaisadas.
+- [ ] Los anillos ocupan la columna izquierda y el resto de la información vive a
+      su derecha; las dos regiones no se solapan en ningún momento.
 - [ ] El arnés de jitter no aparece en la pantalla y sigue arrancándose por
       argumento de lanzamiento.
 - [ ] **Jitter con los dieciséis anillos redibujándose dentro del umbral**,

@@ -134,6 +134,15 @@ final class TransportModel {
         (0..<Pattern.trackCount).map { !(pattern.track(at: $0)?.pool.isEmpty ?? true) }
     }
 
+    /// Por dónde emite cada Track.
+    ///
+    /// **Los dieciséis, no solo el elegido** (FR5): la pastilla de cada Track
+    /// lleva su canal, así que la pantalla dice de un vistazo si dos Tracks
+    /// comparten instrumento sin tener que seleccionarlos uno a uno.
+    var channels: [Channel] {
+        (0..<Pattern.trackCount).map { pattern.track(at: $0)?.channel ?? .first }
+    }
+
     /// Por qué la salida no está disponible, si no lo está.
     ///
     /// Solo se llena si CoreMIDI no arrancó, que es un fallo real y no una
@@ -217,7 +226,30 @@ final class TransportModel {
     /// aquí; el valor que recibe deriva del reloj musical, no del temporizador
     /// que provocó el redibujado.
     var playhead: Playhead? { transport?.playhead }
+
+    /// Dónde está el playhead en cada uno de los dieciséis anillos.
+    ///
+    /// Mismo criterio que `playhead`: no es estado observable, se consulta al
+    /// dibujar. Con el transporte parado son dieciséis `nil`, y no una lista
+    /// vacía, para que quien dibuja indexe por Track sin comprobar longitudes.
+    var playheads: [Playhead?] {
+        guard let running = transport?.playheads else {
+            return Array(repeating: nil, count: Pattern.trackCount)
+        }
+        return running.map(Optional.some)
+    }
+
+    /// Los dieciséis anillos, dispuestos.
+    var rings: RingStack { RingStack(pattern: pattern) }
     var canPlay: Bool { selection.hasEndpoint && transport != nil }
+
+    /// El tempo, en la unidad que la barra muestra.
+    ///
+    /// **De solo lectura** (limitación 4 de la spec): el tempo editable está
+    /// fuera de alcance de esta rebanada, así que la barra lo informa y no lo
+    /// ofrece. Enseñarlo como si fuera un control sería prometer algo que no
+    /// existe.
+    var beatsPerMinute: Double { Self.tempo.beatsPerMinute }
 
     init() {
         // La entrada de control se construye primero y publica por el relevo:
