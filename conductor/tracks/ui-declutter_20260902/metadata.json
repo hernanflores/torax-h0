@@ -1,0 +1,11 @@
+{
+  "id": "ui-declutter_20260902",
+  "title": "Doce Tracks, pantalla MIDI y limpieza del selector",
+  "type": "Refactor",
+  "status": "new",
+  "created_at": "2026-09-02",
+  "updated_at": "2026-09-02",
+  "phases": 5,
+  "tasks": 13,
+  "depends_on": ["cycles_20260901", "screen-handoff_20260901", "multi-track_20260831"]
+}

@@ -265,6 +265,20 @@ escalón es el que se nota.
   Arrastra las tres pantallas que la rebanada 2 dejó fuera —Banks, Patterns y la
   lista de Tracks— y la limitación 1 de Cycles, que era «sin persistencia».
 
+---
+
+- [ ] **Track: Doce Tracks, pantalla MIDI y limpieza del selector**
+  *Link: [conductor/tracks/ui-declutter_20260902/index.md](./tracks/ui-declutter_20260902/index.md)*
+
+  Tres ajustes de superficie sobre la pantalla de las rebanadas 1–3, todos para
+  bajar el ruido visual: el **canal** se va a la pantalla `3 · MIDI` —que aquí
+  empieza a existir— y se edita para los doce a la vez; el **botón de Track**
+  deja de decir dos veces el mismo número; y los Tracks pasan de dieciséis a
+  **doce**, que es lo que ensancha los anillos.
+
+  Lleva una **desviación de la Pre Spec** —«hasta 16 Tracks por Pattern»— y por
+  eso su Fase 1 la escribe antes de tocar código. Sin medición de jitter.
+
 ## Defectos conocidos
 
 Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres
