@@ -76,7 +76,7 @@ revisar el diseño antes de seguir.
   - [x] Cobertura `MIDI` ≥80%.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 4: APAGAR LO QUE YA SUENA
+## FASE 4: APAGAR LO QUE YA SUENA [checkpoint: f6a56eb]
 
 - [x] Task: Factorizar el barrido de silencio de `Transport.stop()` (FR4) [59c8ba7]
   - [x] Tests (Red): el barrido acotado a un Track manda `CC 123` por su canal y
@@ -103,11 +103,11 @@ revisar el diseño antes de seguir.
         canal, así que dos Tracks en el mismo canal se apagan juntos y el otro
         vuelve en su siguiente pulso.
   - [x] Cobertura `MIDI` ≥80%.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: EL GESTO DEL CONTROLADOR
 
-- [ ] Task: Los step buttons 15 y 16 como modificadores (FR7, FR8)
+- [~] Task: Los step buttons 15 y 16 como modificadores (FR7, FR8)
   - [ ] Tests (Red): step 16 mantenido + step 3 alterna el mute del Track 3 y
         **no** cambia la selección; al soltar el 16, el step 3 vuelve a
         seleccionar.
