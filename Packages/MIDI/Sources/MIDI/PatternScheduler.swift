@@ -169,10 +169,6 @@ public final class PatternScheduler {
         }
 
         for index in 0..<Pattern.trackCount {
-            // Se pregunta al material del scheduler y no al Pattern porque el
-            // arnés de medición no tiene Track detrás: mide la rejilla.
-            let emits = schedulers[index].material.emitsAnything
-
             // **El Cycle lo entrega el scheduler del Track, evento a evento, y
             // no se lee del Pattern.** Desde que el Cycle avanza en el límite de
             // vuelta, el material puede cambiar *dentro* de una ventana, así que
@@ -186,7 +182,6 @@ public final class PatternScheduler {
 
             schedulers[index].advance(toHorizon: horizonNanoseconds, refreshingFrom: nil) {
                 source, step, pitch, groove, offset in
-                guard emits else { return }
                 emit(index, source ?? fallback, step, pitch, groove, offset)
             }
         }

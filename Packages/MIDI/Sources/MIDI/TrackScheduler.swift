@@ -336,6 +336,19 @@ public struct TrackScheduler {
             // aparta. Los dos salen del mismo snapshot, recogido una vez por
             // ventana: leerlos de sitios distintos dejaría que un Step sonara
             // con el desplazamiento de un Track que ya no está.
+            // **Si el Cycle vigente no tiene material, no se emite** (NFR3 de
+            // la rebanada 1: el coste crece con lo que suena). Se pregunta aquí
+            // y no una vez por ventana porque desde que el Cycle avanza en el
+            // límite de vuelta, el material puede cambiar dentro de la ventana:
+            // un Track que arranca mudo y deja de serlo al cambiar de Cycle
+            // tiene que sonar en esa misma vuelta.
+            //
+            // Va **después** de la tirada de Probability y no antes, para no
+            // cambiar cuánta aleatoriedad consume un Cycle mudo: si la
+            // consumiera distinto, llenarle el pool mientras suena movería las
+            // omisiones de un patrón que nadie tocó.
+            guard material.emitsAnything else { continue }
+
             let groove = material.groove
             emit(
                 material.cycle,

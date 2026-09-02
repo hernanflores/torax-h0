@@ -144,7 +144,7 @@ regresión la bloquea.
   knob. Y la vuelta se mide desde el Step en que empezó, no con un módulo sobre
   el índice absoluto, para que un Cycle de 12 Steps que entra en el 16 dure doce
   y no ocho.
-- [ ] Task: El Cycle vigente decide lo que suena, entero
+- [~] Task: El Cycle vigente decide lo que suena, entero
   - [ ] Tests (Red): al cambiar de Cycle cambian a la vez Shape, pool, marco tonal, Groove y canal — no la mitad de uno y la mitad de otro
   - [ ] Tests (Red): el Cycle nuevo se lee **una sola vez** al cruzar el límite, no por evento
   - [ ] Tests (Red): un Cycle con el pool vacío no emite nada y **no rompe el recorrido**: la vuelta se cuenta igual y el siguiente sí suena (NFR3 de la rebanada 1: el coste crece con lo que suena)

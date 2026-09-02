@@ -213,3 +213,156 @@ final class CycleAdvanceTests: XCTestCase {
         XCTAssertNil(heard[3], "un Track sin material emitió")
     }
 }
+
+/// Tests de qué decide el Cycle vigente cuando la vuelta cambia.
+///
+/// **El Cycle es el juego completo de ajustes, no una parte.** Que cambien a la
+/// vez Shape, pool, marco tonal, Groove y canal es lo que separa un Cycle de
+/// «unos cuantos parámetros con automatización»: si cambiara la mitad de uno y
+/// la mitad de otro, el desarrollo dejaría de ser reproducible y no habría forma
+/// de razonar sobre lo que suena.
+final class CurrentCycleDecidesEverythingTests: XCTestCase {
+
+    private let tempo = Tempo(beatsPerMinute: 120)!
+    private let stepNanoseconds: Int64 = 125_000_000
+
+    private func pattern(_ track: Track) -> Pattern {
+        Pattern().replacing(track, at: 0)
+    }
+
+    /// Dos Cycles que difieren en **las cinco familias a la vez**. Si el cambio
+    /// fuera parcial, alguna de las cinco aserciones se quedaría en el valor del
+    /// Cycle anterior.
+    private func contrastingTrack() -> Track {
+        let first = Cycle(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!),
+            pool: PitchPool().inserting(Pitch(48)!),
+            groove: Groove(
+                velocity: Velocity(40)!, sustain: Sustain(percent: 50)!,
+                probability: Probability(percent: 100)!),
+            channel: Channel(3)!,
+            frame: TonalFrame(scale: .minor, root: .c)
+        )
+        let second = Cycle(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(8)!),
+            pool: PitchPool().inserting(Pitch(72)!),
+            groove: Groove(
+                velocity: Velocity(110)!, sustain: Sustain(percent: 150)!,
+                probability: Probability(percent: 100)!),
+            channel: Channel(9)!,
+            frame: TonalFrame(scale: .major, root: Root(7)!)
+        )
+        return Track(first).withActiveCount(2).replacing(second, at: 1)
+    }
+
+    /// Al cruzar el límite cambia el Cycle **entero**: no la mitad de uno y la
+    /// mitad de otro.
+    func testCrossingTheBoundaryChangesEveryFamilyAtOnce() {
+        let scheduler = PatternScheduler(tempo: tempo, pattern: pattern(contrastingTrack()))
+
+        var sources: [Int: Cycle] = [:]
+        scheduler.advance(toHorizon: 32 * stepNanoseconds, refreshingFrom: nil) {
+            _, source, step, _, _, _ in
+            sources[step] = source
+        }
+
+        let before = sources[15]
+        let after = sources[16]
+        XCTAssertEqual(before?.shape.pulses.count, 16)
+        XCTAssertEqual(before?.channel, Channel(3)!)
+        XCTAssertEqual(before?.groove.velocity, Velocity(40)!)
+        XCTAssertEqual(before?.frame, TonalFrame(scale: .minor, root: .c))
+        XCTAssertEqual(before?.pool.pitch(at: 0), Pitch(48)!)
+
+        XCTAssertEqual(after?.shape.pulses.count, 8)
+        XCTAssertEqual(after?.channel, Channel(9)!)
+        XCTAssertEqual(after?.groove.velocity, Velocity(110)!)
+        XCTAssertEqual(after?.frame, TonalFrame(scale: .major, root: Root(7)!))
+        XCTAssertEqual(after?.pool.pitch(at: 0), Pitch(72)!)
+    }
+
+    /// Y el Groove con que sale cada nota es el del mismo Cycle que la produjo,
+    /// no el de otro: es lo que sella el par de mensajes.
+    func testTheGrooveOfEachNoteIsTheOneOfItsOwnCycle() {
+        let scheduler = PatternScheduler(tempo: tempo, pattern: pattern(contrastingTrack()))
+
+        var mismatched = 0
+        scheduler.advance(toHorizon: 64 * stepNanoseconds, refreshingFrom: nil) {
+            _, source, _, _, groove, _ in
+            if groove != source.groove { mismatched += 1 }
+        }
+
+        XCTAssertEqual(mismatched, 0, "una nota salió con el Groove de otro Cycle")
+    }
+
+    /// **El Cycle vigente se lee una sola vez al cruzar el límite, no por
+    /// evento.** Dentro de una vuelta todos los eventos llevan el mismo Cycle, y
+    /// el número de cambios es exactamente el de límites cruzados.
+    func testTheCycleChangesOncePerBoundaryAndNotOncePerEvent() {
+        let scheduler = PatternScheduler(tempo: tempo, pattern: pattern(contrastingTrack()))
+
+        var sources: [Cycle] = []
+        scheduler.advance(toHorizon: 64 * stepNanoseconds, refreshingFrom: nil) {
+            _, source, _, _, _, _ in
+            sources.append(source)
+        }
+
+        let changes = zip(sources, sources.dropFirst()).filter { $0 != $1 }.count
+        XCTAssertEqual(changes, 3, "cuatro vueltas son tres cambios, no \(changes)")
+    }
+
+    // MARK: - Un Cycle mudo
+
+    /// **Un Cycle con el pool vacío no emite y no rompe el recorrido.** La
+    /// vuelta se cuenta igual y el siguiente sí suena: el coste crece con lo que
+    /// suena, no con lo que existe (NFR3 de la rebanada 1).
+    func testASilentCycleStillCountsItsTurn() {
+        let voiced = { (pitch: Int) in
+            Cycle(
+                shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!),
+                pool: PitchPool().inserting(Pitch(pitch)!)
+            )
+        }
+        let silent = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!))
+        let track =
+            Track(voiced(48))
+            .withActiveCount(3)
+            .replacing(silent, at: 1)
+            .replacing(voiced(72), at: 2)
+
+        let scheduler = PatternScheduler(tempo: tempo, pattern: pattern(track))
+        var byTurn: [Int: [Int?]] = [:]
+        scheduler.advance(toHorizon: 64 * stepNanoseconds, refreshingFrom: nil) {
+            _, _, step, pitch, _, _ in
+            byTurn[step / 16, default: []].append(pitch?.value)
+        }
+
+        XCTAssertEqual(byTurn[0], Array(repeating: 48, count: 16))
+        XCTAssertNil(byTurn[1], "el Cycle mudo emitió")
+        XCTAssertEqual(byTurn[2], Array(repeating: 72, count: 16), "la vuelta muda descontó")
+        XCTAssertEqual(byTurn[3], Array(repeating: 48, count: 16))
+    }
+
+    /// Y un Track que arranca mudo y deja de serlo al cambiar de Cycle empieza a
+    /// sonar en esa vuelta: la decisión de emitir no puede estar tomada de
+    /// antemano para toda la ventana.
+    func testATrackThatStartsSilentSoundsWhenItsSecondCycleArrives() {
+        let silent = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!))
+        let voiced = Cycle(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!),
+            pool: PitchPool().inserting(Pitch(60)!)
+        )
+        let track = Track(silent).withActiveCount(2).replacing(voiced, at: 1)
+
+        let scheduler = PatternScheduler(tempo: tempo, pattern: pattern(track))
+        var heard: [Int] = []
+        // Una sola ventana que cruza el límite: si la decisión de emitir se
+        // tomara una vez por ventana, esto no sonaría.
+        scheduler.advance(toHorizon: 32 * stepNanoseconds, refreshingFrom: nil) {
+            _, _, step, pitch, _, _ in
+            if pitch != nil { heard.append(step) }
+        }
+
+        XCTAssertEqual(heard, Array(16..<32), "el Cycle con material no llegó a sonar")
+    }
+}
