@@ -1,0 +1,39 @@
+Task: El snapshot deja de copiarse una vez por evento (NFR3)
+Fase 1 — v2 rebanada 3 (Cycles)
+
+QUÉ CAMBIA
+- `PatternScheduler.advance` entrega a `emit` el Track que produjo el evento,
+  copiado una vez por Track y por ventana, fuera del cierre.
+- `SchedulerThread.StepHandler` lo propaga.
+- El cierre de emisión de `Transport.play()` ya no llama a `handoff.load()`:
+  usa el Track que le llega.
+
+EL PORQUÉ
+La lectura por evento existía para saber por qué canal sale la nota y cuánto
+dura su Step —datos del Track, y con dieciséis Tracks pueden diferir—. Con un
+Pattern de 2,25 KB copiarlo por nota era invisible; con Cycles el snapshot
+pasa a ~36 KB y sería una copia de decenas de kilobytes por nota en el hilo de
+tiempo real. Se arregla antes de que el modelo crezca.
+
+Efecto secundario que importa: ahora el canal y la Division son por
+construcción los del mismo snapshot que produjo el evento. Antes lo eran solo
+porque nadie publicaba a mitad de ventana.
+
+CÓMO SE VERIFICÓ
+- Rojo medido antes de implementar: 188 lecturas para 168 notas.
+- Verde: 7 lecturas para 168 notas (una por ventana más la de Play).
+- `Engine` 383 tests, cobertura 99,26% de líneas.
+- `MIDI` 337 tests (21 + 316, partición de CI), cobertura 91,80% de líneas
+  medida en un proceso con el profdata fusionado a mano.
+- `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`: OK.
+
+SIN MEDICIÓN DE JITTER
+No mueve ningún instante: quita trabajo del camino de emisión, no lo añade ni
+lo desplaza. Es el caso que la nota del 2026-08-28 de `workflow.md` exime.
+
+FICHEROS
+Modificados: PatternScheduler.swift, SchedulerThread.swift, Transport.swift,
+PatternHandoff.swift (contador de lecturas solo en DEBUG), JitterHarness.swift,
+y los cierres de PatternSchedulerTests, SchedulerShiftTests,
+SchedulerThreadTests y TrackSchedulerTests.
+Creado: SnapshotPerWindowTests.swift.
