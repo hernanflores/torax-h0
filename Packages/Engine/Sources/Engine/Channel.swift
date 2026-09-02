@@ -28,7 +28,7 @@ public struct Channel: Equatable, Sendable {
 
     /// El canal 1, que es por donde emitía la app cuando había un Track solo.
     ///
-    /// Es el valor por defecto de `Track`, y existe como constante pública
+    /// Es el valor por defecto de `Cycle`, y existe como constante pública
     /// porque un argumento por defecto no puede usar la vía interna.
     public static let first = Channel(unchecked: 1)
 }

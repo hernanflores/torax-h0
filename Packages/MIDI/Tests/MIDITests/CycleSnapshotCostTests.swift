@@ -31,7 +31,7 @@ final class CycleSnapshotCostTests: XCTestCase {
     /// El `Cycle` de la Pre Spec es el `Track` de hoy: Shape, pool, marco tonal,
     /// Groove y canal. No se declara un tipo nuevo para no inventar una segunda
     /// definición de lo mismo antes de que la Fase 2 haga el renombrado.
-    private typealias ProbeCycle = Track
+    private typealias ProbeCycle = Cycle
 
     /// El `Track` que viene: dieciséis Cycles, cuántos están activos y por cuál
     /// va.

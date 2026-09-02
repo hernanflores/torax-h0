@@ -6,7 +6,7 @@ import XCTest
 /// Tests de la omisión en el camino de emisión.
 ///
 /// **El generador vive en `TrackScheduler` y no en `Track`.** El snapshot tiene
-/// que seguir siendo trivial —`_isPOD(Track.self)` lo vigila— y el generador
+/// que seguir siendo trivial —`_isPOD(Cycle.self)` lo vigila— y el generador
 /// tiene estado mutable. `TrackScheduler` ya es un valor que solo el hilo del
 /// scheduler muta, así que es su sitio.
 final class ProbabilityInSchedulerTests: XCTestCase {
@@ -17,8 +17,8 @@ final class ProbabilityInSchedulerTests: XCTestCase {
         division: .sixteenth
     )
 
-    private func track(probability: Int, pulses: Int = 16) -> Track {
-        Track(
+    private func track(probability: Int, pulses: Int = 16) -> Cycle {
+        Cycle(
             shape: Shape(steps: Steps(16)!, pulses: Pulses(pulses)!),
             pool: pool(),
             groove: Groove(
@@ -37,13 +37,13 @@ final class ProbabilityInSchedulerTests: XCTestCase {
 
     /// Los Steps que sonaron durante `rounds` vueltas completas del anillo.
     private func sounded(
-        _ track: Track,
+        _ track: Cycle,
         rounds: Int,
         seed: UInt64 = SeededRandom.defaultSeed
     ) -> [(step: Int, pitch: Pitch?)] {
         var scheduler = TrackScheduler(
             timeline: timeline,
-            material: .track(track),
+            material: .cycle(track),
             seed: seed
         )
         var emitted: [(Int, Pitch?)] = []

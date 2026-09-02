@@ -3,7 +3,7 @@ import Engine
 /// Convierte los mensajes de un controlador en Tracks publicados.
 ///
 /// Es la pieza que cierra la cadena del track: decodifica el giro, lo traduce al
-/// parámetro que le toca, se lo aplica al Shape vigente y publica el `Track`
+/// parámetro que le toca, se lo aplica al Shape vigente y publica el `Cycle`
 /// resultante por el `PatternHandoff` que la rebanada 1 dejó probado. Girar un
 /// knob y publicar un snapshot son, a partir de aquí, la misma cosa.
 ///
@@ -25,7 +25,7 @@ public final class ControlInput: @unchecked Sendable {
     /// **Editar es siempre editar el seleccionado.** Los otros quince siguen
     /// donde estaban: seleccionar no es un modo, es elegir a quién escuchan los
     /// controles.
-    public var track: Track { pattern.track(at: selectedTrackIndex)! }
+    public var track: Cycle { pattern.track(at: selectedTrackIndex)! }
 
     /// La superficie de pads vigente: qué altura tiene cada uno de los
     /// dieciséis.
@@ -101,7 +101,7 @@ public final class ControlInput: @unchecked Sendable {
     /// Vive para los tests que miden un Track suelto —siguen siendo la mayoría—
     /// y no para el producto, que publica el Pattern entero.
     public convenience init(
-        track: Track,
+        track: Cycle,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publish: @escaping @Sendable (Pattern) -> Void,
         mapping: ControlMapping = .beatStepPro,
@@ -123,7 +123,7 @@ public final class ControlInput: @unchecked Sendable {
     /// Atajo para quien todavía piensa en un Track: lo pone en la primera
     /// posición.
     public convenience init(
-        track: Track,
+        track: Cycle,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publishingTo handoff: PatternHandoff,
         mapping: ControlMapping = .beatStepPro,

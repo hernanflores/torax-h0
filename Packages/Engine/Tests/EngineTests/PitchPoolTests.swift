@@ -23,7 +23,7 @@ final class PitchPoolTests: XCTestCase {
     }
 
     func testTrackStaysTrivialWithThePoolInside() {
-        XCTAssertTrue(_isPOD(Track.self), "Track dejó de ser trivial al entrar el pool")
+        XCTAssertTrue(_isPOD(Cycle.self), "Cycle dejó de ser trivial al entrar el pool")
     }
 
     // MARK: - Insertar y quitar

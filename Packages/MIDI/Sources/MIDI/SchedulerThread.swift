@@ -64,7 +64,7 @@ public final class SchedulerThread: @unchecked Sendable {
     /// produjo.
     public typealias StepHandler =
         @Sendable (
-            _ track: Int, _ source: Track, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
+            _ track: Int, _ source: Cycle, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
             _ hostTime: UInt64
         ) -> Void
 

@@ -79,11 +79,11 @@ extension Playhead {
         elapsedNanoseconds: Int64
     ) -> [Playhead] {
         (0..<Pattern.trackCount).map { index in
-            let track = pattern.track(at: index) ?? Pattern.emptyTrack
+            let cycle = pattern.track(at: index) ?? Pattern.emptyCycle
             return Playhead(
                 elapsedNanoseconds: elapsedNanoseconds,
-                timeline: MusicalTimeline(tempo: tempo, division: track.shape.division),
-                steps: track.shape.steps
+                timeline: MusicalTimeline(tempo: tempo, division: cycle.shape.division),
+                steps: cycle.shape.steps
             )
         }
     }

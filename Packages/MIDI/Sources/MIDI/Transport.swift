@@ -59,7 +59,7 @@ public final class Transport: @unchecked Sendable {
     /// El Track 1, que es el único que la interfaz edita hasta la fase 4.
     ///
     /// Los literales de índice no fallan: el Pattern siempre tiene dieciséis.
-    public var track: Track { lastPublishedPattern.track(at: 0)! }
+    public var track: Cycle { lastPublishedPattern.track(at: 0)! }
 
     /// Dónde está el playhead sobre el anillo, o `nil` con el transporte
     /// parado.
@@ -119,7 +119,7 @@ public final class Transport: @unchecked Sendable {
     /// posición y deja los otros quince vacíos.
     public convenience init(
         configuration: SchedulerConfiguration,
-        track: Track,
+        track: Cycle,
         emitter: NoteEmitter,
         send: @escaping Send
     ) {
@@ -142,7 +142,7 @@ public final class Transport: @unchecked Sendable {
     /// > y los otros quince se conservan, que es lo que hace que este puente no
     /// > mienta: no reinicia nada. La fase 4 lo cambia por `publish(_:)` de un
     /// > Pattern entero, y esta sobrecarga desaparece.
-    public func publish(_ track: Track) {
+    public func publish(_ track: Cycle) {
         publish(lastPublishedPattern.replacing(track, at: 0))
     }
 
@@ -169,7 +169,7 @@ public final class Transport: @unchecked Sendable {
 
         let thread = SchedulerThread(
             configuration: configuration,
-            material: .track(starting.track(at: 0)!),
+            material: .cycle(starting.track(at: 0)!),
             handoff: handoff,
             playhead: playheadClock,
             pattern: starting

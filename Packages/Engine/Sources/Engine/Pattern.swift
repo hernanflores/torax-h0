@@ -17,6 +17,13 @@
 /// actividad que habría que mantener coherente. Es también lo que mantiene el
 /// tamaño fijo, porque una colección variable exige asignación y asignar en el
 /// camino del scheduler está prohibido.
+///
+/// > **Estado intermedio del 2026-09-02.** Lo que este tipo guarda ya no se
+/// > llama `Track` sino `Cycle`, y de momento hay **uno por Track**: el
+/// > renombrado va en su propio commit y el nivel nuevo llega en el siguiente.
+/// > `track(at:)` conserva el nombre a propósito —sigue devolviendo lo que ese
+/// > Track está tocando— para que la tarea que mete el nivel solo tenga que
+/// > cambiar el tipo que devuelve, y no todas las llamadas.
 public struct Pattern: Equatable, Sendable {
 
     /// Cuántos Tracks suenan juntos. La Pre Spec: «hasta 16 Tracks por Pattern».
@@ -37,11 +44,11 @@ public struct Pattern: Equatable, Sendable {
     /// se vería inmediatamente.
     private var tracks:
         (
-            Track, Track, Track, Track, Track, Track, Track, Track,
-            Track, Track, Track, Track, Track, Track, Track, Track
+            Cycle, Cycle, Cycle, Cycle, Cycle, Cycle, Cycle, Cycle,
+            Cycle, Cycle, Cycle, Cycle, Cycle, Cycle, Cycle, Cycle
         )
 
-    /// El Track de un hueco sin usar: dispara, y no tiene nada que emitir.
+    /// El Cycle de un hueco sin usar: dispara, y no tiene nada que emitir.
     ///
     /// **El silencio sale del pool vacío, no del Shape.** Los Pulses no pueden
     /// ser cero —la Pre Spec los define de 1 a Steps— así que un Track sin
@@ -50,7 +57,7 @@ public struct Pattern: Equatable, Sendable {
     ///
     /// Steps 16 y Pulses 1 son literales dentro de rango, así que el
     /// desempaquetado no puede fallar.
-    static let emptyTrack = Track(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!))
+    static let emptyCycle = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!))
 
     /// Dieciséis Tracks vacíos, **cada uno en su canal**: el Track N emite por
     /// el canal N.
@@ -59,8 +66,8 @@ public struct Pattern: Equatable, Sendable {
     /// explicar, y sin ella los dieciséis sonarían al mismo instrumento. Se puede
     /// cambiar: dos capas rítmicas sobre el mismo sinte es un caso real.
     public init() {
-        func empty(_ number: Int) -> Track {
-            Self.emptyTrack.on(Channel(unchecked: number))
+        func empty(_ number: Int) -> Cycle {
+            Self.emptyCycle.on(Channel(unchecked: number))
         }
         tracks = (
             empty(1), empty(2), empty(3), empty(4),
@@ -86,7 +93,7 @@ public struct Pattern: Equatable, Sendable {
     /// Los literales están dentro de rango, así que el desempaquetado no puede
     /// fallar.
     public static let initial = Pattern().replacing(
-        Track(
+        Cycle(
             shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!),
             pool: PitchPool().inserting(Pitch(48)!)
         ),
@@ -100,10 +107,10 @@ public struct Pattern: Equatable, Sendable {
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
-    public func track(at index: Int) -> Track? {
+    public func track(at index: Int) -> Cycle? {
         guard (0..<Self.trackCount).contains(index) else { return nil }
         return withUnsafePointer(to: tracks) { pointer in
-            pointer.withMemoryRebound(to: Track.self, capacity: Self.trackCount) {
+            pointer.withMemoryRebound(to: Cycle.self, capacity: Self.trackCount) {
                 $0[index]
             }
         }
@@ -112,12 +119,12 @@ public struct Pattern: Equatable, Sendable {
     /// El Pattern con ese Track en esa posición y los otros quince intactos.
     ///
     /// Fuera de rango devuelve el Pattern tal cual: nada que cambiar.
-    public func replacing(_ track: Track, at index: Int) -> Pattern {
+    public func replacing(_ track: Cycle, at index: Int) -> Pattern {
         guard (0..<Self.trackCount).contains(index) else { return self }
 
         var updated = self
         withUnsafeMutablePointer(to: &updated.tracks) { pointer in
-            pointer.withMemoryRebound(to: Track.self, capacity: Self.trackCount) {
+            pointer.withMemoryRebound(to: Cycle.self, capacity: Self.trackCount) {
                 $0[index] = track
             }
         }

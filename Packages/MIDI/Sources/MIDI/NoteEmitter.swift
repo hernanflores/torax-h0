@@ -31,7 +31,7 @@ public struct NoteEmitter: Equatable, Sendable {
 
     /// Entrega los dos mensajes del pulso, cada uno con su instante de emisión.
     ///
-    /// **Ya no queda nada constante en el emisor: todo sale del `Track`.** La
+    /// **Ya no queda nada constante en el emisor: todo sale del `Cycle`.** La
     /// altura llegó con Tonal, la Velocity con Groove, y en la v2 el canal y la
     /// duración del Step, que eran lo último que quedaba.
     ///

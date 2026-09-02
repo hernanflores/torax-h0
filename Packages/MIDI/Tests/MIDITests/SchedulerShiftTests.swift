@@ -19,8 +19,8 @@ final class SchedulerShiftTests: XCTestCase {
     /// Un Step dura 125 ms a 120 BPM con Division 1/16.
     private let step: Int64 = 125_000_000
 
-    private func track(timing: Int = 50, delay: Int = 0) -> Track {
-        Track(
+    private func track(timing: Int = 50, delay: Int = 0) -> Cycle {
+        Cycle(
             shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!),
             pool: PitchPool().toggling(Pitch(60)!),
             groove: Groove(
@@ -52,7 +52,7 @@ final class SchedulerShiftTests: XCTestCase {
     /// Con el Groove default cada Step se emite en el offset que ya emitía antes
     /// de la rebanada 6 — el de `MusicalTimeline`, sin sumar ni restar nada.
     func testWithTheDefaultGrooveEveryStepKeepsItsGridOffset() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track()))
+        var scheduler = TrackScheduler(timeline: timeline, material: .cycle(track()))
 
         for (step, offset) in emit(&scheduler, toHorizon: 8 * step) {
             XCTAssertEqual(offset, timeline.nanosecondOffset(forStep: step))
@@ -73,7 +73,7 @@ final class SchedulerShiftTests: XCTestCase {
 
     func testTheEmittedOffsetIsTheGridPlusTheShift() {
         let swung = track(timing: 75, delay: 25)
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(swung))
+        var scheduler = TrackScheduler(timeline: timeline, material: .cycle(swung))
 
         for (step, offset) in emit(&scheduler, toHorizon: 8 * self.step) {
             let expected =
@@ -87,7 +87,7 @@ final class SchedulerShiftTests: XCTestCase {
     /// Al 75% los Steps impares caen medio Step tarde y los pares no se mueven:
     /// la rejilla emitida es no uniforme, que es lo que el swing significa.
     func testSwingProducesANonUniformEmittedGrid() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track(timing: 75)))
+        var scheduler = TrackScheduler(timeline: timeline, material: .cycle(track(timing: 75)))
         let emitted = emit(&scheduler, toHorizon: 4 * step)
 
         XCTAssertEqual(emitted.map(\.offset), [0, step + step / 2, 2 * step, 3 * step + step / 2])
@@ -99,7 +99,7 @@ final class SchedulerShiftTests: XCTestCase {
     /// avanza.
     func testEveryStepIsStillEmittedExactlyOnceAcrossWindows() {
         var scheduler = TrackScheduler(
-            timeline: timeline, material: .track(track(timing: 75, delay: -100)))
+            timeline: timeline, material: .cycle(track(timing: 75, delay: -100)))
 
         var steps: [Int] = []
         for window in 1...8 {
@@ -116,8 +116,8 @@ final class SchedulerShiftTests: XCTestCase {
     /// pasado.** Con Delay −100% el Step tiene que calcularse un Step antes de
     /// su rejilla, así que entra en una ventana anterior a la que le tocaría.
     func testANegativeDelaySelectsStepsEarlier() {
-        var straight = TrackScheduler(timeline: timeline, material: .track(track()))
-        var advanced = TrackScheduler(timeline: timeline, material: .track(track(delay: -100)))
+        var straight = TrackScheduler(timeline: timeline, material: .cycle(track()))
+        var advanced = TrackScheduler(timeline: timeline, material: .cycle(track(delay: -100)))
 
         let horizon = step / 2
 
@@ -131,7 +131,7 @@ final class SchedulerShiftTests: XCTestCase {
     func testANonNegativeDelaySelectsExactlyTheSameStepsAsBefore() {
         for percent in [0, 25, 50, 100] {
             var scheduler = TrackScheduler(
-                timeline: timeline, material: .track(track(delay: percent)))
+                timeline: timeline, material: .cycle(track(delay: percent)))
 
             XCTAssertEqual(
                 emit(&scheduler, toHorizon: 4 * step).map(\.step),
@@ -144,7 +144,7 @@ final class SchedulerShiftTests: XCTestCase {
     /// El swing tampoco amplía el horizonte: solo atrasa, así que no necesita
     /// presupuesto.
     func testSwingDoesNotWidenTheHorizon() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track(timing: 75)))
+        var scheduler = TrackScheduler(timeline: timeline, material: .cycle(track(timing: 75)))
 
         XCTAssertEqual(emit(&scheduler, toHorizon: 4 * step).map(\.step), [0, 1, 2, 3])
     }
@@ -153,7 +153,7 @@ final class SchedulerShiftTests: XCTestCase {
     /// se puede girar mientras suena, y un presupuesto congelado dejaría de
     /// cubrir el adelanto en cuanto el knob se moviera.
     func testTheBudgetComesFromThePublishedSnapshotAndNotFromConstruction() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track()))
+        var scheduler = TrackScheduler(timeline: timeline, material: .cycle(track()))
         let handoff = PatternHandoff(track())
 
         // Sin Delay: la ventana de medio Step solo alcanza al Step 0.
@@ -174,7 +174,7 @@ final class SchedulerShiftTests: XCTestCase {
     /// alcanza al Step 1. Están separados para que el que falle diga cuál de las
     /// dos cosas se rompió.
     func testWithoutBudgetTheSameWindowReachesNothing() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track()))
+        var scheduler = TrackScheduler(timeline: timeline, material: .cycle(track()))
 
         XCTAssertEqual(emit(&scheduler, toHorizon: step / 2).map(\.step), [0])
         XCTAssertEqual(emit(&scheduler, toHorizon: step).map(\.step), [])
@@ -183,7 +183,7 @@ final class SchedulerShiftTests: XCTestCase {
     /// El desplazamiento sale del **mismo** snapshot que la altura y el Groove:
     /// no son dos lecturas que puedan discrepar en el borde de una ventana.
     func testTheShiftComesFromTheSameSnapshotAsTheGroove() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(track()))
+        var scheduler = TrackScheduler(timeline: timeline, material: .cycle(track()))
         let handoff = PatternHandoff(track())
         handoff.publish(Engine.Pattern().replacing(track(timing: 75, delay: 50), at: 0))
 
@@ -263,8 +263,8 @@ final class SchedulerOriginTests: XCTestCase {
         SchedulerConfiguration(timeline: timeline, lookAheadNanoseconds: 20_000_000)
     }
 
-    private func track(timing: Int = 50, delay: Int = 0) -> Track {
-        Track(
+    private func track(timing: Int = 50, delay: Int = 0) -> Cycle {
+        Cycle(
             shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!),
             pool: PitchPool().toggling(Pitch(60)!),
             groove: Groove(
@@ -281,7 +281,7 @@ final class SchedulerOriginTests: XCTestCase {
     /// emisión, junto al instante en que se pidió arrancar.
     private func run(
         untilEmitted count: Int,
-        material track: Track,
+        material track: Cycle,
         playhead: PlayheadClock? = nil,
         file: StaticString = #filePath,
         line: UInt = #line
@@ -290,7 +290,7 @@ final class SchedulerOriginTests: XCTestCase {
 
         let thread = SchedulerThread(
             configuration: configuration,
-            material: .track(track),
+            material: .cycle(track),
             playhead: playhead
         ) { _, _, step, _, _, hostTime in
             events.record(

@@ -14,7 +14,7 @@ final class PatternChannelEmissionTests: XCTestCase {
     private let emitter = NoteEmitter()
 
     /// Lo que el emisor entrega, con el canal de cada mensaje.
-    private func channels(of track: Track, pitch: Pitch = Pitch(60)!) -> [Int] {
+    private func channels(of track: Cycle, pitch: Pitch = Pitch(60)!) -> [Int] {
         var seen: [Int] = []
         emitter.emit(
             pitch: pitch,

@@ -13,7 +13,7 @@ final class ParameterChangeTests: XCTestCase {
 
     /// Valores de partida lejos de todo extremo, para que un giro en cualquiera
     /// de los siete tenga sitio donde moverse.
-    private let track = Track(
+    private let track = Cycle(
         shape: Shape(steps: Steps(8)!, pulses: Pulses(4)!, division: .quarter),
         groove: Groove(
             velocity: Velocity(64)!,
@@ -56,7 +56,7 @@ final class ParameterChangeTests: XCTestCase {
     /// El valor pedido, no `effectivePulses`: el knob está en ese número y
     /// mostrar el otro haría creer que se perdió.
     func testPulsesShowsTheIntendedValueNotTheEffectiveOne() {
-        let narrow = Track(shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!))
+        let narrow = Cycle(shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!))
         let change = ParameterChange(from: narrow, to: narrow.applying(3, to: .pulses))
 
         XCTAssertEqual(change?.description, "Pulses 7")
@@ -71,7 +71,7 @@ final class ParameterChangeTests: XCTestCase {
     }
 
     func testTurningAgainstAnEndAnnouncesNothing() {
-        let loud = Track(
+        let loud = Cycle(
             shape: track.shape,
             groove: Groove(velocity: Velocity(127)!, sustain: .default, probability: .default)
         )
@@ -83,7 +83,7 @@ final class ParameterChangeTests: XCTestCase {
     /// El pool se edita con pads y tiene su propia representación en pantalla;
     /// anunciarlo como un valor grande sería tratarlo como lo que no es.
     func testEditingThePoolAnnouncesNothing() {
-        let withPool = Track(
+        let withPool = Cycle(
             shape: track.shape,
             pool: PitchPool().toggling(Pitch(60)!),
             groove: track.groove
@@ -94,7 +94,7 @@ final class ParameterChangeTests: XCTestCase {
     // MARK: - Solo el primero que difiera
 
     func testOnlyTheFirstDifferenceIsAnnounced() {
-        let other = Track(
+        let other = Cycle(
             shape: Shape(steps: Steps(12)!, pulses: Pulses(4)!, division: .quarter),
             groove: Groove(velocity: Velocity(100)!, sustain: .default, probability: .default)
         )
@@ -107,8 +107,8 @@ final class ParameterChangeTests: XCTestCase {
 /// Llegan con la rebanada 6, y con ellos el primer valor que puede ser negativo.
 final class TemporalParameterChangeTests: XCTestCase {
 
-    private func track(timing: Int = 50, delay: Int = 0) -> Track {
-        Track(
+    private func track(timing: Int = 50, delay: Int = 0) -> Cycle {
+        Cycle(
             shape: Shape(steps: Steps(16)!, pulses: Pulses(4)!),
             groove: Groove(
                 velocity: .default,

@@ -15,7 +15,7 @@ import XCTest
 /// cosas distintas.
 final class FamilyReadoutTests: XCTestCase {
 
-    private let track = Track(
+    private let track = Cycle(
         shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!),
         pool: PitchPool().inserting(Pitch(48)!).inserting(Pitch(55)!),
         frame: TonalFrame(scale: .minor, root: .c)
@@ -66,7 +66,7 @@ final class FamilyReadoutTests: XCTestCase {
     /// Track sin pool dispara sus Pulses y no emite: la pantalla tiene que
     /// comunicar ese estado, que es el de quince Tracks al arrancar.
     func testAnEmptyPoolIsStatedAndNotInvented() {
-        let empty = Track(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!))
+        let empty = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!))
 
         XCTAssertEqual(FamilyReadout(track: empty, family: .tonal).detail, "Pool · empty")
     }
@@ -74,7 +74,7 @@ final class FamilyReadoutTests: XCTestCase {
     /// Una sola altura se dice en singular. Es la diferencia entre una app que
     /// informa y una que rellena una plantilla.
     func testASinglePitchReadsInTheSingular() {
-        let one = Track(
+        let one = Cycle(
             shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!),
             pool: PitchPool().inserting(Pitch(48)!))
 

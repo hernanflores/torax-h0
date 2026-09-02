@@ -70,7 +70,7 @@ final class SelectedTrackEditingTests: XCTestCase {
         // hacia arriba no mueve nada: el test pasaba por la razón equivocada
         // —el giro «cambiaba» el Track porque le perdía el canal, que es el
         // defecto del 2026-08-31—.
-        let midRange = Track(
+        let midRange = Cycle(
             shape: Shape(steps: Steps(8)!, pulses: Pulses(4)!),
             pool: PitchPool().inserting(Pitch(60)!),
             groove: Groove(

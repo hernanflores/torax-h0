@@ -96,7 +96,7 @@ extension TrackParameter: CustomStringConvertible {
     }
 }
 
-extension Track {
+extension Cycle {
 
     /// El Track resultante de desplazar uno de sus parámetros.
     ///
@@ -116,7 +116,7 @@ extension Track {
     ///   - delta: The amount by which to advance the parameter.
     ///   - parameter: The track parameter to adjust.
     /// - Returns: A new track with the selected parameter adjusted.
-    public func applying(_ delta: Int, to parameter: TrackParameter) -> Track {
+    public func applying(_ delta: Int, to parameter: TrackParameter) -> Cycle {
         switch parameter {
         case .steps, .pulses, .rotate, .division:
             // `with(...)` y no `Track(...)`: reconstruir enumerando campos es lo
@@ -179,7 +179,7 @@ extension Track {
     /// Creates a track with the specified groove while preserving its shape and pool.
     /// - Parameter groove: The replacement groove.
     /// - Returns: A track with the specified groove.
-    private func withGroove(_ groove: Groove) -> Track {
+    private func withGroove(_ groove: Groove) -> Cycle {
         with(groove: groove)
     }
 }

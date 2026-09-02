@@ -52,7 +52,7 @@ final class TransportTests: XCTestCase {
             ),
             // Con el pool vacío el Track dispara y no emite nada, que es
             // comportamiento correcto y no lo que estos tests miden.
-            track: Track(shape: Shape(steps: steps, pulses: Pulses(4)!), pool: voicePool),
+            track: Cycle(shape: Shape(steps: steps, pulses: Pulses(4)!), pool: voicePool),
             emitter: NoteEmitter(),
             send: recorder.record
         )
@@ -198,7 +198,7 @@ final class TransportTests: XCTestCase {
         waitUntil { recorder.noteOnCount >= 1 }
 
         let steps = Steps(8)!
-        transport.publish(Track(shape: Shape(steps: steps, pulses: Pulses(1)!), pool: voicePool))
+        transport.publish(Cycle(shape: Shape(steps: steps, pulses: Pulses(1)!), pool: voicePool))
 
         let after = recorder.noteOnCount
         waitUntil { recorder.noteOnCount > after }
@@ -214,8 +214,8 @@ final class TransportTests: XCTestCase {
         let recorder = Recorder()
 
         // 300 BPM: el Step de 1/16 dura 50 ms y el de 1/1, 800 ms.
-        let fast = Track(shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!), pool: voicePool)
-        let slow = Track(
+        let fast = Cycle(shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!), pool: voicePool)
+        let slow = Cycle(
             shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!, division: .whole),
             pool: voicePool
         ).on(Channel(4)!)

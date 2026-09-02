@@ -142,9 +142,9 @@ final class PadPoolInputTests: XCTestCase {
     // MARK: - Publicación
 
     func testEveryAcceptedPadPublishesTheTrack() {
-        let handoff = PatternHandoff(Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)))
+        let handoff = PatternHandoff(Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)))
         let input = ControlInput(
-            track: Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
+            track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
             frame: frame,
             publishingTo: handoff
         )
@@ -160,7 +160,7 @@ final class PadPoolInputTests: XCTestCase {
 
     private func makeInput(frame: TonalFrame? = nil) -> ControlInput {
         ControlInput(
-            track: Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
+            track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
             frame: frame ?? self.frame,
             publish: { _ in }
         )

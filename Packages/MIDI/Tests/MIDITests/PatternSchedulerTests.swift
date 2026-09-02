@@ -28,8 +28,8 @@ final class PatternSchedulerTests: XCTestCase {
         pulses pulseCount: Int,
         pitch pitchValue: Int = 60,
         division: Division = .sixteenth
-    ) -> Track {
-        Track(
+    ) -> Cycle {
+        Cycle(
             shape: Shape(
                 steps: Steps(stepCount)!,
                 pulses: Pulses(pulseCount)!,
@@ -40,7 +40,7 @@ final class PatternSchedulerTests: XCTestCase {
     }
 
     /// Un Pattern con material solo en las posiciones dadas.
-    private func pattern(_ tracks: [Int: Track]) -> Pattern {
+    private func pattern(_ tracks: [Int: Cycle]) -> Pattern {
         tracks.reduce(into: Pattern()) { $0 = $0.replacing($1.value, at: $1.key) }
     }
 
@@ -68,7 +68,7 @@ final class PatternSchedulerTests: XCTestCase {
     func testWithOneTrackTheOutputIsWhatItAlwaysWas() {
         let only = track(steps: 16, pulses: 4)
 
-        var single = TrackScheduler(timeline: timeline(.sixteenth), material: .track(only))
+        var single = TrackScheduler(timeline: timeline(.sixteenth), material: .cycle(only))
         var expected: [(step: Int, pitch: Int?)] = []
         single.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: nil) { step, pitch, _, _ in
             expected.append((step, pitch?.value))
@@ -120,7 +120,7 @@ final class PatternSchedulerTests: XCTestCase {
 
     /// Con los dieciséis llenos no se pierde ningún evento dentro de la ventana.
     func testWithSixteenFullTracksNoEventIsLost() {
-        var full: [Int: Track] = [:]
+        var full: [Int: Cycle] = [:]
         for index in 0..<16 { full[index] = track(steps: 8, pulses: 8, pitch: 48 + index) }
 
         var scheduler = PatternScheduler(tempo: tempo, pattern: pattern(full))
@@ -205,7 +205,7 @@ final class PatternSchedulerTests: XCTestCase {
     /// independencia que hace que dieciséis voces no se contaminen.
     func testTimingAndDelayOfOneTrackDoNotMoveTheOthers() {
         let plain = track(steps: 8, pulses: 8)
-        let shifted = Track(
+        let shifted = Cycle(
             shape: Shape(steps: Steps(8)!, pulses: Pulses(8)!),
             pool: PitchPool().inserting(Pitch(60)!),
             groove: Groove(
@@ -284,7 +284,7 @@ final class PatternSchedulerTests: XCTestCase {
     /// Y ningún par de los dieciséis coincide: no es que el 1 y el 2 difieran
     /// por suerte, es que las dieciséis secuencias son distintas.
     func testTheSixteenSequencesAreAllDifferent() {
-        var full: [Int: Track] = [:]
+        var full: [Int: Cycle] = [:]
         for index in 0..<16 { full[index] = halfProbabilityTrack() }
 
         var scheduler = PatternScheduler(tempo: tempo, pattern: pattern(full))
@@ -306,7 +306,7 @@ final class PatternSchedulerTests: XCTestCase {
     /// rompería la trivialidad y haría que dos hilos mutaran lo mismo.
     func testTheRandomStateStaysOutOfTheSnapshot() {
         XCTAssertTrue(_isPOD(Pattern.self))
-        XCTAssertTrue(_isPOD(Track.self))
+        XCTAssertTrue(_isPOD(Cycle.self))
     }
 
     /// Las semillas derivadas no se pisan entre Tracks contiguos.
@@ -324,7 +324,7 @@ final class PatternSchedulerTests: XCTestCase {
         var scheduler = PatternScheduler(tempo: tempo, pattern: Pattern())
         let handoff = PatternHandoff(Pattern())
 
-        var updated: [Int: Track] = [:]
+        var updated: [Int: Cycle] = [:]
         for index in 0..<16 { updated[index] = track(steps: 4, pulses: 4, pitch: 60) }
         handoff.publish(pattern(updated))
 
@@ -336,8 +336,8 @@ final class PatternSchedulerTests: XCTestCase {
 
     /// Un Track que dispara en todos los Steps con Probability al 50%: la mitad
     /// de los Pulses se omite, y cuáles lo decide el generador.
-    private func halfProbabilityTrack() -> Track {
-        Track(
+    private func halfProbabilityTrack() -> Cycle {
+        Cycle(
             shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!),
             pool: PitchPool().inserting(Pitch(60)!),
             groove: Groove(

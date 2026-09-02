@@ -6,7 +6,7 @@
 /// de después. Es dominio, no presentación: la vista solo decide el tamaño de la
 /// letra.
 ///
-/// **Se llamaba `ShapeChange` y comparaba dos Shapes.** Groove vive en `Track`,
+/// **Se llamaba `ShapeChange` y comparaba dos Shapes.** Groove vive en `Cycle`,
 /// así que la comparación sube un nivel. No es una generalización preventiva:
 /// con Velocity, Sustain y Probability en el snapshot, comparar Shapes dejaría
 /// tres de los siete parámetros sin poder anunciarse.
@@ -44,7 +44,7 @@ public struct ParameterChange: Equatable, Sendable {
     ///
     /// El orden de comparación es el de `TrackParameter`: primero Shape, después
     /// Groove. Va declarado y no heredado del azar.
-    public init?(from previous: Track, to current: Track) {
+    public init?(from previous: Cycle, to current: Cycle) {
         guard previous != current else { return nil }
 
         let previousShape = previous.shape

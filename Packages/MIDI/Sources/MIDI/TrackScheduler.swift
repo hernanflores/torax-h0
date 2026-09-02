@@ -11,7 +11,7 @@ import Engine
 public enum SchedulerMaterial: Equatable, Sendable {
 
     /// El material musical de un Track: dispara donde diga su Shape.
-    case track(Track)
+    case cycle(Cycle)
 
     /// Todos los Steps disparan.
     ///
@@ -33,7 +33,7 @@ public enum SchedulerMaterial: Equatable, Sendable {
     /// - Returns: `true` if the material triggers at the step, `false` otherwise.
     func triggers(atStep index: Int) -> Bool {
         switch self {
-        case .track(let track): track.triggers(atStep: index)
+        case .cycle(let cycle): cycle.triggers(atStep: index)
         case .everyStep: true
         }
     }
@@ -49,7 +49,7 @@ public enum SchedulerMaterial: Equatable, Sendable {
     /// Sin asignaciones, sin locks, sin await.
     var emitsAnything: Bool {
         switch self {
-        case .track(let track): !track.pool.isEmpty
+        case .cycle(let cycle): !cycle.pool.isEmpty
         case .everyStep: true
         }
     }
@@ -65,7 +65,7 @@ public enum SchedulerMaterial: Equatable, Sendable {
     /// Sin asignaciones, sin locks, sin await.
     var groove: Groove {
         switch self {
-        case .track(let track): track.groove
+        case .cycle(let cycle): cycle.groove
         case .everyStep: .default
         }
     }
@@ -81,7 +81,7 @@ public enum SchedulerMaterial: Equatable, Sendable {
     /// Sin asignaciones, sin locks, sin await.
     func pitch(atStep index: Int) -> Pitch? {
         switch self {
-        case .track(let track): track.pitch(atStep: index)
+        case .cycle(let cycle): cycle.pitch(atStep: index)
         case .everyStep: Self.measurementPitch
         }
     }
@@ -138,8 +138,8 @@ public struct TrackScheduler {
 
     /// El generador que decide qué Pulse concreto se omite.
     ///
-    /// **Vive aquí y no en `Track` porque tiene estado mutable.** El snapshot
-    /// tiene que seguir siendo trivial —`_isPOD(Track.self)` lo vigila— y
+    /// **Vive aquí y no en `Cycle` porque tiene estado mutable.** El snapshot
+    /// tiene que seguir siendo trivial —`_isPOD(Cycle.self)` lo vigila— y
     /// meterlo dentro haría además que dos hilos mutaran lo mismo. Este valor,
     /// en cambio, lo toca un solo hilo: el del scheduler.
     ///
@@ -171,8 +171,8 @@ public struct TrackScheduler {
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
-    mutating func refresh(with track: Track) {
-        material = .track(track)
+    mutating func refresh(with cycle: Cycle) {
+        material = .cycle(cycle)
     }
 
     /// Cuánto tiempo hay que reservar por delante para que ningún evento
@@ -219,12 +219,12 @@ public struct TrackScheduler {
         refreshingFrom handoff: PatternHandoff?,
         emit: (_ step: Int, _ pitch: Pitch?, _ groove: Groove, _ offsetNanoseconds: Int64) -> Void
     ) {
-        if let published = handoff?.load(), let track = published.track(at: 0) {
+        if let published = handoff?.load(), let cycle = published.track(at: 0) {
             // > **Puente de la v2, fase 2.** El handoff ya trae los dieciséis
             // > Tracks y este scheduler todavía emite uno. La fase 3 le da el
             // > recorrido; hasta entonces lee el Track 1, que es lo que la
             // > interfaz edita.
-            material = .track(track)
+            material = .cycle(cycle)
         }
 
         // **El horizonte se amplía con el presupuesto de adelanto.** Sin esto,

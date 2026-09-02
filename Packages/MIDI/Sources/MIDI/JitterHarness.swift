@@ -188,7 +188,7 @@ public enum JitterHarness {
         var pattern = Pattern()
         for index in 0..<min(count, Pattern.trackCount) {
             pattern = pattern.replacing(
-                Track(
+                Cycle(
                     shape: Shape(steps: steps, pulses: pulses),
                     pool: PitchPool().inserting(pitch),
                     groove: groove ?? .default
@@ -208,8 +208,8 @@ public enum JitterHarness {
             return .everyStep
         }
 
-        return .track(
-            Track(
+        return .cycle(
+            Cycle(
                 shape: Shape(steps: steps, pulses: pulses),
                 pool: PitchPool().toggling(SchedulerMaterial.measurementPitch),
                 groove: groove

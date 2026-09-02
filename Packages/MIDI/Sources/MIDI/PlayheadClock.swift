@@ -6,7 +6,7 @@
 /// quien lea tarde —o no lea— no puede afectarle.
 ///
 /// **Por qué basta un atómico y `PatternHandoff` necesitaba un anillo de
-/// ranuras.** Un `Track` son varias palabras de memoria y no hay atómico de ese
+/// ranuras.** Un `Cycle` son varias palabras de memoria y no hay atómico de ese
 /// tamaño, así que hizo falta disciplina de ranura. Aquí lo publicado es **un
 /// solo entero de 64 bits**, el origen en ticks de host: cabe en el atómico que
 /// ya existe y el protocolo desaparece. La asimetría es del dato, no del

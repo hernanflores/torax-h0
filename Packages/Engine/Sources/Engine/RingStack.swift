@@ -100,12 +100,12 @@ public struct RingStack: Equatable, Sendable {
     /// `product-guidelines.md` prohíbe.
     public init(pattern: Pattern) {
         bands = (0..<Pattern.trackCount).map { index in
-            let track = pattern.track(at: index) ?? Pattern.emptyTrack
+            let cycle = pattern.track(at: index) ?? Pattern.emptyCycle
             return Band(
                 track: index,
-                ring: Ring(shape: track.shape),
+                ring: Ring(shape: cycle.shape),
                 radius: Self.outermost - Self.spacing * Double(index),
-                hasMaterial: !track.pool.isEmpty
+                hasMaterial: !cycle.pool.isEmpty
             )
         }
     }

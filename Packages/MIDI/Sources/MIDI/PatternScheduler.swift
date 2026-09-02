@@ -53,11 +53,11 @@ public final class PatternScheduler {
         schedulers = .allocate(capacity: Pattern.trackCount)
 
         for index in 0..<Pattern.trackCount {
-            let track = pattern.track(at: index)!
+            let cycle = pattern.track(at: index)!
             schedulers.advanced(by: index).initialize(
                 to: TrackScheduler(
-                    timeline: MusicalTimeline(tempo: tempo, division: track.shape.division),
-                    material: .track(track),
+                    timeline: MusicalTimeline(tempo: tempo, division: cycle.shape.division),
+                    material: .cycle(cycle),
                     startingAtStep: startingStep,
                     seed: Self.seed(seed, forTrack: index)
                 )
@@ -150,7 +150,7 @@ public final class PatternScheduler {
         toHorizon horizonNanoseconds: Int64,
         refreshingFrom handoff: PatternHandoff?,
         emit: (
-            _ track: Int, _ source: Track, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
+            _ track: Int, _ source: Cycle, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
             _ offsetNanoseconds: Int64
         ) -> Void
     ) {

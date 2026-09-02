@@ -24,8 +24,8 @@ final class ControlInputTests: XCTestCase {
     }
 
     private func makeInput(_ shape: Shape) -> (ControlInput, PatternHandoff) {
-        let handoff = PatternHandoff(Track(shape: shape))
-        return (ControlInput(track: Track(shape: shape), publishingTo: handoff), handoff)
+        let handoff = PatternHandoff(Cycle(shape: shape))
+        return (ControlInput(track: Cycle(shape: shape), publishingTo: handoff), handoff)
     }
 
     // MARK: - Girar publica
@@ -70,7 +70,7 @@ final class ControlInputTests: XCTestCase {
                 sustain: Sustain(percent: 100)!,
                 probability: Probability(percent: 50)!
             )
-            let track = Track(shape: roomy, groove: roomyGroove)
+            let track = Cycle(shape: roomy, groove: roomyGroove)
             let handoff = PatternHandoff(track)
             let input = ControlInput(track: track, publishingTo: handoff)
 

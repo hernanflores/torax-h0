@@ -127,7 +127,7 @@ final class TransportModel {
     private(set) var selectedTrackIndex = 0
 
     /// El Track seleccionado, que es el que la pantalla muestra.
-    var track: Track { pattern.track(at: selectedTrackIndex)! }
+    var track: Cycle { pattern.track(at: selectedTrackIndex)! }
 
     /// Cuáles tienen material: los vacíos no suenan, y eso se ve.
     var tracksWithMaterial: [Bool] {

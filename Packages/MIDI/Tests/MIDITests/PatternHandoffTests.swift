@@ -23,9 +23,9 @@ final class PatternHandoffTests: XCTestCase {
     /// ranura que el lector está copiando, el resultado mezclaría campos de dos
     /// publicaciones distintas — y se vería como un Track cuyos tres valores ya
     /// no coinciden.
-    private func correlatedTrack(_ value: Int) -> Track {
+    private func correlatedTrack(_ value: Int) -> Cycle {
         let steps = Steps(value)!
-        return Track(
+        return Cycle(
             shape: Shape(
                 steps: steps,
                 pulses: Pulses(value)!,
@@ -62,7 +62,7 @@ final class PatternHandoffTests: XCTestCase {
     }
 
     private func assertCorrelated(
-        _ track: Track, file: StaticString = #filePath, line: UInt = #line
+        _ track: Cycle, file: StaticString = #filePath, line: UInt = #line
     ) {
         XCTAssertEqual(track.shape.pulses.count, track.shape.steps.count, file: file, line: line)
         XCTAssertEqual(track.shape.rotate.amount, track.shape.steps.count, file: file, line: line)
@@ -191,7 +191,7 @@ final class PatternHandoffTests: XCTestCase {
     /// pool de pitches tiene que ser almacenamiento inline, no un `Array`.
     func testTheSnapshotIsATrivialTypeSoCopyingItTakesNoReferenceCounting() {
         XCTAssertTrue(_isPOD(Pattern.self), "Pattern dejó de ser trivial")
-        XCTAssertTrue(_isPOD(Track.self), "Track dejó de ser trivial: revisar Tonal/Groove")
+        XCTAssertTrue(_isPOD(Cycle.self), "Cycle dejó de ser trivial: revisar Tonal/Groove")
         XCTAssertTrue(_isPOD(Shape.self))
     }
 
@@ -200,7 +200,7 @@ final class PatternHandoffTests: XCTestCase {
     /// futuro del modelo se vea como un cambio, y no como una sorpresa medida
     /// tarde.
     func testTheSnapshotIsSixteenTracksWideAndNothingMore() {
-        XCTAssertEqual(MemoryLayout<Pattern>.size, MemoryLayout<Track>.size * 16)
+        XCTAssertEqual(MemoryLayout<Pattern>.size, MemoryLayout<Cycle>.size * 16)
         // Medido el 2026-08-31: Track 112 bytes, Pattern 1792, y un load()
         // completo 274 ns contra una ventana de 20 ms. La cota no es un umbral
         // de rendimiento sino un detector de cambio de orden: si el modelo

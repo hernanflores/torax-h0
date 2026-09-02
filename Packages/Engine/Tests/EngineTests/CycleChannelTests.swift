@@ -10,7 +10,7 @@ private typealias Pattern = Engine.Pattern
 /// **Dieciséis Tracks y dieciséis canales es la correspondencia que no hay que
 /// explicar.** Sin ella los dieciséis sonarían al mismo instrumento y no habría
 /// forma de juzgar nada en dispositivo.
-final class TrackChannelTests: XCTestCase {
+final class CycleChannelTests: XCTestCase {
 
     // MARK: - El tipo
 
@@ -87,7 +87,7 @@ final class TrackChannelTests: XCTestCase {
     /// todo lo demás.
     func testTheChannelKeepsTheValuesTrivial() {
         XCTAssertTrue(_isPOD(Channel.self), "Channel dejó de ser trivial")
-        XCTAssertTrue(_isPOD(Track.self), "Track dejó de ser trivial")
+        XCTAssertTrue(_isPOD(Cycle.self), "Cycle dejó de ser trivial")
         XCTAssertTrue(_isPOD(Pattern.self), "Pattern dejó de ser trivial")
     }
 }

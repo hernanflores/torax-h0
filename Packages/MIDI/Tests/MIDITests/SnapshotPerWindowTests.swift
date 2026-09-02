@@ -51,8 +51,8 @@ final class SnapshotPerWindowTests: XCTestCase {
 
     /// Un Track que dispara en todos sus Steps: el test no tiene que esperar al
     /// reparto euclidiano para acumular eventos.
-    private func voice(onChannel number: Int, division: Division = .sixteenth) -> Track {
-        Track(
+    private func voice(onChannel number: Int, division: Division = .sixteenth) -> Cycle {
+        Cycle(
             shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!, division: division),
             pool: PitchPool().inserting(Pitch(48)!),
             channel: Channel(number)!

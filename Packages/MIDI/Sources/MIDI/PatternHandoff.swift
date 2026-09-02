@@ -4,7 +4,7 @@ import Engine
 ///
 /// **El problema.** El hilo principal edita el Track; el hilo del scheduler lo
 /// lee en cada ventana. Un lock entre ambos bloquearía el camino de timing, que
-/// es justo lo que `code_styleguides/swift.md` prohíbe. Y copiar un `Track` son
+/// es justo lo que `code_styleguides/swift.md` prohíbe. Y copiar un `Cycle` son
 /// varias palabras de memoria, así que tampoco basta con un atómico: no hay
 /// atómico de ese tamaño.
 ///
@@ -61,7 +61,7 @@ import Engine
 /// Lo que sí cambia es la aritmética del riesgo: copiar dieciséis veces más deja
 /// al lector expuesto más tiempo, y por eso el test de concurrencia publica un
 /// Pattern con los dieciséis Tracks correlacionados, no solo con sus campos.
-/// Lo que sí hay que preservar es que `Track` siga siendo un tipo trivial —sin
+/// Lo que sí hay que preservar es que `Cycle` siga siendo un tipo trivial —sin
 /// `Array` ni nada con conteo de referencias—, porque copiarlo ocurre en el hilo
 /// del scheduler y un `retain` ahí es una violación de las reglas de tiempo
 /// real. Hay un test que lo vigila.
@@ -116,7 +116,7 @@ public final class PatternHandoff: @unchecked Sendable {
     /// > **Puente de la v2, fase 2.** Existe mientras haya quien todavía piense
     /// > en un Track solo —la interfaz y buena parte de los tests—. La fase 4 lo
     /// > retira: para entonces todo el mundo publica un Pattern.
-    public convenience init(_ initial: Track) {
+    public convenience init(_ initial: Cycle) {
         self.init(Pattern().replacing(initial, at: 0))
     }
 

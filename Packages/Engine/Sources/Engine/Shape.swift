@@ -144,66 +144,71 @@ public struct Shape: Equatable, Sendable {
     }
 }
 
-/// Track — «una voz/carril musical y de control».
+/// Cycle — «snapshot de parámetros de un Track», en palabras de la Pre Spec.
 ///
-/// La Pre Spec lo define como el sitio donde residen los parámetros
-/// generativos. En esta rebanada solo tiene Shape: Tonal y Groove están fuera de
-/// alcance, y con ellos el pool de alturas. **Que el Track no diga nada sobre la
-/// altura es deliberado**: `product-guidelines.md` advierte contra consolidar la
-/// idea de una nota fija por paso, que contradice el modelo de pool. La altura
-/// provisional de esta rebanada es una constante del camino MIDI, no estado del
-/// Track.
-public struct Track: Equatable, Sendable {
+/// Es el sitio donde residen los parámetros generativos: Shape decide *cuándo*,
+/// Tonal *qué alturas* y Groove *cómo se interpreta*. **Que el Cycle no diga
+/// nada sobre una nota por paso es deliberado**: `product-guidelines.md`
+/// advierte contra consolidar la idea de una nota fija por paso, que contradice
+/// el modelo de pool.
+///
+/// > **Se llamaba `Track` hasta el 2026-09-02.** El renombrado no cambia ni un
+/// > campo ni una regla: lo que cambia es el nivel donde vive. Un Track pasa a
+/// > contener hasta dieciséis de estos y a recorrerlos a cada vuelta del anillo,
+/// > que es la A/B/C de la Pre Spec. Mantener el nombre `Track` para esto habría
+/// > sido inventarle un sinónimo al concepto que ya tiene nombre (NFR7 del track
+/// > `cycles_20260901`).
+public struct Cycle: Equatable, Sendable {
 
     public let shape: Shape
 
     /// De qué material se eligen las alturas.
     ///
-    /// **Vive en `Track` y no fuera** porque el hilo del scheduler lo necesita
+    /// **Vive en `Cycle` y no fuera** porque el hilo del scheduler lo necesita
     /// para decidir qué nota emitir, y lo único que ese hilo lee es el snapshot
     /// publicado. Meterlo aquí es lo que obliga a que sea almacenamiento inline
-    /// —ver `PitchPool`— y lo que `_isPOD(Track.self)` vigila.
+    /// —ver `PitchPool`— y lo que `_isPOD(Cycle.self)` vigila.
     ///
-    /// Un pool vacío es un estado válido: el Track dispara sus Pulses y no tiene
+    /// Un pool vacío es un estado válido: el Cycle dispara sus Pulses y no tiene
     /// material que emitir.
     public let pool: PitchPool
 
     /// Cómo se interpreta lo que el Shape dispara.
     ///
-    /// **Vive en `Track` por la misma razón que el pool**: el hilo del scheduler
+    /// **Vive en `Cycle` por la misma razón que el pool**: el hilo del scheduler
     /// necesita la Velocity y el Sustain para construir los mensajes, y lo único
     /// que ese hilo lee es el snapshot publicado. De ahí que tenga que ser un
-    /// valor trivial, y de ahí que `_isPOD(Track.self)` siga siendo la red.
+    /// valor trivial, y de ahí que `_isPOD(Cycle.self)` siga siendo la red.
     ///
     /// **Lo que no está aquí es el estado del aleatorio.** Probability dice
-    /// *cuánto* se omite, que es dato del Track; el generador que decide *qué*
+    /// *cuánto* se omite, que es dato del Cycle; el generador que decide *qué*
     /// Pulse concreto se omite tiene estado mutable y vive en el scheduler, que
     /// es su único dueño. Meterlo aquí rompería la trivialidad y convertiría el
     /// snapshot en algo que dos hilos mutan.
     public let groove: Groove
 
-    /// Por dónde sale lo que este Track emite.
+    /// Por dónde sale lo que este Cycle emite.
     ///
     /// **Es configuración, no material generativo**, así que se edita en
     /// pantalla y no con un knob: `product-guidelines.md` pone esa frontera del
     /// lado táctil, donde ya están Scale y Root.
     ///
-    /// Vive en `Track` porque el hilo del scheduler lo necesita para construir
+    /// Vive en `Cycle` porque el hilo del scheduler lo necesita para construir
     /// el mensaje, y lo único que ese hilo lee es el snapshot publicado — la
     /// misma razón que trajo aquí al pool y al Groove.
     public let channel: Channel
 
-    /// De qué escala y qué centro tonal sale el material de este Track.
+    /// De qué escala y qué centro tonal sale el material de este Cycle.
     ///
-    /// **Es del Track y no de la app** (v2): la Pre Spec pone los parámetros
-    /// generativos en el Track, y dos Tracks en tonalidades distintas es una
+    /// **Es del Cycle y no de la app** (v2): la Pre Spec pone los parámetros
+    /// generativos en el Cycle, y dos Tracks en tonalidades distintas es una
     /// función y no un accidente. Hasta la v1 había un solo marco para todo, que
     /// es lo que hacía imposible un bajo en menor bajo un arpegio en mayor.
     public let frame: TonalFrame
 
-    /// En qué registro está editando los pads este Track.
+    /// En qué registro está editando los pads este Cycle.
     ///
-    /// **Es la única concesión de `Track` a la superficie de control**, y está
+    /// **Es la única concesión de `Cycle` a la superficie de control**, y está
     /// aquí porque tiene que sobrevivir a cambiar de Track: volver a uno y
     /// encontrarlo dos octavas más abajo de donde se dejó sería perder trabajo.
     /// La altura de cada pad la sigue calculando `PadSurface`, que es quien sabe
@@ -226,19 +231,19 @@ public struct Track: Equatable, Sendable {
         self.padOctaveShift = padOctaveShift
     }
 
-    /// El mismo Track con lo que se le cambie, y **todo lo demás intacto**.
+    /// El mismo Cycle con lo que se le cambie, y **todo lo demás intacto**.
     ///
-    /// > **Es la única forma legítima de editar un Track, desde el 2026-08-31.**
-    /// > Reconstruirlo con `Track(shape:pool:groove:)` compila, parece correcto y
+    /// > **Es la única forma legítima de editar un Cycle, desde el 2026-08-31.**
+    /// > Reconstruirlo con `Cycle(shape:pool:groove:)` compila, parece correcto y
     /// > pierde en silencio todo lo que no se nombre. Pasó: `applying(_:to:)` se
-    /// > escribió cuando un Track eran tres campos, y al llegar el canal, el
+    /// > escribió cuando un Cycle eran tres campos, y al llegar el canal, el
     /// > marco tonal y el registro de pads siguió construyendo con tres — así que
-    /// > **girar un knob devolvía el Track al canal 1, a Do menor y a la octava
+    /// > **girar un knob devolvía el Cycle al canal 1, a Do menor y a la octava
     /// > base**. Es exactamente la destrucción de material que
     /// > `product-guidelines.md` prohíbe, y el compilador no podía verla porque
     /// > los campos nuevos tenían valor por defecto.
     /// >
-    /// > Con este método, añadir un campo al Track no puede volver a perderlo:
+    /// > Con este método, añadir un campo al Cycle no puede volver a perderlo:
     /// > hay un solo sitio que los enumera.
     public func with(
         shape: Shape? = nil,
@@ -247,8 +252,8 @@ public struct Track: Equatable, Sendable {
         channel: Channel? = nil,
         frame: TonalFrame? = nil,
         padOctaveShift: Int? = nil
-    ) -> Track {
-        Track(
+    ) -> Cycle {
+        Cycle(
             shape: shape ?? self.shape,
             pool: pool ?? self.pool,
             groove: groove ?? self.groove,
@@ -258,10 +263,10 @@ public struct Track: Equatable, Sendable {
         )
     }
 
-    /// El mismo Track emitiendo por otro canal.
+    /// El mismo Cycle emitiendo por otro canal.
     ///
     /// Cambiar el canal no toca el material: es configuración, no contenido.
-    public func on(_ channel: Channel) -> Track {
+    public func on(_ channel: Channel) -> Cycle {
         with(channel: channel)
     }
 
@@ -275,7 +280,7 @@ public struct Track: Equatable, Sendable {
 
     /// La altura que le toca a este Step, recorriendo el pool.
     ///
-    /// Devuelve `nil` con el pool vacío: el Track dispara y no tiene material
+    /// Devuelve `nil` con el pool vacío: el Cycle dispara y no tiene material
     /// que emitir. Es un estado válido, no un fallo.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
@@ -339,7 +344,7 @@ extension Shape {
     public func applying(_ delta: Int, to parameter: TrackParameter) -> Shape {
         switch parameter {
         case .velocity, .sustain, .probability, .timing, .delay:
-            // No son suyos: los ajusta `Track.applying(_:to:)`, que es quien
+            // No son suyos: los ajusta `Cycle.applying(_:to:)`, que es quien
             // conoce las dos familias. Devolver el Shape intacto es la respuesta
             // correcta y no un caso olvidado.
             return self

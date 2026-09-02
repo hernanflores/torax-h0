@@ -71,15 +71,15 @@ final class VirtualControllerTests: XCTestCase {
         let shape = Shape(steps: steps, pulses: Pulses(4)!)
 
         // Por el controlador virtual.
-        let virtualHandoff = PatternHandoff(Track(shape: shape))
-        let viaVirtual = ControlInput(track: Track(shape: shape), publishingTo: virtualHandoff)
+        let virtualHandoff = PatternHandoff(Cycle(shape: shape))
+        let viaVirtual = ControlInput(track: Cycle(shape: shape), publishingTo: virtualHandoff)
         for _ in 0..<3 {
             viaVirtual.receive(try XCTUnwrap(controller.turn(.pulses, by: 1)))
         }
 
         // A mano, como lo mandaría el hardware.
-        let realHandoff = PatternHandoff(Track(shape: shape))
-        let viaReal = ControlInput(track: Track(shape: shape), publishingTo: realHandoff)
+        let realHandoff = PatternHandoff(Cycle(shape: shape))
+        let viaReal = ControlInput(track: Cycle(shape: shape), publishingTo: realHandoff)
         let cc = try XCTUnwrap(ControlMapping.beatStepPro.controller(for: .pulses))
         for _ in 0..<3 {
             viaReal.receive(.controlChange(channel: MIDIChannel(1)!, controller: cc, value: 0x01))

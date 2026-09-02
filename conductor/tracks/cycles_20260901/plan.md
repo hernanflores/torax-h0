@@ -73,7 +73,7 @@ regresión la bloquea.
 > `Engine` puro. Sin CoreMIDI, sin simulador, sin hardware. Es el renombrado y el
 > nivel nuevo: mecánico en volumen, delicado en la frontera de tiempo real.
 
-- [ ] Task: `Track` pasa a llamarse `Cycle`
+- [~] Task: `Track` pasa a llamarse `Cycle`
   - [ ] Tests (Red): los tests que hoy miden el `Track` —Shape, pool, marco tonal, Groove, canal— siguen midiendo lo mismo sobre `Cycle`, sin cambiar una sola aserción
   - [ ] Tests (Red): `_isPOD(Cycle.self)` sigue siendo verdadero
   - [ ] Implementación (Green): renombrado mecánico en `Engine` y en `MIDI`

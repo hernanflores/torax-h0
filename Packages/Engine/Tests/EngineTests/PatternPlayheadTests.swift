@@ -108,8 +108,8 @@ final class PatternPlayheadTests: XCTestCase {
 
     // MARK: -
 
-    private func track(steps: Int, division: Division) -> Track {
-        Track(
+    private func track(steps: Int, division: Division) -> Cycle {
+        Cycle(
             shape: Shape(
                 steps: Steps(steps)!, pulses: Pulses(1)!, division: division))
     }
