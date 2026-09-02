@@ -122,7 +122,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
 
 ## FASE 5: EL ARNÉS QUEDA COHERENTE
 
-- [~] Task: Rejilla `12-tracks-cycles` (FR8)
+- [x] Task: Rejilla `12-tracks-cycles` (FR8) [df015f6]
   - [ ] Renombrar el caso y su cadena; `trackCount: 12`.
   - [ ] Actualizar las referencias en los `device-verification.md` de las
         rebanadas 2 y 3 y en `workflow.md`, que nombran la rejilla vieja.
