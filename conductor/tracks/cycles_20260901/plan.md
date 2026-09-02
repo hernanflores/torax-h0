@@ -219,7 +219,7 @@ regresión la bloquea.
   frontera de `product-guidelines.md` sin que nadie lo viera.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 5: La pantalla muestra el desarrollo
+## Phase 5: La pantalla muestra el desarrollo [checkpoint: c9f5b2a]
 
 > `App`. No se mide cobertura: si algo aquí merece un test, está en el sitio
 > equivocado (`workflow.md`). La lógica ya está en `Engine` y `MIDI`.
