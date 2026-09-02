@@ -167,12 +167,19 @@ regresión la bloquea.
   jitter obligatorio, para un caso que nadie ha pedido: cambiar de compás a
   mitad de patrón. Queda en *Known Limitations* 8 del `spec.md` y fijado con dos
   tests.
-- [~] Task: Play reinicia los dieciséis al Cycle 1
-  - [ ] Tests (Red): tras `play()`, los dieciséis cursores están en 0 (FR6)
-  - [ ] Tests (Red): dos pasadas de Play producen la **misma** secuencia de Cycles y las mismas omisiones — la promesa de `tech-stack.md`
-  - [ ] Tests (Red): cambiar de Cycle **no resiembra** el generador de Probability (NFR5)
-  - [ ] Tests (Red): `Stop` con Cycles avanzando no deja notas colgadas, incluido con Delay positivo y con canales distintos por Cycle
-  - [ ] Implementación (Green)
+- [x] Task: Play reinicia los dieciséis al Cycle 1 — `0802798`
+  - [x] Tests (Red): tras `play()`, los dieciséis cursores están en 0 (FR6)
+  - [x] Tests (Red): dos pasadas de Play producen la **misma** secuencia de Cycles y las mismas omisiones — la promesa de `tech-stack.md`
+  - [x] Tests (Red): cambiar de Cycle **no resiembra** el generador de Probability (NFR5)
+  - [x] Tests (Red): `Stop` con Cycles avanzando no deja notas colgadas, incluido con Delay positivo y con canales distintos por Cycle
+  - [x] Implementación (Green)
+
+  **Dos fallos encontrados.** `restartCycles()` pedía el Cycle con
+  `track.current`, que mira el cursor del snapshot —el de edición—, así que un
+  Track dejado editando el Cycle 3 arrancaba sonando el 3. Y `Stop` barría solo
+  el Cycle vigente de cada Track y dejaba sonando los otros quince por sus
+  canales; ahora barre los dieciséis —no solo los activos, porque FR9 deja el
+  cursor fuera del rango a propósito— deduplicando pares canal+altura.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: La entrada edita el Cycle en edición
