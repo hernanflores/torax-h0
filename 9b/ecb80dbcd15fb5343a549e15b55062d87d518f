@@ -28,3 +28,29 @@ no crece.
 
 Cobertura MIDI: 92,01% de lineas. PatternScheduler.swift 100%, SchedulerThread
 100% de lineas.
+
+--- Verificación de fase (Fase 3) — 2026-09-02 ---
+
+Comandos:
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests \
+    --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+                                                              → 409 tests, 0 fallos
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|\
+    JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests' → 21 tests, 1 omitido, 0 fallos
+  swift test --package-path Packages/Engine                    → 427 tests, 0 fallos
+
+Cobertura MIDI: 92,01% de líneas (umbral 80%). PatternScheduler.swift 100%.
+
+Cobertura del diff: PatternScheduler, SchedulerThread y Transport quedan
+cubiertos por MuteGateTests, que incluye un test sobre el hilo real además de
+los ocho deterministas.
+
+Verificación manual: la fase ya es audible —transport.mutes.toggleMute(N) calla
+el Track N en la ventana siguiente— pero todavía no hay gesto que la accione. Se
+propuso verificar en dispositivo con una vía temporal o esperar a la Fase 6; **el
+usuario eligió aplazarlo**: «dejemos para mas adelante, avancemos». La
+verificación en iPad queda para la Fase 7, que ya la tiene planificada.
+
+Lo verificado por lectura: la lectura de la máscara está fuera del bucle de
+Tracks (una por ventana) y el guard dentro del cierre (la rejilla sigue); mutes
+es público en Transport y stop() no lo toca (FR10).
