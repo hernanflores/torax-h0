@@ -1,0 +1,23 @@
+Task: Anotar el 16 -> 12 en la Pre Spec y en product.md (FR9)
+
+Task Workflow paso 8 exige documentar la desviacion ANTES de implementarla, y
+esta lo es: la Pre Spec dice «hasta 16 Tracks por Pattern» en tres sitios y la
+app va a implementar doce. Por eso es la Fase 1 del track y no una nota al
+final.
+
+Cambios:
+- Pre Spec Torax H-0.md: nota fechada tras la definicion de Cycle, en la seccion
+  2 (Estructura de datos y memoria), que es donde viven los tres «16». Dice el
+  porque (el ancho de banda del anillo sale de repartir el radio entre
+  trackCount-1, y con dieciseis el playhead no se lee a un metro), que el modelo
+  no cambia de forma, y lo que pierde el hardware: los step buttons 13-16 dejan
+  de seleccionar Track, sin publicar y sin error, con el preset intacto.
+- conductor/product.md: nota equivalente y mas corta en el Core Model, que
+  remite a la Pre Spec para el detalle; y enmienda de una linea en el MVP Scope,
+  donde «la v2 rebanada 1 entrega los dieciseis» ya no era cierto.
+
+El porque de fondo: doce no es una simplificacion arbitraria sino un limite de
+legibilidad puesto sobre Pattern.trackCount, la constante de la que derivan el
+reparto de anillos, los schedulers, las voces que se apagan al parar y la fila
+de seleccion. Escribirlo asi deja la decision reversible: si el ancho deja de
+ser el problema, la constante vuelve a subir sin que nada mas se entere.
