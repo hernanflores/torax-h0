@@ -43,25 +43,45 @@ public final class PatternScheduler {
     ///   - pattern: con qué material se arranca.
     ///   - seed: semilla base del aleatorio. Cada Track deriva la suya, para que
     ///     dos Tracks con la misma Probability no omitan los mismos Pulses.
-    public init(
+    public convenience init(
         tempo: Tempo,
         pattern: Pattern,
         startingAtStep startingStep: Int = 0,
         seed: UInt64 = SeededRandom.defaultSeed
+    ) {
+        self.init(
+            tempo: tempo, pattern: pattern, startingAtStep: startingStep,
+            seed: seed, playbackClock: nil)
+    }
+
+    init(
+        tempo: Tempo,
+        pattern: Pattern,
+        startingAtStep startingStep: Int = 0,
+        seed: UInt64 = SeededRandom.defaultSeed,
+        playbackClock: CyclePlaybackClock?
     ) {
         self.pattern = pattern
         schedulers = .allocate(capacity: Pattern.trackCount)
 
         for index in 0..<Pattern.trackCount {
             let track = pattern.track(at: index)!
-            schedulers.advanced(by: index).initialize(
-                to: TrackScheduler(
-                    timeline: MusicalTimeline(tempo: tempo, division: track.shape.division),
-                    material: .track(track),
-                    startingAtStep: startingStep,
-                    seed: Self.seed(seed, forTrack: index)
-                )
+            let cycle = track.cycle(at: 0)!
+            var scheduler = TrackScheduler(
+                timeline: MusicalTimeline(tempo: tempo, division: cycle.shape.division),
+                material: .cycle(cycle),
+                startingAtStep: startingStep,
+                seed: Self.seed(seed, forTrack: index)
             )
+            if let playbackClock {
+                scheduler.reportPlayback(to: playbackClock, track: index)
+            }
+            // **Play arranca los dieciséis en su Cycle 1** (FR6): construir esto
+            // es lo que hace Play, así que el reinicio va aquí y no en otro
+            // sitio que hubiera que acordarse de llamar.
+            scheduler.refresh(with: track)
+            scheduler.restartCycles()
+            schedulers.advanced(by: index).initialize(to: scheduler)
         }
     }
 
@@ -127,9 +147,17 @@ public final class PatternScheduler {
     /// Recoge el snapshot pendiente y emite lo que dispare hasta el horizonte,
     /// Track por Track.
     ///
-    /// `emit` recibe el índice del Track además de lo que ya recibía: quien
-    /// emite necesita saber por qué canal sale cada nota, y el canal es un dato
-    /// del Track.
+    /// `emit` recibe el índice del Track y **el Track que produjo el evento**.
+    /// Quien emite necesita el canal y la Division, que son datos del Track, y
+    /// entregárselos aquí es lo que le evita volver a leer el snapshot: la
+    /// lectura se hace una vez por ventana, no una por nota. Con 2,25 KB esa
+    /// diferencia era invisible; con Cycles el snapshot es dieciséis veces mayor
+    /// y sería una copia de decenas de kilobytes por nota, en el hilo de tiempo
+    /// real.
+    ///
+    /// Es además lo que garantiza que el canal y la Division con que sale una
+    /// nota sean los del **mismo** snapshot que la produjo, y no los de una
+    /// publicación que haya caído entre medias.
     ///
     /// **Un Track sin material no programa nada** (NFR3): su rejilla avanza
     /// —para que no pierda la fase si alguien le da alturas mientras suena— pero
@@ -142,7 +170,7 @@ public final class PatternScheduler {
         toHorizon horizonNanoseconds: Int64,
         refreshingFrom handoff: PatternHandoff?,
         emit: (
-            _ track: Int, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
+            _ track: Int, _ source: Cycle, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
             _ offsetNanoseconds: Int64
         ) -> Void
     ) {
@@ -156,14 +184,20 @@ public final class PatternScheduler {
         }
 
         for index in 0..<Pattern.trackCount {
-            // Se pregunta al material del scheduler y no al Pattern porque el
-            // arnés de medición no tiene Track detrás: mide la rejilla.
-            let emits = schedulers[index].material.emitsAnything
+            // **El Cycle lo entrega el scheduler del Track, evento a evento, y
+            // no se lee del Pattern.** Desde que el Cycle avanza en el límite de
+            // vuelta, el material puede cambiar *dentro* de una ventana, así que
+            // preguntarle al Pattern daría el Cycle de la vuelta equivocada en
+            // los Steps posteriores al cambio. No es una lectura del snapshot:
+            // el scheduler ya lo tiene delante.
+            //
+            // La vía del arnés no tiene Cycle detrás; se le da el del hueco
+            // vacío, que es lo que se le daba antes.
+            let fallback = pattern.cycle(at: index)!
 
             schedulers[index].advance(toHorizon: horizonNanoseconds, refreshingFrom: nil) {
-                step, pitch, groove, offset in
-                guard emits else { return }
-                emit(index, step, pitch, groove, offset)
+                source, step, pitch, groove, offset in
+                emit(index, source ?? fallback, step, pitch, groove, offset)
             }
         }
     }

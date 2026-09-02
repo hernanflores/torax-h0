@@ -94,7 +94,7 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 
 - Acordes polifónicos simultáneos (Style *Poly*) — explícitamente fuera de scope en la Pre Spec.
 - Patterns, Banks; guardado/Autosave/Backup Project. *(Múltiples Tracks salieron de aquí el 2026-09-01: la v2 rebanada 1 entrega los dieciséis.)*
-- Cycles; Note Repeater (Repeats/Time/Ramp/Pace); Harmony; Voicing/Style; Range/Phrase; LFO y Random Modulation.
+- Note Repeater (Repeats/Time/Ramp/Pace); Harmony; Voicing/Style; Range/Phrase; LFO y Random Modulation. *(Cycles salió de aquí el 2026-09-02: la v2 rebanada 3 lo entrega — hasta dieciséis por Track, recorridos a cada vuelta del anillo.)*
 - Ableton Link, MIDI Program Change, encadenado de Patterns.
 
 ## Success Criteria
@@ -147,6 +147,19 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > nunca. Y **la cola de la rebanada 1 no se reprodujo**: sus 0,598 ms a 174 BPM
 > aquí son 0,141 ms, con cinco veces más muestras y más carga. Ver
 > [`device-verification.md`](./tracks/screen-handoff_20260901/device-verification.md).
+
+> **Suspendido (2026-09-02).** A partir de aquí **no se hacen más mediciones de
+> jitter**, por decisión tomada al cerrar la v2 rebanada 3 después de que la
+> recogida del informe del dispositivo fallara. La serie de seis mediciones que
+> hay arriba es la última evidencia de que la arquitectura de look-ahead cumple,
+> y la de la rebanada 2 —máx 0,158 ms, σ 0,013–0,014 ms— es la referencia
+> vigente.
+>
+> **Lo que eso significa para este criterio:** «timing MIDI estable en iPad»
+> sigue siendo el criterio principal, pero deja de comprobarse con un número. Una
+> regresión se descubrirá tocando. El arnés y su procedimiento se quedan en el
+> repositorio, listos por si se retoma; el porqué y el coste están en
+> `workflow.md`, en *Medición de jitter: suspendida*.
 
 Secundarios:
 

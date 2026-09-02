@@ -132,7 +132,7 @@ final class FrameChangeTests: XCTestCase {
 
     private func makeInput(scale: Scale, root: Int) -> ControlInput {
         ControlInput(
-            track: Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
+            track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
             frame: TonalFrame(scale: scale, root: Root(root)!),
             publish: { _ in }
         )

@@ -7,11 +7,11 @@
 /// alturas están clavadas a Steps.
 ///
 /// **Ocho huecos de ocho bits en un entero, no un `Array`.** No es una
-/// optimización: `Track` se copia en el hilo del scheduler y un `Array` metería
+/// optimización: `Cycle` se copia en el hilo del scheduler y un `Array` metería
 /// `retain`/`release` ahí, que las reglas de tiempo real prohíben.
 /// `tech-stack.md` lo dejó escrito antes de que hiciera falta —«el pool de
 /// pitches tiene que ser almacenamiento inline de 8 huecos»— y
-/// `_isPOD(Track.self)` es la red que lo vigila.
+/// `_isPOD(Cycle.self)` es la red que lo vigila.
 ///
 /// Que quepa en 64 bits es la misma coincidencia deliberada que en
 /// `EuclideanRhythm`: una altura MIDI son siete bits, así que ocho caben en ocho

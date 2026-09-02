@@ -90,7 +90,7 @@ final class PadOctaveShiftInputTests: XCTestCase {
     func testShiftingPublishesOnlyWhenSomethingChanged() {
         let recorder = Recorder()
         let input = ControlInput(
-            track: Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
+            track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
             frame: frame,
             publish: { _ in recorder.record() }
         )
@@ -126,7 +126,7 @@ final class PadOctaveShiftInputTests: XCTestCase {
 
     private func makeInput() -> ControlInput {
         ControlInput(
-            track: Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
+            track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
             frame: frame,
             publish: { _ in }
         )

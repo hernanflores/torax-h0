@@ -79,11 +79,14 @@ extension Playhead {
         elapsedNanoseconds: Int64
     ) -> [Playhead] {
         (0..<Pattern.trackCount).map { index in
-            let track = pattern.track(at: index) ?? Pattern.emptyTrack
+            // Sobre el Cycle en edición, que es el que se dibuja: el playhead
+            // tiene que caer sobre el anillo que se está viendo, o marcaría una
+            // posición de un anillo que no está en pantalla.
+            let cycle = pattern.editingCycle(at: index) ?? Pattern.emptyCycle
             return Playhead(
                 elapsedNanoseconds: elapsedNanoseconds,
-                timeline: MusicalTimeline(tempo: tempo, division: track.shape.division),
-                steps: track.shape.steps
+                timeline: MusicalTimeline(tempo: tempo, division: cycle.shape.division),
+                steps: cycle.shape.steps
             )
         }
     }

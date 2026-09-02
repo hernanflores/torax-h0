@@ -14,7 +14,7 @@ final class PatternChannelEmissionTests: XCTestCase {
     private let emitter = NoteEmitter()
 
     /// Lo que el emisor entrega, con el canal de cada mensaje.
-    private func channels(of track: Track, pitch: Pitch = Pitch(60)!) -> [Int] {
+    private func channels(of track: Cycle, pitch: Pitch = Pitch(60)!) -> [Int] {
         var seen: [Int] = []
         emitter.emit(
             pitch: pitch,
@@ -35,7 +35,7 @@ final class PatternChannelEmissionTests: XCTestCase {
     /// El note-on y el note-off del mismo pulso salen por el mismo canal: un
     /// note-off por otro canal dejaría la nota sonando para siempre.
     func testBothMessagesOfAPulseShareTheChannel() {
-        let track = Pattern().track(at: 4)!
+        let track = Pattern().cycle(at: 4)!
         XCTAssertEqual(channels(of: track), [5, 5])
     }
 
@@ -44,14 +44,14 @@ final class PatternChannelEmissionTests: XCTestCase {
         let pattern = Pattern()
         for index in 0..<16 {
             XCTAssertEqual(
-                channels(of: pattern.track(at: index)!), [index + 1, index + 1],
+                channels(of: pattern.cycle(at: index)!), [index + 1, index + 1],
                 "Track \(index + 1)")
         }
     }
 
     /// Cambiar el canal cambia lo que sale.
     func testChangingTheChannelChangesWhatGoesOut() {
-        let moved = Pattern().track(at: 0)!.on(Channel(11)!)
+        let moved = Pattern().cycle(at: 0)!.on(Channel(11)!)
         XCTAssertEqual(channels(of: moved), [11, 11])
     }
 

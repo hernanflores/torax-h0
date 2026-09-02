@@ -6,9 +6,43 @@
 2.  **The Tech Stack is Deliberate:** Changes to the tech stack must be documented in `tech-stack.md` *before* implementation.
 3.  **Test-Driven Development:** Write unit tests before implementing functionality.
 4.  **Differentiated Coverage:** Engine ≥90%, MIDI ≥80%. `App` no se mide: si algo ahí merece un test, está en el sitio equivocado. See *Coverage Requirements*.
-5.  **Timing is a Feature:** Any change touching the scheduler path must be validated with the jitter harness, not by ear alone.
+5.  **Timing is a Feature:** ~~Any change touching the scheduler path must be validated with the jitter harness, not by ear alone.~~ **Suspendido el 2026-09-02.** Ver *Medición de jitter: suspendida*.
 6.  **Integration is by Pull Request:** No direct pushes to `main`. See *Branching and Pull Requests*.
 7.  **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` and `xcodebuild` flags that avoid watch/interactive modes.
+
+## Medición de jitter: suspendida
+
+> **Decisión del 2026-09-02.** A partir de ahora **no se hacen mediciones de
+> jitter**. Lo pidió el usuario después de que la recogida del informe del
+> dispositivo fallara al cerrar la rebanada 3 de la v2.
+>
+> **Qué deja de hacerse:** el paso 7 del *Task Workflow* ya no aplica, ni las
+> fases de medición que los planes de track declaren. La rebanada 3 de la v2 se
+> cierra sin su medición, que era obligatoria y bloqueante según su propio NFR4.
+>
+> **Qué se pierde, escrito para que la decisión se pueda revisar con el coste
+> delante.** El jitter es el riesgo que la v1 existió para acotar y las seis
+> mediciones anteriores son la única evidencia de que la arquitectura de
+> look-ahead cumple. Sin medir:
+>
+> - Una regresión de timing se descubre **tocando**, no en CI ni en un test.
+> - La atribución se pierde del todo. Ya era un coste aceptado por la nota del
+>   2026-08-28 —no medir cada rebanada— pero entonces quedaba el recurso de
+>   bisectar con el arnés; ahora la línea base deja de existir a partir de la
+>   rebanada 2 de la v2.
+> - Queda sin comprobar el trabajo que la rebanada 3 añadió al hilo del
+>   scheduler: una decisión en el límite de cada vuelta y un snapshot dieciséis
+>   veces mayor. Lo que sí está medido es el **tamaño**: un `load()` cuesta
+>   ~870 ns, el 0,0044% de la ventana (Fase 1 de `cycles_20260901`).
+>
+> **El arnés se queda en el repositorio**, con su rejilla `16-tracks-cycles` y
+> sus tests. No se borra: si algún día se quiere volver a medir, la herramienta
+> está y el procedimiento está escrito en los `device-verification.md` de las
+> rebanadas 2 y 3.
+>
+> **La última referencia válida**, por si hace falta comparar algún día:
+> v2 rebanada 2, 2026-09-02 — máx 0,158 ms, σ 0,013–0,014 ms, 1000 eventos por
+> tempo.
 
 ## Coverage Requirements
 
@@ -55,7 +89,7 @@ All tasks follow a strict lifecycle:
 
 6.  **Verify Coverage:** Run coverage and check it against the module's threshold in *Coverage Requirements*.
 
-7.  **Verify Timing (when applicable):** Si el cambio altera **cuándo** cae un evento —la rejilla temporal, el scheduler o la matemática de tiempo—, corre el arnés de jitter y registra el resultado. Una regresión bloquea la tarea. Ver la nota de abajo para lo que ya no exige medición.
+7.  **Verify Timing (when applicable):** **Suspendido el 2026-09-02** — ver *Medición de jitter: suspendida*. Lo que decía: si el cambio altera **cuándo** cae un evento —la rejilla temporal, el scheduler o la matemática de tiempo—, corre el arnés de jitter y registra el resultado. Una regresión bloquea la tarea.
 
     > **Nota del 2026-08-28 — se mide cuando cambia el *cuándo*, no el *cuánto*.**
     >
@@ -168,7 +202,7 @@ Before marking any task complete:
 -   [ ] Coverage meets the module's threshold (Engine ≥90%, MIDI ≥80%; `App` no se mide)
 -   [ ] Code follows `code_styleguides/general.md` and `code_styleguides/swift.md`
 -   [ ] No allocations, locks, or `await` introduced on the scheduler path
--   [ ] Jitter harness shows no regression (if the change touches timing)
+-   [ ] ~~Jitter harness shows no regression (if the change touches timing)~~ — suspendido el 2026-09-02
 -   [ ] `Engine` still imports nothing beyond the stdlib
 -   [ ] Domain vocabulary matches the Pre Spec — no new synonyms
 -   [ ] Public types and functions are documented
@@ -509,7 +543,7 @@ A task is complete when:
 1. Code implemented to specification
 2. Unit tests written and passing
 3. Coverage meets the module's threshold (`App` exento: ver *Coverage Requirements*)
-4. Jitter verified if timing was touched
+4. ~~Jitter verified if timing was touched~~ — suspendido el 2026-09-02
 5. Documentation complete (if applicable)
 6. Code follows the style guides
 7. Verified on device when the change is user-facing

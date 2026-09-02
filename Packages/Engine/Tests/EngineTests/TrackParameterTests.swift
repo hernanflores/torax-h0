@@ -37,7 +37,7 @@ final class TrackParameterTests: XCTestCase {
     /// **El despacho es lo que sustituye al acoplamiento.** Quien mueve un knob
     /// ya no tiene que saber si toca Shape o Groove.
     func testAdjustingAShapeParameterLeavesGrooveAlone() {
-        let track = Track(shape: Shape(steps: Steps(16)!, pulses: Pulses(4)!))
+        let track = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(4)!))
         let adjusted = track.applying(1, to: .steps)
 
         XCTAssertEqual(adjusted.shape.steps.count, 17 > 16 ? 16 : 17)
@@ -48,7 +48,7 @@ final class TrackParameterTests: XCTestCase {
     func testAdjustingAGrooveParameterLeavesShapeAndPoolAlone() {
         var pool = PitchPool()
         pool = pool.toggling(Pitch(60)!)
-        let track = Track(shape: Shape(steps: Steps(12)!, pulses: Pulses(7)!), pool: pool)
+        let track = Cycle(shape: Shape(steps: Steps(12)!, pulses: Pulses(7)!), pool: pool)
 
         let adjusted = track.applying(-10, to: .velocity)
 
@@ -60,7 +60,7 @@ final class TrackParameterTests: XCTestCase {
     func testEveryParameterMovesSomething() {
         // Valores de partida lejos de todo extremo, para que un giro en
         // cualquiera de los nueve tenga sitio donde moverse.
-        let track = Track(
+        let track = Cycle(
             shape: Shape(steps: Steps(8)!, pulses: Pulses(4)!, division: .quarter),
             groove: Groove(
                 velocity: Velocity(64)!,
@@ -81,7 +81,7 @@ final class TrackParameterTests: XCTestCase {
     /// Girar contra un extremo devuelve el mismo Track, que es lo que permite a
     /// `ControlInput` no publicar.
     func testTurningAgainstAnEndReturnsAnIdenticalTrack() {
-        let track = Track(
+        let track = Cycle(
             shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!),
             groove: Groove(
                 velocity: Velocity(127)!,

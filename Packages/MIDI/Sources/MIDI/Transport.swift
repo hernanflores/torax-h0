@@ -32,8 +32,17 @@ public final class Transport: @unchecked Sendable {
     /// crea y se tira en cada Play; el reloj tiene que sobrevivir a eso para que
     /// quien dibuja consulte siempre al mismo sitio.
     private let playheadClock = PlayheadClock()
+    private let cyclePlaybackClock = CyclePlaybackClock()
 
     private var scheduler: SchedulerThread?
+
+    #if DEBUG
+        /// Cuántas veces se ha copiado el snapshot desde que existe el
+        /// transporte. Ver `PatternHandoff.loadCount`: existe para que «una
+        /// lectura por ventana» sea una propiedad comprobable y no una
+        /// intención escrita en un comentario.
+        var handoffLoadCount: UInt64 { handoff.loadCount.value }
+    #endif
 
     /// Último material publicado: los dieciséis Tracks.
     ///
@@ -51,7 +60,7 @@ public final class Transport: @unchecked Sendable {
     /// El Track 1, que es el único que la interfaz edita hasta la fase 4.
     ///
     /// Los literales de índice no fallan: el Pattern siempre tiene dieciséis.
-    public var track: Track { lastPublishedPattern.track(at: 0)! }
+    public var track: Cycle { lastPublishedPattern.cycle(at: 0)! }
 
     /// Dónde está el playhead sobre el anillo, o `nil` con el transporte
     /// parado.
@@ -93,6 +102,24 @@ public final class Transport: @unchecked Sendable {
         )
     }
 
+    /// Por qué Cycle va **cada uno** de los dieciséis, o `nil` con el transporte
+    /// parado.
+    ///
+    /// **Se deduce del reloj anclado a la fase del scheduler.** El hilo que
+    /// suena publica una palabra atómica al cambiar de Cycle; `CyclePosition`
+    /// combina ese cursor con el reloj real, sin locks y sin confundir el
+    /// horizonte de look-ahead con lo que ya está sonando.
+    ///
+    /// Se calcula al preguntar, por la misma razón que `playheads`: guardarlo
+    /// obligaría a un temporizador de interfaz a refrescarlo, y eso es una
+    /// animación no derivada del reloj musical.
+    public var cyclesInCourse: [CyclePosition]? {
+        guard let elapsed = playheadClock.elapsedNanoseconds() else { return nil }
+        return cyclePlaybackClock.positions(
+            in: lastPublishedPattern, tempo: configuration.timeline.tempo,
+            elapsedNanoseconds: elapsed)
+    }
+
     /// Arranca con los dieciséis Tracks.
     public init(
         configuration: SchedulerConfiguration,
@@ -111,7 +138,7 @@ public final class Transport: @unchecked Sendable {
     /// posición y deja los otros quince vacíos.
     public convenience init(
         configuration: SchedulerConfiguration,
-        track: Track,
+        track: Cycle,
         emitter: NoteEmitter,
         send: @escaping Send
     ) {
@@ -134,7 +161,7 @@ public final class Transport: @unchecked Sendable {
     /// > y los otros quince se conservan, que es lo que hace que este puente no
     /// > mienta: no reinicia nada. La fase 4 lo cambia por `publish(_:)` de un
     /// > Pattern entero, y esta sobrecarga desaparece.
-    public func publish(_ track: Track) {
+    public func publish(_ track: Cycle) {
         publish(lastPublishedPattern.replacing(track, at: 0))
     }
 
@@ -161,20 +188,24 @@ public final class Transport: @unchecked Sendable {
 
         let thread = SchedulerThread(
             configuration: configuration,
-            material: .track(starting.track(at: 0)!),
+            material: .cycle(starting.cycle(at: 0)!),
             handoff: handoff,
             playhead: playheadClock,
+            cyclePlaybackClock: cyclePlaybackClock,
             pattern: starting
         ) {
-            [emitter, send, handoff, lastPublishedPattern, tempo = configuration.timeline.tempo]
-            track, _, pitch, groove, hostTime in
+            [emitter, send, tempo = configuration.timeline.tempo]
+            _, source, _, pitch, groove, hostTime in
             // El canal y la duración del Step son del Track que emite: dieciséis
             // Tracks pueden estar en dieciséis canales y en Divisions distintas.
-            // Se leen del snapshot vigente, que es el mismo que produjo el
-            // evento.
-            let pattern = handoff.load() ?? lastPublishedPattern
-            guard let source = pattern.track(at: track) else { return }
-
+            //
+            // **Llegan con el evento, no se releen.** Antes se volvía al
+            // snapshot por cada nota para buscarlos, que con 2,25 KB era
+            // invisible y con Cycles sería una copia de decenas de kilobytes por
+            // nota dentro del hilo de tiempo real. El scheduler ya lo tiene
+            // recogido una vez por ventana, así que lo entrega: además de barato
+            // es lo que garantiza que el canal sea el del **mismo** snapshot que
+            // produjo el evento.
             emitter.emit(
                 pitch: pitch,
                 groove: groove,
@@ -255,40 +286,65 @@ public final class Transport: @unchecked Sendable {
         // Se apaga Track por Track y canal por canal: con dieciséis Tracks en
         // hasta dieciséis canales, apagar solo uno dejaría sonando a los otros
         // quince, que es este mismo defecto multiplicado.
+        // **Se barren los dieciséis Cycles de cada Track, no solo el vigente.**
+        // El cursor de reproducción vive en el hilo del scheduler, así que desde
+        // aquí no se sabe cuál estaba sonando: saberlo exigiría que ese hilo
+        // publicara algo en cada vuelta, y eso es trabajo en el camino de tiempo
+        // real para resolver un caso de parada. El `cursor` del snapshot no
+        // sirve — es el de edición, y puede apuntar a cualquier sitio.
+        //
+        // Tampoco se barren solo los activos: bajar el número mientras suena
+        // deja el cursor fuera del rango a propósito (FR9), así que un Cycle que
+        // ya no se recorre puede ser justo el que está sonando.
         var silenced: Set<Int> = []
         for index in 0..<Pattern.trackCount {
-            guard let source = lastPublishedPattern.track(at: index) else { continue }
-            let channel = MIDIChannel(source.channel)
+            guard let track = lastPublishedPattern.track(at: index) else { continue }
 
-            // No depende de que el Track tenga material **ahora**: vaciar el
-            // pool mientras suena deja notas encendidas que ya no están en él, y
-            // el barrido del pool no las cubre por definición.
-            guard silenced.insert(channel.number).inserted else { continue }
-            send(
-                .controlChange(
-                    channel: channel,
-                    controller: MIDIController.allNotesOff,
-                    value: 0
-                ),
-                silenceAt
-            )
-        }
+            for slot in 0..<Track.cycleCount {
+                guard let cycle = track.cycle(at: slot) else { continue }
+                let channel = MIDIChannel(cycle.channel)
 
-        for index in 0..<Pattern.trackCount {
-            guard let source = lastPublishedPattern.track(at: index) else { continue }
-            let channel = MIDIChannel(source.channel)
-            let pool = source.pool
-
-            for slot in 0..<pool.count {
-                guard let pitch = pool.pitch(at: slot) else { break }
+                // No depende de que el Cycle tenga material **ahora**: vaciar el
+                // pool mientras suena deja notas encendidas que ya no están en
+                // él, y el barrido del pool no las cubre por definición.
+                guard silenced.insert(channel.number).inserted else { continue }
                 send(
-                    .noteOff(
+                    .controlChange(
                         channel: channel,
-                        note: MIDINote(unchecked: UInt8(pitch.value)),
-                        velocity: MIDIVelocity(unchecked: 0)
+                        controller: MIDIController.allNotesOff,
+                        value: 0
                     ),
                     silenceAt
                 )
+            }
+        }
+
+        // El barrido de alturas, sin repetir un par canal+altura: dieciséis
+        // Tracks por dieciséis Cycles por ocho alturas serían dos mil mensajes,
+        // y en la práctica casi todos son el mismo.
+        var swept: Set<Int> = []
+        for index in 0..<Pattern.trackCount {
+            guard let track = lastPublishedPattern.track(at: index) else { continue }
+
+            for slot in 0..<Track.cycleCount {
+                guard let cycle = track.cycle(at: slot) else { continue }
+                let channel = MIDIChannel(cycle.channel)
+                let pool = cycle.pool
+
+                for poolSlot in 0..<pool.count {
+                    guard let pitch = pool.pitch(at: poolSlot) else { break }
+                    guard swept.insert(channel.number << 8 | pitch.value).inserted else {
+                        continue
+                    }
+                    send(
+                        .noteOff(
+                            channel: channel,
+                            note: MIDINote(unchecked: UInt8(pitch.value)),
+                            velocity: MIDIVelocity(unchecked: 0)
+                        ),
+                        silenceAt
+                    )
+                }
             }
         }
     }

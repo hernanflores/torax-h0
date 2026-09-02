@@ -66,7 +66,7 @@ final class StopWithSixteenTracksTests: XCTestCase {
     private func sixteen(groove: Groove = .default) -> Pattern {
         var pattern = Pattern()
         for index in 0..<16 {
-            let track = Track(
+            let track = Cycle(
                 shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!),
                 pool: PitchPool().inserting(Pitch(48 + index)!),
                 groove: groove,
@@ -83,7 +83,7 @@ final class StopWithSixteenTracksTests: XCTestCase {
                 timeline: MusicalTimeline(tempo: Tempo(beatsPerMinute: 300)!, division: .sixteenth),
                 lookAheadNanoseconds: 20_000_000
             ),
-            track: Track(shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!)),
+            track: Cycle(shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!)),
             emitter: NoteEmitter(),
             send: recorder.record
         )
@@ -159,7 +159,7 @@ final class StopWithSixteenTracksTests: XCTestCase {
         var pattern = Pattern()
         for (index, sustain) in [25, 200].enumerated() {
             pattern = pattern.replacing(
-                Track(
+                Cycle(
                     shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!),
                     pool: PitchPool().inserting(Pitch(60 + index)!),
                     groove: Groove(

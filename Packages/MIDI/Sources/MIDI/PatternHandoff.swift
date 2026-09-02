@@ -4,7 +4,7 @@ import Engine
 ///
 /// **El problema.** El hilo principal edita el Track; el hilo del scheduler lo
 /// lee en cada ventana. Un lock entre ambos bloquearía el camino de timing, que
-/// es justo lo que `code_styleguides/swift.md` prohíbe. Y copiar un `Track` son
+/// es justo lo que `code_styleguides/swift.md` prohíbe. Y copiar un `Cycle` son
 /// varias palabras de memoria, así que tampoco basta con un atómico: no hay
 /// atómico de ese tamaño.
 ///
@@ -39,10 +39,29 @@ import Engine
 /// el orden de magnitud. No hay nada que decidir aquí, y por eso se copia entero
 /// en vez de publicar por Track.
 ///
+/// **Y lo que costaría con Cycles, medido el 2026-09-02, antes de construirlo.**
+/// Cuando el Track contenga dieciséis Cycles, el snapshot pasa a **36 992 bytes**
+/// —256 Cycles más dos contadores por Track— y el anillo de cuatro ranuras a
+/// **147 968 bytes**, reservados una vez al construir. En la misma pasada y en la
+/// misma máquina, en `debug`:
+///
+/// | | tamaño | `load()` | % de la ventana de 20 ms |
+/// |---|---|---|---|
+/// | Hoy | 2304 B | ~125 ns | 0,0006% |
+/// | Con Cycles | 36 992 B | ~870 ns | **0,0044%** |
+///
+/// Dieciséis veces más bytes cuestan **siete** veces más tiempo, no dieciséis:
+/// una copia grande amortiza mejor que una pequeña. El presupuesto que la Fase 1
+/// del track `cycles_20260901` puso delante de la decisión era el 1% de la
+/// ventana; el número está tres órdenes de magnitud por debajo, así que se copia
+/// el Pattern entero por ventana y el Cycle avanza en el hilo del scheduler, tal
+/// como estaba diseñado. Los tests que producen estas cifras están en
+/// `CycleSnapshotCostTests`.
+///
 /// Lo que sí cambia es la aritmética del riesgo: copiar dieciséis veces más deja
 /// al lector expuesto más tiempo, y por eso el test de concurrencia publica un
 /// Pattern con los dieciséis Tracks correlacionados, no solo con sus campos.
-/// Lo que sí hay que preservar es que `Track` siga siendo un tipo trivial —sin
+/// Lo que sí hay que preservar es que `Cycle` siga siendo un tipo trivial —sin
 /// `Array` ni nada con conteo de referencias—, porque copiarlo ocurre en el hilo
 /// del scheduler y un `retain` ahí es una violación de las reglas de tiempo
 /// real. Hay un test que lo vigila.
@@ -72,6 +91,21 @@ public final class PatternHandoff: @unchecked Sendable {
     /// hace visible.
     private let generation = AtomicCounter(0)
 
+    #if DEBUG
+        /// Cuántas veces se ha leído la ranura publicada.
+        ///
+        /// **Existe para que «una lectura por ventana» sea comprobable**, que es
+        /// la propiedad que la rebanada de Cycles necesita mantener: con 2,25 KB
+        /// una lectura de más por evento era invisible; con un snapshot dieciséis
+        /// veces mayor es una copia por nota. Sin contador, un retroceso a leer
+        /// por evento no lo vería nadie hasta medir jitter en dispositivo.
+        ///
+        /// **Solo en DEBUG.** En release no se compila ni el incremento, así que
+        /// el camino de tiempo real queda exactamente como estaba. El
+        /// `fetch_add` que se paga en los tests es una vez por ventana.
+        let loadCount = AtomicCounter(0)
+    #endif
+
     public init(_ initial: Pattern) {
         slots = .allocate(capacity: Self.slotCount)
         slots.initialize(repeating: initial, count: Self.slotCount)
@@ -82,7 +116,7 @@ public final class PatternHandoff: @unchecked Sendable {
     /// > **Puente de la v2, fase 2.** Existe mientras haya quien todavía piense
     /// > en un Track solo —la interfaz y buena parte de los tests—. La fase 4 lo
     /// > retira: para entonces todo el mundo publica un Pattern.
-    public convenience init(_ initial: Track) {
+    public convenience init(_ initial: Cycle) {
         self.init(Pattern().replacing(initial, at: 0))
     }
 
@@ -119,6 +153,9 @@ public final class PatternHandoff: @unchecked Sendable {
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
     public func load() -> Pattern? {
+        #if DEBUG
+            loadCount.increment()
+        #endif
         let before = generation.value
         let pattern = slots[Int(before & Self.slotMask)]
         let after = generation.value

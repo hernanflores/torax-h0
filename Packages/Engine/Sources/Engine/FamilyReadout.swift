@@ -32,7 +32,7 @@ public struct FamilyReadout: Equatable, Sendable {
     /// El resto de la familia, en una línea pequeña.
     public let detail: String
 
-    public init(track: Track, family: ParameterFamily) {
+    public init(track: Cycle, family: ParameterFamily) {
         switch family {
         case .shape:
             let shape = track.shape

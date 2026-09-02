@@ -137,3 +137,67 @@ final class JitterHarnessGrooveTests: XCTestCase {
         XCTAssertNil(configuration.groove)
     }
 }
+
+/// Tests de la rejilla que hace avanzar los Cycles.
+///
+/// **Es la rejilla que la rebanada 3 de la v2 necesita para medirse.** La de
+/// `16 Tracks` deja un Cycle por Track, así que mediría los dieciséis quietos:
+/// el trabajo que esta rebanada añade —una decisión en el límite de vuelta y un
+/// cambio de material justo ahí— no se ejercería nunca.
+final class JitterHarnessCyclesGridTests: XCTestCase {
+
+    /// **El material del arnés avanza de Cycle, o la medición no diría nada de
+    /// la rebanada 3.** Sin esto, `16 Tracks · 4 Cycles` mediría exactamente lo
+    /// mismo que `16 Tracks` y daría un CUMPLE que no ejerce el trabajo nuevo:
+    /// la decisión en el límite de vuelta y el cambio de material justo ahí.
+    func testTheCyclesGridBuildsTracksThatActuallyAdvance() throws {
+        let pattern = try XCTUnwrap(
+            JitterHarness.pattern(forTrackCount: 16, groove: nil, cycleCount: 4))
+
+        for index in 0..<16 {
+            let track = try XCTUnwrap(pattern.track(at: index))
+            XCTAssertEqual(track.activeCount, 4, "el Track \(index + 1) no recorre cuatro")
+        }
+    }
+
+    /// Y los cuatro Cycles **no son el mismo**: si lo fueran, avanzar no
+    /// cambiaría el material y el coste medido sería el de una copia idéntica.
+    func testTheFourCyclesCarryDifferentMaterial() throws {
+        let pattern = try XCTUnwrap(
+            JitterHarness.pattern(forTrackCount: 16, groove: nil, cycleCount: 4))
+        let track = try XCTUnwrap(pattern.track(at: 0))
+
+        let pitches = (0..<4).compactMap { track.cycle(at: $0)?.pool.pitch(at: 0)?.value }
+        XCTAssertEqual(Set(pitches).count, 4, "los cuatro Cycles llevan la misma altura")
+    }
+
+    /// Pero sí comparten Shape: la vuelta tiene que durar lo mismo en los cuatro
+    /// y en los dieciséis Tracks, o la medición dejaría de ser comparable con
+    /// las anteriores.
+    func testTheFourCyclesShareTheirShapeSoTurnsLastTheSame() throws {
+        let pattern = try XCTUnwrap(
+            JitterHarness.pattern(forTrackCount: 16, groove: nil, cycleCount: 4))
+        let track = try XCTUnwrap(pattern.track(at: 0))
+
+        let shapes = (0..<4).compactMap { track.cycle(at: $0)?.shape }
+        XCTAssertEqual(Set(shapes.map(\.description)).count, 1)
+    }
+
+    /// Por defecto sigue siendo un Cycle por Track, que es lo que mantiene
+    /// comparables las rejillas anteriores.
+    func testWithoutAskingForCyclesEachTrackKeepsOne() throws {
+        let pattern = try XCTUnwrap(JitterHarness.pattern(forTrackCount: 16, groove: nil))
+
+        XCTAssertEqual(pattern.track(at: 0)?.activeCount, 1)
+    }
+
+    /// Un solo Track también necesita el camino de Pattern cuando recorre más
+    /// de un Cycle; la vía directa no tiene un Track cuyo cursor pueda avanzar.
+    func testOneTrackWithSeveralCyclesBuildsAPattern() throws {
+        let pattern = try XCTUnwrap(
+            JitterHarness.pattern(forTrackCount: 1, groove: nil, cycleCount: 4))
+
+        XCTAssertEqual(pattern.track(at: 0)?.activeCount, 4)
+        XCTAssertEqual(pattern.track(at: 1)?.activeCount, 1)
+    }
+}

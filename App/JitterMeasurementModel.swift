@@ -38,6 +38,7 @@ final class JitterMeasurementModel {
         /// vez. Es lo que decide si la rebanada de múltiples Tracks vale, y no
         /// se puede deducir de la medición de uno.
         case sixteenTracks = "16 Tracks"
+        case sixteenTracksWithCycles = "16 Tracks · 4 Cycles"
 
         var id: String { rawValue }
 
@@ -50,6 +51,7 @@ final class JitterMeasurementModel {
             case .dragged: "delay-mas-50"
             case .pushed: "delay-menos-50"
             case .sixteenTracks: "16-tracks"
+            case .sixteenTracksWithCycles: "16-tracks-cycles"
             }
         }
 
@@ -59,7 +61,21 @@ final class JitterMeasurementModel {
         /// Cuántos Tracks suenan durante la medición.
         var trackCount: Int {
             switch self {
-            case .sixteenTracks: 16
+            case .sixteenTracks, .sixteenTracksWithCycles: 16
+            default: 1
+            }
+        }
+
+        /// Cuántos Cycles recorre cada Track.
+        ///
+        /// **Cuatro y no dieciséis**: lo que se mide es el coste de *avanzar*,
+        /// que ocurre una vez por vuelta y no depende de cuántos haya; con
+        /// cuatro, una pasada completa cabe en la medición varias veces y el
+        /// cambio de material se ejerce de sobra. Dieciséis solo alargarían la
+        /// pasada sin ejercer nada nuevo.
+        var cycleCount: Int {
+            switch self {
+            case .sixteenTracksWithCycles: 4
             default: 1
             }
         }
@@ -74,9 +90,9 @@ final class JitterMeasurementModel {
                 return groove(timing: 50, delay: 50)
             case .pushed:
                 return groove(timing: 50, delay: -50)
-            case .sixteenTracks:
+            case .sixteenTracks, .sixteenTracksWithCycles:
                 // Recta, para que lo único que cambie respecto a la referencia
-                // sean los dieciséis Tracks y no el Groove.
+                // sean los dieciséis Tracks y sus Cycles, y no el Groove.
                 return nil
             }
         }
@@ -129,6 +145,7 @@ final class JitterMeasurementModel {
         let sampleCount = sampleCount
         let groove = grid.groove
         let trackCount = grid.trackCount
+        let cycleCount = grid.cycleCount
         task = Task { [weak self] in
             for beatsPerMinute in Self.tempos {
                 if Task.isCancelled { break }
@@ -143,7 +160,8 @@ final class JitterMeasurementModel {
                 let outcome = await Task.detached(priority: .userInitiated) {
                     JitterMeasurementModel.measure(
                         beatsPerMinute: beatsPerMinute, sampleCount: sampleCount,
-                        groove: groove, trackCount: trackCount, trace: trace
+                        groove: groove, trackCount: trackCount, cycleCount: cycleCount,
+                        trace: trace
                     )
                 }.value
                 self?.writeTrace("fin \(Int(beatsPerMinute)) BPM")
@@ -307,7 +325,7 @@ final class JitterMeasurementModel {
     /// - Returns: A successful measurement or a failure describing an invalid tempo, timeout, or measurement error.
     private nonisolated static func measure(
         beatsPerMinute: Double, sampleCount: Int, groove: Groove? = nil, trackCount: Int = 1,
-        trace: @Sendable (String) -> Void = { _ in }
+        cycleCount: Int = 1, trace: @Sendable (String) -> Void = { _ in }
     ) -> Outcome {
         guard let tempo = Tempo(beatsPerMinute: beatsPerMinute) else {
             return .failure("Tempo fuera de rango: \(beatsPerMinute) BPM")
@@ -320,7 +338,8 @@ final class JitterMeasurementModel {
                     sampleCount: sampleCount,
                     timeoutSeconds: 300,
                     groove: groove,
-                    trackCount: trackCount
+                    trackCount: trackCount,
+                    cycleCount: cycleCount
                 )
             )
             return .success(

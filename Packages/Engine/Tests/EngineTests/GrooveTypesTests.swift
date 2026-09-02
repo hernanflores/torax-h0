@@ -183,7 +183,7 @@ final class GrooveTests: XCTestCase {
     }
 
     func testTrackStaysTrivialWithGrooveInside() {
-        XCTAssertTrue(_isPOD(Track.self), "Track dejó de ser trivial al entrar Groove")
+        XCTAssertTrue(_isPOD(Cycle.self), "Cycle dejó de ser trivial al entrar Groove")
     }
 
     // MARK: - Groove como valor
@@ -253,7 +253,7 @@ final class GrooveTests: XCTestCase {
     /// sitios que no saben nada de Groove; el default de producto es lo que les
     /// permite seguir compilando y sonando igual.
     func testTrackBuiltWithoutGrooveTakesTheProductDefault() {
-        let track = Track(shape: Shape(steps: Steps(16)!, pulses: Pulses(4)!))
+        let track = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(4)!))
 
         XCTAssertEqual(track.groove, .default)
     }
@@ -267,8 +267,8 @@ final class GrooveTests: XCTestCase {
         pool = pool.toggling(Pitch(64)!)
         let shape = Shape(steps: Steps(12)!, pulses: Pulses(7)!, rotate: Rotate(3))
 
-        let track = Track(shape: shape, pool: pool)
-        let louder = Track(
+        let track = Cycle(shape: shape, pool: pool)
+        let louder = Cycle(
             shape: track.shape, pool: track.pool,
             groove: Groove(
                 velocity: Velocity(127)!,

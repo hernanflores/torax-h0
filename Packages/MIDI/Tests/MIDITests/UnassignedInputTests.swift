@@ -96,7 +96,7 @@ final class UnassignedInputTests: XCTestCase {
 
     private func makeInput() -> ControlInput {
         ControlInput(
-            track: Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
+            track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
             frame: TonalFrame(scale: .major, root: Root(0)!),
             publish: { _ in }
         )

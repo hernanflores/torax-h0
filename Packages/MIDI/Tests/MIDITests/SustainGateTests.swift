@@ -124,7 +124,7 @@ final class StopSilencesEverythingTests: XCTestCase {
                 timeline: timeline,
                 lookAheadNanoseconds: 20_000_000
             ),
-            track: Track(shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!), pool: pool),
+            track: Cycle(shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!), pool: pool),
             emitter: NoteEmitter(),
             send: recorder.record
         )
@@ -140,7 +140,7 @@ final class StopSilencesEverythingTests: XCTestCase {
         let transport = transport(pool: pool, recorder: recorder)
         transport.play()
         transport.publish(
-            Track(shape: transport.track.shape, pool: PitchPool(), groove: transport.track.groove))
+            Cycle(shape: transport.track.shape, pool: PitchPool(), groove: transport.track.groove))
         transport.stop()
 
         let allNotesOff = recorder.captured.contains { message in

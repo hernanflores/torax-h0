@@ -17,6 +17,13 @@
 /// actividad que habría que mantener coherente. Es también lo que mantiene el
 /// tamaño fijo, porque una colección variable exige asignación y asignar en el
 /// camino del scheduler está prohibido.
+///
+/// > **Estado intermedio del 2026-09-02.** Lo que este tipo guarda ya no se
+/// > llama `Track` sino `Cycle`, y de momento hay **uno por Track**: el
+/// > renombrado va en su propio commit y el nivel nuevo llega en el siguiente.
+/// > `track(at:)` conserva el nombre a propósito —sigue devolviendo lo que ese
+/// > Track está tocando— para que la tarea que mete el nivel solo tenga que
+/// > cambiar el tipo que devuelve, y no todas las llamadas.
 public struct Pattern: Equatable, Sendable {
 
     /// Cuántos Tracks suenan juntos. La Pre Spec: «hasta 16 Tracks por Pattern».
@@ -41,7 +48,7 @@ public struct Pattern: Equatable, Sendable {
             Track, Track, Track, Track, Track, Track, Track, Track
         )
 
-    /// El Track de un hueco sin usar: dispara, y no tiene nada que emitir.
+    /// El Cycle de un hueco sin usar: dispara, y no tiene nada que emitir.
     ///
     /// **El silencio sale del pool vacío, no del Shape.** Los Pulses no pueden
     /// ser cero —la Pre Spec los define de 1 a Steps— así que un Track sin
@@ -50,7 +57,7 @@ public struct Pattern: Equatable, Sendable {
     ///
     /// Steps 16 y Pulses 1 son literales dentro de rango, así que el
     /// desempaquetado no puede fallar.
-    static let emptyTrack = Track(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!))
+    static let emptyCycle = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!))
 
     /// Dieciséis Tracks vacíos, **cada uno en su canal**: el Track N emite por
     /// el canal N.
@@ -60,7 +67,7 @@ public struct Pattern: Equatable, Sendable {
     /// cambiar: dos capas rítmicas sobre el mismo sinte es un caso real.
     public init() {
         func empty(_ number: Int) -> Track {
-            Self.emptyTrack.on(Channel(unchecked: number))
+            Track(Self.emptyCycle.on(Channel(unchecked: number)))
         }
         tracks = (
             empty(1), empty(2), empty(3), empty(4),
@@ -86,7 +93,7 @@ public struct Pattern: Equatable, Sendable {
     /// Los literales están dentro de rango, así que el desempaquetado no puede
     /// fallar.
     public static let initial = Pattern().replacing(
-        Track(
+        Cycle(
             shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!),
             pool: PitchPool().inserting(Pitch(48)!)
         ),
@@ -109,6 +116,29 @@ public struct Pattern: Equatable, Sendable {
         }
     }
 
+    /// El Cycle que está sonando en esa posición, o `nil` fuera de 0–15.
+    ///
+    /// **Es lo que quiere casi todo el mundo.** El scheduler, el emisor y la
+    /// pantalla preguntan por el material vigente, no por el contenedor: pedir
+    /// `track(at:)?.current` en cada sitio sería repetir la misma frase
+    /// cincuenta veces y dejar que alguien la escriba mal una.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func cycle(at index: Int) -> Cycle? {
+        track(at: index)?.current
+    }
+
+    /// El Cycle que se está editando en esa posición, o `nil` fuera de 0–15.
+    ///
+    /// **No es el mismo que `cycle(at:)`, y esa es la función.** Uno es el que
+    /// suena y otro el que se edita: mientras suena el Cycle A se construye el
+    /// B, que es la forma natural de trabajar (FR7). Con un solo Cycle activo
+    /// los dos son el mismo.
+    public func editingCycle(at index: Int) -> Cycle? {
+        track(at: index)?.editingCycle
+    }
+
     /// El Pattern con ese Track en esa posición y los otros quince intactos.
     ///
     /// Fuera de rango devuelve el Pattern tal cual: nada que cambiar.
@@ -122,6 +152,25 @@ public struct Pattern: Equatable, Sendable {
             }
         }
         return updated
+    }
+
+    /// El Pattern con ese Cycle sustituyendo al **que se edita** en esa
+    /// posición, y **todo lo demás del Track intacto**: sus otros quince Cycles,
+    /// cuántos están activos y los dos cursores.
+    ///
+    /// Es el camino de la edición, y por eso apunta al Cycle en edición y no al
+    /// que suena (FR8): construir el B mientras suena el A es la forma natural
+    /// de trabajar. Con un solo Cycle activo los dos son el mismo, así que nada
+    /// cambia para quien no use Cycles.
+    ///
+    /// **Es el camino de la edición.** Girar un knob cambia el material vigente
+    /// de un Track, no su estructura. Que exista esta sobrecarga es lo que evita
+    /// que cada sitio que edita tenga que reconstruir el Track a mano — que es
+    /// exactamente la forma de perder campos en silencio contra la que
+    /// `Cycle.applying(_:to:)` ya advierte.
+    public func replacing(_ cycle: Cycle, at index: Int) -> Pattern {
+        guard let track = track(at: index) else { return self }
+        return replacing(track.replacingEditing(cycle), at: index)
     }
 
     public static func == (lhs: Pattern, rhs: Pattern) -> Bool {

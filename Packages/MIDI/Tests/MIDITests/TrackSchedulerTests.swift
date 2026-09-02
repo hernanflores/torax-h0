@@ -22,10 +22,10 @@ final class TrackSchedulerTests: XCTestCase {
     /// crece con los Tracks que suenan, no con dieciséis siempre— así que un
     /// Track de prueba que quiera emitir necesita material.
     private func track(steps stepCount: Int, pulses pulseCount: Int, rotate amount: Int = 0)
-        -> Track
+        -> Cycle
     {
         let steps = Steps(stepCount)!
-        return Track(
+        return Cycle(
             shape: Shape(
                 steps: steps,
                 pulses: Pulses(pulseCount)!,
@@ -37,7 +37,7 @@ final class TrackSchedulerTests: XCTestCase {
 
     /// Anillo lleno: todos los Steps disparan. Sirve para comprobar continuidad
     /// sin que el reparto euclidiano se mezcle en la cuenta.
-    private func fullRing(_ stepCount: Int) -> Track {
+    private func fullRing(_ stepCount: Int) -> Cycle {
         track(steps: stepCount, pulses: stepCount)
     }
 
@@ -51,7 +51,7 @@ final class TrackSchedulerTests: XCTestCase {
         scheduler.advance(
             toHorizon: Int64(stepIndex) * stepNanoseconds,
             refreshingFrom: handoff
-        ) { step, _, _, _ in steps.append(step) }
+        ) { _, step, _, _, _ in steps.append(step) }
         return steps
     }
 
@@ -59,13 +59,13 @@ final class TrackSchedulerTests: XCTestCase {
 
     func testOnlyTriggeringStepsAreEmitted() {
         var scheduler = TrackScheduler(
-            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+            timeline: timeline, material: .cycle(track(steps: 16, pulses: 4)))
         XCTAssertEqual(emit(&scheduler, upToStep: 16), [0, 4, 8, 12])
     }
 
     func testRotateShiftsWhichStepsAreEmitted() {
         var scheduler = TrackScheduler(
-            timeline: timeline, material: .track(track(steps: 16, pulses: 4, rotate: 1)))
+            timeline: timeline, material: .cycle(track(steps: 16, pulses: 4, rotate: 1)))
         XCTAssertEqual(emit(&scheduler, upToStep: 16), [1, 5, 9, 13])
     }
 
@@ -73,7 +73,7 @@ final class TrackSchedulerTests: XCTestCase {
     /// índices de Step más altos.
     func testRingRepeatsOnTheSecondLap() {
         var scheduler = TrackScheduler(
-            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+            timeline: timeline, material: .cycle(track(steps: 16, pulses: 4)))
         _ = emit(&scheduler, upToStep: 16)
         XCTAssertEqual(emit(&scheduler, upToStep: 32), [16, 20, 24, 28])
     }
@@ -81,9 +81,10 @@ final class TrackSchedulerTests: XCTestCase {
     /// El offset que se entrega es el del Step, no el del horizonte.
     func testEmittedOffsetIsTheStepOffset() {
         var scheduler = TrackScheduler(
-            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+            timeline: timeline, material: .cycle(track(steps: 16, pulses: 4)))
         var offsets: [Int64] = []
-        scheduler.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: nil) { _, _, _, offset in
+        scheduler.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: nil) {
+            _, _, _, _, offset in
             offsets.append(offset)
         }
         XCTAssertEqual(offsets, [0, 4, 8, 12].map { Int64($0) * stepNanoseconds })
@@ -96,7 +97,7 @@ final class TrackSchedulerTests: XCTestCase {
     func testSnapshotPublishedMidPlaybackIsPickedUpByTheNextWindow() {
         let handoff = PatternHandoff(track(steps: 16, pulses: 4))
         var scheduler = TrackScheduler(
-            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+            timeline: timeline, material: .cycle(track(steps: 16, pulses: 4)))
 
         XCTAssertEqual(emit(&scheduler, upToStep: 16, from: handoff), [0, 4, 8, 12])
 
@@ -110,7 +111,7 @@ final class TrackSchedulerTests: XCTestCase {
     func testWithoutPublishingTheTrackIsUnchanged() {
         let handoff = PatternHandoff(track(steps: 16, pulses: 4))
         var scheduler = TrackScheduler(
-            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+            timeline: timeline, material: .cycle(track(steps: 16, pulses: 4)))
         for lap in 1...4 {
             let expected = [0, 4, 8, 12].map { $0 + (lap - 1) * 16 }
             XCTAssertEqual(emit(&scheduler, upToStep: lap * 16, from: handoff), expected)
@@ -124,7 +125,7 @@ final class TrackSchedulerTests: XCTestCase {
     /// enteros consecutivos desde cero, sin huecos ni repeticiones.
     func testChangingSnapshotNeverDuplicatesOrDropsAStep() {
         let handoff = PatternHandoff(fullRing(16))
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(fullRing(16)))
+        var scheduler = TrackScheduler(timeline: timeline, material: .cycle(fullRing(16)))
 
         var emitted: [Int] = []
         for window in 1...40 {
@@ -138,7 +139,7 @@ final class TrackSchedulerTests: XCTestCase {
     /// Lo mismo publicando a mitad de ventana en lugar de entre ventanas.
     func testStepSequenceStaysContiguousAcrossManySnapshotChanges() {
         let handoff = PatternHandoff(fullRing(8))
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(fullRing(8)))
+        var scheduler = TrackScheduler(timeline: timeline, material: .cycle(fullRing(8)))
 
         var emitted: [Int] = []
         for window in 1...60 {
@@ -155,11 +156,11 @@ final class TrackSchedulerTests: XCTestCase {
     /// que ya tenía en vez de emitir cualquier cosa.
     func testDiscardedSnapshotReadKeepsThePreviousTrack() {
         var scheduler = TrackScheduler(
-            timeline: timeline, material: .track(track(steps: 16, pulses: 4)))
+            timeline: timeline, material: .cycle(track(steps: 16, pulses: 4)))
         // `nil` es exactamente lo que `PatternHandoff.load()` devuelve al
         // descartar, así que pasar nil reproduce ese caso.
         XCTAssertEqual(emit(&scheduler, upToStep: 16, from: nil), [0, 4, 8, 12])
-        XCTAssertEqual(scheduler.material, .track(track(steps: 16, pulses: 4)))
+        XCTAssertEqual(scheduler.material, .cycle(track(steps: 16, pulses: 4)))
     }
 
     // MARK: - Los dos significados no se confunden
@@ -178,18 +179,18 @@ final class TrackSchedulerTests: XCTestCase {
         let handoff = PatternHandoff(track(steps: 16, pulses: 4))
         var scheduler = TrackScheduler(
             timeline: timeline,
-            material: .track(track(steps: 16, pulses: 4))
+            material: .cycle(track(steps: 16, pulses: 4))
         )
         // `nil` es exactamente lo que `load()` devuelve al descartar.
         XCTAssertEqual(emit(&scheduler, upToStep: 16, from: nil), [0, 4, 8, 12])
-        XCTAssertEqual(scheduler.material, .track(track(steps: 16, pulses: 4)))
+        XCTAssertEqual(scheduler.material, .cycle(track(steps: 16, pulses: 4)))
         XCTAssertEqual(emit(&scheduler, upToStep: 32, from: handoff), [16, 20, 24, 28])
     }
 
     // MARK: - Horizonte
 
     func testHorizonThatDoesNotAdvanceEmitsNothing() {
-        var scheduler = TrackScheduler(timeline: timeline, material: .track(fullRing(16)))
+        var scheduler = TrackScheduler(timeline: timeline, material: .cycle(fullRing(16)))
         XCTAssertEqual(emit(&scheduler, upToStep: 4), [0, 1, 2, 3])
         XCTAssertEqual(emit(&scheduler, upToStep: 4), [])
         XCTAssertEqual(emit(&scheduler, upToStep: 2), [])
@@ -214,9 +215,9 @@ final class SchedulerThreadSnapshotTests: XCTestCase {
     }
 
     /// Con pool: desde la v2 un Track sin alturas no se programa.
-    private func track(rotate amount: Int) -> Track {
+    private func track(rotate amount: Int) -> Cycle {
         let steps = Steps(16)!
-        return Track(
+        return Cycle(
             shape: Shape(steps: steps, pulses: Pulses(4)!, rotate: Rotate(amount)),
             pool: PitchPool().inserting(Pitch(60)!)
         )
@@ -231,9 +232,9 @@ final class SchedulerThreadSnapshotTests: XCTestCase {
 
         let thread = SchedulerThread(
             configuration: configuration(),
-            material: .track(track(rotate: 0)),
+            material: .cycle(track(rotate: 0)),
             handoff: handoff
-        ) { _, step, _, _, _ in
+        ) { _, _, step, _, _, _ in
             if UInt64(step % 4) != expectedOffset.value { unexpectedPosition.value = true }
             emitted.increment()
         }

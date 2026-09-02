@@ -23,154 +23,267 @@ regresión la bloquea.
 
 ---
 
-## Phase 1: El coste, medido antes de construir
+## Phase 1: El coste, medido antes de construir [checkpoint: 1998ebc]
 
 > `MIDI`. Ninguna línea del modelo se toca todavía. Esta fase existe para
 > responder una pregunta con un número: ¿cabe un snapshot de ~36 KB en la ventana
 > de 20 ms? Y para quitar de en medio una copia que hoy pasa desapercibida y con
 > Cycles no pasaría.
 
-- [ ] Task: El snapshot deja de copiarse una vez por evento (NFR3)
-  - [ ] Tests (Red): emitir N eventos hace **como mucho una** lectura del handoff por ventana, no una por evento — hoy `Transport.play()` llama a `handoff.load()` dentro del cierre de emisión, para leer el canal y la Division del Track
-  - [ ] Tests (Red): el canal y la Division con que sale cada nota siguen siendo los del **mismo** snapshot que produjo el evento, que es la razón por la que aquella lectura existía
-  - [ ] Tests (Red): cambiar el canal mientras suena se sigue oyendo en el evento siguiente
-  - [ ] Implementación (Green): el snapshot recogido una vez por ventana se pasa al emisor, en vez de releerlo por evento
-  - [ ] **Es una corrección, no una optimización prematura**: con 2,25 KB era invisible; con 36 KB es una copia por nota
-- [ ] Task: Cuánto cuesta un snapshot con los 256 Cycles
-  - [ ] Medir `MemoryLayout` y el tiempo de un `load()` sobre un valor **del tamaño real** —un tipo de prueba, sin renombrar nada todavía—
-  - [ ] Comparar contra la ventana de 20 ms y contra la medición del 2026-08-31 —2,25 KB en 274 ns—, que es la única referencia que hay
-  - [ ] Medir también el anillo completo: cuatro ranuras, ~147 KB, reservadas al construir
-  - [ ] Registrar los números en la git note **y** en la documentación de `PatternHandoff`, que es donde alguien los buscará
-- [ ] Task: La decisión, tomada con el dato delante
-  - [ ] Presupuesto: un `load()` **por debajo del 1% de la ventana**. Por encima, se para y se decide explícitamente
-  - [ ] Si no cabe, la alternativa está escrita y es otro diseño, no un ajuste: el avance pasa al hilo principal (FR5 cambia) o se publica por Track en vez de entero. **Se elige aquí, no a mitad de la Fase 3**
-  - [ ] La decisión y su porqué van al `spec.md` como enmienda fechada, con el número
+- [x] Task: El snapshot deja de copiarse una vez por evento (NFR3) — `8e2a9b2`
+  - [x] Tests (Red): emitir N eventos hace **como mucho una** lectura del handoff por ventana, no una por evento — hoy `Transport.play()` llama a `handoff.load()` dentro del cierre de emisión, para leer el canal y la Division del Track
+  - [x] Tests (Red): el canal y la Division con que sale cada nota siguen siendo los del **mismo** snapshot que produjo el evento, que es la razón por la que aquella lectura existía
+  - [x] Tests (Red): cambiar el canal mientras suena se sigue oyendo en el evento siguiente
+  - [x] Implementación (Green): el snapshot recogido una vez por ventana se pasa al emisor, en vez de releerlo por evento
+  - [x] **Es una corrección, no una optimización prematura**: con 2,25 KB era invisible; con 36 KB es una copia por nota
+
+  Rojo medido antes de implementar: **188 lecturas para 168 notas**. Verde:
+  **7 lecturas para 168 notas** —una por ventana, más la de Play—. El contador
+  vive en `PatternHandoff` y solo se compila en DEBUG.
+- [x] Task: Cuánto cuesta un snapshot con los 256 Cycles — `1998ebc`
+  - [x] Medir `MemoryLayout` y el tiempo de un `load()` sobre un valor **del tamaño real** —un tipo de prueba, sin renombrar nada todavía—
+  - [x] Comparar contra la ventana de 20 ms y contra la medición del 2026-08-31 —2,25 KB en 274 ns—, que es la única referencia que hay
+  - [x] Medir también el anillo completo: cuatro ranuras, ~147 KB, reservadas al construir
+  - [x] Registrar los números en la git note **y** en la documentación de `PatternHandoff`, que es donde alguien los buscará
+
+  | | tamaño | `load()` | % de la ventana |
+  |---|---|---|---|
+  | Hoy | 2304 B | ~125 ns | 0,0006% |
+  | Con Cycles | **36 992 B** | **~870 ns** | **0,0044%** |
+
+  Anillo de cuatro ranuras: **147 968 B**, reservados al construir. La
+  referencia del 2026-08-31 no era comparable —otra máquina, un Track de 112
+  bytes—, así que el snapshot de hoy se midió en la misma pasada. Dieciséis
+  veces más bytes cuestan **siete** veces más tiempo, no dieciséis: la
+  extrapolación lineal de la nota de riesgo 1 era pesimista por un factor de
+  cinco.
+- [x] Task: La decisión, tomada con el dato delante — `c5728c9`
+  - [x] Presupuesto: un `load()` **por debajo del 1% de la ventana**. Por encima, se para y se decide explícitamente
+  - [x] Si no cabe, la alternativa está escrita y es otro diseño, no un ajuste: el avance pasa al hilo principal (FR5 cambia) o se publica por Track en vez de entero. **Se elige aquí, no a mitad de la Fase 3**
+  - [x] La decisión y su porqué van al `spec.md` como enmienda fechada, con el número
+
+  **Cabe, y por tres órdenes de magnitud: 0,0044% contra un presupuesto del 1%.**
+  El diseño se queda como estaba —FR5 intacto, se publica el Pattern entero— y
+  las dos alternativas quedan descartadas por escrito, para no reabrirlas a
+  mitad de la Fase 3. Enmienda fechada en el NFR2 del `spec.md`.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: El Cycle es el valor, el Track lo contiene
+## Phase 2: El Cycle es el valor, el Track lo contiene [checkpoint: 9fb8bbb]
 
 > `Engine` puro. Sin CoreMIDI, sin simulador, sin hardware. Es el renombrado y el
 > nivel nuevo: mecánico en volumen, delicado en la frontera de tiempo real.
 
-- [ ] Task: `Track` pasa a llamarse `Cycle`
-  - [ ] Tests (Red): los tests que hoy miden el `Track` —Shape, pool, marco tonal, Groove, canal— siguen midiendo lo mismo sobre `Cycle`, sin cambiar una sola aserción
-  - [ ] Tests (Red): `_isPOD(Cycle.self)` sigue siendo verdadero
-  - [ ] Implementación (Green): renombrado mecánico en `Engine` y en `MIDI`
-  - [ ] **Es el vocabulario de la Pre Spec** (NFR7): «Cycle: snapshot de parámetros de un Track». Mantener `Track` para esto sería inventarle un sinónimo al concepto que ya tiene nombre
-  - [ ] Un commit propio y solo con el renombrado: mezclado con lógica no habría forma de revisarlo
-- [ ] Task: El `Track` nuevo: dieciséis Cycles, cuántos activos y por cuál va
-  - [ ] Tests (Red): un Track recién construido tiene dieciséis Cycles, **uno activo** y el cursor en el primero — que es el comportamiento de hoy (FR10)
-  - [ ] Tests (Red): `_isPOD(Track.self)` y `_isPOD(Pattern.self)` siguen siendo verdaderos con el nivel nuevo dentro
-  - [ ] Tests (Red): sustituir un Cycle devuelve un Track nuevo con **solo ese** cambiado, comprobado sobre los otros quince
-  - [ ] Tests (Red): leer un índice de Cycle fuera de 0–15 no revienta — mismo criterio que un pad fuera de la superficie
-  - [ ] Implementación (Green): almacenamiento inline de tamaño fijo, por la misma razón que `PitchPool` y `Pattern` lo son
-- [ ] Task: Cuántos Cycles activos, y qué pasa al moverlo
-  - [ ] Tests (Red): el rango es 1–16 y se frena en los extremos, como Steps y Division
-  - [ ] Tests (Red): **subir el número copia el Cycle en edición** al que empieza a existir (FR3), y el copiado suena igual hasta que se edita
-  - [ ] Tests (Red): bajar el número descarta por el final, y el Cycle en edición se acota de inmediato si queda fuera (FR9)
-  - [ ] Tests (Red): bajar el número **no toca el cursor de reproducción** — de eso se encarga el scheduler al cerrar la vuelta
-  - [ ] Implementación (Green)
-- [ ] Task: El recorrido, como función pura
-  - [ ] Tests (Red): con N activos, el cursor recorre 0…N−1 y vuelve a 0
-  - [ ] Tests (Red): con un solo Cycle activo el cursor no se mueve nunca (FR10)
-  - [ ] Tests (Red): con el cursor fuera del rango —porque el rango bajó— el avance siguiente entra en 0 (FR9)
-  - [ ] Implementación (Green): aritmética de enteros, sin asignaciones. **Vive en `Engine` y no en el scheduler**: es una regla del modelo y así se testea sin hilos
+- [x] Task: `Track` pasa a llamarse `Cycle` — `c45ba2b`
+  - [x] Tests (Red): los tests que hoy miden el `Track` —Shape, pool, marco tonal, Groove, canal— siguen midiendo lo mismo sobre `Cycle`, sin cambiar una sola aserción
+  - [x] Tests (Red): `_isPOD(Cycle.self)` sigue siendo verdadero
+  - [x] Implementación (Green): renombrado mecánico en `Engine` y en `MIDI`
+  - [x] **Es el vocabulario de la Pre Spec** (NFR7): «Cycle: snapshot de parámetros de un Track». Mantener `Track` para esto sería inventarle un sinónimo al concepto que ya tiene nombre
+  - [x] Un commit propio y solo con el renombrado: mezclado con lógica no habría forma de revisarlo
+
+  **Lo que conserva el nombre, y por qué:** `Pattern.track(at:)`,
+  `Pattern.trackCount`, `Transport.track`, `ControlInput.track`,
+  `TrackScheduler` y `TrackParameter`. Los dos últimos siguen siendo lo que
+  dicen ser; los otros devuelven hoy el único Cycle de ese Track, y así la
+  tarea siguiente solo cambia el tipo y no todas las llamadas. Nota fechada en
+  `Pattern` para que el estado intermedio no se lea como un descuido.
+- [x] Task: El `Track` nuevo: dieciséis Cycles, cuántos activos y por cuál va — `253b2e9`
+  - [x] Tests (Red): un Track recién construido tiene dieciséis Cycles, **uno activo** y el cursor en el primero — que es el comportamiento de hoy (FR10)
+  - [x] Tests (Red): `_isPOD(Track.self)` y `_isPOD(Pattern.self)` siguen siendo verdaderos con el nivel nuevo dentro
+  - [x] Tests (Red): sustituir un Cycle devuelve un Track nuevo con **solo ese** cambiado, comprobado sobre los otros quince
+  - [x] Tests (Red): leer un índice de Cycle fuera de 0–15 no revienta — mismo criterio que un pad fuera de la superficie
+  - [x] Implementación (Green): almacenamiento inline de tamaño fijo, por la misma razón que `PitchPool` y `Pattern` lo son
+
+  **Hallazgo no previsto: la pila del hilo.** El test de concurrencia del
+  handoff empezó a reventar con SIGBUS. Construir un Pattern deja varios
+  temporales de 37 KB vivos en el mismo marco y la pila por defecto de un
+  `Thread` secundario son 512 KB — medido: desborda con 512 KB y pasa con 1 MB.
+  **Importa fuera del test:** el hilo del scheduler es un `Thread` con esa misma
+  pila por defecto y copia el snapshot cada ventana, así que su margen se había
+  reducido dieciséis veces sin que nadie lo mirara. Ahora reserva 1 MB, con el
+  porqué escrito en `start()`.
+
+  Y el detector de tamaño del snapshot saltó, que es para lo que estaba puesto:
+  la cota pasa de 4 KB a 64 KB, con la decisión de la Fase 1 escrita al lado.
+- [x] Task: Cuántos Cycles activos, y qué pasa al moverlo — `5b9ca53`
+  - [x] Tests (Red): el rango es 1–16 y se frena en los extremos, como Steps y Division
+  - [x] Tests (Red): **subir el número copia el Cycle en edición** al que empieza a existir (FR3), y el copiado suena igual hasta que se edita
+  - [x] Tests (Red): bajar el número descarta por el final, y el Cycle en edición se acota de inmediato si queda fuera (FR9)
+  - [x] Tests (Red): bajar el número **no toca el cursor de reproducción** — de eso se encarga el scheduler al cerrar la vuelta
+  - [x] Implementación (Green)
+
+  Entra con esta tarea el **segundo cursor**, el de edición (FR7): lo pedían la
+  regla de FR3 —se copia el Cycle en edición, no el primero ni el que suena— y
+  la de FR9. El tercer contador deja el Pattern en 37 248 bytes contra los
+  36 992 del tipo de prueba de la Fase 1: un 0,7%, que no mueve la decisión.
+- [x] Task: El recorrido, como función pura — `9fb8bbb`
+  - [x] Tests (Red): con N activos, el cursor recorre 0…N−1 y vuelve a 0
+  - [x] Tests (Red): con un solo Cycle activo el cursor no se mueve nunca (FR10)
+  - [x] Tests (Red): con el cursor fuera del rango —porque el rango bajó— el avance siguiente entra en 0 (FR9)
+  - [x] Implementación (Green): aritmética de enteros, sin asignaciones. **Vive en `Engine` y no en el scheduler**: es una regla del modelo y así se testea sin hilos
+
+  FR9 no necesitó caso aparte: si el cursor ya está fuera del rango, sumarle uno
+  lo deja igual de fuera y la comparación lo devuelve a 0.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: El scheduler avanza en el límite de vuelta
+## Phase 3: El scheduler avanza en el límite de vuelta [checkpoint: 0802798]
 
 > `MIDI`. La fase que hace que Cycles se oiga. Toca el hilo de tiempo real y el
 > instante en que cambia el material: es la que la medición final juzga.
 
-- [ ] Task: Cada Track avanza al cerrar su propia vuelta
-  - [ ] Tests (Red): un Track de N Steps cambia de Cycle **en el Step 0** de la vuelta siguiente, comprobado sobre el índice de Step y no de oído (FR5)
-  - [ ] Tests (Red): dos Tracks de longitudes distintas —16 Steps y 12— no cambian de Cycle a la vez (FR4)
-  - [ ] Tests (Red): con Divisions distintas, cada uno avanza según **su** vuelta, no según el tiempo del otro
-  - [ ] Tests (Red): el avance recorre muchas vueltas sin deriva —mil ciclos, no dos compases—, que es como se ven los fallos de fase
-  - [ ] Implementación (Green): el cursor avanza en el hilo del scheduler, sin asignaciones ni locks
-- [ ] Task: El Cycle vigente decide lo que suena, entero
-  - [ ] Tests (Red): al cambiar de Cycle cambian a la vez Shape, pool, marco tonal, Groove y canal — no la mitad de uno y la mitad de otro
-  - [ ] Tests (Red): el Cycle nuevo se lee **una sola vez** al cruzar el límite, no por evento
-  - [ ] Tests (Red): un Cycle con el pool vacío no emite nada y **no rompe el recorrido**: la vuelta se cuenta igual y el siguiente sí suena (NFR3 de la rebanada 1: el coste crece con lo que suena)
-  - [ ] Implementación (Green)
-- [ ] Task: Lo que cambia de Cycle y lo que no puede cambiar todavía
-  - [ ] Tests (Red): Steps, Pulses, Rotate, pool, marco tonal, Groove y canal cambian con el Cycle
-  - [ ] **Division es el caso difícil y se decide aquí, con test.** Cambiar la Division reubica todos los Steps futuros respecto a un origen que ya pasó — es la limitación que `TrackScheduler` ya documenta para el snapshot en caliente. En el límite de vuelta el origen sí es reubicable: si no lo es sin romper la fase con los otros quince, **se acota explícitamente** y va a *Known Limitations* del spec
-  - [ ] Implementación (Green)
-- [ ] Task: Play reinicia los dieciséis al Cycle 1
-  - [ ] Tests (Red): tras `play()`, los dieciséis cursores están en 0 (FR6)
-  - [ ] Tests (Red): dos pasadas de Play producen la **misma** secuencia de Cycles y las mismas omisiones — la promesa de `tech-stack.md`
-  - [ ] Tests (Red): cambiar de Cycle **no resiembra** el generador de Probability (NFR5)
-  - [ ] Tests (Red): `Stop` con Cycles avanzando no deja notas colgadas, incluido con Delay positivo y con canales distintos por Cycle
-  - [ ] Implementación (Green)
+- [x] Task: Cada Track avanza al cerrar su propia vuelta — `4fbdc6e`
+  - [x] Tests (Red): un Track de N Steps cambia de Cycle **en el Step 0** de la vuelta siguiente, comprobado sobre el índice de Step y no de oído (FR5)
+  - [x] Tests (Red): dos Tracks de longitudes distintas —16 Steps y 12— no cambian de Cycle a la vez (FR4)
+  - [x] Tests (Red): con Divisions distintas, cada uno avanza según **su** vuelta, no según el tiempo del otro
+  - [x] Tests (Red): el avance recorre muchas vueltas sin deriva —mil ciclos, no dos compases—, que es como se ven los fallos de fase
+  - [x] Implementación (Green): el cursor avanza en el hilo del scheduler, sin asignaciones ni locks
+
+  **Dos decisiones que no estaban escritas.** El cursor de reproducción vive en
+  el scheduler y no en el snapshot: el que trae un Track publicado es viejo por
+  construcción —lo escribe el hilo principal, que no sabe por dónde va el
+  sonido— y hacerle caso devolvería el desarrollo al principio en cada giro de
+  knob. Y la vuelta se mide desde el Step en que empezó, no con un módulo sobre
+  el índice absoluto, para que un Cycle de 12 Steps que entra en el 16 dure doce
+  y no ocho.
+- [x] Task: El Cycle vigente decide lo que suena, entero — `e5f6fce`
+  - [x] Tests (Red): al cambiar de Cycle cambian a la vez Shape, pool, marco tonal, Groove y canal — no la mitad de uno y la mitad de otro
+  - [x] Tests (Red): el Cycle nuevo se lee **una sola vez** al cruzar el límite, no por evento
+  - [x] Tests (Red): un Cycle con el pool vacío no emite nada y **no rompe el recorrido**: la vuelta se cuenta igual y el siguiente sí suena (NFR3 de la rebanada 1: el coste crece con lo que suena)
+  - [x] Implementación (Green)
+
+  **Encontró una regresión de la tarea anterior.** La decisión de emitir se
+  tomaba una vez por ventana, de cuando el material no podía cambiar a mitad de
+  ventana. Con Cycles sí puede: un Track que arrancaba mudo y dejaba de serlo al
+  cambiar de Cycle no sonaba en esa vuelta, y uno que enmudecía seguía llamando
+  al emisor con altura `nil`. Las dos reproducidas con test antes de arreglar.
+- [x] Task: Lo que cambia de Cycle y lo que no puede cambiar todavía — `a9d9442`
+  - [x] Tests (Red): Steps, Pulses, Rotate, pool, marco tonal, Groove y canal cambian con el Cycle
+  - [x] **Division es el caso difícil y se decide aquí, con test.** Cambiar la Division reubica todos los Steps futuros respecto a un origen que ya pasó — es la limitación que `TrackScheduler` ya documenta para el snapshot en caliente. En el límite de vuelta el origen sí es reubicable: si no lo es sin romper la fase con los otros quince, **se acota explícitamente** y va a *Known Limitations* del spec
+  - [x] Implementación (Green)
+
+  **Se acota: la Division no cambia de Cycle a Cycle.** Resolverlo exige una
+  línea de tiempo rebasable por Track, y eso rompe el invariante del que depende
+  que los dieciséis suenen en fase sin sincronización posterior —todas las
+  rejillas contra el mismo origen—. Es trabajo en el núcleo de timing, con
+  jitter obligatorio, para un caso que nadie ha pedido: cambiar de compás a
+  mitad de patrón. Queda en *Known Limitations* 8 del `spec.md` y fijado con dos
+  tests.
+- [x] Task: Play reinicia los dieciséis al Cycle 1 — `0802798`
+  - [x] Tests (Red): tras `play()`, los dieciséis cursores están en 0 (FR6)
+  - [x] Tests (Red): dos pasadas de Play producen la **misma** secuencia de Cycles y las mismas omisiones — la promesa de `tech-stack.md`
+  - [x] Tests (Red): cambiar de Cycle **no resiembra** el generador de Probability (NFR5)
+  - [x] Tests (Red): `Stop` con Cycles avanzando no deja notas colgadas, incluido con Delay positivo y con canales distintos por Cycle
+  - [x] Implementación (Green)
+
+  **Dos fallos encontrados.** `restartCycles()` pedía el Cycle con
+  `track.current`, que mira el cursor del snapshot —el de edición—, así que un
+  Track dejado editando el Cycle 3 arrancaba sonando el 3. Y `Stop` barría solo
+  el Cycle vigente de cada Track y dejaba sonando los otros quince por sus
+  canales; ahora barre los dieciséis —no solo los activos, porque FR9 deja el
+  cursor fuera del rango a propósito— deduplicando pares canal+altura.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 4: La entrada edita el Cycle en edición
+## Phase 4: La entrada edita el Cycle en edición [checkpoint: b4ba89b]
 
 > `MIDI`, en `ControlInput`. Dos cursores conviviendo: el que suena lo mueve el
 > scheduler, el que se edita lo mueve el knob 10.
 
-- [ ] Task: El knob 10 mueve el Cycle en edición
-  - [ ] Tests (Red): el knob 10 del preset mueve el Cycle en edición del **Track seleccionado**, dentro del rango activo y frenando en los extremos
-  - [ ] Tests (Red): mover el Cycle en edición **no altera** el cursor de reproducción ni lo que suena (FR7)
-  - [ ] Tests (Red): cambiar de Track con un step button deja cada Track con **su** Cycle en edición donde estaba
-  - [ ] Implementación (Green): entra en `ControlMapping` como los otros nueve knobs
-  - [ ] **Documentar la desviación**: la Pre Spec dice «con CTRL ajusta 1–16 Cycles activos» y el BeatStep Pro no tiene CTRL. Nota fechada en la Pre Spec o en `product.md`, como se hizo con los pads en la rebanada 7
-- [ ] Task: Los knobs y los pads editan el Cycle en edición
-  - [ ] Tests (Red): un giro de knob mueve el parámetro del Cycle en edición y **no** el de los otros quince Cycles ni el de los otros quince Tracks (FR8)
-  - [ ] Tests (Red): un pad mete la altura en el pool de ese Cycle
-  - [ ] Tests (Red): editar un Cycle que **no** está sonando no altera lo que suena — construir el B mientras suena el A
-  - [ ] Tests (Red): editar el Cycle que **sí** está sonando se oye en el Step siguiente, como hoy
-  - [ ] Implementación (Green)
-- [ ] Task: Cuántos Cycles activos se ajusta táctilmente
-  - [ ] Tests (Red): la vía táctil mueve el número de activos del Track seleccionado y publica, como `setChannel` y `setFrame`
-  - [ ] Tests (Red): ningún CC llega hasta ahí — es configuración, no material generativo (`product-guidelines.md`)
-  - [ ] Implementación (Green)
+- [x] Task: El knob 10 mueve el Cycle en edición — `21b1f0b`
+  - [x] Tests (Red): el knob 10 del preset mueve el Cycle en edición del **Track seleccionado**, dentro del rango activo y frenando en los extremos
+  - [x] Tests (Red): mover el Cycle en edición **no altera** el cursor de reproducción ni lo que suena (FR7)
+  - [x] Tests (Red): cambiar de Track con un step button deja cada Track con **su** Cycle en edición donde estaba
+  - [x] Implementación (Green): entra en `ControlMapping` como los otros nueve knobs
+  - [x] **Documentar la desviación**: la Pre Spec dice «con CTRL ajusta 1–16 Cycles activos» y el BeatStep Pro no tiene CTRL. Nota fechada en la Pre Spec o en `product.md`, como se hizo con los pads en la rebanada 7
+
+  Entra como CC 79, el décimo del bloque y el último del rango de propósito
+  general. **No entra en `assignments`**: no es un `TrackParameter` —los nueve
+  primeros mueven parámetros del Cycle, este mueve a cuál se apunta— y meterlo
+  ahí obligaría a inventarle un caso al enum que el modelo no tiene.
+- [x] Task: Los knobs y los pads editan el Cycle en edición — `395b67c`
+  - [x] Tests (Red): un giro de knob mueve el parámetro del Cycle en edición y **no** el de los otros quince Cycles ni el de los otros quince Tracks (FR8)
+  - [x] Tests (Red): un pad mete la altura en el pool de ese Cycle
+  - [x] Tests (Red): editar un Cycle que **no** está sonando no altera lo que suena — construir el B mientras suena el A
+  - [x] Tests (Red): editar el Cycle que **sí** está sonando se oye en el Step siguiente, como hoy
+  - [x] Implementación (Green)
+
+  **Los seis pasaron a la primera**: la tarea anterior ya había redirigido el
+  camino de edición entero. No los hace inútiles — fijan la decisión donde se
+  puede romper: un `replacing` que volviera a apuntar al Cycle que suena
+  pisaría lo que se está oyendo, y no lo vería nadie hasta el iPad.
+- [x] Task: Cuántos Cycles activos se ajusta táctilmente — `b4ba89b`
+  - [x] Tests (Red): la vía táctil mueve el número de activos del Track seleccionado y publica, como `setChannel` y `setFrame`
+  - [x] Tests (Red): ningún CC llega hasta ahí — es configuración, no material generativo (`product-guidelines.md`)
+  - [x] Implementación (Green)
+
+  El test de la frontera barre **los 128 controladores** con cuatro valores cada
+  uno sobre los dieciséis Tracks: asignar un CC por descuido rompería la
+  frontera de `product-guidelines.md` sin que nadie lo viera.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 5: La pantalla muestra el desarrollo
+## Phase 5: La pantalla muestra el desarrollo [checkpoint: c9f5b2a]
 
 > `App`. No se mide cobertura: si algo aquí merece un test, está en el sitio
 > equivocado (`workflow.md`). La lógica ya está en `Engine` y `MIDI`.
 
-- [ ] Task: Cuántos Cycles, cuál suena y cuál se edita
-  - [ ] Del Track seleccionado: número de Cycles activos, Cycle en curso y Cycle en edición, distinguibles de un vistazo (FR11)
-  - [ ] El Cycle en curso deriva del reloj y se consulta al dibujar, **no se guarda ni se refresca con un temporizador** — la misma regla que el playhead
-  - [ ] Legible a un metro, como el resto de la pantalla
-- [ ] Task: Ajustar cuántos Cycles hay activos
-  - [ ] Control táctil, junto a Scale, Root y el canal, que es donde vive lo configurable
-  - [ ] Sin controlador conectado la app sigue siendo de solo lectura y transporte **salvo lo táctil**, como hoy
-  - [ ] Verificado en simulador con captura, como la rebanada 1
+- [x] Task: Cuántos Cycles, cuál suena y cuál se edita — `0fe87c4`
+  - [x] Del Track seleccionado: número de Cycles activos, Cycle en curso y Cycle en edición, distinguibles de un vistazo (FR11)
+  - [x] El Cycle en curso deriva del reloj y se consulta al dibujar, **no se guarda ni se refresca con un temporizador** — la misma regla que el playhead
+  - [x] Legible a un metro, como el resto de la pantalla
+- [x] Task: Ajustar cuántos Cycles hay activos — `0fe87c4`
+  - [x] Control táctil, junto a Scale, Root y el canal, que es donde vive lo configurable
+  - [x] Sin controlador conectado la app sigue siendo de solo lectura y transporte **salvo lo táctil**, como hoy
+  - [x] Verificado en simulador con captura, como la rebanada 1
+
+  **Las dos tareas van en un commit porque son la misma fila.** Pulsar el número
+  N deja N Cycles activos, el que suena va relleno y el que se edita lleva el
+  contorno duro: tres filas separadas dirían lo mismo ocupando el triple.
+
+  El Cycle en curso lo deduce `CyclePosition`, en `Engine` y con tests:
+  **suma las vueltas de los Cycles activos en vez de dividir**, porque dos
+  Cycles pueden tener Steps distintos y entonces sus vueltas duran distinto. Se
+  refresca a 10 Hz y no a 60 — lo que se mueve cambia cada varios segundos, y
+  la medición de jitter quedó diferida y no bloquea esta rebanada.
+
+  **El simulador no puede enseñar el Cycle sonando**: sin destinos MIDI no hay
+  transporte ni reloj del que deducir. Las capturas están en `captures/`; el
+  relleno se verifica en dispositivo, en la Fase 6.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 6: La medición y el dispositivo
+## Phase 6: La medición y el dispositivo [checkpoint: 74c9b44]
 
 > La fase que decide si la rebanada vale. El snapshot es dieciséis veces mayor y
 > hay una decisión nueva en el límite de vuelta: las dos se cobran aquí.
 
-- [ ] Task: Jitter con los dieciséis sonando y avanzando
-  - [ ] iPad real, con el arnés, en la división más rápida y el tempo más alto ya usados — comparable con las mediciones anteriores
-  - [ ] **Los dieciséis Tracks con varios Cycles cada uno**, avanzando: es el peor caso realista de esta rebanada
-  - [ ] Umbral: **máximo < 2 ms, σ < 0,5 ms**. Se registra el número, no la impresión
-  - [ ] Se compara contra la referencia de la rebanada 6 —máx 0,151 ms, σ 0,009–0,013 ms— y contra la que deje la Fase 6 de `multi-track`, y **la diferencia se explica**
-  - [ ] Atención al **límite de vuelta**: si hay un pico, mirar si cae en el Step 0 de una vuelta. Ahí es donde esta rebanada añade trabajo
-  - [ ] Si hay regresión: **la rebanada se para** y se bisecta con el arnés. No se cierra con una medición mala explicada
-  - [ ] El resultado va a `product.md`, junto a las anteriores
-- [ ] Task: Verificación en dispositivo
-  - [ ] BeatStep Pro y un multitímbrico
-  - [ ] Un Track con 3 Cycles distintos: se oye el desarrollo A/B/C y el retorno a A, sin tocar nada
-  - [ ] Dos Tracks de longitudes distintas con Cycles: desarrollan a ritmos distintos y **no se desalinean** al cabo de varios minutos
-  - [ ] Construir el Cycle B con el knob 10 mientras suena el A, y oírlo entrar en su vuelta
-  - [ ] Play dos veces: el desarrollo se repite igual
-  - [ ] `Stop` con Cycles avanzando: nada queda colgado
-  - [ ] Se registra en un `device-verification.md` del track y en la git note
-- [ ] Task: Cerrar la rebanada
-  - [ ] Cobertura de `Engine` ≥90% y de `MIDI` ≥80%, medidas como dice `workflow.md`
-  - [ ] `product.md` refleja que Cycles deja de estar fuera de alcance, y qué queda de la v2
-  - [ ] La Pre Spec queda con su nota fechada sobre el gesto de CTRL
-  - [ ] `tracks.md` deja descrita la rebanada siguiente
-  - [ ] Pull Request contra `main`, con los checks en verde
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: ~~Jitter con los dieciséis sonando y avanzando~~ — **retirada el 2026-09-02**
+
+  **No se hace, por decisión del usuario**, tomada después de que la recogida del
+  informe del dispositivo fallara: no se hacen más mediciones de jitter en el
+  proyecto. Escrita en `workflow.md`, en *Medición de jitter: suspendida*, con
+  el coste detallado; y en el NFR4 del `spec.md`, con lo que queda sin comprobar
+  en esta rebanada.
+
+  Lo que sí se hizo antes de retirarla: **la rejilla del arnés que hacía falta**
+  —`16 Tracks · 4 Cycles`, porque la de `16 Tracks` dejaba un Cycle por Track y
+  habría medido los dieciséis quietos— y el procedimiento entero escrito en
+  `device-verification.md`. La herramienta queda lista por si se retoma.
+- [x] Task: Verificación en dispositivo
+  - [x] BeatStep Pro y un multitímbrico
+  - [x] Un Track con 3 Cycles distintos: se oye el desarrollo A/B/C y el retorno a A, sin tocar nada
+  - [x] Dos Tracks de longitudes distintas con Cycles: desarrollan a ritmos distintos y **no se desalinean** al cabo de varios minutos
+  - [x] Construir el Cycle B con el knob 10 mientras suena el A, y oírlo entrar en su vuelta
+  - [x] Play dos veces: el desarrollo se repite igual
+  - [x] `Stop` con Cycles avanzando: nada queda colgado
+  - [x] Se registra en un `device-verification.md` del track y en la git note
+
+  **Encontró un fallo de pantalla**, no de motor: la vista enseñaba el Cycle que
+  suena en vez del que se edita, y se leía como «el Track dejó de responder a
+  los knobs». Arreglado en `c9f5b2a`, con la regla escrita y cuatro tests.
+- [x] Task: Cerrar la rebanada
+  - [x] Cobertura de `Engine` ≥90% y de `MIDI` ≥80%, medidas como dice `workflow.md` — **99,14%** y **92,19%**
+  - [x] `product.md` refleja que Cycles deja de estar fuera de alcance, y qué queda de la v2
+  - [x] La Pre Spec queda con su nota fechada sobre el gesto de CTRL
+  - [x] `tracks.md` deja descrita la rebanada siguiente — persistencia: Patterns y Banks
+  - [x] Pull Request contra `main`, con los checks en verde — [#27](https://github.com/hernanflores/torax-h0/pull/27)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Notas de riesgo
 

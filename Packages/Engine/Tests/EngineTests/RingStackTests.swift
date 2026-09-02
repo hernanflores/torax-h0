@@ -91,8 +91,8 @@ final class RingStackTests: XCTestCase {
     /// dieciséis veces.
     func testEachBandDistributesItsOwnSteps() {
         let pattern = Pattern()
-            .replacing(Track(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!)), at: 0)
-            .replacing(Track(shape: Shape(steps: Steps(12)!, pulses: Pulses(7)!)), at: 1)
+            .replacing(Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!)), at: 0)
+            .replacing(Cycle(shape: Shape(steps: Steps(12)!, pulses: Pulses(7)!)), at: 1)
         let stack = RingStack(pattern: pattern)
 
         XCTAssertEqual(stack.bands[0].ring.positions.count, 16)
@@ -107,7 +107,7 @@ final class RingStackTests: XCTestCase {
     /// documenta —dos algoritmos podrían discrepar—.
     func testTheBandsRingIsTheOneRingBuildsForThatShape() {
         let shape = Shape(steps: Steps(12)!, pulses: Pulses(7)!, rotate: Rotate(3))
-        let pattern = Pattern().replacing(Track(shape: shape), at: 4)
+        let pattern = Pattern().replacing(Cycle(shape: shape), at: 4)
 
         XCTAssertEqual(RingStack(pattern: pattern).bands[4].ring, Ring(shape: shape))
     }

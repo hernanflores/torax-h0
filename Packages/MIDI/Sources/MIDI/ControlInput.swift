@@ -3,7 +3,7 @@ import Engine
 /// Convierte los mensajes de un controlador en Tracks publicados.
 ///
 /// Es la pieza que cierra la cadena del track: decodifica el giro, lo traduce al
-/// parámetro que le toca, se lo aplica al Shape vigente y publica el `Track`
+/// parámetro que le toca, se lo aplica al Shape vigente y publica el `Cycle`
 /// resultante por el `PatternHandoff` que la rebanada 1 dejó probado. Girar un
 /// knob y publicar un snapshot son, a partir de aquí, la misma cosa.
 ///
@@ -20,12 +20,16 @@ public final class ControlInput: @unchecked Sendable {
     /// responde.
     public private(set) var pattern: Pattern
 
-    /// El Track que los knobs y los pads editan.
+    /// El Cycle que los knobs y los pads editan.
     ///
-    /// **Editar es siempre editar el seleccionado.** Los otros quince siguen
-    /// donde estaban: seleccionar no es un modo, es elegir a quién escuchan los
-    /// controles.
-    public var track: Track { pattern.track(at: selectedTrackIndex)! }
+    /// **Editar es siempre editar el seleccionado.** Los otros quince Tracks
+    /// siguen donde estaban: seleccionar no es un modo, es elegir a quién
+    /// escuchan los controles.
+    ///
+    /// **Y dentro de ese Track, es el Cycle en edición y no el que suena**
+    /// (FR8). Con un solo Cycle activo son el mismo, así que nada cambia para
+    /// quien no use Cycles.
+    public var track: Cycle { pattern.editingCycle(at: selectedTrackIndex)! }
 
     /// La superficie de pads vigente: qué altura tiene cada uno de los
     /// dieciséis.
@@ -86,7 +90,7 @@ public final class ControlInput: @unchecked Sendable {
         // lleva el suyo.
         var seeded = pattern
         for index in 0..<Pattern.trackCount {
-            seeded = seeded.replacing(seeded.track(at: index)!.with(frame: frame), at: index)
+            seeded = seeded.replacing(seeded.cycle(at: index)!.with(frame: frame), at: index)
         }
         self.pattern = seeded
         self.publish = publish
@@ -101,7 +105,7 @@ public final class ControlInput: @unchecked Sendable {
     /// Vive para los tests que miden un Track suelto —siguen siendo la mayoría—
     /// y no para el producto, que publica el Pattern entero.
     public convenience init(
-        track: Track,
+        track: Cycle,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publish: @escaping @Sendable (Pattern) -> Void,
         mapping: ControlMapping = .beatStepPro,
@@ -123,7 +127,7 @@ public final class ControlInput: @unchecked Sendable {
     /// Atajo para quien todavía piensa en un Track: lo pone en la primera
     /// posición.
     public convenience init(
-        track: Track,
+        track: Cycle,
         frame: TonalFrame = TonalFrame(scale: .minor, root: Root(0)!),
         publishingTo handoff: PatternHandoff,
         mapping: ControlMapping = .beatStepPro,
@@ -204,6 +208,12 @@ public final class ControlInput: @unchecked Sendable {
     ///   - value: The controller value used to calculate the parameter adjustment.
     /// - Returns: `true` if the track changed and was published, `false` otherwise.
     private func turn(_ controller: MIDIController, by value: UInt8) -> Bool {
+        // El knob del Cycle se despacha antes: no mueve un parámetro del Cycle
+        // sino a cuál de ellos apuntan los demás.
+        if controller == mapping.editingCycleController {
+            return moveEditingCycle(by: encoding.delta(from: value))
+        }
+
         guard let parameter = mapping.parameter(for: controller) else { return false }
 
         let delta = encoding.delta(from: value)
@@ -296,6 +306,27 @@ public final class ControlInput: @unchecked Sendable {
         return true
     }
 
+    /// Mueve el Cycle en edición del Track seleccionado.
+    ///
+    /// **Mueve el cursor de edición y nada más** (FR7): ni el de reproducción,
+    /// que es del scheduler, ni una sola nota de material. Se acota al rango
+    /// activo, no a los dieciséis: no se edita un Cycle que no se recorre.
+    ///
+    /// Girar contra un extremo no publica, por la misma razón que Steps o
+    /// Division: mandar un snapshot idéntico es trabajo y ruido para nada.
+    private func moveEditingCycle(by delta: Int) -> Bool {
+        guard delta != 0, let current = pattern.track(at: selectedTrackIndex) else {
+            return false
+        }
+
+        let moved = current.withEditing(current.editing + delta)
+        guard moved != current else { return false }
+
+        pattern = pattern.replacing(moved, at: selectedTrackIndex)
+        publish(pattern)
+        return true
+    }
+
     /// Cambia el canal por el que emite el Track seleccionado.
     ///
     /// **Se edita en pantalla y no con un knob**: es configuración, no material
@@ -310,6 +341,36 @@ public final class ControlInput: @unchecked Sendable {
         guard channel != track.channel else { return false }
 
         pattern = pattern.replacing(track.on(channel), at: selectedTrackIndex)
+        publish(pattern)
+        return true
+    }
+
+    /// Cambia cuántos Cycles recorre el Track seleccionado, de 1 a 16.
+    ///
+    /// **Se ajusta en pantalla y no con un knob**: es configuración, no material
+    /// generativo, y `product-guidelines.md` pone esa frontera del lado táctil,
+    /// donde ya están Scale, Root y el canal. Ningún CC llega hasta aquí, y hay
+    /// un test que barre los 128 para vigilarlo.
+    ///
+    /// La Pre Spec lo ponía en un gesto de CTRL sobre el knob de Cycles y el
+    /// BeatStep Pro no tiene CTRL; la nota fechada del 2026-09-02 en la Pre Spec
+    /// explica por qué la frontera correcta no es la del hardware.
+    ///
+    /// Subir el número entrega un Cycle copiado del que se está editando y no
+    /// uno vacío (FR3); bajar descarta por el final y acota el Cycle en edición,
+    /// sin tocar el de reproducción (FR9). Las tres reglas viven en `Track`, que
+    /// es donde se testean sin controlador de por medio.
+    ///
+    /// Publica porque el scheduler lee cuántos hay activos del snapshot: sin
+    /// publicar, el cambio no llegaría hasta el giro siguiente de cualquier knob.
+    @discardableResult
+    public func setActiveCycleCount(_ count: Int) -> Bool {
+        guard let current = pattern.track(at: selectedTrackIndex) else { return false }
+
+        let adjusted = current.withActiveCount(count)
+        guard adjusted != current else { return false }
+
+        pattern = pattern.replacing(adjusted, at: selectedTrackIndex)
         publish(pattern)
         return true
     }

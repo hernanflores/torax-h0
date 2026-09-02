@@ -56,9 +56,16 @@ public final class SchedulerThread: @unchecked Sendable {
     /// ventana: no son dos lecturas que puedan discrepar.
     /// **Desde la v2 llega también el índice del Track**: quien emite necesita
     /// saber por qué canal sale cada nota, y el canal es un dato del Track.
+    ///
+    /// **Y llega el Track entero, no solo su índice.** Con el índice, quien
+    /// emitía tenía que volver al snapshot a buscar el canal y la Division, una
+    /// vez por nota. Recibirlo aquí lo deja en una lectura por ventana y, de
+    /// paso, garantiza que lo que sella la nota sea el mismo snapshot que la
+    /// produjo.
     public typealias StepHandler =
         @Sendable (
-            _ track: Int, _ step: Int, _ pitch: Pitch?, _ groove: Groove, _ hostTime: UInt64
+            _ track: Int, _ source: Cycle, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
+            _ hostTime: UInt64
         ) -> Void
 
     private let configuration: SchedulerConfiguration
@@ -76,6 +83,7 @@ public final class SchedulerThread: @unchecked Sendable {
 
     /// Ancla temporal para el playhead. `nil` cuando nadie la mira.
     private let playhead: PlayheadClock?
+    private let cyclePlaybackClock: CyclePlaybackClock?
     private let running = AtomicFlag(false)
     private var thread: Thread?
 
@@ -87,11 +95,30 @@ public final class SchedulerThread: @unchecked Sendable {
     ///   - playhead: dónde se publica el origen temporal para la interfaz.
     ///     `nil` cuando nadie dibuja un playhead — el arnés de medición, por
     ///     ejemplo, que no tiene pantalla.
-    public init(
+    public convenience init(
         configuration: SchedulerConfiguration,
         material: SchedulerMaterial = .everyStep,
         handoff: PatternHandoff? = nil,
         playhead: PlayheadClock? = nil,
+        pattern: Pattern? = nil,
+        handler: @escaping StepHandler
+    ) {
+        self.init(
+            configuration: configuration,
+            material: material,
+            handoff: handoff,
+            playhead: playhead,
+            cyclePlaybackClock: nil,
+            pattern: pattern,
+            handler: handler)
+    }
+
+    init(
+        configuration: SchedulerConfiguration,
+        material: SchedulerMaterial = .everyStep,
+        handoff: PatternHandoff? = nil,
+        playhead: PlayheadClock? = nil,
+        cyclePlaybackClock: CyclePlaybackClock?,
         pattern: Pattern? = nil,
         handler: @escaping StepHandler
     ) {
@@ -100,6 +127,7 @@ public final class SchedulerThread: @unchecked Sendable {
         self.material = material
         self.handoff = handoff
         self.playhead = playhead
+        self.cyclePlaybackClock = cyclePlaybackClock
         self.handler = handler
     }
 
@@ -110,18 +138,35 @@ public final class SchedulerThread: @unchecked Sendable {
         running.value = true
 
         let thread = Thread {
-            [configuration, material, pattern, handoff, playhead, handler, running] in
+            [
+                configuration, material, pattern, handoff, playhead, cyclePlaybackClock,
+                handler, running,
+            ] in
             SchedulerThread.run(
                 configuration: configuration,
                 material: material,
                 pattern: pattern,
                 handoff: handoff,
                 playhead: playhead,
+                cyclePlaybackClock: cyclePlaybackClock,
                 handler: handler,
                 running: running
             )
         }
         thread.name = "com.toraxh0.scheduler"
+        // **La pila por defecto de un `Thread` secundario son 512 KB, y el
+        // snapshot ya no cabe con holgura.** Con Cycles el Pattern pasó de
+        // 2304 bytes a 37 248, y este hilo lo copia entero en cada ventana: un
+        // `load()`, el material que conserva entre ventanas y los temporales del
+        // camino son varias decenas de kilobytes por marco donde antes eran unos
+        // pocos. Medido el 2026-09-02 sobre el test de concurrencia del handoff
+        // —que construye Patterns en bucle, más carga de la que este hilo hace—:
+        // desborda con 512 KB y pasa con 1 MB.
+        //
+        // No cuesta nada tenerla: es reserva de memoria virtual, y las páginas se
+        // tocan solo si se usan. Desbordarla, en cambio, es un SIGBUS en el hilo
+        // que produce el audio.
+        thread.stackSize = 1 << 20
         // Prioridad máxima: el hilo compite con la interfaz por la CPU y el
         // retraso aquí se traduce en eventos perdidos al borde de la ventana.
         thread.qualityOfService = .userInteractive
@@ -165,6 +210,7 @@ public final class SchedulerThread: @unchecked Sendable {
         pattern: Pattern?,
         handoff: PatternHandoff?,
         playhead: PlayheadClock?,
+        cyclePlaybackClock: CyclePlaybackClock?,
         handler: StepHandler,
         running: AtomicFlag
     ) {
@@ -172,7 +218,9 @@ public final class SchedulerThread: @unchecked Sendable {
         // dos construyen el mismo scheduler.
         let scheduler =
             pattern.map {
-                PatternScheduler(tempo: configuration.timeline.tempo, pattern: $0)
+                PatternScheduler(
+                    tempo: configuration.timeline.tempo, pattern: $0,
+                    playbackClock: cyclePlaybackClock)
             } ?? PatternScheduler(timeline: configuration.timeline, material: material)
         let startHostTicks = HostClock.now()
         let sleepNanoseconds = UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))
@@ -208,7 +256,7 @@ public final class SchedulerThread: @unchecked Sendable {
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
 
             scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) {
-                track, step, pitch, groove, offset in
+                track, source, step, pitch, groove, offset in
                 // El offset es relativo al origen de la rejilla, y el
                 // presupuesto es lo que separa ese origen del arranque. Sumarlos
                 // deja la cuenta en positivo sin más conversiones.
@@ -224,7 +272,7 @@ public final class SchedulerThread: @unchecked Sendable {
                     startHostTicks
                     &+ HostClock.hostTicks(
                         fromNanoseconds: UInt64(max(0, budgetNanoseconds + offset)))
-                handler(track, step, pitch, groove, hostTime)
+                handler(track, source, step, pitch, groove, hostTime)
             }
 
             usleep(sleepNanoseconds / 1_000)

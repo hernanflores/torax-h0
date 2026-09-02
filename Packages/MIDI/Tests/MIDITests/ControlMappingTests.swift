@@ -165,7 +165,7 @@ final class GrooveTurnsTests: XCTestCase {
         var pool = PitchPool()
         pool = pool.toggling(Pitch(60)!)
         pool = pool.toggling(Pitch(64)!)
-        let track = Track(
+        let track = Cycle(
             shape: Shape(steps: Steps(12)!, pulses: Pulses(5)!, rotate: Rotate(2)),
             pool: pool,
             groove: Groove(
@@ -214,7 +214,7 @@ final class GrooveTurnsTests: XCTestCase {
     func testTurningAGrooveParameterAgainstItsEndDoesNotPublish() {
         var pool = PitchPool()
         pool = pool.toggling(Pitch(60)!)
-        let track = Track(
+        let track = Cycle(
             shape: Shape(steps: Steps(8)!, pulses: Pulses(4)!),
             pool: pool,
             groove: Groove(velocity: Velocity(127)!, sustain: .default, probability: .default)

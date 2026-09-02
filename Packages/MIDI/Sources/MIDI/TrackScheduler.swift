@@ -11,7 +11,7 @@ import Engine
 public enum SchedulerMaterial: Equatable, Sendable {
 
     /// El material musical de un Track: dispara donde diga su Shape.
-    case track(Track)
+    case cycle(Cycle)
 
     /// Todos los Steps disparan.
     ///
@@ -27,13 +27,39 @@ public enum SchedulerMaterial: Equatable, Sendable {
     /// musical, y por eso vive aquí y no en `Engine`.
     static let measurementPitch = Pitch(48)!
 
+    /// El Cycle de este material, o `nil` en la vía del arnés.
+    ///
+    /// Lo necesita quien emite —el canal y la Division son datos del Cycle— y lo
+    /// necesita el recorrido, para saber cuántos Steps mide la vuelta en curso.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    var cycle: Cycle? {
+        switch self {
+        case .cycle(let cycle): cycle
+        case .everyStep: nil
+        }
+    }
+
+    /// Cuántos Steps mide una vuelta de este material, o `nil` si no tiene
+    /// anillo: el arnés mide la rejilla y no da vueltas.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    var stepCount: Int? {
+        switch self {
+        case .cycle(let cycle): cycle.shape.steps.count
+        case .everyStep: nil
+        }
+    }
+
     /// Realtime: llamado desde el hilo del scheduler.
     /// Determines whether the material triggers at the specified step.
     /// - Parameter index: The step index to evaluate.
     /// - Returns: `true` if the material triggers at the step, `false` otherwise.
     func triggers(atStep index: Int) -> Bool {
         switch self {
-        case .track(let track): track.triggers(atStep: index)
+        case .cycle(let cycle): cycle.triggers(atStep: index)
         case .everyStep: true
         }
     }
@@ -49,7 +75,7 @@ public enum SchedulerMaterial: Equatable, Sendable {
     /// Sin asignaciones, sin locks, sin await.
     var emitsAnything: Bool {
         switch self {
-        case .track(let track): !track.pool.isEmpty
+        case .cycle(let cycle): !cycle.pool.isEmpty
         case .everyStep: true
         }
     }
@@ -65,7 +91,7 @@ public enum SchedulerMaterial: Equatable, Sendable {
     /// Sin asignaciones, sin locks, sin await.
     var groove: Groove {
         switch self {
-        case .track(let track): track.groove
+        case .cycle(let cycle): cycle.groove
         case .everyStep: .default
         }
     }
@@ -81,7 +107,7 @@ public enum SchedulerMaterial: Equatable, Sendable {
     /// Sin asignaciones, sin locks, sin await.
     func pitch(atStep index: Int) -> Pitch? {
         switch self {
-        case .track(let track): track.pitch(atStep: index)
+        case .cycle(let cycle): cycle.pitch(atStep: index)
         case .everyStep: Self.measurementPitch
         }
     }
@@ -115,9 +141,17 @@ public enum SchedulerMaterial: Equatable, Sendable {
 /// un Track publicado altera la duración del Step, así que reubicaría todos los
 /// Steps futuros respecto a un origen que ya pasó: hace falta rebasar la línea
 /// de tiempo en un límite de Step, no solo leer un valor nuevo. En esta rebanada
-/// no hay entrada de control y ningún parámetro es editable, así que no se puede
-/// provocar; llega con el track de entrada de control. Steps, Pulses y Rotate sí
-/// cambian en caliente y están cubiertos por tests.
+/// Steps, Pulses y Rotate sí cambian en caliente y están cubiertos por tests.
+///
+/// > **Con Cycles hay una vía más de llegar aquí, y queda acotada.** Desde la
+/// > rebanada 3 de la v2, dos Cycles de un mismo Track pueden declarar Divisions
+/// > distintas. No se aplica: el Cycle nuevo suena con todo lo suyo —Steps,
+/// > Pulses, Rotate, pool, marco tonal, Groove y canal— sobre la rejilla del
+/// > Cycle que estuviera vigente al pulsar Play. Resolverlo exigiría rebasar la
+/// > línea de tiempo por Track, que es romper el invariante que mantiene en fase
+/// > a los dieciséis: todas las rejillas se miden contra el mismo origen. Está
+/// > en *Known Limitations* del spec del track `cycles_20260901`, y fijado con
+/// > tests en `WhatChangesWithTheCycleTests`.
 public struct TrackScheduler {
 
     /// Material vigente. Se conserva entre ventanas: si una lectura del snapshot
@@ -138,8 +172,8 @@ public struct TrackScheduler {
 
     /// El generador que decide qué Pulse concreto se omite.
     ///
-    /// **Vive aquí y no en `Track` porque tiene estado mutable.** El snapshot
-    /// tiene que seguir siendo trivial —`_isPOD(Track.self)` lo vigila— y
+    /// **Vive aquí y no en `Cycle` porque tiene estado mutable.** El snapshot
+    /// tiene que seguir siendo trivial —`_isPOD(Cycle.self)` lo vigila— y
     /// meterlo dentro haría además que dos hilos mutaran lo mismo. Este valor,
     /// en cambio, lo toca un solo hilo: el del scheduler.
     ///
@@ -148,6 +182,39 @@ public struct TrackScheduler {
     /// secuencia de omisiones. Dentro de una pasada avanza por Pulse, así que
     /// dos vueltas del anillo no omiten lo mismo.
     private var random: SeededRandom
+
+    /// El Track vigente, cuando lo hay: es de donde salen los Cycles y cuántos
+    /// están activos.
+    ///
+    /// `nil` es la vía del arnés de medición, que mide la rejilla y no tiene
+    /// Track detrás.
+    private var track: Track?
+
+    /// Por qué Cycle va la reproducción.
+    ///
+    /// **Vive aquí y no en el snapshot, por la misma razón que `random`.** El
+    /// cursor que trae un Track publicado es viejo por construcción: lo escribe
+    /// el hilo principal, que no sabe —ni puede saber— por dónde va la
+    /// reproducción. Tomarlo del snapshot devolvería el desarrollo al principio
+    /// cada vez que alguien girase un knob.
+    ///
+    /// Del snapshot se toma el **material** y **cuántos Cycles hay activos**;
+    /// por cuál va, lo decide este hilo.
+    private var cursor = 0
+    private var previousCursor = 0
+
+    /// Primer Step de la vuelta en curso.
+    ///
+    /// **La vuelta se mide desde aquí y no con un módulo sobre el índice
+    /// absoluto**, para que cada Cycle recorra una vuelta de **su** longitud: si
+    /// el Cycle A mide 16 Steps y el B mide 12, el B tiene que durar doce y no
+    /// los ocho que quedaran hasta el múltiplo siguiente de dieciséis.
+    private var turnStartStep: Int
+
+    /// Salida lock-free del cursor para la interfaz. `nil` en los schedulers
+    /// aislados y en la vía directa del arnés.
+    private var playbackClock: CyclePlaybackClock?
+    private var playbackTrack = 0
 
     public init(
         timeline: MusicalTimeline,
@@ -159,6 +226,16 @@ public struct TrackScheduler {
         self.lookAhead = LookAheadScheduler(timeline: timeline, startingAtStep: startingStep)
         self.random = SeededRandom(seed: seed)
         self.stepDurationNanoseconds = Int64(timeline.stepDurationNanoseconds)
+        self.turnStartStep = startingStep
+        self.playbackClock = nil
+    }
+
+    mutating func reportPlayback(to clock: CyclePlaybackClock, track index: Int) {
+        playbackClock = clock
+        playbackTrack = index
+        clock.publish(
+            track: index, cycle: cursor, previousCycle: cursor, earlierCycle: cursor,
+            turnStartStep: turnStartStep)
     }
 
     /// Sustituye el material sin tocar la posición en la rejilla.
@@ -171,8 +248,43 @@ public struct TrackScheduler {
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
+    mutating func refresh(with cycle: Cycle) {
+        material = .cycle(cycle)
+    }
+
+    /// Sustituye el Track sin tocar ni la posición en la rejilla ni el cursor de
+    /// reproducción.
+    ///
+    /// **Del snapshot se toma el material y cuántos Cycles hay activos; por cuál
+    /// va la reproducción lo sigue decidiendo este hilo.** El cursor que trae el
+    /// Track publicado es viejo por construcción —lo escribe el hilo principal,
+    /// que no sabe por dónde va el sonido—, así que hacerle caso devolvería el
+    /// desarrollo al principio en cada giro de knob.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
     mutating func refresh(with track: Track) {
-        material = .track(track)
+        self.track = track
+        if let cycle = track.cycle(at: cursor) ?? track.cycle(at: 0) {
+            material = .cycle(cycle)
+        }
+    }
+
+    /// Pone la reproducción en el primer Cycle.
+    ///
+    /// Lo llama Play, que es cuando se construye todo esto (FR6): pulsar Play
+    /// dos veces tiene que reproducir el mismo desarrollo, y eso exige empezar
+    /// siempre por el mismo Cycle.
+    mutating func restartCycles() {
+        cursor = 0
+        previousCursor = 0
+        // El Cycle 1 se pide por índice y no con `track.current`: `current` mira
+        // el cursor **del snapshot**, que puede estar en cualquier sitio. El que
+        // manda aquí es el de este hilo, que se acaba de poner a cero.
+        if let track, let first = track.cycle(at: 0) { material = .cycle(first) }
+        playbackClock?.publish(
+            track: playbackTrack, cycle: cursor, previousCycle: cursor, earlierCycle: cursor,
+            turnStartStep: turnStartStep)
     }
 
     /// Cuánto tiempo hay que reservar por delante para que ningún evento
@@ -217,14 +329,17 @@ public struct TrackScheduler {
     public mutating func advance(
         toHorizon horizonNanoseconds: Int64,
         refreshingFrom handoff: PatternHandoff?,
-        emit: (_ step: Int, _ pitch: Pitch?, _ groove: Groove, _ offsetNanoseconds: Int64) -> Void
+        emit: (
+            _ source: Cycle?, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
+            _ offsetNanoseconds: Int64
+        ) -> Void
     ) {
-        if let published = handoff?.load(), let track = published.track(at: 0) {
+        if let published = handoff?.load(), let cycle = published.cycle(at: 0) {
             // > **Puente de la v2, fase 2.** El handoff ya trae los dieciséis
             // > Tracks y este scheduler todavía emite uno. La fase 3 le da el
             // > recorrido; hasta entonces lee el Track 1, que es lo que la
             // > interfaz edita.
-            material = .track(track)
+            material = .cycle(cycle)
         }
 
         // **El horizonte se amplía con el presupuesto de adelanto.** Sin esto,
@@ -238,7 +353,10 @@ public struct TrackScheduler {
         let budget = advanceBudgetNanoseconds
 
         for step in lookAhead.advance(toHorizon: horizonNanoseconds + budget) {
-            guard material.triggers(atStep: step) else { continue }
+            advanceCycleIfTheTurnClosed(before: step)
+            let cycleStep = step - turnStartStep
+
+            guard material.triggers(atStep: cycleStep) else { continue }
 
             // **El orden importa: primero dispara, después decide si suena.** Un
             // Step que no dispara no es un Pulse omitido, es un silencio del
@@ -251,15 +369,64 @@ public struct TrackScheduler {
             // aparta. Los dos salen del mismo snapshot, recogido una vez por
             // ventana: leerlos de sitios distintos dejaría que un Step sonara
             // con el desplazamiento de un Track que ya no está.
+            // **Si el Cycle vigente no tiene material, no se emite** (NFR3 de
+            // la rebanada 1: el coste crece con lo que suena). Se pregunta aquí
+            // y no una vez por ventana porque desde que el Cycle avanza en el
+            // límite de vuelta, el material puede cambiar dentro de la ventana:
+            // un Track que arranca mudo y deja de serlo al cambiar de Cycle
+            // tiene que sonar en esa misma vuelta.
+            //
+            // Va **después** de la tirada de Probability y no antes, para no
+            // cambiar cuánta aleatoriedad consume un Cycle mudo: si la
+            // consumiera distinto, llenarle el pool mientras suena movería las
+            // omisiones de un patrón que nadie tocó.
+            guard material.emitsAnything else { continue }
+
             let groove = material.groove
             emit(
+                material.cycle,
                 step,
-                material.pitch(atStep: step),
+                material.pitch(atStep: cycleStep),
                 groove,
                 lookAhead.timeline.nanosecondOffset(forStep: step)
                     + groove.shiftNanoseconds(
-                        atStep: step, stepDurationNanoseconds: stepDurationNanoseconds)
+                        atStep: cycleStep, stepDurationNanoseconds: stepDurationNanoseconds)
             )
         }
+    }
+
+    /// Pasa al Cycle siguiente si este Step abre una vuelta nueva.
+    ///
+    /// **Se llama antes de mirar si el Step dispara**, y esa es toda la
+    /// diferencia: FR5 pide que el primer Step de la vuelta nueva ya suene con
+    /// el Cycle nuevo, no el segundo. Hacerlo después dejaría el primer Step de
+    /// cada vuelta sonando con el material anterior, que es un fallo difícil de
+    /// oír y fácil de dejar dentro.
+    ///
+    /// **La vuelta se mide desde `turnStartStep`**, no con un módulo sobre el
+    /// índice absoluto, para que cada Cycle recorra una vuelta de su propia
+    /// longitud aunque dos Cycles midan distinto.
+    ///
+    /// Con un solo Cycle activo, `cursorAfter` devuelve siempre 0 y esto acaba
+    /// recalculando el mismo material: no hay avance y nada cambia (FR10). No se
+    /// sale antes por ahorrar la comparación, porque `turnStartStep` tiene que
+    /// seguir avanzando igual — si no, un Track que subiera a dos Cycles
+    /// mientras suena mediría su primera vuelta desde el arranque.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    private mutating func advanceCycleIfTheTurnClosed(before step: Int) {
+        guard let track, let stepCount = material.stepCount else { return }
+        guard step - turnStartStep >= stepCount else { return }
+
+        let earlierCursor = previousCursor
+        previousCursor = cursor
+        turnStartStep = step
+        cursor = Track.cursorAfter(cursor, activeCount: track.activeCount)
+        if let cycle = track.cycle(at: cursor) { material = .cycle(cycle) }
+        playbackClock?.publish(
+            track: playbackTrack, cycle: cursor, previousCycle: previousCursor,
+            earlierCycle: earlierCursor,
+            turnStartStep: turnStartStep)
     }
 }

@@ -12,12 +12,12 @@ import XCTest
 /// Estos tests recorren **todos** los parámetros y comparan **todo** lo que no
 /// se toca, así que el próximo campo que se añada al Track queda cubierto sin
 /// escribir nada nuevo.
-final class TrackEditsKeepEverythingElseTests: XCTestCase {
+final class CycleEditsKeepEverythingElseTests: XCTestCase {
 
     /// Un Track con todos los campos lejos de su valor por defecto: si algo se
     /// pierde, se ve.
-    private func distinctive() -> Track {
-        Track(
+    private func distinctive() -> Cycle {
+        Cycle(
             shape: Shape(steps: Steps(12)!, pulses: Pulses(5)!, rotate: Rotate(3)),
             pool: PitchPool().inserting(Pitch(60)!).inserting(Pitch(67)!),
             groove: Groove(

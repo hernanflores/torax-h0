@@ -152,15 +152,58 @@ pantalla.
   salen ~4,4 µs contra una ventana de 20 ms, el 0,02%. **Es una extrapolación, no
   una medida**: la primera fase la convierte en un número real. Presupuesto: un
   `load()` por debajo del 1% de la ventana.
+
+  > **Medido el 2026-09-02, y el diseño se queda como está.** El snapshot con los
+  > 256 Cycles son **36 992 bytes** y el anillo **147 968**. Un `load()` cuesta
+  > **~870 ns**, el **0,0044%** de la ventana —presupuesto: 1%—, medido sobre un
+  > tipo de prueba con la forma que tendrá el modelo y una copia del protocolo de
+  > ranura del handoff, con 200 000 lecturas por pasada y tres pasadas
+  > (848–907 ns).
+  >
+  > La comparación honesta no es contra los 274 ns del 2026-08-31 —otra máquina y
+  > un Track de 112 bytes—, sino contra el snapshot de hoy medido en la misma
+  > pasada: **~125 ns**. Así que **16,05× más bytes cuestan 6,9× más tiempo**, no
+  > dieciséis: una copia grande amortiza mejor que una pequeña, y la
+  > extrapolación lineal era pesimista por un factor de cinco.
+  >
+  > **Consecuencia: FR5 no cambia.** El avance del Cycle se queda en el hilo del
+  > scheduler y se sigue publicando el Pattern entero. Las dos alternativas que
+  > el plan tenía escritas para el caso contrario —mover el avance al hilo
+  > principal, o publicar por Track— **quedan descartadas aquí y no se vuelven a
+  > abrir a mitad de la Fase 3**: harían falta tres órdenes de magnitud de
+  > diferencia para que el presupuesto se rozara.
+  >
+  > Lo que este número **no** dice: es una copia de memoria en `debug` sobre
+  > macOS, no jitter en un iPad. El coste real del hilo con los dieciséis
+  > avanzando lo mide la Fase 6, que es la que puede bloquear la rebanada. Lo que
+  > esta medición descarta es que el **tamaño** sea el problema.
 - **NFR3 — El snapshot deja de copiarse una vez por evento.** `Transport.play()`
   llama hoy a `handoff.load()` dentro del cierre de emisión, para leer el canal y
   la Division del Track que emite: una copia del snapshot entero **por nota**.
   Con 2,25 KB pasaba desapercibido; con 36 KB no. Se corrige en esta rebanada,
   que es la que lo vuelve caro.
-- **NFR4 — Medición de jitter obligatoria y bloqueante.** Con los dieciséis
-  Tracks sonando y los dieciséis avanzando de Cycle. Umbral: máximo < 2 ms,
-  σ < 0,5 ms. Referencias: rebanada 6 (máx 0,151 ms, σ 0,009–0,013 ms) y la que
-  deje la Fase 6 de `multi-track`. Una regresión bloquea la rebanada.
+- **NFR4 — Medición de jitter diferida y no bloqueante.** Los umbrales con los
+  dieciséis Tracks sonando y avanzando de Cycle —máximo < 2 ms y σ < 0,5 ms—
+  quedan fuera de los criterios de aceptación de esta rebanada.
+
+  > **Por qué se difiere.** Decisión del usuario del 2026-09-02, después de que
+  > la recogida del informe del dispositivo fallara: se suspenden las mediciones
+  > de jitter en el proyecto. Está escrita en `workflow.md`, en *Medición de
+  > jitter: suspendida*, con el coste de la decisión detallado.
+  >
+  > **Qué queda sin comprobar en esta rebanada, concretamente:** el trabajo que
+  > la Fase 3 añadió al hilo del scheduler —una decisión en el límite de cada
+  > vuelta y un cambio de material justo ahí— y la carga de la fila de Cycles
+  > repintándose a 10 Hz.
+  >
+  > **Qué sí está medido:** el tamaño. Un `load()` del snapshot con los 256
+  > Cycles cuesta ~870 ns, el 0,0044% de la ventana de 20 ms (Fase 1). Eso
+  > descarta que el tamaño sea el problema, y era la incógnita por la que la
+  > Fase 1 iba primero. Lo que no descarta es el coste del avance en sí.
+  >
+  > La herramienta se queda: la rejilla `16 Tracks · 4 Cycles` y su
+  > procedimiento están en el repositorio y en `device-verification.md`, listos
+  > para el día que se quiera volver a medir.
 - **NFR5 — El aleatorio sigue siendo reproducible.** Misma semilla, misma
   secuencia. Cambiar de Cycle no resiembra el generador: Probability es un valor
   del Cycle, el estado del generador es del scheduler, y esa frontera no se mueve.
@@ -223,6 +266,29 @@ Además:
 7. **El renombrado toca casi todo.** `Track` pasa a `Cycle` en `Engine` y en
    `MIDI`: es mecánico, pero es amplio, y los tests existentes se leerán distinto
    aunque midan lo mismo.
+8. **La Division no cambia de Cycle a Cycle.** *Decidido el 2026-09-02 en la
+   Fase 3, con el test delante.* Los otros siete parámetros —Steps, Pulses,
+   Rotate, pool, marco tonal, Groove y canal— sí cambian. La Division de un Cycle
+   posterior se ignora: su material suena, con todo lo demás suyo, sobre la
+   rejilla del Cycle que estuviera vigente al pulsar Play.
+
+   **Por qué se acota en vez de resolverse.** La rejilla de un Track la fija la
+   `MusicalTimeline` con la que se construye su `TrackScheduler`, y no se vuelve
+   a leer. Cambiar la Division reubica todos los Steps futuros respecto a un
+   origen que ya pasó, así que hacerlo bien exige **rebasar la línea de tiempo
+   por Track** — y eso es exactamente el invariante que mantiene en fase a los
+   dieciséis sin sincronización posterior: *todas las rejillas se miden contra el
+   mismo origen*. Tocarlo es trabajo en el núcleo de timing, con medición de
+   jitter obligatoria, para un caso que nadie ha pedido todavía: cambiar de
+   compás a mitad de patrón.
+
+   Está fijado con dos tests en `WhatChangesWithTheCycleTests`, así que si algún
+   día se resuelve, se verá que cambian.
+
+   Es la misma limitación que `TrackScheduler` ya documentaba para el snapshot en
+   caliente, ahora alcanzable por una vía más: antes hacía falta girar el knob de
+   Division mientras sonaba; ahora basta con darle Divisions distintas a dos
+   Cycles.
 
 ## Out of Scope
 

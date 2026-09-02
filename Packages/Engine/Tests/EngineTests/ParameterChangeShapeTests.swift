@@ -21,7 +21,7 @@ final class ParameterChangeShapeTests: XCTestCase {
     /// Envuelve un Shape en un Track con el Groove por defecto, para comparar al
     /// nivel al que `ParameterChange` compara ahora.
     private func change(from previous: Shape, to current: Shape) -> ParameterChange? {
-        ParameterChange(from: Track(shape: previous), to: Track(shape: current))
+        ParameterChange(from: Cycle(shape: previous), to: Cycle(shape: current))
     }
 
     // MARK: - Qué cambió

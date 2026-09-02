@@ -66,7 +66,7 @@ final class PresetMappingTests: XCTestCase {
     /// Y girarlos no publica: el mapeo y la entrada dicen lo mismo.
     func testTurningAFreeKnobPublishesNothing() throws {
         let input = ControlInput(
-            track: Track(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
+            track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
             publish: { _ in }
         )
         for number in mapping.declaredNumbers.knobs.suffix(7) {

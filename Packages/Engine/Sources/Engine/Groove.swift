@@ -369,8 +369,8 @@ extension ClosedRange where Bound == Int {
 /// aparte para que una regresión de rejilla no se lleve por delante a estos
 /// tres. Accent y la forma de la variación quedan fuera de v1 por `product.md`.
 ///
-/// Es un valor trivial a propósito: viaja dentro del `Track` que cruza al hilo
-/// del scheduler, y `_isPOD(Track.self)` lo vigila.
+/// Es un valor trivial a propósito: viaja dentro del `Cycle` que cruza al hilo
+/// del scheduler, y `_isPOD(Cycle.self)` lo vigila.
 public struct Groove: Equatable, Sendable {
 
     /// Los defaults de producto: suena todo, a nivel medio-alto, durando una
