@@ -1,0 +1,51 @@
+Tasks: Jitter con los dieciséis anillos · Verificación a un metro — Fase 6
+
+Medición — 2026-09-02, iPad Air (4ª gen)
+Rejilla recta, 1000 eventos por tempo, transporte de la app corriendo y los
+dieciséis anillos repintándose.
+
+   60 BPM  n=1000  máx=0,158 ms  media=+0,094 ms  σ=0,013 ms
+  120 BPM  n=1000  máx=0,141 ms  media=+0,091 ms  σ=0,013 ms
+  174 BPM  n=1000  máx=0,141 ms  media=+0,088 ms  σ=0,014 ms
+
+VEREDICTO: CUMPLE. Máximo 12,6x bajo el umbral de 2 ms; σ 35x bajo el de 0,5 ms.
+
+Lo que dice el número
+Dieciséis anillos salen más baratos que uno: la rebanada 3, con un solo anillo,
+dio σ 0,020 ms. El dibujo va en el hilo principal y el scheduler en el suyo, y
+la medición existía para comprobar esa separación, no para suponerla. La media
+es plana —+0,088 a +0,094 ms— e igual que en las seis mediciones anteriores.
+
+El procedimiento tuvo que cambiar
+El arnés por sí solo NO produce carga visual. Corre su propio scheduler en una
+tarea aparte y no toca TransportModel: los playheads quedan nil, los dieciséis
+anillos son idénticos fotograma a fotograma y SwiftUI no repinta lo que no
+cambia. Comprobado con una sonda que contaba ejecuciones del Canvas: menos de 30
+en 8 segundos, incluso forzando paused: false. Primero se intentó comparar dos
+capturas —comprobación inválida: sin playhead los píxeles son iguales aunque el
+Canvas se re-ejecute—.
+
+Medir siguiendo el plan tal como estaba habría dado un CUMPLE sin significado.
+Se mide con el transporte de la app corriendo a la vez, lo que pone dos
+schedulers en vuelo: más carga de la que el producto tiene nunca, así que el
+sesgo va en la dirección segura.
+
+La cola de la rebanada 1 no se reprodujo
+Aquella pasada dio a 174 BPM máx 0,598 ms y σ 0,083 ms, anotada como el sitio
+por donde mirar si esta rebanada empeoraba el número. Aquí ese tempo da 0,141 ms
+y 0,014 ms, con cinco veces más muestras y más carga. Apunta a un episodio
+puntual y no a una propiedad de los dieciséis Tracks. No se afirma más: no se
+repitió aquella medición en sus condiciones.
+
+Verificación a un metro
+Los dos riesgos declarados se cerraron sin materializarse:
+- El playhead se lee sobre dieciséis anillos. El anillo grande aparte que la
+  spec guardaba de reserva no hizo falta; lo resolvió la inversión de columnas
+  de la Fase 3, decidida antes de llegar al dispositivo.
+- Mauve se separa del violeta de Tonal de reojo y con poca luz. Cierra la
+  pregunta que el ámbar dejó abierta en la Fase 1. La razón del ámbar se queda
+  escrita en Palette.groove como registro de por qué se comprobó.
+Ninguna decisión de la spec hubo que enmendar en dispositivo.
+
+Cobertura: Engine 99,26% líneas, MIDI 91,59% (VirtualLoopbackTests excluido por
+el clientCreationFailed(-50), que sigue fallando igual en main).
