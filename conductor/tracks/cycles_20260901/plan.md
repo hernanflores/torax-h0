@@ -40,7 +40,7 @@ regresión la bloquea.
   Rojo medido antes de implementar: **188 lecturas para 168 notas**. Verde:
   **7 lecturas para 168 notas** —una por ventana, más la de Play—. El contador
   vive en `PatternHandoff` y solo se compila en DEBUG.
-- [ ] Task: Cuánto cuesta un snapshot con los 256 Cycles
+- [~] Task: Cuánto cuesta un snapshot con los 256 Cycles
   - [ ] Medir `MemoryLayout` y el tiempo de un `load()` sobre un valor **del tamaño real** —un tipo de prueba, sin renombrar nada todavía—
   - [ ] Comparar contra la ventana de 20 ms y contra la medición del 2026-08-31 —2,25 KB en 274 ns—, que es la única referencia que hay
   - [ ] Medir también el anillo completo: cuatro ranuras, ~147 KB, reservadas al construir

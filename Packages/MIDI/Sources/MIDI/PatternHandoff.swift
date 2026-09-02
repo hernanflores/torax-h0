@@ -39,6 +39,25 @@ import Engine
 /// el orden de magnitud. No hay nada que decidir aquí, y por eso se copia entero
 /// en vez de publicar por Track.
 ///
+/// **Y lo que costaría con Cycles, medido el 2026-09-02, antes de construirlo.**
+/// Cuando el Track contenga dieciséis Cycles, el snapshot pasa a **36 992 bytes**
+/// —256 Cycles más dos contadores por Track— y el anillo de cuatro ranuras a
+/// **147 968 bytes**, reservados una vez al construir. En la misma pasada y en la
+/// misma máquina, en `debug`:
+///
+/// | | tamaño | `load()` | % de la ventana de 20 ms |
+/// |---|---|---|---|
+/// | Hoy | 2304 B | ~125 ns | 0,0006% |
+/// | Con Cycles | 36 992 B | ~870 ns | **0,0044%** |
+///
+/// Dieciséis veces más bytes cuestan **siete** veces más tiempo, no dieciséis:
+/// una copia grande amortiza mejor que una pequeña. El presupuesto que la Fase 1
+/// del track `cycles_20260901` puso delante de la decisión era el 1% de la
+/// ventana; el número está tres órdenes de magnitud por debajo, así que se copia
+/// el Pattern entero por ventana y el Cycle avanza en el hilo del scheduler, tal
+/// como estaba diseñado. Los tests que producen estas cifras están en
+/// `CycleSnapshotCostTests`.
+///
 /// Lo que sí cambia es la aritmética del riesgo: copiar dieciséis veces más deja
 /// al lector expuesto más tiempo, y por eso el test de concurrencia publica un
 /// Pattern con los dieciséis Tracks correlacionados, no solo con sus campos.
