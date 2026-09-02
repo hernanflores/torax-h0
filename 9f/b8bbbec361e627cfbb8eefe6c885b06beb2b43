@@ -25,3 +25,47 @@ VERIFICACIÓN
 - xcodebuild para iOS: BUILD SUCCEEDED.
 - Sin medición de jitter: Engine puro. Nada de esto corre todavía en el hilo
   del scheduler; eso es la Fase 3.
+
+---
+
+VERIFICACIÓN DE FASE — Phase 2: El Cycle es el valor, el Track lo contiene
+Fecha: 2026-09-02
+
+COMANDOS EJECUTADOS
+  swift test --package-path Packages/Engine
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+RESULTADO
+  Engine: 410 tests, 0 fallos, cobertura 99,14% de líneas.
+  MIDI:   342 tests (21 + 321, partición de CI), 0 fallos,
+          cobertura 91,87% de líneas, medida en un proceso con el profdata
+          fusionado a mano.
+  App:    BUILD SUCCEEDED.
+  Sin aparición del flake clientCreationFailed(-50) en estas pasadas.
+
+VERIFICACIÓN MANUAL PROPUESTA
+Esta fase es Engine puro y no expone Cycles en ninguna parte: todos los Tracks
+arrancan con un Cycle activo, así que NO debe oírse ni verse ninguna
+diferencia. Eso es lo que se pidió confirmar.
+  1. BeatStep Pro al iPad, iPad a un multitímbrico.
+  2. Compilar y ejecutar en dispositivo.
+  3. Play: suena como en la fase anterior; los dieciséis anillos y el playhead
+     igual.
+  4. Girar los knobs de Shape, Groove y Tonal: todos responden en el Step
+     siguiente. El camino de edición pasa ahora por `replacing(cycle:at:)`,
+     que es código nuevo.
+  5. Un pad: la altura entra en el pool como antes.
+  6. Cambiar de Track con los step buttons: cada uno conserva sus ajustes.
+  7. Un par de minutos sonando sin cortes ni cuelgues — es donde se vería un
+     desbordamiento de pila en el hilo del scheduler.
+  8. Stop: nada queda sonando.
+
+CONFIRMACIÓN DEL USUARIO
+  "si, funciono" — 2026-09-02.
+
+SIN MEDICIÓN DE JITTER EN ESTA FASE
+Engine puro: no se mueve ningún instante y nada de lo añadido corre todavía
+en el hilo del scheduler. Eso es la Fase 3, y la medición bloqueante es la de
+la Fase 6.
