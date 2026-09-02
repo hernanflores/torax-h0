@@ -224,14 +224,28 @@ regresión la bloquea.
 > `App`. No se mide cobertura: si algo aquí merece un test, está en el sitio
 > equivocado (`workflow.md`). La lógica ya está en `Engine` y `MIDI`.
 
-- [~] Task: Cuántos Cycles, cuál suena y cuál se edita
-  - [ ] Del Track seleccionado: número de Cycles activos, Cycle en curso y Cycle en edición, distinguibles de un vistazo (FR11)
-  - [ ] El Cycle en curso deriva del reloj y se consulta al dibujar, **no se guarda ni se refresca con un temporizador** — la misma regla que el playhead
-  - [ ] Legible a un metro, como el resto de la pantalla
-- [ ] Task: Ajustar cuántos Cycles hay activos
-  - [ ] Control táctil, junto a Scale, Root y el canal, que es donde vive lo configurable
-  - [ ] Sin controlador conectado la app sigue siendo de solo lectura y transporte **salvo lo táctil**, como hoy
-  - [ ] Verificado en simulador con captura, como la rebanada 1
+- [x] Task: Cuántos Cycles, cuál suena y cuál se edita — `0fe87c4`
+  - [x] Del Track seleccionado: número de Cycles activos, Cycle en curso y Cycle en edición, distinguibles de un vistazo (FR11)
+  - [x] El Cycle en curso deriva del reloj y se consulta al dibujar, **no se guarda ni se refresca con un temporizador** — la misma regla que el playhead
+  - [x] Legible a un metro, como el resto de la pantalla
+- [x] Task: Ajustar cuántos Cycles hay activos — `0fe87c4`
+  - [x] Control táctil, junto a Scale, Root y el canal, que es donde vive lo configurable
+  - [x] Sin controlador conectado la app sigue siendo de solo lectura y transporte **salvo lo táctil**, como hoy
+  - [x] Verificado en simulador con captura, como la rebanada 1
+
+  **Las dos tareas van en un commit porque son la misma fila.** Pulsar el número
+  N deja N Cycles activos, el que suena va relleno y el que se edita lleva el
+  contorno duro: tres filas separadas dirían lo mismo ocupando el triple.
+
+  El Cycle en curso lo deduce `CyclePosition`, en `Engine` y con tests:
+  **suma las vueltas de los Cycles activos en vez de dividir**, porque dos
+  Cycles pueden tener Steps distintos y entonces sus vueltas duran distinto. Se
+  refresca a 10 Hz y no a 60 — lo que se mueve cambia cada varios segundos, y
+  esta rebanada tiene medición de jitter obligatoria.
+
+  **El simulador no puede enseñar el Cycle sonando**: sin destinos MIDI no hay
+  transporte ni reloj del que deducir. Las capturas están en `captures/`; el
+  relleno se verifica en dispositivo, en la Fase 6.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 6: La medición y el dispositivo
