@@ -393,3 +393,75 @@ final class TrackTraversalTests: XCTestCase {
         XCTAssertEqual(Track.cursorAfter(15, activeCount: 16), 0)
     }
 }
+
+/// Tests de qué Cycle enseña la pantalla.
+///
+/// **La regla, desde el 2026-09-02: todo lo que se muestra es el Cycle en
+/// edición.** El anillo, la lectura, el pool, la superficie de pads y el canal
+/// son lo que los knobs están moviendo; lo único que enseña el que suena es el
+/// relleno de la fila de Cycles.
+///
+/// **Se encontró en dispositivo y se lee como otra cosa.** Con el transporte
+/// parado, mover el knob 10 y girar otro knob no cambiaba nada en pantalla: los
+/// knobs editaban el Cycle 2 y la pantalla seguía enseñando el 1. El síntoma es
+/// «el Track dejó de responder», que apunta a la entrada y no a la vista.
+final class TheScreenShowsTheEditingCycleTests: XCTestCase {
+
+    private func cycle(pulses: Int) -> Cycle {
+        Cycle(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(pulses)!),
+            pool: PitchPool().inserting(Pitch(48)!)
+        )
+    }
+
+    /// Un Track editando el Cycle 2 mientras suena el 1.
+    private func divergent() -> Pattern {
+        let track =
+            Track(cycle(pulses: 5))
+            .withActiveCount(3)
+            .replacing(cycle(pulses: 12), at: 1)
+            .withEditing(1)
+            .withCursor(0)
+        return Pattern().replacing(track, at: 0)
+    }
+
+    /// Los dos accesos existen y **no devuelven lo mismo** cuando los cursores
+    /// divergen: si devolvieran lo mismo, este test no probaría nada.
+    func testTheTwoAccessorsDivergeWhenTheCursorsDo() {
+        let pattern = divergent()
+
+        XCTAssertEqual(pattern.cycle(at: 0)?.shape.pulses.count, 5, "el que suena")
+        XCTAssertEqual(pattern.editingCycle(at: 0)?.shape.pulses.count, 12, "el que se edita")
+    }
+
+    /// El anillo dibuja el Cycle en edición. Sin esto, girar un knob no cambia
+    /// nada en pantalla.
+    func testTheRingDrawsTheEditingCycle() {
+        let stack = RingStack(pattern: divergent())
+
+        // Doce Pulses sobre dieciséis Steps, contra los cinco del Cycle que
+        // suena: se cuentan en el anillo dibujado.
+        XCTAssertEqual(stack.bands[0].ring.positions.filter(\.isPulse).count, 12)
+    }
+
+    /// Y el playhead cae sobre ese mismo anillo: sobre otro marcaría una
+    /// posición de algo que no está en pantalla.
+    func testThePlayheadFallsOnTheRingThatIsDrawn() {
+        let heads = Playhead.forEachTrack(
+            in: divergent(),
+            tempo: Tempo(beatsPerMinute: 120)!,
+            elapsedNanoseconds: 0
+        )
+
+        XCTAssertEqual(heads.count, Pattern.trackCount)
+        XCTAssertEqual(heads[0].step, 0)
+    }
+
+    /// Con un solo Cycle activo los dos accesos coinciden, que es lo que hace
+    /// que nada cambie para quien no use Cycles.
+    func testWithASingleActiveCycleBothAccessorsAgree() {
+        let pattern = Pattern().replacing(Track(cycle(pulses: 7)), at: 0)
+
+        XCTAssertEqual(pattern.cycle(at: 0), pattern.editingCycle(at: 0))
+    }
+}

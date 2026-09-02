@@ -127,11 +127,20 @@ final class TransportModel {
     private(set) var selectedTrackIndex = 0
 
     /// El Track seleccionado, que es el que la pantalla muestra.
-    var track: Cycle { pattern.cycle(at: selectedTrackIndex)! }
+    /// **Es el Cycle en edición, no el que suena.** Todo lo que la pantalla
+    /// muestra —el anillo, la lectura grande, el pool, la superficie de pads y
+    /// el canal— es lo que los knobs están moviendo; lo único que enseña el que
+    /// suena es el relleno de la fila de Cycles.
+    ///
+    /// > **Corregido el 2026-09-02, encontrado en dispositivo.** Esto devolvía
+    /// > el Cycle que suena. Con el transporte parado y el knob 10 movido, los
+    /// > demás knobs editaban el Cycle correcto y la pantalla seguía enseñando
+    /// > el primero: se leía como «el Track dejó de responder».
+    var track: Cycle { pattern.editingCycle(at: selectedTrackIndex)! }
 
     /// Cuáles tienen material: los vacíos no suenan, y eso se ve.
     var tracksWithMaterial: [Bool] {
-        (0..<Pattern.trackCount).map { !(pattern.cycle(at: $0)?.pool.isEmpty ?? true) }
+        (0..<Pattern.trackCount).map { !(pattern.editingCycle(at: $0)?.pool.isEmpty ?? true) }
     }
 
     /// Por dónde emite cada Track.
@@ -140,7 +149,7 @@ final class TransportModel {
     /// lleva su canal, así que la pantalla dice de un vistazo si dos Tracks
     /// comparten instrumento sin tener que seleccionarlos uno a uno.
     var channels: [Channel] {
-        (0..<Pattern.trackCount).map { pattern.cycle(at: $0)?.channel ?? .first }
+        (0..<Pattern.trackCount).map { pattern.editingCycle(at: $0)?.channel ?? .first }
     }
 
     /// Por qué la salida no está disponible, si no lo está.
