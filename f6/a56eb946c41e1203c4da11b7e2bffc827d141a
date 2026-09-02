@@ -1,0 +1,27 @@
+Task: Volverse inaudible apaga (FR4)
+
+Fase 4 del track mute-solo_20260902. TDD: 10 tests en rojo, implementacion, 10
+en verde. Suite MIDI 426+21, 0 fallos. Cobertura 92,05% de lineas.
+
+Ficheros:
+- Packages/MIDI/Sources/MIDI/Transport.swift: mix, toggleMute(_:), toggleSolo(_:)
+  y el privado apply(_:) que compara las dos fotos y barre la diferencia. La
+  mascara pasa de public a internal.
+- Packages/MIDI/Tests/MIDITests/MuteSilencesTests.swift (nuevo).
+
+La decision central: el apagado va con la TRANSICION, no con el estado. Los
+tests fijan las cuatro caras — mutear a quien suena barre; desmutear no; mutear
+a quien ya callaba por un solo ajeno no; y soltar uno de dos solos SI barre al
+que se queda fuera, que es la transicion que se olvida porque nadie la pidio
+explicitamente.
+
+Con el transporte parado no se manda nada y el estado si cambia: hay un test
+para cada mitad de esa frase.
+
+Una sola puerta. Se hizo internal la mascara al descubrir que dejarla publica
+daba dos caminos para cambiarla, y uno de ellos se saltaba el apagado. Fuera se
+lee por mix y se escribe por los dos toggles.
+
+FR10 cubierto de paso: stop() conserva mutes y solos.
+
+Fuera del hilo del scheduler (NFR1): apply corre donde corre stop().
