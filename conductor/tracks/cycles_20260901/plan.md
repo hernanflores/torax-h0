@@ -68,7 +68,7 @@ regresión la bloquea.
   mitad de la Fase 3. Enmienda fechada en el NFR2 del `spec.md`.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 2: El Cycle es el valor, el Track lo contiene
+## Phase 2: El Cycle es el valor, el Track lo contiene [checkpoint: 9fb8bbb]
 
 > `Engine` puro. Sin CoreMIDI, sin simulador, sin hardware. Es el renombrado y el
 > nivel nuevo: mecánico en volumen, delicado en la frontera de tiempo real.
