@@ -127,11 +127,11 @@ final class TransportModel {
     private(set) var selectedTrackIndex = 0
 
     /// El Track seleccionado, que es el que la pantalla muestra.
-    var track: Cycle { pattern.track(at: selectedTrackIndex)! }
+    var track: Cycle { pattern.cycle(at: selectedTrackIndex)! }
 
     /// Cuáles tienen material: los vacíos no suenan, y eso se ve.
     var tracksWithMaterial: [Bool] {
-        (0..<Pattern.trackCount).map { !(pattern.track(at: $0)?.pool.isEmpty ?? true) }
+        (0..<Pattern.trackCount).map { !(pattern.cycle(at: $0)?.pool.isEmpty ?? true) }
     }
 
     /// Por dónde emite cada Track.
@@ -140,7 +140,7 @@ final class TransportModel {
     /// lleva su canal, así que la pantalla dice de un vistazo si dos Tracks
     /// comparten instrumento sin tener que seleccionarlos uno a uno.
     var channels: [Channel] {
-        (0..<Pattern.trackCount).map { pattern.track(at: $0)?.channel ?? .first }
+        (0..<Pattern.trackCount).map { pattern.cycle(at: $0)?.channel ?? .first }
     }
 
     /// Por qué la salida no está disponible, si no lo está.
@@ -278,7 +278,7 @@ final class TransportModel {
             output.onSetupChanged = { [weak watcher] in watcher?.setupChanged() }
 
             let timeline = MusicalTimeline(
-                tempo: Self.tempo, division: Pattern.initial.track(at: 0)!.shape.division)
+                tempo: Self.tempo, division: Pattern.initial.cycle(at: 0)!.shape.division)
             let createdTransport = Transport(
                 configuration: SchedulerConfiguration(timeline: timeline),
                 pattern: .initial,

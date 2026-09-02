@@ -219,7 +219,7 @@ public struct TrackScheduler {
         refreshingFrom handoff: PatternHandoff?,
         emit: (_ step: Int, _ pitch: Pitch?, _ groove: Groove, _ offsetNanoseconds: Int64) -> Void
     ) {
-        if let published = handoff?.load(), let cycle = published.track(at: 0) {
+        if let published = handoff?.load(), let cycle = published.cycle(at: 0) {
             // > **Puente de la v2, fase 2.** El handoff ya trae los dieciséis
             // > Tracks y este scheduler todavía emite uno. La fase 3 le da el
             // > recorrido; hasta entonces lee el Track 1, que es lo que la

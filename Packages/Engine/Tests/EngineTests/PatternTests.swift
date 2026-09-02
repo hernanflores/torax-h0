@@ -24,7 +24,7 @@ final class PatternTests: XCTestCase {
         let pattern = Pattern()
         XCTAssertEqual(Pattern.trackCount, 16)
         for index in 0..<16 {
-            XCTAssertNotNil(pattern.track(at: index), "Track \(index + 1)")
+            XCTAssertNotNil(pattern.cycle(at: index), "Track \(index + 1)")
         }
     }
 
@@ -34,7 +34,7 @@ final class PatternTests: XCTestCase {
     func testAFreshPatternHasNoMaterialAnywhere() {
         let pattern = Pattern()
         for index in 0..<16 {
-            XCTAssertTrue(pattern.track(at: index)!.pool.isEmpty, "Track \(index + 1)")
+            XCTAssertTrue(pattern.cycle(at: index)!.pool.isEmpty, "Track \(index + 1)")
         }
     }
 
@@ -43,7 +43,7 @@ final class PatternTests: XCTestCase {
     func testAnIndexOutsideThePatternHasNoTrack() {
         let pattern = Pattern()
         for index in [-1, -100, 16, 17, 128, Int.max, Int.min] {
-            XCTAssertNil(pattern.track(at: index), "\(index)")
+            XCTAssertNil(pattern.cycle(at: index), "\(index)")
         }
     }
 
@@ -59,10 +59,10 @@ final class PatternTests: XCTestCase {
         for target in 0..<16 {
             let updated = pattern.replacing(edited, at: target)
 
-            XCTAssertEqual(updated.track(at: target), edited, "Track \(target + 1)")
+            XCTAssertEqual(updated.cycle(at: target), edited, "Track \(target + 1)")
             for other in 0..<16 where other != target {
                 XCTAssertEqual(
-                    updated.track(at: other), pattern.track(at: other),
+                    updated.cycle(at: other), pattern.cycle(at: other),
                     "el Track \(target + 1) tocó al \(other + 1)")
             }
         }
@@ -90,7 +90,7 @@ final class PatternTests: XCTestCase {
 
         for index in 0..<16 {
             XCTAssertEqual(
-                pattern.track(at: index)?.shape.steps.count, index + 1, "Track \(index + 1)")
+                pattern.cycle(at: index)?.shape.steps.count, index + 1, "Track \(index + 1)")
         }
     }
 
@@ -114,9 +114,15 @@ final class PatternTests: XCTestCase {
     }
 
     /// El tamaño es dieciséis Tracks y nada más: sin cabecera, sin punteros.
-    /// Que quepa en un `memcpy` razonable se comprueba en la fase 2, con el
-    /// número delante.
+    ///
+    /// > **Cambió el 2026-09-02, al entrar Cycles.** Un Track dejó de ser el
+    /// > juego de parámetros y pasó a contener dieciséis, así que el Pattern
+    /// > pasa de 2304 bytes a 37 120. El coste de copiarlo se midió **antes** de
+    /// > construirlo, en `CycleSnapshotCostTests`: ~870 ns, el 0,0044% de la
+    /// > ventana. Esta aserción sigue vigilando lo mismo que antes —que no haya
+    /// > cabecera ni punteros— sobre el nivel que ahora corresponde.
     func testThePatternIsExactlySixteenTracksWide() {
-        XCTAssertEqual(MemoryLayout<Pattern>.size, MemoryLayout<Cycle>.size * 16)
+        XCTAssertEqual(MemoryLayout<Pattern>.size, MemoryLayout<Track>.size * 16)
+        XCTAssertEqual(MemoryLayout<Track>.size, MemoryLayout<Cycle>.size * 16 + 16)
     }
 }

@@ -86,7 +86,7 @@ regresión la bloquea.
   dicen ser; los otros devuelven hoy el único Cycle de ese Track, y así la
   tarea siguiente solo cambia el tipo y no todas las llamadas. Nota fechada en
   `Pattern` para que el estado intermedio no se lea como un descuido.
-- [ ] Task: El `Track` nuevo: dieciséis Cycles, cuántos activos y por cuál va
+- [~] Task: El `Track` nuevo: dieciséis Cycles, cuántos activos y por cuál va
   - [ ] Tests (Red): un Track recién construido tiene dieciséis Cycles, **uno activo** y el cursor en el primero — que es el comportamiento de hoy (FR10)
   - [ ] Tests (Red): `_isPOD(Track.self)` y `_isPOD(Pattern.self)` siguen siendo verdaderos con el nivel nuevo dentro
   - [ ] Tests (Red): sustituir un Cycle devuelve un Track nuevo con **solo ese** cambiado, comprobado sobre los otros quince

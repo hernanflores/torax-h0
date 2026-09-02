@@ -18,16 +18,16 @@ final class PatternInitialTests: XCTestCase {
     func testOnlyTheFirstTrackHasMaterial() {
         let pattern = Pattern.initial
 
-        XCTAssertFalse(pattern.track(at: 0)!.pool.isEmpty, "el Track 1 arrancó mudo")
+        XCTAssertFalse(pattern.cycle(at: 0)!.pool.isEmpty, "el Track 1 arrancó mudo")
         for index in 1..<16 {
-            XCTAssertTrue(pattern.track(at: index)!.pool.isEmpty, "Track \(index + 1)")
+            XCTAssertTrue(pattern.cycle(at: index)!.pool.isEmpty, "Track \(index + 1)")
         }
     }
 
     /// El material es el que la app ya usaba: una sola altura, que la Pre Spec
     /// describe como «centro estable».
     func testTheFirstTrackKeepsTheMaterialTheAppAlreadyHad() {
-        let track = Pattern.initial.track(at: 0)!
+        let track = Pattern.initial.cycle(at: 0)!
 
         XCTAssertEqual(track.pool.count, 1)
         XCTAssertTrue(track.pool.contains(Pitch(48)!))
@@ -36,7 +36,7 @@ final class PatternInitialTests: XCTestCase {
     /// Y el Shape es el mismo 16/5 con el que la app abre: uno de los casos de
     /// la Pre Spec, reconocible de oído.
     func testTheFirstTrackKeepsTheShapeTheAppAlreadyHad() {
-        let shape = Pattern.initial.track(at: 0)!.shape
+        let shape = Pattern.initial.cycle(at: 0)!.shape
 
         XCTAssertEqual(shape.steps.count, 16)
         XCTAssertEqual(shape.pulses.count, 5)
@@ -51,7 +51,7 @@ final class PatternInitialTests: XCTestCase {
         let pattern = Pattern.initial
 
         for index in 1..<16 {
-            let track = pattern.track(at: index)!
+            let track = pattern.cycle(at: index)!
             var triggered = false
 
             for step in 0..<track.shape.steps.count where track.triggers(atStep: step) {
@@ -66,7 +66,7 @@ final class PatternInitialTests: XCTestCase {
 
     /// El Track 1 sí emite, que es la otra mitad de la comprobación.
     func testTheFirstTrackDoesEmit() {
-        let track = Pattern.initial.track(at: 0)!
+        let track = Pattern.initial.cycle(at: 0)!
         let pitches = (0..<track.shape.steps.count)
             .filter { track.triggers(atStep: $0) }
             .compactMap { track.pitch(atStep: $0) }

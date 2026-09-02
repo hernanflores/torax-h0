@@ -59,7 +59,7 @@ public final class Transport: @unchecked Sendable {
     /// El Track 1, que es el único que la interfaz edita hasta la fase 4.
     ///
     /// Los literales de índice no fallan: el Pattern siempre tiene dieciséis.
-    public var track: Cycle { lastPublishedPattern.track(at: 0)! }
+    public var track: Cycle { lastPublishedPattern.cycle(at: 0)! }
 
     /// Dónde está el playhead sobre el anillo, o `nil` con el transporte
     /// parado.
@@ -169,7 +169,7 @@ public final class Transport: @unchecked Sendable {
 
         let thread = SchedulerThread(
             configuration: configuration,
-            material: .cycle(starting.track(at: 0)!),
+            material: .cycle(starting.cycle(at: 0)!),
             handoff: handoff,
             playhead: playheadClock,
             pattern: starting
@@ -268,7 +268,7 @@ public final class Transport: @unchecked Sendable {
         // quince, que es este mismo defecto multiplicado.
         var silenced: Set<Int> = []
         for index in 0..<Pattern.trackCount {
-            guard let source = lastPublishedPattern.track(at: index) else { continue }
+            guard let source = lastPublishedPattern.cycle(at: index) else { continue }
             let channel = MIDIChannel(source.channel)
 
             // No depende de que el Track tenga material **ahora**: vaciar el
@@ -286,7 +286,7 @@ public final class Transport: @unchecked Sendable {
         }
 
         for index in 0..<Pattern.trackCount {
-            guard let source = lastPublishedPattern.track(at: index) else { continue }
+            guard let source = lastPublishedPattern.cycle(at: index) else { continue }
             let channel = MIDIChannel(source.channel)
             let pool = source.pool
 

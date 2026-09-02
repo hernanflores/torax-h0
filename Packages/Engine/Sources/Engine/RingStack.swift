@@ -100,7 +100,7 @@ public struct RingStack: Equatable, Sendable {
     /// `product-guidelines.md` prohíbe.
     public init(pattern: Pattern) {
         bands = (0..<Pattern.trackCount).map { index in
-            let cycle = pattern.track(at: index) ?? Pattern.emptyCycle
+            let cycle = pattern.cycle(at: index) ?? Pattern.emptyCycle
             return Band(
                 track: index,
                 ring: Ring(shape: cycle.shape),

@@ -51,9 +51,9 @@ final class PatternHandoffTests: XCTestCase {
     private func assertCorrelated(
         _ pattern: Pattern, file: StaticString = #filePath, line: UInt = #line
     ) {
-        let first = pattern.track(at: 0)!.shape.steps.count
+        let first = pattern.cycle(at: 0)!.shape.steps.count
         for index in 0..<Pattern.trackCount {
-            let track = pattern.track(at: index)!
+            let track = pattern.cycle(at: index)!
             // Entre Tracks: los dieciséis vienen de la misma publicación.
             XCTAssertEqual(track.shape.steps.count, first, file: file, line: line)
             // Y dentro de cada uno, entre campos.
@@ -96,7 +96,7 @@ final class PatternHandoffTests: XCTestCase {
         let handoff = PatternHandoff(correlatedPattern(1))
         for value in Steps.validRange {
             handoff.publish(correlatedPattern(value))
-            XCTAssertEqual(handoff.load()?.track(at: 0)?.shape.steps.count, value)
+            XCTAssertEqual(handoff.load()?.cycle(at: 0)?.shape.steps.count, value)
         }
     }
 
@@ -115,7 +115,7 @@ final class PatternHandoffTests: XCTestCase {
         let read = handoff.load()
         for index in 0..<Pattern.trackCount {
             XCTAssertEqual(
-                read?.track(at: index)?.shape.steps.count, index + 1, "Track \(index + 1)")
+                read?.cycle(at: index)?.shape.steps.count, index + 1, "Track \(index + 1)")
         }
     }
 
@@ -127,7 +127,7 @@ final class PatternHandoffTests: XCTestCase {
             for value in Steps.validRange {
                 handoff.publish(correlatedPattern(value))
             }
-            XCTAssertEqual(handoff.load()?.track(at: 0)?.shape.steps.count, 16)
+            XCTAssertEqual(handoff.load()?.cycle(at: 0)?.shape.steps.count, 16)
         }
     }
 
@@ -149,6 +149,13 @@ final class PatternHandoffTests: XCTestCase {
             }
             writerFinished.fulfill()
         }
+        // **La pila por defecto de un `Thread` secundario son 512 KB, y con
+        // Cycles ya no bastan.** Construir un Pattern deja varios temporales de
+        // 37 KB vivos en el mismo marco, así que este bucle desbordaba con la
+        // pila por defecto: medido el 2026-09-02, revienta con 512 KB y pasa con
+        // 1 MB. El hilo del scheduler lleva la misma reserva, y por la misma
+        // razón — ver `SchedulerThread.start()`.
+        writer.stackSize = 1 << 20
         writer.qualityOfService = .userInitiated
         writer.start()
 
@@ -199,14 +206,21 @@ final class PatternHandoffTests: XCTestCase {
     /// scheduler copia en cada ventana. Se fija aquí para que un crecimiento
     /// futuro del modelo se vea como un cambio, y no como una sorpresa medida
     /// tarde.
+    ///
+    /// > **El detector saltó, y funcionó como se esperaba.** La cota de 4 KB era
+    /// > de la rebanada 1 de la v2, y Cycles la rompió: el snapshot pasó a
+    /// > 37 120 bytes. Que saltara obligó a volver a tomar la decisión con el
+    /// > número delante, que es exactamente para lo que estaba puesta — y se
+    /// > tomó **antes** de construir nada, en la Fase 1 del track
+    /// > `cycles_20260901`: ~870 ns por `load()`, el 0,0044% de la ventana.
+    /// >
+    /// > La cota nueva es 64 KB, y sigue sin ser un umbral de rendimiento sino
+    /// > un detector de cambio de orden. El siguiente escalón de la Pre Spec
+    /// > —dieciséis Patterns por Bank— **no** pasa por aquí: eso es persistencia,
+    /// > y lo que cruza al hilo del scheduler sigue siendo un Pattern.
     func testTheSnapshotIsSixteenTracksWideAndNothingMore() {
-        XCTAssertEqual(MemoryLayout<Pattern>.size, MemoryLayout<Cycle>.size * 16)
-        // Medido el 2026-08-31: Track 112 bytes, Pattern 1792, y un load()
-        // completo 274 ns contra una ventana de 20 ms. La cota no es un umbral
-        // de rendimiento sino un detector de cambio de orden: si el modelo
-        // crece hasta aquí, la decisión de copiar el Pattern entero por ventana
-        // hay que volver a tomarla.
-        XCTAssertLessThan(MemoryLayout<Pattern>.size, 4_096, "el snapshot creció de orden")
+        XCTAssertEqual(MemoryLayout<Pattern>.size, MemoryLayout<Track>.size * 16)
+        XCTAssertLessThan(MemoryLayout<Pattern>.size, 65_536, "el snapshot creció de orden")
     }
 }
 

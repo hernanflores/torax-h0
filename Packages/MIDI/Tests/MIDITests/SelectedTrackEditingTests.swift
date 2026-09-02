@@ -89,13 +89,13 @@ final class SelectedTrackEditingTests: XCTestCase {
             XCTAssertTrue(input.receive(knob(parameter)), "\(parameter)")
 
             XCTAssertNotEqual(
-                input.pattern.track(at: 7), before.track(at: 7), "\(parameter) no movió el Track 8")
+                input.pattern.cycle(at: 7), before.cycle(at: 7), "\(parameter) no movió el Track 8")
             XCTAssertEqual(
-                input.pattern.track(at: 7)?.channel, Channel(8)!,
+                input.pattern.cycle(at: 7)?.channel, Channel(8)!,
                 "\(parameter) perdió el canal del Track 8")
             for other in 0..<16 where other != 7 {
                 XCTAssertEqual(
-                    input.pattern.track(at: other), before.track(at: other),
+                    input.pattern.cycle(at: other), before.cycle(at: other),
                     "\(parameter) tocó el Track \(other + 1)")
             }
         }
@@ -109,10 +109,10 @@ final class SelectedTrackEditingTests: XCTestCase {
         let before = input.pattern
 
         XCTAssertTrue(input.receive(pad(0)))
-        XCTAssertTrue(input.pattern.track(at: 3)!.pool.contains(Pitch(48)!))
+        XCTAssertTrue(input.pattern.cycle(at: 3)!.pool.contains(Pitch(48)!))
         for other in 0..<16 where other != 3 {
             XCTAssertEqual(
-                input.pattern.track(at: other), before.track(at: other),
+                input.pattern.cycle(at: other), before.cycle(at: other),
                 "el pad tocó el Track \(other + 1)")
         }
     }
@@ -129,7 +129,7 @@ final class SelectedTrackEditingTests: XCTestCase {
         input.receive(knob(.pulses))
         input.receive(knob(.velocity))
         input.receive(pad(2))
-        let edited = input.pattern.track(at: 0)
+        let edited = input.pattern.cycle(at: 0)
 
         // Se pasa por otros tres Tracks, editando de paso.
         for index in [5, 9, 14] {
@@ -139,7 +139,7 @@ final class SelectedTrackEditingTests: XCTestCase {
         }
 
         input.receive(stepButton(0))
-        XCTAssertEqual(input.pattern.track(at: 0), edited, "el Track 1 cambió mientras no miraba")
+        XCTAssertEqual(input.pattern.cycle(at: 0), edited, "el Track 1 cambió mientras no miraba")
         XCTAssertEqual(input.track, edited, "seleccionar no devolvió el Track editado")
     }
 
@@ -153,11 +153,11 @@ final class SelectedTrackEditingTests: XCTestCase {
         }
 
         for index in 0..<16 {
-            let initial = Pattern.initial.track(at: index)!.shape
+            let initial = Pattern.initial.cycle(at: index)!.shape
             // Pulses se frena en Steps: girar más allá del extremo no envuelve.
             let expected = min(initial.pulses.count + index + 1, initial.steps.count)
             XCTAssertEqual(
-                input.pattern.track(at: index)?.shape.pulses.count, expected, "Track \(index + 1)")
+                input.pattern.cycle(at: index)?.shape.pulses.count, expected, "Track \(index + 1)")
         }
     }
 
@@ -173,9 +173,9 @@ final class SelectedTrackEditingTests: XCTestCase {
         input.receive(stepButton(1))
         input.setFrame(TonalFrame(scale: .phrygian, root: Root(7)!))
 
-        XCTAssertEqual(input.pattern.track(at: 0)?.frame.scale, .major)
-        XCTAssertEqual(input.pattern.track(at: 1)?.frame.scale, .phrygian)
-        XCTAssertEqual(input.pattern.track(at: 1)?.frame.root, Root(7)!)
+        XCTAssertEqual(input.pattern.cycle(at: 0)?.frame.scale, .major)
+        XCTAssertEqual(input.pattern.cycle(at: 1)?.frame.scale, .phrygian)
+        XCTAssertEqual(input.pattern.cycle(at: 1)?.frame.root, Root(7)!)
     }
 
     /// Cambiar la Scale de uno no reencuadra el pool del otro.
@@ -184,12 +184,12 @@ final class SelectedTrackEditingTests: XCTestCase {
 
         input.setFrame(TonalFrame(scale: .major, root: Root(0)!))
         input.receive(pad(1))  // el grado 2 de Do mayor: Re
-        let untouched = input.pattern.track(at: 0)
+        let untouched = input.pattern.cycle(at: 0)
 
         input.receive(stepButton(6))
         input.setFrame(TonalFrame(scale: .phrygian, root: Root(1)!))
 
-        XCTAssertEqual(input.pattern.track(at: 0), untouched, "reencuadró el pool del vecino")
+        XCTAssertEqual(input.pattern.cycle(at: 0), untouched, "reencuadró el pool del vecino")
     }
 
     /// **Al seleccionar, la superficie se recalcula con el marco y el registro
@@ -221,7 +221,7 @@ final class SelectedTrackEditingTests: XCTestCase {
     /// Scale y Root.
     func testNoControllerChangesTheChannel() throws {
         let input = input()
-        let before = (0..<16).map { input.pattern.track(at: $0)!.channel }
+        let before = (0..<16).map { input.pattern.cycle(at: $0)!.channel }
 
         for number in 0...127 {
             input.receive(
@@ -232,7 +232,7 @@ final class SelectedTrackEditingTests: XCTestCase {
                 ))
         }
 
-        XCTAssertEqual((0..<16).map { input.pattern.track(at: $0)!.channel }, before)
+        XCTAssertEqual((0..<16).map { input.pattern.cycle(at: $0)!.channel }, before)
     }
 
     /// Cambiar el canal publica: el scheduler lo usa en el evento siguiente.
@@ -242,7 +242,7 @@ final class SelectedTrackEditingTests: XCTestCase {
         input.receive(stepButton(2))
 
         XCTAssertTrue(input.setChannel(Channel(12)!))
-        XCTAssertEqual(handoff.load()?.track(at: 2)?.channel, Channel(12)!)
+        XCTAssertEqual(handoff.load()?.cycle(at: 2)?.channel, Channel(12)!)
     }
 
     /// Y fijar el canal que ya tenía no publica: no cambia nada.
@@ -260,7 +260,7 @@ final class SelectedTrackEditingTests: XCTestCase {
         XCTAssertTrue(input.setChannel(Channel(3)!))
         for other in 0..<16 where other != 9 {
             XCTAssertEqual(
-                input.pattern.track(at: other), before.track(at: other), "Track \(other + 1)")
+                input.pattern.cycle(at: other), before.cycle(at: other), "Track \(other + 1)")
         }
     }
 
@@ -276,7 +276,7 @@ final class SelectedTrackEditingTests: XCTestCase {
         XCTAssertTrue(input.receive(knob(.pulses)))
 
         let published = handoff.load()
-        XCTAssertEqual(published?.track(at: 4), input.pattern.track(at: 4))
-        XCTAssertEqual(published?.track(at: 0), Pattern.initial.track(at: 0), "perdió el Track 1")
+        XCTAssertEqual(published?.cycle(at: 4), input.pattern.cycle(at: 4))
+        XCTAssertEqual(published?.cycle(at: 0), Pattern.initial.cycle(at: 0), "perdió el Track 1")
     }
 }

@@ -53,7 +53,7 @@ public final class PatternScheduler {
         schedulers = .allocate(capacity: Pattern.trackCount)
 
         for index in 0..<Pattern.trackCount {
-            let cycle = pattern.track(at: index)!
+            let cycle = pattern.cycle(at: index)!
             schedulers.advanced(by: index).initialize(
                 to: TrackScheduler(
                     timeline: MusicalTimeline(tempo: tempo, division: cycle.shape.division),
@@ -159,7 +159,7 @@ public final class PatternScheduler {
         if let published = handoff?.load() {
             pattern = published
             for index in 0..<Pattern.trackCount {
-                schedulers[index].refresh(with: pattern.track(at: index)!)
+                schedulers[index].refresh(with: pattern.cycle(at: index)!)
             }
         }
 
@@ -172,7 +172,7 @@ public final class PatternScheduler {
             // una por evento, que es justo la lectura que esta firma existe para
             // quitar. El índice no puede fallar: el Pattern siempre tiene
             // dieciséis.
-            let source = pattern.track(at: index)!
+            let source = pattern.cycle(at: index)!
 
             schedulers[index].advance(toHorizon: horizonNanoseconds, refreshingFrom: nil) {
                 step, pitch, groove, offset in

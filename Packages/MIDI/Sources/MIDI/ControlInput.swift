@@ -25,7 +25,7 @@ public final class ControlInput: @unchecked Sendable {
     /// **Editar es siempre editar el seleccionado.** Los otros quince siguen
     /// donde estaban: seleccionar no es un modo, es elegir a quién escuchan los
     /// controles.
-    public var track: Cycle { pattern.track(at: selectedTrackIndex)! }
+    public var track: Cycle { pattern.cycle(at: selectedTrackIndex)! }
 
     /// La superficie de pads vigente: qué altura tiene cada uno de los
     /// dieciséis.
@@ -86,7 +86,7 @@ public final class ControlInput: @unchecked Sendable {
         // lleva el suyo.
         var seeded = pattern
         for index in 0..<Pattern.trackCount {
-            seeded = seeded.replacing(seeded.track(at: index)!.with(frame: frame), at: index)
+            seeded = seeded.replacing(seeded.cycle(at: index)!.with(frame: frame), at: index)
         }
         self.pattern = seeded
         self.publish = publish

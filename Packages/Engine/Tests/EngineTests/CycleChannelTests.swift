@@ -33,16 +33,16 @@ final class CycleChannelTests: XCTestCase {
         let pattern = Pattern()
         for index in 0..<16 {
             XCTAssertEqual(
-                pattern.track(at: index)?.channel.number, index + 1, "Track \(index + 1)")
+                pattern.cycle(at: index)?.channel.number, index + 1, "Track \(index + 1)")
         }
     }
 
     /// Y el Pattern inicial sigue la misma regla: el Track 1 emite por el canal
     /// 1, que es por donde emitía la app con un Track solo.
     func testTheInitialPatternFollowsTheSameRule() {
-        XCTAssertEqual(Pattern.initial.track(at: 0)?.channel.number, 1)
+        XCTAssertEqual(Pattern.initial.cycle(at: 0)?.channel.number, 1)
         for index in 1..<16 {
-            XCTAssertEqual(Pattern.initial.track(at: index)?.channel.number, index + 1)
+            XCTAssertEqual(Pattern.initial.cycle(at: index)?.channel.number, index + 1)
         }
     }
 
@@ -50,13 +50,13 @@ final class CycleChannelTests: XCTestCase {
 
     func testChangingTheChannelOfATrackLeavesTheOthersAlone() {
         let pattern = Pattern()
-        let moved = pattern.track(at: 3)!.on(Channel(10)!)
+        let moved = pattern.cycle(at: 3)!.on(Channel(10)!)
         let updated = pattern.replacing(moved, at: 3)
 
-        XCTAssertEqual(updated.track(at: 3)?.channel.number, 10)
+        XCTAssertEqual(updated.cycle(at: 3)?.channel.number, 10)
         for other in 0..<16 where other != 3 {
             XCTAssertEqual(
-                updated.track(at: other)?.channel.number, other + 1, "Track \(other + 1)")
+                updated.cycle(at: other)?.channel.number, other + 1, "Track \(other + 1)")
         }
     }
 
@@ -64,16 +64,16 @@ final class CycleChannelTests: XCTestCase {
     /// sinte es un caso real, no un error que haya que impedir.
     func testTwoTracksCanShareAChannel() {
         var pattern = Pattern()
-        pattern = pattern.replacing(pattern.track(at: 0)!.on(Channel(5)!), at: 0)
-        pattern = pattern.replacing(pattern.track(at: 1)!.on(Channel(5)!), at: 1)
+        pattern = pattern.replacing(pattern.cycle(at: 0)!.on(Channel(5)!), at: 0)
+        pattern = pattern.replacing(pattern.cycle(at: 1)!.on(Channel(5)!), at: 1)
 
-        XCTAssertEqual(pattern.track(at: 0)?.channel.number, 5)
-        XCTAssertEqual(pattern.track(at: 1)?.channel.number, 5)
+        XCTAssertEqual(pattern.cycle(at: 0)?.channel.number, 5)
+        XCTAssertEqual(pattern.cycle(at: 1)?.channel.number, 5)
     }
 
     /// Cambiar el canal no toca el material: es configuración, no contenido.
     func testChangingTheChannelKeepsEverythingElse() {
-        let track = Pattern.initial.track(at: 0)!
+        let track = Pattern.initial.cycle(at: 0)!
         let moved = track.on(Channel(9)!)
 
         XCTAssertEqual(moved.shape, track.shape)

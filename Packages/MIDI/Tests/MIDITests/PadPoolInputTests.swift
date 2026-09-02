@@ -153,7 +153,7 @@ final class PadPoolInputTests: XCTestCase {
         XCTAssertFalse(input.receive(note(35)), "fuera del bloque: no publica")
         XCTAssertTrue(input.receive(pad(2)))
 
-        XCTAssertEqual(handoff.load()?.track(at: 0)?.pool.count, 2)
+        XCTAssertEqual(handoff.load()?.cycle(at: 0)?.pool.count, 2)
     }
 
     // MARK: - Helpers

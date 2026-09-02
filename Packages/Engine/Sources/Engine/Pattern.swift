@@ -44,8 +44,8 @@ public struct Pattern: Equatable, Sendable {
     /// se vería inmediatamente.
     private var tracks:
         (
-            Cycle, Cycle, Cycle, Cycle, Cycle, Cycle, Cycle, Cycle,
-            Cycle, Cycle, Cycle, Cycle, Cycle, Cycle, Cycle, Cycle
+            Track, Track, Track, Track, Track, Track, Track, Track,
+            Track, Track, Track, Track, Track, Track, Track, Track
         )
 
     /// El Cycle de un hueco sin usar: dispara, y no tiene nada que emitir.
@@ -66,8 +66,8 @@ public struct Pattern: Equatable, Sendable {
     /// explicar, y sin ella los dieciséis sonarían al mismo instrumento. Se puede
     /// cambiar: dos capas rítmicas sobre el mismo sinte es un caso real.
     public init() {
-        func empty(_ number: Int) -> Cycle {
-            Self.emptyCycle.on(Channel(unchecked: number))
+        func empty(_ number: Int) -> Track {
+            Track(Self.emptyCycle.on(Channel(unchecked: number)))
         }
         tracks = (
             empty(1), empty(2), empty(3), empty(4),
@@ -107,28 +107,55 @@ public struct Pattern: Equatable, Sendable {
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
-    public func track(at index: Int) -> Cycle? {
+    public func track(at index: Int) -> Track? {
         guard (0..<Self.trackCount).contains(index) else { return nil }
         return withUnsafePointer(to: tracks) { pointer in
-            pointer.withMemoryRebound(to: Cycle.self, capacity: Self.trackCount) {
+            pointer.withMemoryRebound(to: Track.self, capacity: Self.trackCount) {
                 $0[index]
             }
         }
     }
 
+    /// El Cycle que está sonando en esa posición, o `nil` fuera de 0–15.
+    ///
+    /// **Es lo que quiere casi todo el mundo.** El scheduler, el emisor y la
+    /// pantalla preguntan por el material vigente, no por el contenedor: pedir
+    /// `track(at:)?.current` en cada sitio sería repetir la misma frase
+    /// cincuenta veces y dejar que alguien la escriba mal una.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func cycle(at index: Int) -> Cycle? {
+        track(at: index)?.current
+    }
+
     /// El Pattern con ese Track en esa posición y los otros quince intactos.
     ///
     /// Fuera de rango devuelve el Pattern tal cual: nada que cambiar.
-    public func replacing(_ track: Cycle, at index: Int) -> Pattern {
+    public func replacing(_ track: Track, at index: Int) -> Pattern {
         guard (0..<Self.trackCount).contains(index) else { return self }
 
         var updated = self
         withUnsafeMutablePointer(to: &updated.tracks) { pointer in
-            pointer.withMemoryRebound(to: Cycle.self, capacity: Self.trackCount) {
+            pointer.withMemoryRebound(to: Track.self, capacity: Self.trackCount) {
                 $0[index] = track
             }
         }
         return updated
+    }
+
+    /// El Pattern con ese Cycle sustituyendo al que suena en esa posición, y
+    /// **todo lo demás del Track intacto**: sus otros quince Cycles, cuántos
+    /// están activos y por cuál va.
+    ///
+    /// **Es el camino de la edición.** Girar un knob cambia el material vigente
+    /// de un Track, no su estructura. Que exista esta sobrecarga es lo que evita
+    /// que cada sitio que edita tenga que reconstruir el Track a mano — que es
+    /// exactamente la forma de perder campos en silencio contra la que
+    /// `Cycle.applying(_:to:)` ya advierte.
+    public func replacing(_ cycle: Cycle, at index: Int) -> Pattern {
+        guard let track = track(at: index) else { return self }
+        return replacing(track.replacingCurrent(cycle), at: index)
     }
 
     public static func == (lhs: Pattern, rhs: Pattern) -> Bool {
