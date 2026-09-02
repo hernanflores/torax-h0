@@ -57,7 +57,7 @@ revisar el diseño antes de seguir.
   - [x] Cobertura `MIDI` ≥80%.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: EL GATE EN EL CAMINO DE EMISIÓN
+## FASE 3: EL GATE EN EL CAMINO DE EMISIÓN [checkpoint: 9becb80]
 
 - [x] Task: El Track inaudible no emite, pero su rejilla avanza (FR3) [9becb80]
   - [x] Tests (Red): con el Track 1 muteado, un recorrido de varias vueltas no
@@ -74,11 +74,11 @@ revisar el diseño antes de seguir.
   - [x] Verificar el camino de tiempo real: sin asignaciones, sin locks, sin
         `await` (NFR1).
   - [x] Cobertura `MIDI` ≥80%.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: APAGAR LO QUE YA SUENA
 
-- [ ] Task: Factorizar el barrido de silencio de `Transport.stop()` (FR4)
+- [~] Task: Factorizar el barrido de silencio de `Transport.stop()` (FR4)
   - [ ] Tests (Red): el barrido acotado a un Track manda `CC 123` por su canal y
         los note-off de las alturas de sus dieciséis Cycles, y **nada** por los
         canales de los demás.
