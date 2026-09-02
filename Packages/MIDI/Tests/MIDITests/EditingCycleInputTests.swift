@@ -344,3 +344,126 @@ final class EditingTargetsTheEditingCycleTests: XCTestCase {
         XCTAssertGreaterThan(heard.count, 1, "la edición en caliente no llegó a sonar")
     }
 }
+
+/// Tests de la vía táctil que ajusta cuántos Cycles recorre un Track.
+///
+/// **Es configuración, no material generativo** (FR2), así que va donde ya están
+/// Scale, Root y el canal: en pantalla. La Pre Spec lo ponía en un gesto de
+/// CTRL sobre el knob, y el BeatStep Pro no tiene CTRL — la nota fechada del
+/// 2026-09-02 en la Pre Spec explica por qué la frontera correcta no es la del
+/// hardware sino la que `product-guidelines.md` ya tenía trazada.
+final class ActiveCycleCountInputTests: XCTestCase {
+
+    private func cycle(pulses: Int = 5) -> Cycle {
+        Cycle(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(pulses)!),
+            pool: PitchPool().inserting(Pitch(48)!)
+        )
+    }
+
+    private func input(activeCycles: Int = 1) -> (ControlInput, () -> Int) {
+        var pattern = Pattern()
+        for index in 0..<Pattern.trackCount {
+            pattern = pattern.replacing(
+                Track(cycle()).withActiveCount(activeCycles), at: index)
+        }
+        let published = Box()
+        let input = ControlInput(pattern: pattern, publish: { _ in published.count += 1 })
+        return (input, { published.count })
+    }
+
+    private final class Box: @unchecked Sendable { var count = 0 }
+
+    // MARK: - La vía táctil
+
+    /// Mueve el número del Track seleccionado y publica, como `setChannel` y
+    /// `setFrame`: el scheduler lee cuántos hay activos del snapshot, así que
+    /// sin publicar el cambio no llegaría hasta el giro siguiente de un knob.
+    func testItMovesTheSelectedTrackAndPublishes() {
+        let (input, publishes) = input()
+
+        XCTAssertTrue(input.setActiveCycleCount(4))
+
+        XCTAssertEqual(input.pattern.track(at: 0)?.activeCount, 4)
+        XCTAssertEqual(publishes(), 1)
+    }
+
+    /// Poner el que ya estaba no publica: mandar un snapshot idéntico es trabajo
+    /// y ruido para nada.
+    func testSettingTheSameCountDoesNotPublish() {
+        let (input, publishes) = input(activeCycles: 3)
+
+        XCTAssertFalse(input.setActiveCycleCount(3))
+        XCTAssertEqual(publishes(), 0)
+    }
+
+    /// Se acota a 1–16 en vez de rechazar, con el mismo criterio que los otros
+    /// parámetros: un valor de más se frena, no revienta.
+    func testItClampsToTheValidRange() {
+        let (input, _) = input()
+
+        input.setActiveCycleCount(0)
+        XCTAssertEqual(input.pattern.track(at: 0)?.activeCount, 1)
+
+        input.setActiveCycleCount(99)
+        XCTAssertEqual(input.pattern.track(at: 0)?.activeCount, 16)
+    }
+
+    /// Y toca **solo** al Track seleccionado.
+    func testItTouchesOnlyTheSelectedTrack() {
+        let (input, _) = input()
+
+        input.selectTrack(6)
+        input.setActiveCycleCount(5)
+
+        XCTAssertEqual(input.pattern.track(at: 6)?.activeCount, 5)
+        for index in 0..<Pattern.trackCount where index != 6 {
+            XCTAssertEqual(
+                input.pattern.track(at: index)?.activeCount, 1, "tocó el Track \(index + 1)")
+        }
+    }
+
+    /// Subir el número entrega un Cycle copiado del que se está editando (FR3),
+    /// no uno vacío: se comprueba por la vía real, no solo sobre el modelo.
+    func testRaisingThroughTheTouchPathCopiesTheEditingCycle() {
+        let (input, _) = input(activeCycles: 2)
+
+        // Se edita el Cycle 2 y se sube a tres.
+        input.receive(
+            .controlChange(
+                channel: MIDIChannel(1)!, controller: MIDIController(79)!, value: 0x01))
+        input.receive(
+            .controlChange(
+                channel: MIDIChannel(1)!, controller: MIDIController(71)!, value: 0x01))
+        input.setActiveCycleCount(3)
+
+        XCTAssertEqual(
+            input.pattern.track(at: 0)?.cycle(at: 2),
+            input.pattern.track(at: 0)?.cycle(at: 1),
+            "el Cycle nuevo no nació copiando el que se estaba editando")
+    }
+
+    // MARK: - Ningún CC llega hasta aquí
+
+    /// **Ningún controlador mueve cuántos Cycles hay activos.** Es la frontera
+    /// de `product-guidelines.md`: los knobs mueven material generativo, la
+    /// pantalla mueve configuración. Se barren los 128 CC posibles, así que
+    /// asignar uno por descuido lo rompería.
+    func testNoControlChangeCanMoveTheActiveCount() {
+        let (input, _) = input(activeCycles: 4)
+
+        for number in 0...127 {
+            guard let controller = MIDIController(number) else { continue }
+            for value: UInt8 in [0x01, 0x7F, 0x40, 127] {
+                input.receive(
+                    .controlChange(channel: MIDIChannel(1)!, controller: controller, value: value))
+            }
+        }
+
+        for index in 0..<Pattern.trackCount {
+            XCTAssertEqual(
+                input.pattern.track(at: index)?.activeCount, 4,
+                "un CC movió los Cycles activos del Track \(index + 1)")
+        }
+    }
+}

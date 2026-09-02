@@ -345,6 +345,36 @@ public final class ControlInput: @unchecked Sendable {
         return true
     }
 
+    /// Cambia cuántos Cycles recorre el Track seleccionado, de 1 a 16.
+    ///
+    /// **Se ajusta en pantalla y no con un knob**: es configuración, no material
+    /// generativo, y `product-guidelines.md` pone esa frontera del lado táctil,
+    /// donde ya están Scale, Root y el canal. Ningún CC llega hasta aquí, y hay
+    /// un test que barre los 128 para vigilarlo.
+    ///
+    /// La Pre Spec lo ponía en un gesto de CTRL sobre el knob de Cycles y el
+    /// BeatStep Pro no tiene CTRL; la nota fechada del 2026-09-02 en la Pre Spec
+    /// explica por qué la frontera correcta no es la del hardware.
+    ///
+    /// Subir el número entrega un Cycle copiado del que se está editando y no
+    /// uno vacío (FR3); bajar descarta por el final y acota el Cycle en edición,
+    /// sin tocar el de reproducción (FR9). Las tres reglas viven en `Track`, que
+    /// es donde se testean sin controlador de por medio.
+    ///
+    /// Publica porque el scheduler lee cuántos hay activos del snapshot: sin
+    /// publicar, el cambio no llegaría hasta el giro siguiente de cualquier knob.
+    @discardableResult
+    public func setActiveCycleCount(_ count: Int) -> Bool {
+        guard let current = pattern.track(at: selectedTrackIndex) else { return false }
+
+        let adjusted = current.withActiveCount(count)
+        guard adjusted != current else { return false }
+
+        pattern = pattern.replacing(adjusted, at: selectedTrackIndex)
+        publish(pattern)
+        return true
+    }
+
     /// Cambia el marco tonal y reencuadra el pool.
     ///
     /// **Reencuadra, no vacía** (`product-guidelines.md`). Publicar solo si algo

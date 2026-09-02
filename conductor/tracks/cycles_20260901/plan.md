@@ -209,7 +209,7 @@ regresión la bloquea.
   camino de edición entero. No los hace inútiles — fijan la decisión donde se
   puede romper: un `replacing` que volviera a apuntar al Cycle que suena
   pisaría lo que se está oyendo, y no lo vería nadie hasta el iPad.
-- [ ] Task: Cuántos Cycles activos se ajusta táctilmente
+- [~] Task: Cuántos Cycles activos se ajusta táctilmente
   - [ ] Tests (Red): la vía táctil mueve el número de activos del Track seleccionado y publica, como `setChannel` y `setFrame`
   - [ ] Tests (Red): ningún CC llega hasta ahí — es configuración, no material generativo (`product-guidelines.md`)
   - [ ] Implementación (Green)
