@@ -24,3 +24,30 @@ Cobertura MIDI: 91,89% de lineas (umbral 80%). MuteMask.swift 100% de lineas.
 Medida en un solo proceso con el .profdata fusionado a mano, segun la ampliacion
 del 2026-08-30 del workflow (la pasada falla por el flake conocido de
 VirtualLoopbackTests y SwiftPM no fusiona el perfil cuando falla).
+
+--- Verificación de fase (Fase 2) — 2026-09-02 ---
+
+Comandos:
+  swift test --package-path Packages/Engine                     → 427 tests, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests \
+    --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+                                                                → 400 tests, 0 fallos
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|\
+    JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'  → 21 tests, 1 omitido, 0 fallos
+
+Con la partición de CI la suite de MIDI pasa entera. El flake de
+VirtualLoopbackTests solo aparece en la pasada de un proceso, que es la que
+exige la medición de cobertura.
+
+Cobertura de MIDI: 91,89% de líneas (umbral 80%). MuteMask.swift al 100%.
+
+Cobertura del diff de la fase: MuteMask.swift es el único fichero de código, y
+lo cubren MuteMaskTests (11) y AudibilityTests (10).
+
+Verificación manual: la fase no cambia nada audible a propósito —el estado
+existe y todavía nadie lo lee, el gate es la Fase 3—, así que se verificó la
+forma del tipo: que no exista API para leer el mute sin el solo, que la nota del
+escritor único deje escrita la condición que la invalidaría, y que la regla de
+audibilidad fije sus dos lecturas.
+
+Confirmación del usuario: «OK».
