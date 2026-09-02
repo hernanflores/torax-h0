@@ -239,6 +239,33 @@ final class TransportModel {
         return running.map(Optional.some)
     }
 
+    /// Por qué Cycle va el Track seleccionado, o `nil` con el transporte
+    /// parado.
+    ///
+    /// Mismo criterio que `playhead`: no es estado observable, se consulta al
+    /// dibujar. Deriva del reloj —ver `CyclePosition`— porque el cursor de
+    /// reproducción vive en el hilo del scheduler y publicarlo sería trabajo en
+    /// el camino de tiempo real para ahorrarle una división a la pantalla.
+    var cycleInCourse: Int? {
+        transport?.cyclesInCourse?[selectedTrackIndex].cycle
+    }
+
+    /// Cuántos Cycles recorre el Track seleccionado.
+    var activeCycleCount: Int { pattern.track(at: selectedTrackIndex)?.activeCount ?? 1 }
+
+    /// Cuál se está editando: al que escuchan los knobs y los pads.
+    var editingCycle: Int { pattern.track(at: selectedTrackIndex)?.editing ?? 0 }
+
+    /// Cambia cuántos Cycles recorre el Track seleccionado.
+    ///
+    /// **Táctil, como Scale, Root y el canal**: es configuración y no material
+    /// generativo. La Pre Spec lo ponía en un gesto de CTRL sobre el knob y el
+    /// BeatStep Pro no tiene CTRL — nota fechada del 2026-09-02 en la Pre Spec.
+    func setActiveCycleCount(_ count: Int) {
+        controlInput.setActiveCycleCount(count)
+        syncFromControlInput()
+    }
+
     /// Los dieciséis anillos, dispuestos.
     var rings: RingStack { RingStack(pattern: pattern) }
     var canPlay: Bool { selection.hasEndpoint && transport != nil }

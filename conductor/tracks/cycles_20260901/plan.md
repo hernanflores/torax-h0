@@ -224,7 +224,7 @@ regresión la bloquea.
 > `App`. No se mide cobertura: si algo aquí merece un test, está en el sitio
 > equivocado (`workflow.md`). La lógica ya está en `Engine` y `MIDI`.
 
-- [ ] Task: Cuántos Cycles, cuál suena y cuál se edita
+- [~] Task: Cuántos Cycles, cuál suena y cuál se edita
   - [ ] Del Track seleccionado: número de Cycles activos, Cycle en curso y Cycle en edición, distinguibles de un vistazo (FR11)
   - [ ] El Cycle en curso deriva del reloj y se consulta al dibujar, **no se guarda ni se refresca con un temporizador** — la misma regla que el playhead
   - [ ] Legible a un metro, como el resto de la pantalla

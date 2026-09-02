@@ -168,7 +168,11 @@ struct ContentView: View {
                 channels: model.channels,
                 accent: Palette.accent(for: family),
                 onSelect: { model.selectTrack($0) },
-                onChannelChange: { model.setChannel($0) }
+                onChannelChange: { model.setChannel($0) },
+                activeCycles: model.activeCycleCount,
+                editingCycle: model.editingCycle,
+                cycleInCourse: { model.cycleInCourse },
+                onActiveCyclesChange: { model.setActiveCycleCount($0) }
             )
         }
     }
@@ -219,11 +223,14 @@ struct ContentView: View {
     }
 
     /// Lo que hay que dejar libre debajo del escenario: la fila de navegación,
-    /// el selector de los dieciséis y la fila de canal, con sus separaciones.
+    /// el selector de los dieciséis, la fila de canal y la de Cycles, con sus
+    /// separaciones.
     ///
-    /// Es una suma de constantes de layout y no una medida: si alguna de las
-    /// tres cambia de alto, este número cambia con ella.
-    static let reservedBelowStage: CGFloat = 260
+    /// Es una suma de constantes de layout y no una medida: si alguna cambia de
+    /// alto, este número cambia con ella. **Subió de 260 a 324 el 2026-09-02**,
+    /// al entrar la fila de Cycles: su etiqueta, sus botones de 44 puntos y la
+    /// separación con la de canal.
+    static let reservedBelowStage: CGFloat = 324
 
     /// El hueco entre columnas.
     static let gutter: CGFloat = 24
