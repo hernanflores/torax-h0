@@ -1,0 +1,11 @@
+{
+  "id": "mute-solo_20260902",
+  "title": "Mute y Solo por Track",
+  "type": "Feature",
+  "status": "new",
+  "created_at": "2026-09-02",
+  "updated_at": "2026-09-02",
+  "phases": 7,
+  "tasks": 13,
+  "depends_on": ["ui-declutter_20260902", "multi-track_20260831", "cycles_20260901", "mvp-beatstep-mapping_20260830"]
+}
