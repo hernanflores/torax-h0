@@ -59,7 +59,7 @@ revisar el diseño antes de seguir.
 
 ## FASE 3: EL GATE EN EL CAMINO DE EMISIÓN
 
-- [ ] Task: El Track inaudible no emite, pero su rejilla avanza (FR3)
+- [~] Task: El Track inaudible no emite, pero su rejilla avanza (FR3)
   - [ ] Tests (Red): con el Track 1 muteado, un recorrido de varias vueltas no
         produce ningún mensaje suyo y sí los del resto.
   - [ ] Tests (Red): **la prueba de la fase** — mutear, dejar pasar dos vueltas y

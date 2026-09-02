@@ -31,6 +31,16 @@ public final class Transport: @unchecked Sendable {
     /// Ancla temporal del playhead. Vive aquí y no en el hilo porque el hilo se
     /// crea y se tira en cada Play; el reloj tiene que sobrevivir a eso para que
     /// quien dibuja consulte siempre al mismo sitio.
+    /// La mezcla: qué Tracks se oyen.
+    ///
+    /// **Vive en el transporte y no en el Pattern** porque no es material —ver
+    /// la nota del 2026-09-02 en la Pre Spec—, y vive aquí y no en la pantalla
+    /// porque quien la lee es el hilo del scheduler, que el transporte arranca.
+    ///
+    /// **Sobrevive a `stop()`**: parar y volver a arrancar conserva mutes y
+    /// solos, porque es mezcla y no transporte.
+    public let mutes = MuteMask()
+
     private let playheadClock = PlayheadClock()
     private let cyclePlaybackClock = CyclePlaybackClock()
 
@@ -192,7 +202,8 @@ public final class Transport: @unchecked Sendable {
             handoff: handoff,
             playhead: playheadClock,
             cyclePlaybackClock: cyclePlaybackClock,
-            pattern: starting
+            pattern: starting,
+            mutes: mutes
         ) {
             [emitter, send, tempo = configuration.timeline.tempo]
             _, source, _, pitch, groove, hostTime in
