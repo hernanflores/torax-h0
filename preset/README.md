@@ -72,13 +72,30 @@ la nota 48. Son dos numeraciones distintas y no hay que confundirlas.
 
 | Step button | CC | Significado |
 |---|---|---|
-| 1 | 102 | Seleccionar Track 1 |
-| 2–16 | 103–117 | Seleccionar Track 2–16 — **sin Track detrás en v1** |
+| 1–12 | 102–113 | Seleccionar Track 1–12 |
+| 13, 14 | 114, 115 | Nada: el Pattern tiene doce Tracks |
+| 15 | 116 | **Modificador de solo** — mantenido |
+| 16 | 117 | **Modificador de mute** — mantenido |
 
 El bloque 102–117 está sin definir en la especificación MIDI, así que no pisa
-nada con significado asignado. La semántica es la definitiva: en v1 solo existe
-el Track 1, así que los otros quince no hacen nada. Cuando haya más Tracks, el
-preset no habrá que reescribirlo.
+nada con significado asignado.
+
+**El preset no cambia y no ha cambiado nunca:** describe el hardware —dieciséis
+step buttons contiguos desde el CC 102— y lo que significa cada uno lo decide la
+app. Los cambios de esta tabla son de la app, no del `.beatstep` que se carga en
+el controlador.
+
+> **Los modificadores, del 2026-09-02.** Mantener el 16 y pulsar el N mutea el
+> Track N; con el 15, lo solea (track `mute-solo_20260902`). Los dos quedaron
+> libres al bajar el Pattern de dieciséis Tracks a doce, así que el gesto no le
+> quita nada a la selección.
+>
+> **Mantenido de verdad, sin temporizador.** El BeatStep manda 127 al pulsar y 0
+> al soltar, así que la app sabe si el botón está hundido sin medir cuánto duró
+> la pulsación. Pulsados y soltados **solos, los dos no hacen nada**: un
+> modificador que además actúa se dispara sin querer.
+>
+> Con los dos mantenidos a la vez manda el de mute.
 
 ## El canal no importa
 

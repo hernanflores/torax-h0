@@ -1,5 +1,16 @@
 import Engine
 
+/// Un gesto de mezcla pedido desde el controlador.
+///
+/// **No es un cambio de Track y por eso no viaja con ellos.** Mute y solo viven
+/// por encima del Pattern —ver la nota del 2026-09-02 en la Pre Spec—, así que
+/// meterlos en el snapshot publicado sería justo el error que esa nota evita.
+/// Salen por su propia puerta y los aplica quien tiene el transporte.
+public enum MixGesture: Equatable, Sendable {
+    case mute(Int)
+    case solo(Int)
+}
+
 /// Convierte los mensajes de un controlador en Tracks publicados.
 ///
 /// Es la pieza que cierra la cadena del track: decodifica el giro, lo traduce al
@@ -71,6 +82,29 @@ public final class ControlInput: @unchecked Sendable {
     private let mapping: ControlMapping
     private let encoding: RelativeEncoding
 
+    /// Dónde van los gestos de mezcla, si alguien los recoge.
+    private let mix: (@Sendable (MixGesture) -> Void)?
+
+    /// **Qué step buttons son modificadores: el 16 para mute, el 15 para solo.**
+    ///
+    /// Están aquí y no en `ControlMapping` a propósito. La tabla describe el
+    /// hardware —dieciséis step buttons contiguos desde un CC— y quien acota
+    /// qué significan es el consumidor, con el mismo criterio que ya rige para
+    /// los índices sin Track detrás desde `ui-declutter`.
+    ///
+    /// Los dos quedaron libres al bajar el Pattern a doce Tracks: el gesto no le
+    /// quita nada a la selección.
+    static let muteModifierIndex = ControlMapping.controlsPerFamily - 1
+    static let soloModifierIndex = ControlMapping.controlsPerFamily - 2
+
+    /// Si los modificadores están hundidos ahora mismo.
+    ///
+    /// **Es estado de mensajes, no un temporizador.** El controlador manda 127
+    /// al pulsar y 0 al soltar, así que «mantenido» se sabe sin diferir nada ni
+    /// medir cuánto duró una pulsación.
+    private var holdingMuteModifier = false
+    private var holdingSoloModifier = false
+
     /// - Parameter publish: dónde van los dieciséis Tracks resultantes de cada
     ///   giro.
     ///
@@ -83,7 +117,8 @@ public final class ControlInput: @unchecked Sendable {
         publish: @escaping @Sendable (Pattern) -> Void,
         mapping: ControlMapping = .beatStepPro,
         encoding: RelativeEncoding = .twosComplement,
-        trackCount: Int = Pattern.trackCount
+        trackCount: Int = Pattern.trackCount,
+        mix: (@Sendable (MixGesture) -> Void)? = nil
     ) {
         // El marco llega por parámetro para no romper a quien construye con uno
         // suelto, y se reparte a los dieciséis: a partir de aquí cada Track
@@ -97,6 +132,7 @@ public final class ControlInput: @unchecked Sendable {
         self.mapping = mapping
         self.encoding = encoding
         self.trackCount = trackCount
+        self.mix = mix
     }
 
     /// Atajo para quien todavía piensa en un Track: lo pone en la primera
@@ -110,7 +146,8 @@ public final class ControlInput: @unchecked Sendable {
         publish: @escaping @Sendable (Pattern) -> Void,
         mapping: ControlMapping = .beatStepPro,
         encoding: RelativeEncoding = .twosComplement,
-        trackCount: Int = Pattern.trackCount
+        trackCount: Int = Pattern.trackCount,
+        mix: (@Sendable (MixGesture) -> Void)? = nil
     ) {
         self.init(
             pattern: Pattern().replacing(track, at: 0),
@@ -118,7 +155,8 @@ public final class ControlInput: @unchecked Sendable {
             publish: publish,
             mapping: mapping,
             encoding: encoding,
-            trackCount: trackCount
+            trackCount: trackCount,
+            mix: mix
         )
     }
 
@@ -181,8 +219,7 @@ public final class ControlInput: @unchecked Sendable {
             // Un step button no es un knob: se despacha antes, y su soltada
             // —valor cero— no hace nada, igual que el note-off de un pad.
             if let index = mapping.stepButtonIndex(for: controller) {
-                guard value > 0 else { return false }
-                return selectTrack(index)
+                return stepButton(index, value: value)
             }
             return turn(controller, by: value)
         case .noteOn(_, let note, let velocity):
@@ -194,6 +231,59 @@ public final class ControlInput: @unchecked Sendable {
         case .noteOff:
             return false
         }
+    }
+
+    /// Qué hace un step button: seleccionar, modificar, o pedir un gesto de
+    /// mezcla.
+    ///
+    /// **El orden importa.** Primero se atiende a los modificadores —que no
+    /// hacen nada por sí solos— y solo después se mira si hay uno mantenido. Un
+    /// modificador que además seleccionara sería un modificador que se dispara
+    /// sin querer.
+    ///
+    /// **Con los dos mantenidos manda el de mute.** Cuál gane da igual mientras
+    /// gane siempre el mismo: un gesto que a veces mutea y a veces solea es peor
+    /// que cualquiera de las dos respuestas.
+    ///
+    /// **La soltada del step button no repite nada**, con el mismo criterio que
+    /// el note-off de un pad: alternar en la pulsación *y* en la soltada sería
+    /// no alternar.
+    private func stepButton(_ index: Int, value: UInt8) -> Bool {
+        if index == Self.muteModifierIndex {
+            holdingMuteModifier = value > 0
+            return false
+        }
+        if index == Self.soloModifierIndex {
+            holdingSoloModifier = value > 0
+            return false
+        }
+
+        guard value > 0 else { return false }
+
+        if holdingMuteModifier || holdingSoloModifier {
+            // Sin Track detrás no hay nada que mutear, con el mismo criterio que
+            // rige para la selección desde `ui-declutter`.
+            guard index < trackCount else { return false }
+            // **No se cae de vuelta a seleccionar si nadie recoge el gesto.**
+            // Con el modificador hundido, el usuario no está pidiendo cambiar de
+            // Track: que la falta de oyente moviera la selección sería la peor
+            // forma de fallar.
+            guard let mix else { return false }
+            mix(holdingMuteModifier ? .mute(index) : .solo(index))
+            return true
+        }
+
+        return selectTrack(index)
+    }
+
+    /// Da por soltados los modificadores.
+    ///
+    /// **Lo llama quien reconecta la entrada** (FR8): un cable desenchufado con
+    /// el botón hundido dejaría el modificador pegado para siempre, porque la
+    /// soltada que lo levantaría ya no va a llegar por ningún sitio.
+    public func releaseModifiers() {
+        holdingMuteModifier = false
+        holdingSoloModifier = false
     }
 
     /// Un giro de knob mueve un parámetro del Track, sea de la familia que sea.
