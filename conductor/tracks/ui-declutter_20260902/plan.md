@@ -111,7 +111,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
         `["4 · Banks", "5 · Tracks"]`.
   - [ ] Pantalla vacía con su título, para que el cambio de navegación se
         verifique aparte del contenido.
-- [ ] Task: La asignación de canal, los doce a la vez (FR6)
+- [x] Task: La asignación de canal, los doce a la vez (FR6) [f12fa56]
   - [ ] Vista nueva en `App`: doce filas `Track N` con selector de canal 1–16,
         usando `Brutalist` y `Typography` — sin estilo propio (NFR5).
   - [ ] Cablear a `model.channels` y a un `setChannel(_:forTrack:)`, que hoy solo
