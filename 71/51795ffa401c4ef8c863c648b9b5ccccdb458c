@@ -1,0 +1,29 @@
+Task: El par M/S debajo de cada pastilla (FR5)
+
+Fase 6 del track mute-solo_20260902. Sin tests: App no se mide (workflow), y la
+unica logica —la regla de audibilidad— vive en MIDI y esta cubierta.
+
+Ficheros:
+- App/TrackSelectorView.swift: mixRow y mixButton; la pastilla se atenua cuando
+  el Track no se oye; parametros mix/onToggleMute/onToggleSolo.
+- App/ContentView.swift: los pasa, y reservedBelowStage suma la fila nueva
+  (mixRowSpacing + mixRowHeight).
+
+Dos botones y no uno que cicle: los estados son independientes —muteado y
+soleado a la vez es representable— y un boton de tres posiciones obligaria
+ademas a pasar por mute para llegar a solo.
+
+El espaciado es el argumento visual: 6 puntos entre la pastilla y su par, 16
+hasta la fila de Cycles. Asi se lee como un canal de mixer y no como tres filas
+sueltas.
+
+Lo que se olvida y aqui esta: la pastilla del Track inaudible se atenua. Con un
+solo puesto, once Tracks callan sin que ninguno lleve la M encendida; sin marca,
+once silencios parecen un fallo.
+
+Color del handoff y no de la familia activa: M en mauve (GROOVE), S en purpura
+(TONAL). Es lo unico de la pantalla que no cambia de acento al cambiar de
+familia, a proposito: la mezcla no pertenece a ninguna de las tres.
+
+reservedBelowStage ya estaba escrito como suma, asi que anadir la fila no
+obligo a recalcular ningun literal y el anillo no se recorta.
