@@ -120,7 +120,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
         o `Engine` con test, no a `App` (regla de cobertura del `workflow.md`).
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 5: EL ARNÉS QUEDA COHERENTE
+## FASE 5: EL ARNÉS QUEDA COHERENTE [checkpoint: df015f6]
 
 - [x] Task: Rejilla `12-tracks-cycles` (FR8) [df015f6]
   - [ ] Renombrar el caso y su cadena; `trackCount: 12`.
@@ -128,4 +128,4 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
         rebanadas 2 y 3 y en `workflow.md`, que nombran la rejilla vieja.
   - [ ] **No se mide** — suspendido el 2026-09-02. La tarea deja la herramienta
         lista, no produce número.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
