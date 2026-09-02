@@ -347,7 +347,8 @@ struct ContentView: View {
             RingStackView(
                 stack: model.rings,
                 selected: model.selectedTrackIndex,
-                playheads: model.playheads
+                playheads: model.playheads,
+                audible: model.audibleTracks
             )
         }
         .padding(16)

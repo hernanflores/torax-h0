@@ -84,6 +84,15 @@ final class TransportModel {
     /// scheduler; esto es lo que dibuja la pantalla.
     private(set) var mix = MuteState()
 
+    /// Cuáles de los doce se oyen ahora mismo.
+    ///
+    /// **Se deriva de `mix` y no se guarda aparte**: dos sitios con la misma
+    /// respuesta son dos sitios que pueden discrepar. La regla vive en `MIDI`,
+    /// donde se testea; esto solo la pregunta doce veces.
+    var audibleTracks: [Bool] {
+        (0..<Pattern.trackCount).map { mix.isAudible($0) }
+    }
+
     /// Alterna el mute de un Track desde la pantalla.
     ///
     /// **Hace lo mismo que el gesto del controlador**, por la misma razón que
