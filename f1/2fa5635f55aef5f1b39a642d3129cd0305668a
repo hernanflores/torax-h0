@@ -1,0 +1,41 @@
+Task: La asignacion de canal, los doce a la vez (FR6)
+
+El canal deja de vivir pegado al Track seleccionado y pasa a la pantalla MIDI,
+donde se ve el ruteo entero. Dos Tracks compartiendo canal es un caso real —dos
+capas ritmicas sobre el mismo sinte— y tambien un error frecuente, y ninguna de
+las dos cosas se ve si hay que ir Track por Track.
+
+LA LOGICA VA A MIDI, NO A App. workflow.md: «si algo en App merece un test, esta
+en el sitio equivocado». Lo que la pantalla necesitaba no existia —solo habia
+setChannel(_:) sobre el seleccionado— asi que la funcion nueva vive en
+ControlInput con siete tests, y la vista solo la llama.
+
+CAMBIOS
+- MIDI/ControlInput.swift: setChannel(_:forTrack:) nuevo. setChannel(_:) pasa a
+  delegar en el con el indice seleccionado, para que no haya dos caminos que
+  puedan divergir. Un indice fuera de los doce no publica y no es error, mismo
+  criterio que un CC sin asignar.
+- Tests (Red primero, no compilaba): cualquier Track se puede rutear; hacerlo no
+  mueve la seleccion; no toca a los demas; fijar el canal que ya tenia no
+  publica; fuera de rango no cambia nada; dos Tracks pueden compartir canal; y
+  lo que se publica sigue siendo el Pattern entero.
+- Un test propio salio mal escrito y se corrigio: fijaba el canal 3 en los doce
+  Tracks, y el Track 3 ya emite por el 3, asi que devolvia false con razon. Usa
+  el canal 16, que con doce Tracks no lo trae ninguno de fabrica.
+- App/ChannelMapView.swift nuevo: doce filas «Track N» con sus dieciseis canales.
+  El rango es 1-16 porque es el del protocolo MIDI; que la app tenga doce Tracks
+  no hace desaparecer cuatro canales del hardware. Lleva un contador de canales
+  distintos en uso — estado, no consejo: compartir canal es legitimo y el numero
+  solo lo hace visible.
+- La fila del Track seleccionado va marcada con el acento. Solo se marca, no se
+  cambia desde aqui: elegir instrumento y elegir a quien escuchan los knobs son
+  dos cosas distintas.
+- App/TransportModel.swift: pasarela setChannel(_:forTrack:), y corregida la
+  documentacion de `channels`, que seguia diciendo «los dieciseis» y que el canal
+  iba en la pastilla.
+
+VERIFICACION
+- MIDI: 400 pruebas, 7 fallos, todos clientCreationFailed(-50) en
+  VirtualLoopbackTests — el flake conocido, aplazado. Cobertura 81,32% de lineas
+  (umbral 80%).
+- xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: SUCCEEDED.
