@@ -80,6 +80,13 @@ Eso obliga a tipografía muy grande en el overlay de valor y a una jerarquía vi
 > Y una consecuencia práctica: **una lectura que se corta no se lee**. Envolver
 > a dos líneas es preferible a truncar, porque el texto grande existe para
 > leerse de lejos y `Probabilit…` no cumple eso.
+>
+> **Y por eso los Tracks bajaron a doce el mismo día.** Ensanchar la columna
+> arregló el reparto horizontal pero no el vertical: el ancho de cada banda sale
+> de repartir el radio entre `trackCount − 1`, así que la única palanca que
+> quedaba era el número de anillos. Doce da bandas un tercio más anchas sin tocar
+> el dibujo. Es la misma decisión leída dos veces: cuánto sitio se le da al
+> patrón, y cuántas cosas caben dentro sin dejar de leerse.
 
 ## Reglas de interacción
 
@@ -104,7 +111,7 @@ La frontera es firme:
 | Superficie | Cubre |
 |---|---|
 | **Knobs y pads** | Todo parámetro generativo: Steps, Pulses, Rotate, Division, Velocity, Sustain, Timing, Delay, Probability, pool de Pitch. |
-| **Pantalla táctil** | Configuración: selección de Scale y Root, mapeos MIDI, guardado, selección de dispositivo. Y el transporte. |
+| **Pantalla táctil** | Configuración: selección de Scale y Root, **el canal MIDI de cada Track**, mapeos MIDI, guardado, selección de dispositivo. Y el transporte. |
 
 **Sin controlador conectado la app es de solo lectura y transporte:** se reproduce y se ve el estado, no se editan parámetros generativos. La configuración táctil sigue disponible — no es un parámetro generativo.
 
