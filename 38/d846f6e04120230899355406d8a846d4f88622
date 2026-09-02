@@ -1,0 +1,22 @@
+Task: `3 · MIDI` deja de estar en discontinuo (FR5)
+
+El handoff dibuja cinco pantallas y esta app entregaba dos, con las otras tres en
+borde discontinuo — el signo que el propio handoff define para «no disponible
+todavia». MIDI pasa a existir.
+
+CAMBIOS
+- Screen gana el caso .midi con su etiqueta «3 · MIDI», y sale de
+  unavailableScreens, que queda en Banks y Tracks.
+- La pantalla es un titulo y nada mas. El contenido lo pone la tarea siguiente:
+  separarlo deja que el cambio de navegacion se verifique sin nada de por medio,
+  que es como esta escrito en el plan.
+
+POR QUE AHORA Y NO CON MIDI LEARN. La pantalla estaba reservada a MIDI Learn, que
+es la rebanada 8 de la v1 y sigue sin existir. Abrirla antes no la adelanta: el
+canal es ruteo MIDI y su sitio es este, y el borde discontinuo significa «no se
+puede usar», no «esta incompleta». Cuando MIDI Learn llegue, entra en esta misma
+pantalla.
+
+VERIFICACION
+- xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: SUCCEEDED.
+- Sin tests: navegacion SwiftUI sin logica (workflow.md, App no se mide).
