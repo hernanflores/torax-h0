@@ -1,0 +1,46 @@
+Tasks (Fase 2, tareas 1-4 en un commit): Pattern guarda doce; anillos, playhead
+y CyclePosition derivan de doce; scheduler y transporte con doce; los step
+buttons 13-16 no seleccionan Track. FR1, FR2, FR3.
+
+POR QUE VAN JUNTAS. El plan las separaba en cuatro y no lo son: trackCount es una
+sola constante y en cuanto pasa a 12 los dos paquetes dejan de pasar a la vez.
+No hay un estado intermedio verde, asi que partirlo habria significado commits
+que no compilan o tests desactivados. La enmienda esta escrita en plan.md.
+
+EL FALLO QUE ESCONDIA. Al bajar la constante, la suite de MIDI moria con SIGBUS
+(EXC_ARM_DA_ALIGN, PC=0x1, sin frames) en un test que aislado pasaba. La causa no
+era el tipo: eran tests que recorrian 0..<16 y hacian force-unwrap de
+cycle(at: 12...15), que ahora es nil. Sin sanitizer eso salta a basura; con
+--sanitize=address el fallo real aflora como el fatalError que es. Queda anotado
+porque el sintoma no se parecia en nada a la causa.
+
+CAMBIOS
+- Engine/Pattern.swift: trackCount = 12, tupla de doce, init() asignando Track N
+  al canal N para 1-12. La documentacion del tipo dice por que doce y remite a la
+  nota fechada de la Pre Spec.
+- Engine/RingStack.swift: radius(ofBandAt:) nuevo. El radio se interpolaba mal:
+  outermost - spacing*index acumula error y el anillo interior caia en
+  0,2799999999999999 contra un centreHole de 0,28, rompiendo la invariante «no
+  invade el hueco central» por un bit. Con dieciseis no pasaba y con doce si.
+  Interpolando entre los dos extremos, los dos salen exactos. Es un arreglo real,
+  no un ajuste para que el test pase: el test ahora exige igualdad exacta en los
+  dos extremos, que es mas fuerte que lo que habia.
+- Tests de Engine y de MIDI: todo recorrido de Tracks pasa a derivar de
+  Pattern.trackCount. El numero se escribe en un solo sitio —el test
+  testAPatternAlwaysHasTwelveTracks— para que la proxima vez sea una linea.
+- MIDI: test nuevo testStepButtonsBeyondTheLastTrackSelectNothing (FR3). La
+  acotacion vive en quien selecciona; ControlMapping sigue declarando dieciseis
+  porque describe el hardware, y preset/ no se toca.
+- StopWithSixteenTracksTests -> StopWithEveryTrackTests: el nombre afirmaba un
+  numero que ya no es cierto.
+- Aserciones de tamano: el Pattern baja de 37 248 a 27 936 bytes. La medicion de
+  ~870 ns por load() de la rebanada 3 sigue siendo el techo, asi que no hay nada
+  que volver a medir; anotado donde vivia la cifra.
+
+VERIFICACION
+- Engine: 427 pruebas, 0 fallos. Cobertura 98,50% de lineas (umbral 90%).
+- MIDI: 393 pruebas, 7 fallos, todos clientCreationFailed(-50) en
+  VirtualLoopbackTests — el flake conocido midi-test-flake_20260826, aplazado.
+  Cobertura 81,29% de lineas (umbral 80%).
+- xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: SUCCEEDED.
+- Sin medicion de jitter: suspendida el 2026-09-02.
