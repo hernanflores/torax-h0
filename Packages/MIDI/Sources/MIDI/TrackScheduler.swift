@@ -250,7 +250,9 @@ public struct TrackScheduler {
     /// Sin asignaciones, sin locks, sin await.
     mutating func refresh(with track: Track) {
         self.track = track
-        material = .cycle(track.cycle(at: cursor) ?? track.current)
+        if let cycle = track.cycle(at: cursor) ?? track.cycle(at: 0) {
+            material = .cycle(cycle)
+        }
     }
 
     /// Pone la reproducción en el primer Cycle.
@@ -260,7 +262,11 @@ public struct TrackScheduler {
     /// siempre por el mismo Cycle.
     mutating func restartCycles() {
         cursor = 0
-        if let track { material = .cycle(track.current) }
+        // El Cycle 1 se pide por índice y no con `track.current`: `current` mira
+        // el cursor **del snapshot**, que es el de edición y puede estar en
+        // cualquier sitio. El que manda aquí es el de este hilo, que se acaba de
+        // poner a cero.
+        if let track, let first = track.cycle(at: 0) { material = .cycle(first) }
     }
 
     /// Cuánto tiempo hay que reservar por delante para que ningún evento
@@ -396,6 +402,6 @@ public struct TrackScheduler {
 
         turnStartStep = step
         cursor = Track.cursorAfter(cursor, activeCount: track.activeCount)
-        material = .cycle(track.cycle(at: cursor) ?? track.current)
+        if let cycle = track.cycle(at: cursor) { material = .cycle(cycle) }
     }
 }

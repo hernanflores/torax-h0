@@ -167,7 +167,7 @@ regresión la bloquea.
   jitter obligatorio, para un caso que nadie ha pedido: cambiar de compás a
   mitad de patrón. Queda en *Known Limitations* 8 del `spec.md` y fijado con dos
   tests.
-- [ ] Task: Play reinicia los dieciséis al Cycle 1
+- [~] Task: Play reinicia los dieciséis al Cycle 1
   - [ ] Tests (Red): tras `play()`, los dieciséis cursores están en 0 (FR6)
   - [ ] Tests (Red): dos pasadas de Play producen la **misma** secuencia de Cycles y las mismas omisiones — la promesa de `tech-stack.md`
   - [ ] Tests (Red): cambiar de Cycle **no resiembra** el generador de Probability (NFR5)

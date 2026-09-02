@@ -266,40 +266,65 @@ public final class Transport: @unchecked Sendable {
         // Se apaga Track por Track y canal por canal: con dieciséis Tracks en
         // hasta dieciséis canales, apagar solo uno dejaría sonando a los otros
         // quince, que es este mismo defecto multiplicado.
+        // **Se barren los dieciséis Cycles de cada Track, no solo el vigente.**
+        // El cursor de reproducción vive en el hilo del scheduler, así que desde
+        // aquí no se sabe cuál estaba sonando: saberlo exigiría que ese hilo
+        // publicara algo en cada vuelta, y eso es trabajo en el camino de tiempo
+        // real para resolver un caso de parada. El `cursor` del snapshot no
+        // sirve — es el de edición, y puede apuntar a cualquier sitio.
+        //
+        // Tampoco se barren solo los activos: bajar el número mientras suena
+        // deja el cursor fuera del rango a propósito (FR9), así que un Cycle que
+        // ya no se recorre puede ser justo el que está sonando.
         var silenced: Set<Int> = []
         for index in 0..<Pattern.trackCount {
-            guard let source = lastPublishedPattern.cycle(at: index) else { continue }
-            let channel = MIDIChannel(source.channel)
+            guard let track = lastPublishedPattern.track(at: index) else { continue }
 
-            // No depende de que el Track tenga material **ahora**: vaciar el
-            // pool mientras suena deja notas encendidas que ya no están en él, y
-            // el barrido del pool no las cubre por definición.
-            guard silenced.insert(channel.number).inserted else { continue }
-            send(
-                .controlChange(
-                    channel: channel,
-                    controller: MIDIController.allNotesOff,
-                    value: 0
-                ),
-                silenceAt
-            )
-        }
+            for slot in 0..<Track.cycleCount {
+                guard let cycle = track.cycle(at: slot) else { continue }
+                let channel = MIDIChannel(cycle.channel)
 
-        for index in 0..<Pattern.trackCount {
-            guard let source = lastPublishedPattern.cycle(at: index) else { continue }
-            let channel = MIDIChannel(source.channel)
-            let pool = source.pool
-
-            for slot in 0..<pool.count {
-                guard let pitch = pool.pitch(at: slot) else { break }
+                // No depende de que el Cycle tenga material **ahora**: vaciar el
+                // pool mientras suena deja notas encendidas que ya no están en
+                // él, y el barrido del pool no las cubre por definición.
+                guard silenced.insert(channel.number).inserted else { continue }
                 send(
-                    .noteOff(
+                    .controlChange(
                         channel: channel,
-                        note: MIDINote(unchecked: UInt8(pitch.value)),
-                        velocity: MIDIVelocity(unchecked: 0)
+                        controller: MIDIController.allNotesOff,
+                        value: 0
                     ),
                     silenceAt
                 )
+            }
+        }
+
+        // El barrido de alturas, sin repetir un par canal+altura: dieciséis
+        // Tracks por dieciséis Cycles por ocho alturas serían dos mil mensajes,
+        // y en la práctica casi todos son el mismo.
+        var swept: Set<Int> = []
+        for index in 0..<Pattern.trackCount {
+            guard let track = lastPublishedPattern.track(at: index) else { continue }
+
+            for slot in 0..<Track.cycleCount {
+                guard let cycle = track.cycle(at: slot) else { continue }
+                let channel = MIDIChannel(cycle.channel)
+                let pool = cycle.pool
+
+                for poolSlot in 0..<pool.count {
+                    guard let pitch = pool.pitch(at: poolSlot) else { break }
+                    guard swept.insert(channel.number << 8 | pitch.value).inserted else {
+                        continue
+                    }
+                    send(
+                        .noteOff(
+                            channel: channel,
+                            note: MIDINote(unchecked: UInt8(pitch.value)),
+                            velocity: MIDIVelocity(unchecked: 0)
+                        ),
+                        silenceAt
+                    )
+                }
             }
         }
     }
