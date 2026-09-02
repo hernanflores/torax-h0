@@ -25,7 +25,27 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
 
 ## FASE 2: DOCE TRACKS EN EL MOTOR
 
-- [ ] Task: `Pattern` guarda doce (FR1)
+> **Enmienda del 2026-09-02 — las cuatro tareas van en un commit.** El plan las
+> separaba y no son separables: `trackCount` es **una** constante, y en cuanto
+> pasa a 12 los dos paquetes dejan de pasar a la vez. No existe un estado
+> intermedio verde, así que partirlo habría significado commits que no compilan o
+> tests desactivados, y el `workflow.md` exige lo contrario. Se marcan las cuatro
+> con el mismo SHA.
+>
+> **Lo que costó descubrirlo.** Al bajar la constante, la suite de MIDI moría con
+> SIGBUS en un test que aislado pasaba. La causa no era el tipo sino tests que
+> recorrían `0..<16` y hacían force-unwrap de `cycle(at: 12...15)`, ya `nil`.
+> Está anotado en la git note del commit, con el detalle de cómo aflorarlo
+> (`--sanitize=address`).
+>
+> **Un arreglo real que salió de camino:** `RingStack` calculaba el radio
+> restando `spacing` de forma acumulada, y con doce bandas el error de coma
+> flotante hacía que el anillo interior invadiera el hueco central por un bit.
+> Ahora interpola entre los dos extremos, que salen exactos, y el test lo exige
+> con igualdad — más fuerte que lo que había.
+
+
+- [x] Task: `Pattern` guarda doce (FR1) [3d979c5]
   - [ ] Tests (Red): recorrer los doce huecos; `track(at: 11)` devuelve valor y
         `track(at: 12)` devuelve `nil`; `Pattern.init()` asigna Track N → canal N
         para 1–12; `_isPOD(Pattern.self)` sigue cierto.
@@ -34,20 +54,20 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
   - [ ] Verificar que `Pattern.initial` sigue sonando igual — material solo en el
         Track 1.
   - [ ] Cobertura `Engine` ≥90%.
-- [ ] Task: Anillos, playhead y posición de Cycle derivan de doce (FR2)
+- [x] Task: Anillos, playhead y posición de Cycle derivan de doce (FR2) [3d979c5]
   - [ ] Tests (Red): `RingStack` produce doce bandas y el ancho de banda es el
         esperado para `trackCount − 1`; `Playhead` y `CyclePosition` devuelven
         doce entradas.
   - [ ] Implementación: comprobar que **no hace falta tocar nada** — si algún
         sitio tiene 16 escrito a mano, sale aquí y se sustituye por
         `Pattern.trackCount`.
-- [ ] Task: El scheduler y el transporte con doce (FR1)
+- [x] Task: El scheduler y el transporte con doce (FR1) [3d979c5]
   - [ ] Tests (Red): `PatternScheduler` asigna doce schedulers; `Transport` apaga
         las doce voces al parar. Adaptar `StopWithSixteenTracksTests` y compañía,
         nombre incluido.
   - [ ] Implementación (Green).
   - [ ] Cobertura `MIDI` ≥80%.
-- [ ] Task: Los step buttons 13–16 no seleccionan Track (FR3)
+- [x] Task: Los step buttons 13–16 no seleccionan Track (FR3) [3d979c5]
   - [ ] Tests (Red): el step button 12 selecciona el Track 12; los 13 a 16 no
         publican selección y no son error. `ControlMapping.declaredNumbers` sigue
         declarando dieciséis.
