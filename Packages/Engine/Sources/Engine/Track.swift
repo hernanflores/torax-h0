@@ -221,6 +221,46 @@ public struct Track: Equatable, Sendable {
         )
     }
 
+    /// El mismo Track con la reproducción en el Cycle siguiente.
+    ///
+    /// **Es el recorrido, y es una regla del modelo y no del reloj.** Quién
+    /// decide *cuándo* se avanza es el scheduler, en el límite de vuelta; qué
+    /// sigue a qué se decide aquí, con aritmética de enteros y sin hilos de por
+    /// medio. Separarlas es lo que permite testear el recorrido sin relojes.
+    ///
+    /// Con un solo Cycle activo el cursor no se mueve nunca, que es la condición
+    /// de no regresión de la rebanada (FR10).
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func advanced() -> Track {
+        Track(
+            cycles: cycles,
+            activeCount: activeCount,
+            cursor: Self.cursorAfter(cursor, activeCount: activeCount),
+            editing: editing
+        )
+    }
+
+    /// Qué cursor sigue a este, con ese número de Cycles activos.
+    ///
+    /// **Un cursor fuera del rango entra en 0** (FR9): es lo que pasa cuando
+    /// alguien baja el número mientras suena un Cycle que queda fuera. La vuelta
+    /// en curso se termina con él —bajar el número no toca este cursor— y el
+    /// avance siguiente entra en el rango, en vez de cortar el patrón por la
+    /// mitad. No hace falta un caso aparte: si el cursor ya está fuera, sumarle
+    /// uno lo deja igual de fuera y la comparación lo devuelve a 0.
+    ///
+    /// Está separado de `advanced()` porque es lo que de verdad corre en el hilo
+    /// del scheduler, y sobre los números se prueba sin construir Tracks.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public static func cursorAfter(_ cursor: Int, activeCount: Int) -> Int {
+        let next = cursor + 1
+        return next < activeCount ? next : 0
+    }
+
     /// Compara los dieciséis Cycles, cuántos hay activos y los dos cursores.
     ///
     /// Se escribe a mano porque una tupla de dieciséis no es `Equatable` sola, y

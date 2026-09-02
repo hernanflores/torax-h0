@@ -298,3 +298,98 @@ final class TrackActiveCountTests: XCTestCase {
         }
     }
 }
+
+/// Tests del recorrido: por qué Cycle pasa a ir el Track al cerrar la vuelta.
+///
+/// **Vive en `Engine` y no en el scheduler a propósito.** Es una regla del
+/// modelo —qué sigue a qué— y no una regla de tiempo: quién decide *cuándo* se
+/// avanza es el scheduler, y eso se testea en `MIDI` con un horizonte dado a
+/// mano. Separarlas es lo que permite fijar aquí el recorrido con aritmética,
+/// sin hilos y sin relojes.
+final class TrackTraversalTests: XCTestCase {
+
+    private var cycle: Cycle {
+        Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!))
+    }
+
+    /// Con N activos, el cursor recorre 0…N−1 y vuelve a 0. Se comprueba sobre
+    /// dos vueltas completas: una sola no distingue un recorrido de un contador
+    /// que sigue subiendo.
+    func testWithNActiveTheCursorWalksZeroToNMinusOneAndWrapsToZero() {
+        for activeCount in 1...Track.cycleCount {
+            var track = Track(cycle).withActiveCount(activeCount)
+            var visited: [Int] = []
+
+            for _ in 0..<(activeCount * 2) {
+                visited.append(track.cursor)
+                track = track.advanced()
+            }
+
+            let expected = Array(0..<activeCount) + Array(0..<activeCount)
+            XCTAssertEqual(visited, expected, "con \(activeCount) activos")
+        }
+    }
+
+    /// **FR10 — con un solo Cycle activo el cursor no se mueve nunca.** Es la
+    /// condición de no regresión de la rebanada entera: un Track con un Cycle
+    /// suena como el de la rebanada 1, sin avance y sin reinicio audible.
+    func testWithASingleActiveCycleTheCursorNeverMoves() {
+        var track = Track(cycle)
+
+        for _ in 0..<1_000 {
+            track = track.advanced()
+            XCTAssertEqual(track.cursor, 0)
+        }
+    }
+
+    /// **FR9 — con el cursor fuera del rango, el avance siguiente entra en 0.**
+    /// Es el caso de bajar el número mientras suena: de 6 activos sonando el 5,
+    /// se baja a 2. La vuelta en curso se termina con el Cycle que estaba
+    /// sonando —el cursor no se toca al bajar— y el avance siguiente entra en el
+    /// rango en vez de cortar el patrón por la mitad.
+    func testACursorLeftOutOfRangeEntersAtZeroOnTheNextAdvance() {
+        let stranded = Track(cycle).withActiveCount(6).withCursor(4).withActiveCount(2)
+
+        XCTAssertEqual(stranded.cursor, 4, "bajar el número movió el cursor")
+        XCTAssertEqual(stranded.advanced().cursor, 0)
+    }
+
+    /// Y desde ahí sigue recorriendo el rango nuevo, sin arrastrar nada del
+    /// viejo.
+    func testAfterEnteringTheRangeItKeepsWalkingTheNewOne() {
+        var track = Track(cycle).withActiveCount(6).withCursor(4).withActiveCount(3).advanced()
+        var visited: [Int] = []
+
+        for _ in 0..<6 {
+            visited.append(track.cursor)
+            track = track.advanced()
+        }
+
+        XCTAssertEqual(visited, [0, 1, 2, 0, 1, 2])
+    }
+
+    /// Avanzar no toca nada más: ni el material, ni cuántos hay activos, ni el
+    /// Cycle en edición. Lo mueve el hilo del scheduler, y ahí tocar de más es
+    /// pisar lo que el hilo principal está editando.
+    func testAdvancingTouchesNothingButThePlaybackCursor() {
+        let track = Track(cycle).withActiveCount(4).withEditing(2)
+        let advanced = track.advanced()
+
+        XCTAssertEqual(advanced.activeCount, 4)
+        XCTAssertEqual(advanced.editing, 2)
+        for index in 0..<Track.cycleCount {
+            XCTAssertEqual(advanced.cycle(at: index), track.cycle(at: index))
+        }
+    }
+
+    /// La aritmética, aparte del Track: es lo que corre en el hilo del
+    /// scheduler, y probarla sobre los números deja fijado que no hay
+    /// asignaciones ni ramas escondidas.
+    func testTheArithmeticOnItsOwn() {
+        XCTAssertEqual(Track.cursorAfter(0, activeCount: 1), 0)
+        XCTAssertEqual(Track.cursorAfter(0, activeCount: 4), 1)
+        XCTAssertEqual(Track.cursorAfter(3, activeCount: 4), 0)
+        XCTAssertEqual(Track.cursorAfter(9, activeCount: 4), 0, "cursor fuera de rango")
+        XCTAssertEqual(Track.cursorAfter(15, activeCount: 16), 0)
+    }
+}

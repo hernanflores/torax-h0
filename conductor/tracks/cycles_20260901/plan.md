@@ -115,7 +115,7 @@ regresión la bloquea.
   regla de FR3 —se copia el Cycle en edición, no el primero ni el que suena— y
   la de FR9. El tercer contador deja el Pattern en 37 248 bytes contra los
   36 992 del tipo de prueba de la Fase 1: un 0,7%, que no mueve la decisión.
-- [ ] Task: El recorrido, como función pura
+- [~] Task: El recorrido, como función pura
   - [ ] Tests (Red): con N activos, el cursor recorre 0…N−1 y vuelve a 0
   - [ ] Tests (Red): con un solo Cycle activo el cursor no se mueve nunca (FR10)
   - [ ] Tests (Red): con el cursor fuera del rango —porque el rango bajó— el avance siguiente entra en 0 (FR9)
