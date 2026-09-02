@@ -75,7 +75,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
         la tabla del preset describe el hardware y `preset/` no cambia.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: EL SELECTOR DICE SOLO SU NÚMERO
+## FASE 3: EL SELECTOR DICE SOLO SU NÚMERO [checkpoint: 9ef9ff7]
 
 > **Enmienda del 2026-09-02 — las dos tareas van en un commit.** Quitar el canal
 > de la pastilla y quitar la fila que lo edita son la misma edición: los
@@ -96,7 +96,13 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
         `onChannelChange` de `TrackSelectorView`.
   - [ ] `ContentView` deja de pasárselos; `model.channels` y `model.setChannel`
         se conservan para la Fase 4.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Corrección en vuelo — el anillo se queda el sitio que la fila de canal devolvió [9ef9ff7]
+  - Salió de la verificación manual: el anillo no crecía. `reservedBelowStage`
+    era el literal `324`, que seguía reservando la fila de canal y una pastilla
+    de 56 puntos; pasa a ser una suma de constantes con nombre y da 216. El
+    sobrante entre el lado del anillo y su columna se lo queda la lectura en vez
+    de quedarse en blanco.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: LA PANTALLA MIDI
 
