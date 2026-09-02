@@ -57,6 +57,7 @@ struct ContentView: View {
                 switch screen {
                 case .track: trackScreen(width: width, height: height)
                 case .scale: scaleScreen
+                case .midi: midiScreen
                 }
             }
             .scrollBounceBehavior(.basedOnSize)
@@ -86,20 +87,27 @@ struct ContentView: View {
     private enum Screen: CaseIterable {
         case track
         case scale
+        case midi
 
         var label: String {
             switch self {
             case .track: "1 · Track"
             case .scale: "2 · Scale"
+            case .midi: "3 · MIDI"
             }
         }
     }
 
-    /// Las que el handoff dibuja y esta rebanada no entrega.
+    /// Las que el handoff dibuja y todavía no existen.
     ///
-    /// MIDI Learn es la rebanada 8 de la v1; Banks necesita persistencia y
-    /// Track × Pattern necesita Patterns, y ninguna de las dos existe.
-    private static let unavailableScreens = ["3 · MIDI", "4 · Banks", "5 · Tracks"]
+    /// Banks necesita persistencia y Track × Pattern necesita Patterns, y
+    /// ninguna de las dos existe.
+    ///
+    /// > **`3 · MIDI` salió de esta lista el 2026-09-02.** Existe, y lleva
+    /// > dentro la asignación de canal por Track. Sigue incompleta —MIDI Learn es
+    /// > la rebanada 8 de la v1 y va en esta misma pantalla— pero el borde
+    /// > discontinuo significa «no se puede usar», y esta ya se puede.
+    private static let unavailableScreens = ["4 · Banks", "5 · Tracks"]
 
     /// **Una sola fila arriba, no dos.**
     ///
@@ -182,6 +190,27 @@ struct ContentView: View {
             surface: model.surface,
             onFrameChange: { model.setFrame($0) }
         )
+    }
+
+    /// La pantalla `3 · MIDI`: por dónde sale cada Track.
+    ///
+    /// **El canal vivía en la pantalla Track y no le correspondía.** Es ruteo,
+    /// no material generativo: qué instrumento suena, no qué toca. Aquí se ven
+    /// los doce a la vez, que es lo que permite detectar dos Tracks compartiendo
+    /// canal sin ir seleccionándolos uno a uno.
+    ///
+    /// **Falta MIDI Learn**, que es la rebanada 8 de la v1 y entra en esta misma
+    /// pantalla. El estado de los endpoints se queda arriba, en la barra: es
+    /// estado que se mira de reojo mientras se toca, no configuración que se
+    /// visita.
+    private var midiScreen: some View {
+        // El contenido lo pone la tarea siguiente. Esta solo abre la pestaña,
+        // para que el cambio de navegación se verifique sin nada más de por
+        // medio.
+        Text("Channel")
+            .font(Typography.captionStrong)
+            .foregroundStyle(Palette.muted)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - La composición apaisada
