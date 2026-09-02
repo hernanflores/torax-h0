@@ -23,7 +23,7 @@ regresión la bloquea.
 
 ---
 
-## Phase 1: El coste, medido antes de construir
+## Phase 1: El coste, medido antes de construir [checkpoint: 1998ebc]
 
 > `MIDI`. Ninguna línea del modelo se toca todavía. Esta fase existe para
 > responder una pregunta con un número: ¿cabe un snapshot de ~36 KB en la ventana
