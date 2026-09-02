@@ -104,7 +104,7 @@ regresión la bloquea.
 
   Y el detector de tamaño del snapshot saltó, que es para lo que estaba puesto:
   la cota pasa de 4 KB a 64 KB, con la decisión de la Fase 1 escrita al lado.
-- [ ] Task: Cuántos Cycles activos, y qué pasa al moverlo
+- [~] Task: Cuántos Cycles activos, y qué pasa al moverlo
   - [ ] Tests (Red): el rango es 1–16 y se frena en los extremos, como Steps y Division
   - [ ] Tests (Red): **subir el número copia el Cycle en edición** al que empieza a existir (FR3), y el copiado suena igual hasta que se edita
   - [ ] Tests (Red): bajar el número descarta por el final, y el Cycle en edición se acota de inmediato si queda fuera (FR9)

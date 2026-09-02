@@ -209,7 +209,7 @@ final class PatternHandoffTests: XCTestCase {
     ///
     /// > **El detector saltó, y funcionó como se esperaba.** La cota de 4 KB era
     /// > de la rebanada 1 de la v2, y Cycles la rompió: el snapshot pasó a
-    /// > 37 120 bytes. Que saltara obligó a volver a tomar la decisión con el
+    /// > 37 248 bytes. Que saltara obligó a volver a tomar la decisión con el
     /// > número delante, que es exactamente para lo que estaba puesta — y se
     /// > tomó **antes** de construir nada, en la Fase 1 del track
     /// > `cycles_20260901`: ~870 ns por `load()`, el 0,0044% de la ventana.

@@ -131,7 +131,7 @@ public final class SchedulerThread: @unchecked Sendable {
         thread.name = "com.toraxh0.scheduler"
         // **La pila por defecto de un `Thread` secundario son 512 KB, y el
         // snapshot ya no cabe con holgura.** Con Cycles el Pattern pasó de
-        // 2304 bytes a 37 120, y este hilo lo copia entero en cada ventana: un
+        // 2304 bytes a 37 248, y este hilo lo copia entero en cada ventana: un
         // `load()`, el material que conserva entre ventanas y los temporales del
         // camino son varias decenas de kilobytes por marco donde antes eran unos
         // pocos. Medido el 2026-09-02 sobre el test de concurrencia del handoff

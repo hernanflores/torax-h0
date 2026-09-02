@@ -117,12 +117,12 @@ final class PatternTests: XCTestCase {
     ///
     /// > **Cambió el 2026-09-02, al entrar Cycles.** Un Track dejó de ser el
     /// > juego de parámetros y pasó a contener dieciséis, así que el Pattern
-    /// > pasa de 2304 bytes a 37 120. El coste de copiarlo se midió **antes** de
+    /// > pasa de 2304 bytes a 37 248. El coste de copiarlo se midió **antes** de
     /// > construirlo, en `CycleSnapshotCostTests`: ~870 ns, el 0,0044% de la
     /// > ventana. Esta aserción sigue vigilando lo mismo que antes —que no haya
     /// > cabecera ni punteros— sobre el nivel que ahora corresponde.
     func testThePatternIsExactlySixteenTracksWide() {
         XCTAssertEqual(MemoryLayout<Pattern>.size, MemoryLayout<Track>.size * 16)
-        XCTAssertEqual(MemoryLayout<Track>.size, MemoryLayout<Cycle>.size * 16 + 16)
+        XCTAssertEqual(MemoryLayout<Track>.size, MemoryLayout<Cycle>.size * 16 + 24)
     }
 }
