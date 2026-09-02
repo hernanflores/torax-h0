@@ -11,7 +11,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
 
 ## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
 
-- [ ] Task: Anotar el 16 → 12 en la Pre Spec y en `product.md` (FR9)
+- [x] Task: Anotar el 16 → 12 en la Pre Spec y en `product.md` (FR9) [98ad6dd]
   - [ ] Nota fechada 2026-09-02 en `Pre Spec Torax H-0.md`: doce Tracks por
         Pattern, y el porqué — con dieciséis, cada banda del anillo queda en un
         ancho que no se lee a un metro, que es el requisito de
