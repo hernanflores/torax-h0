@@ -9,7 +9,7 @@ private typealias Pattern = Engine.Pattern
 ///
 /// **Seleccionar no es un modo, es elegir a quién escuchan los controles.** Lo
 /// que estos tests fijan es la mitad que se olvida: no que el seleccionado
-/// cambie, sino que **los otros quince no**.
+/// cambie, sino que **los otros once no**.
 final class SelectedTrackEditingTests: XCTestCase {
 
     private let mapping = ControlMapping.beatStepPro
@@ -46,9 +46,9 @@ final class SelectedTrackEditingTests: XCTestCase {
         )
     }
 
-    // MARK: - Los dieciséis step buttons seleccionan
+    // MARK: - Los step buttons seleccionan, hasta donde hay Tracks
 
-    func testEverySixteenStepButtonsSelect() {
+    func testEveryStepButtonWithATrackSelectsIt() {
         let input = input()
 
         // El primero ya está seleccionado: seleccionarlo no publica, porque no
@@ -56,9 +56,30 @@ final class SelectedTrackEditingTests: XCTestCase {
         XCTAssertFalse(input.receive(stepButton(0)))
         XCTAssertEqual(input.selectedTrackIndex, 0)
 
-        for index in 1..<16 {
+        for index in 1..<Pattern.trackCount {
             XCTAssertTrue(input.receive(stepButton(index)), "step button \(index + 1)")
             XCTAssertEqual(input.selectedTrackIndex, index)
+        }
+    }
+
+    /// **Los step buttons sin Track no seleccionan** (FR3).
+    ///
+    /// El BeatStep Pro tiene dieciséis y la app tiene doce Tracks, así que del 13
+    /// al 16 sobran. No publican y no rompen: es el mismo criterio que un CC sin
+    /// asignar o un pad fuera de la superficie, y por eso la acotación vive en
+    /// quien selecciona y no en `ControlMapping`, que describe el hardware y
+    /// sigue declarando los dieciséis.
+    func testStepButtonsBeyondTheLastTrackSelectNothing() {
+        let input = input()
+        input.receive(stepButton(Pattern.trackCount - 1))
+        let before = input.pattern
+
+        for index in Pattern.trackCount..<ControlMapping.controlsPerFamily {
+            XCTAssertFalse(input.receive(stepButton(index)), "step button \(index + 1)")
+            XCTAssertEqual(
+                input.selectedTrackIndex, Pattern.trackCount - 1,
+                "el step button \(index + 1) movió la selección")
+            XCTAssertEqual(input.pattern, before, "el step button \(index + 1) tocó el material")
         }
     }
 
@@ -93,7 +114,7 @@ final class SelectedTrackEditingTests: XCTestCase {
             XCTAssertEqual(
                 input.pattern.cycle(at: 7)?.channel, Channel(8)!,
                 "\(parameter) perdió el canal del Track 8")
-            for other in 0..<16 where other != 7 {
+            for other in 0..<Pattern.trackCount where other != 7 {
                 XCTAssertEqual(
                     input.pattern.cycle(at: other), before.cycle(at: other),
                     "\(parameter) tocó el Track \(other + 1)")
@@ -110,7 +131,7 @@ final class SelectedTrackEditingTests: XCTestCase {
 
         XCTAssertTrue(input.receive(pad(0)))
         XCTAssertTrue(input.pattern.cycle(at: 3)!.pool.contains(Pitch(48)!))
-        for other in 0..<16 where other != 3 {
+        for other in 0..<Pattern.trackCount where other != 3 {
             XCTAssertEqual(
                 input.pattern.cycle(at: other), before.cycle(at: other),
                 "el pad tocó el Track \(other + 1)")
@@ -132,7 +153,7 @@ final class SelectedTrackEditingTests: XCTestCase {
         let edited = input.pattern.cycle(at: 0)
 
         // Se pasa por otros tres Tracks, editando de paso.
-        for index in [5, 9, 14] {
+        for index in [5, 9, 11] {
             input.receive(stepButton(index))
             input.receive(knob(.steps))
             input.receive(pad(1))
@@ -147,12 +168,12 @@ final class SelectedTrackEditingTests: XCTestCase {
     func testEveryEditedTrackKeepsItsOwn() {
         let input = input()
 
-        for index in 0..<16 {
+        for index in 0..<Pattern.trackCount {
             input.receive(stepButton(index))
             for _ in 0...index { input.receive(knob(.pulses)) }
         }
 
-        for index in 0..<16 {
+        for index in 0..<Pattern.trackCount {
             let initial = Pattern.initial.cycle(at: index)!.shape
             // Pulses se frena en Steps: girar más allá del extremo no envuelve.
             let expected = min(initial.pulses.count + index + 1, initial.steps.count)
@@ -221,7 +242,7 @@ final class SelectedTrackEditingTests: XCTestCase {
     /// Scale y Root.
     func testNoControllerChangesTheChannel() throws {
         let input = input()
-        let before = (0..<16).map { input.pattern.cycle(at: $0)!.channel }
+        let before = (0..<Pattern.trackCount).map { input.pattern.cycle(at: $0)!.channel }
 
         for number in 0...127 {
             input.receive(
@@ -232,7 +253,7 @@ final class SelectedTrackEditingTests: XCTestCase {
                 ))
         }
 
-        XCTAssertEqual((0..<16).map { input.pattern.cycle(at: $0)!.channel }, before)
+        XCTAssertEqual((0..<Pattern.trackCount).map { input.pattern.cycle(at: $0)!.channel }, before)
     }
 
     /// Cambiar el canal publica: el scheduler lo usa en el evento siguiente.
@@ -251,14 +272,14 @@ final class SelectedTrackEditingTests: XCTestCase {
         XCTAssertFalse(input.setChannel(input.track.channel))
     }
 
-    /// Cambiar el canal de uno no toca el de los otros quince.
+    /// Cambiar el canal de uno no toca el de los otros once.
     func testChangingTheChannelLeavesTheOthersAlone() {
         let input = input()
         input.receive(stepButton(9))
         let before = input.pattern
 
         XCTAssertTrue(input.setChannel(Channel(3)!))
-        for other in 0..<16 where other != 9 {
+        for other in 0..<Pattern.trackCount where other != 9 {
             XCTAssertEqual(
                 input.pattern.cycle(at: other), before.cycle(at: other), "Track \(other + 1)")
         }
@@ -266,7 +287,7 @@ final class SelectedTrackEditingTests: XCTestCase {
 
     // MARK: - Publicar
 
-    /// Lo que se publica son los dieciséis, no el editado suelto: el scheduler
+    /// Lo que se publica son los doce, no el editado suelto: el scheduler
     /// necesita el conjunto.
     func testWhatGetsPublishedIsTheWholePattern() {
         let handoff = PatternHandoff(Pattern.initial)

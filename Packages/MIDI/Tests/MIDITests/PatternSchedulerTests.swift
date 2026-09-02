@@ -6,11 +6,11 @@ import XCTest
 /// targets de test.
 private typealias Pattern = Engine.Pattern
 
-/// Tests del scheduler que recorre los dieciséis Tracks.
+/// Tests del scheduler que recorre los doce Tracks.
 ///
-/// **Un reloj y dieciséis rejillas.** Lo que estos tests fijan es que recorrer
+/// **Un reloj y doce rejillas.** Lo que estos tests fijan es que recorrer
 /// no cambia lo que ya sonaba —la primera comprobación, y la que más importa— y
-/// que el coste crece con los Tracks que tienen material, no con dieciséis
+/// que el coste crece con los Tracks que tienen material, no con los doce
 /// siempre.
 ///
 /// Se testea aquí y no sobre `SchedulerThread` por la misma razón que
@@ -126,39 +126,43 @@ final class PatternSchedulerTests: XCTestCase {
     }
 
     /// **Un Track vacío no programa nada** (NFR3): el coste crece con los Tracks
-    /// con material, no con dieciséis siempre.
+    /// con material, no con los doce siempre.
     func testEmptyTracksEmitNothing() {
         var scheduler = PatternScheduler(tempo: tempo, pattern: Pattern())
         XCTAssertTrue(emit(&scheduler, upToStep: 32).isEmpty)
     }
 
-    /// Y los vacíos no estorban a los que sí tienen material.
+    /// Y los vacíos no estorban a los que sí tienen material. Se prueba sobre el
+    /// **último** Track, que es donde un recorrido corto se delataría.
     func testAnEmptyTrackDoesNotSilenceTheOthers() {
+        let last = Pattern.trackCount - 1
         var scheduler = PatternScheduler(
-            tempo: tempo, pattern: pattern([15: track(steps: 16, pulses: 4)]))
+            tempo: tempo, pattern: pattern([last: track(steps: 16, pulses: 4)]))
 
         let events = emit(&scheduler, upToStep: 16)
         XCTAssertEqual(events.map(\.step), [0, 4, 8, 12])
-        XCTAssertTrue(events.allSatisfy { $0.track == 15 })
+        XCTAssertTrue(events.allSatisfy { $0.track == last })
     }
 
-    /// Con los dieciséis llenos no se pierde ningún evento dentro de la ventana.
-    func testWithSixteenFullTracksNoEventIsLost() {
+    /// Con todos llenos no se pierde ningún evento dentro de la ventana.
+    func testWithEveryTrackFullNoEventIsLost() {
         var full: [Int: Cycle] = [:]
-        for index in 0..<16 { full[index] = track(steps: 8, pulses: 8, pitch: 48 + index) }
+        for index in 0..<Pattern.trackCount {
+            full[index] = track(steps: 8, pulses: 8, pitch: 48 + index)
+        }
 
         var scheduler = PatternScheduler(tempo: tempo, pattern: pattern(full))
         let events = emit(&scheduler, upToStep: 8)
 
-        XCTAssertEqual(events.count, 16 * 8, "se perdieron eventos")
-        for index in 0..<16 {
+        XCTAssertEqual(events.count, Pattern.trackCount * 8, "se perdieron eventos")
+        for index in 0..<Pattern.trackCount {
             let mine = events.filter { $0.track == index }
             XCTAssertEqual(mine.map(\.step), Array(0..<8), "Track \(index + 1)")
             XCTAssertTrue(mine.allSatisfy { $0.pitch == 48 + index }, "Track \(index + 1)")
         }
     }
 
-    // MARK: - Un reloj, dieciséis rejillas
+    // MARK: - Un reloj, doce rejillas
 
     /// **Dos Divisions distintas comparten origen.** El 1/8 cae exactamente
     /// sobre uno de cada dos 1/16, y sigue cayendo ahí tras muchos ciclos: la
@@ -226,7 +230,7 @@ final class PatternSchedulerTests: XCTestCase {
     }
 
     /// **El Timing y el Delay de un Track no desplazan a los otros.** Es la
-    /// independencia que hace que dieciséis voces no se contaminen.
+    /// independencia que hace que doce voces no se contaminen.
     func testTimingAndDelayOfOneTrackDoNotMoveTheOthers() {
         let plain = track(steps: 8, pulses: 8)
         let shifted = Cycle(
@@ -305,21 +309,21 @@ final class PatternSchedulerTests: XCTestCase {
         XCTAssertNotEqual(first, second, "los dos Tracks omitieron exactamente lo mismo")
     }
 
-    /// Y ningún par de los dieciséis coincide: no es que el 1 y el 2 difieran
-    /// por suerte, es que las dieciséis secuencias son distintas.
-    func testTheSixteenSequencesAreAllDifferent() {
+    /// Y ningún par coincide: no es que el 1 y el 2 difieran por suerte, es que
+    /// las doce secuencias son distintas.
+    func testEverySequenceIsDifferentFromEveryOther() {
         var full: [Int: Cycle] = [:]
-        for index in 0..<16 { full[index] = halfProbabilityTrack() }
+        for index in 0..<Pattern.trackCount { full[index] = halfProbabilityTrack() }
 
         var scheduler = PatternScheduler(tempo: tempo, pattern: pattern(full))
         let events = fired(&scheduler, upToStep: 256)
 
         var sequences: [Set<Int>] = []
-        for index in 0..<16 {
+        for index in 0..<Pattern.trackCount {
             sequences.append(Set(events.filter { $0.track == index }.map(\.step)))
         }
-        for a in 0..<16 {
-            for b in (a + 1)..<16 {
+        for a in 0..<Pattern.trackCount {
+            for b in (a + 1)..<Pattern.trackCount {
                 XCTAssertNotEqual(sequences[a], sequences[b], "Tracks \(a + 1) y \(b + 1)")
             }
         }
@@ -335,25 +339,27 @@ final class PatternSchedulerTests: XCTestCase {
 
     /// Las semillas derivadas no se pisan entre Tracks contiguos.
     func testDerivedSeedsAreAllDistinct() {
-        let seeds = (0..<16).map { PatternScheduler.seed(0, forTrack: $0) }
-        XCTAssertEqual(Set(seeds).count, 16)
+        let seeds = (0..<Pattern.trackCount).map { PatternScheduler.seed(0, forTrack: $0) }
+        XCTAssertEqual(Set(seeds).count, Pattern.trackCount)
     }
 
     // MARK: - El relevo de snapshot
 
     /// El Pattern publicado se recoge una vez por ventana y lo ven todos los
-    /// Tracks: leerlo dieciséis veces dejaría que dos Tracks tocaran material de
+    /// Tracks: leerlo una vez por Track dejaría que dos tocaran material de
     /// publicaciones distintas.
     func testThePublishedPatternIsPickedUpByEveryTrack() {
         var scheduler = PatternScheduler(tempo: tempo, pattern: Pattern())
         let handoff = PatternHandoff(Pattern())
 
         var updated: [Int: Cycle] = [:]
-        for index in 0..<16 { updated[index] = track(steps: 4, pulses: 4, pitch: 60) }
+        for index in 0..<Pattern.trackCount {
+            updated[index] = track(steps: 4, pulses: 4, pitch: 60)
+        }
         handoff.publish(pattern(updated))
 
         let events = emit(&scheduler, upToStep: 4, from: handoff)
-        XCTAssertEqual(events.count, 16 * 4)
+        XCTAssertEqual(events.count, Pattern.trackCount * 4)
     }
 
     // MARK: - Helpers

@@ -7,9 +7,13 @@ private typealias Pattern = Engine.Pattern
 
 /// Tests del canal MIDI como dato del Track.
 ///
-/// **Dieciséis Tracks y dieciséis canales es la correspondencia que no hay que
-/// explicar.** Sin ella los dieciséis sonarían al mismo instrumento y no habría
-/// forma de juzgar nada en dispositivo.
+/// **El Track N en el canal N es la correspondencia que no hay que explicar.**
+/// Sin ella los doce sonarían al mismo instrumento y no habría forma de juzgar
+/// nada en dispositivo.
+///
+/// El rango del canal sigue siendo 1–16 porque es el del protocolo MIDI: que la
+/// app tenga doce Tracks no hace desaparecer cuatro canales del hardware, solo
+/// que los 13–16 dejan de asignarse solos.
 final class CycleChannelTests: XCTestCase {
 
     // MARK: - El tipo
@@ -31,7 +35,7 @@ final class CycleChannelTests: XCTestCase {
 
     func testEachTrackStartsOnItsOwnChannel() {
         let pattern = Pattern()
-        for index in 0..<16 {
+        for index in 0..<Pattern.trackCount {
             XCTAssertEqual(
                 pattern.cycle(at: index)?.channel.number, index + 1, "Track \(index + 1)")
         }
@@ -41,7 +45,7 @@ final class CycleChannelTests: XCTestCase {
     /// 1, que es por donde emitía la app con un Track solo.
     func testTheInitialPatternFollowsTheSameRule() {
         XCTAssertEqual(Pattern.initial.cycle(at: 0)?.channel.number, 1)
-        for index in 1..<16 {
+        for index in 1..<Pattern.trackCount {
             XCTAssertEqual(Pattern.initial.cycle(at: index)?.channel.number, index + 1)
         }
     }
@@ -54,7 +58,7 @@ final class CycleChannelTests: XCTestCase {
         let updated = pattern.replacing(moved, at: 3)
 
         XCTAssertEqual(updated.cycle(at: 3)?.channel.number, 10)
-        for other in 0..<16 where other != 3 {
+        for other in 0..<Pattern.trackCount where other != 3 {
             XCTAssertEqual(
                 updated.cycle(at: other)?.channel.number, other + 1, "Track \(other + 1)")
         }

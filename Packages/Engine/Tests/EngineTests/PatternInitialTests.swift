@@ -8,9 +8,10 @@ private typealias Pattern = Engine.Pattern
 /// Tests del Pattern con el que arranca la app.
 ///
 /// **La regla que fijan: una rebanada de motor no cambia lo que se oye.** Al
-/// pasar de un Track a dieciséis, la app tiene que sonar exactamente como sonaba
+/// pasar de un Track a varios, la app tiene que sonar exactamente como sonaba
 /// —el Track 1 con su material y el resto callados— hasta que alguien use los
-/// otros quince.
+/// demás. Vale igual con dieciséis que con doce: por eso los recorridos derivan
+/// de `trackCount` y no repiten el número.
 final class PatternInitialTests: XCTestCase {
 
     // MARK: - Solo el Track 1 trae material
@@ -19,7 +20,7 @@ final class PatternInitialTests: XCTestCase {
         let pattern = Pattern.initial
 
         XCTAssertFalse(pattern.cycle(at: 0)!.pool.isEmpty, "el Track 1 arrancó mudo")
-        for index in 1..<16 {
+        for index in 1..<Pattern.trackCount {
             XCTAssertTrue(pattern.cycle(at: index)!.pool.isEmpty, "Track \(index + 1)")
         }
     }
@@ -42,15 +43,15 @@ final class PatternInitialTests: XCTestCase {
         XCTAssertEqual(shape.pulses.count, 5)
     }
 
-    // MARK: - Quince Tracks vacíos no suenan
+    // MARK: - Los demás Tracks, vacíos, no suenan
 
     /// **Un Track vacío no emite aunque dispare.** Es el comportamiento que ya
-    /// tenía un Track solo; lo que cambia es que ahora hay quince a la vez, y de
+    /// tenía un Track solo; lo que cambia es que ahora hay varios a la vez, y de
     /// ahí sale que la app arranque sonando igual que antes.
     func testAnEmptyTrackEmitsNothingEvenThoughItTriggers() {
         let pattern = Pattern.initial
 
-        for index in 1..<16 {
+        for index in 1..<Pattern.trackCount {
             let track = pattern.cycle(at: index)!
             var triggered = false
 
@@ -73,6 +74,36 @@ final class PatternInitialTests: XCTestCase {
 
         XCTAssertEqual(pitches.count, 5, "cinco Pulses, cinco notas")
         XCTAssertTrue(pitches.allSatisfy { $0 == Pitch(48)! })
+    }
+
+    // MARK: - Cada Track en su canal
+
+    /// **El Track N emite por el canal N.**
+    ///
+    /// Es la correspondencia que no hay que explicar, y sin ella los doce
+    /// sonarían al mismo instrumento. Se puede cambiar desde la pantalla MIDI:
+    /// dos capas rítmicas sobre el mismo sinte es un caso real.
+    ///
+    /// Con doce Tracks los canales 13–16 dejan de asignarse solos, pero **siguen
+    /// siendo elegibles**: el rango de `Channel` es el del protocolo MIDI, no el
+    /// de la app.
+    func testEachTrackDefaultsToItsOwnChannel() {
+        let pattern = Pattern()
+
+        for index in 0..<Pattern.trackCount {
+            XCTAssertEqual(
+                pattern.cycle(at: index)?.channel.number, index + 1, "Track \(index + 1)")
+        }
+    }
+
+    /// Y el Pattern inicial no lo cambia: darle material al Track 1 no le mueve
+    /// el canal a nadie.
+    func testTheInitialPatternKeepsTheDefaultChannels() {
+        for index in 0..<Pattern.trackCount {
+            XCTAssertEqual(
+                Pattern.initial.cycle(at: index)?.channel.number, index + 1,
+                "Track \(index + 1)")
+        }
     }
 
     // MARK: - Sigue siendo trivial

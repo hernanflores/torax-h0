@@ -1,35 +1,41 @@
-/// Los dieciséis Tracks que suenan juntos.
+/// Los doce Tracks que suenan juntos.
 ///
 /// **Es el valor que cruza al hilo del scheduler.** Hasta la v1 lo publicado era
-/// un `Track`; a partir de la v2 son dieciséis, y todo lo que este tipo hace
+/// un `Track`; a partir de la v2 son doce, y todo lo que este tipo hace
 /// —cómo guarda, cómo se lee y cómo se sustituye un Track— está decidido por esa
 /// única exigencia: tiene que ser un dato trivial, copiable con un `memcpy`
 /// desde un hilo de tiempo real. `_isPOD(Pattern.self)` es la red que lo vigila.
 ///
 /// **El nombre es el de la Pre Spec**, que llama Pattern al conjunto de los
-/// dieciséis Tracks que se reproducen a la vez. Que todavía no se pueda tener
+/// Tracks que se reproducen a la vez. Que todavía no se pueda tener
 /// más de uno —ni Banks, ni Project— es una limitación de alcance, no otro
 /// concepto: cuando lleguen, este tipo ya se llama como se tiene que llamar.
 ///
-/// **Los dieciséis existen siempre y arrancan vacíos.** No hay Tracks que crear
+/// **Los doce existen siempre y arrancan vacíos.** No hay Tracks que crear
 /// ni destruir: un Track sin pool dispara sus Pulses y no tiene material que
 /// emitir, así que el silencio sale del material y no de una bandera de
 /// actividad que habría que mantener coherente. Es también lo que mantiene el
 /// tamaño fijo, porque una colección variable exige asignación y asignar en el
 /// camino del scheduler está prohibido.
 ///
-/// > **Estado intermedio del 2026-09-02.** Lo que este tipo guarda ya no se
-/// > llama `Track` sino `Cycle`, y de momento hay **uno por Track**: el
-/// > renombrado va en su propio commit y el nivel nuevo llega en el siguiente.
-/// > `track(at:)` conserva el nombre a propósito —sigue devolviendo lo que ese
-/// > Track está tocando— para que la tarea que mete el nivel solo tenga que
-/// > cambiar el tipo que devuelve, y no todas las llamadas.
 public struct Pattern: Equatable, Sendable {
 
-    /// Cuántos Tracks suenan juntos. La Pre Spec: «hasta 16 Tracks por Pattern».
-    public static let trackCount = 16
+    /// Cuántos Tracks suenan juntos.
+    ///
+    /// **Doce, y la Pre Spec dice dieciséis.** La desviación está anotada y
+    /// fechada el 2026-09-02 en `Pre Spec Torax H-0.md` y en `product.md`: el
+    /// ancho de cada anillo sale de repartir el radio entre `trackCount - 1`, y
+    /// con dieciséis cada banda queda en unos pocos puntos y el playhead deja de
+    /// leerse a un metro. Con doce, la misma fórmula da bandas un tercio más
+    /// anchas sin tocar el dibujo.
+    ///
+    /// **Es la única constante que hay que mover para cambiarlo**: de ella
+    /// derivan el reparto de los anillos, el número de schedulers, las voces que
+    /// se apagan al parar y la fila de selección. Lo único que no deriva es la
+    /// tupla de abajo, que el lenguaje obliga a escribir a mano.
+    public static let trackCount = 12
 
-    /// Dieciséis Tracks seguidos, sin cabecera ni indirección.
+    /// Doce Tracks seguidos, sin cabecera ni indirección.
     ///
     /// **Una tupla y no un `Array`**, por la misma razón que `PitchPool` guarda
     /// sus ocho alturas en un entero: un `Array` metería conteo de referencias
@@ -38,14 +44,14 @@ public struct Pattern: Equatable, Sendable {
     /// versión de plataforma muy posterior al objetivo de despliegue (iOS 17).
     ///
     /// Se lee con aritmética de punteros sobre su almacenamiento —contiguo por
-    /// ser homogénea— en vez de con un `switch` de dieciséis casos: el `switch`
+    /// ser homogénea— en vez de con un `switch` de doce casos: el `switch`
     /// no sería más seguro, solo más largo, y habría que escribirlo dos veces.
-    /// Los tests recorren los dieciséis huecos, así que un cambio de disposición
-    /// se vería inmediatamente.
+    /// Los tests recorren los doce huecos, así que un cambio de disposición se
+    /// vería inmediatamente.
     private var tracks:
         (
-            Track, Track, Track, Track, Track, Track, Track, Track,
-            Track, Track, Track, Track, Track, Track, Track, Track
+            Track, Track, Track, Track, Track, Track,
+            Track, Track, Track, Track, Track, Track
         )
 
     /// El Cycle de un hueco sin usar: dispara, y no tiene nada que emitir.
@@ -59,30 +65,34 @@ public struct Pattern: Equatable, Sendable {
     /// desempaquetado no puede fallar.
     static let emptyCycle = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!))
 
-    /// Dieciséis Tracks vacíos, **cada uno en su canal**: el Track N emite por
-    /// el canal N.
+    /// Doce Tracks vacíos, **cada uno en su canal**: el Track N emite por el
+    /// canal N.
     ///
-    /// Dieciséis Tracks y dieciséis canales es la correspondencia que no hay que
-    /// explicar, y sin ella los dieciséis sonarían al mismo instrumento. Se puede
-    /// cambiar: dos capas rítmicas sobre el mismo sinte es un caso real.
+    /// Es la correspondencia que no hay que explicar, y sin ella los doce
+    /// sonarían al mismo instrumento. Se puede cambiar desde la pantalla MIDI:
+    /// dos capas rítmicas sobre el mismo sinte es un caso real.
+    ///
+    /// **Los canales 13–16 dejan de asignarse solos y siguen siendo elegibles.**
+    /// El rango de `Channel` es el del protocolo MIDI, no el de la app: que haya
+    /// doce Tracks no hace desaparecer cuatro canales del hardware.
     public init() {
         func empty(_ number: Int) -> Track {
             Track(Self.emptyCycle.on(Channel(unchecked: number)))
         }
         tracks = (
-            empty(1), empty(2), empty(3), empty(4),
-            empty(5), empty(6), empty(7), empty(8),
-            empty(9), empty(10), empty(11), empty(12),
-            empty(13), empty(14), empty(15), empty(16)
+            empty(1), empty(2), empty(3),
+            empty(4), empty(5), empty(6),
+            empty(7), empty(8), empty(9),
+            empty(10), empty(11), empty(12)
         )
     }
 
     /// El Pattern con el que arranca la app: material **solo en el Track 1**.
     ///
     /// **Una rebanada de motor no debería cambiar lo que se oye.** Al pasar de
-    /// un Track a dieciséis, la app suena exactamente como sonaba —16/5 sobre
-    /// una sola altura— hasta que alguien use los otros quince. El silencio de
-    /// esos quince sale de su pool vacío, no de un Shape apagado.
+    /// un Track a varios, la app suena exactamente como sonaba —16/5 sobre una
+    /// sola altura— hasta que alguien use los demás. El silencio de esos sale de
+    /// su pool vacío, no de un Shape apagado.
     ///
     /// El material es el que la app ya traía: Steps 16 y Pulses 5, que es uno de
     /// los casos de la Pre Spec y se reconoce de oído, sobre un pool de una sola

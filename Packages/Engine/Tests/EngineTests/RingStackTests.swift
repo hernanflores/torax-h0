@@ -2,7 +2,7 @@ import XCTest
 
 @testable import Engine
 
-/// Tests de la geometría de los dieciséis anillos concéntricos.
+/// Tests de la geometría de los doce anillos concéntricos.
 ///
 /// **Es dominio, no presentación.** `workflow.md`: «si algo en `App` merece un
 /// test, está en el sitio equivocado». Qué radio ocupa cada anillo, cuánto mide
@@ -17,13 +17,13 @@ final class RingStackTests: XCTestCase {
 
     // MARK: - El orden y los radios
 
-    /// **Exterior → interior, Track 1 al 16** (FR1).
-    func testTheOutermostBandIsTrackOneAndTheInnermostIsSixteen() {
+    /// **Exterior → interior, Track 1 al último** (FR1).
+    func testTheOutermostBandIsTrackOneAndTheInnermostIsTheLast() {
         let stack = RingStack(pattern: .initial)
 
-        XCTAssertEqual(stack.bands.count, 16)
+        XCTAssertEqual(stack.bands.count, Pattern.trackCount)
         XCTAssertEqual(stack.bands.first?.track, 0)
-        XCTAssertEqual(stack.bands.last?.track, 15)
+        XCTAssertEqual(stack.bands.last?.track, Pattern.trackCount - 1)
     }
 
     func testRadiiDecreaseFromTheOutsideIn() {
@@ -39,10 +39,18 @@ final class RingStackTests: XCTestCase {
     /// **El hueco central no se invade.** El handoff dibuja un punto oscuro en
     /// el centro, y el playhead nace de ahí: si el anillo más interior llegara
     /// al centro, la aguja saldría de debajo de una marca.
+    ///
+    /// Se comprueba con igualdad exacta y no con holgura a propósito: el radio
+    /// interior **es** el hueco central, y que lo sea exactamente es lo que
+    /// `RingStack.radius(ofBandAt:)` garantiza al interpolar en vez de acumular
+    /// restas. Con holgura, el error de coma flotante que motivó ese cambio
+    /// habría pasado inadvertido.
     func testTheInnermostBandLeavesTheCentreAlone() {
         let stack = RingStack(pattern: .initial)
 
         XCTAssertGreaterThanOrEqual(stack.bands.last!.radius, RingStack.centreHole)
+        XCTAssertEqual(stack.bands.last!.radius, RingStack.centreHole)
+        XCTAssertEqual(stack.bands.first!.radius, RingStack.outermost)
     }
 
     /// **Y nada se sale por fuera.** El radio disponible es 1 e incluye la marca,
@@ -54,8 +62,8 @@ final class RingStackTests: XCTestCase {
     }
 
     /// **Dos anillos contiguos no se tocan.** Es la invariante que hace legible
-    /// el conjunto: con dieciséis bandas, un solape de un píxel convierte el mapa
-    /// en una mancha, y se rompería sin que nada fallara.
+    /// el conjunto: con doce bandas, un solape de un píxel convierte el mapa en
+    /// una mancha, y se rompería sin que nada fallara.
     func testAdjacentBandsDoNotOverlap() {
         XCTAssertLessThanOrEqual(RingStack.pulseMarkRadius * 2, RingStack.spacing)
     }

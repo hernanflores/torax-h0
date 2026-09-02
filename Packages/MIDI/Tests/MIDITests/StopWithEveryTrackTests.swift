@@ -5,13 +5,13 @@ import XCTest
 /// Ver la nota de `PatternHandoffTests` sobre la ambigüedad del nombre.
 private typealias Pattern = Engine.Pattern
 
-/// Tests de `Stop` con los dieciséis Tracks sonando.
+/// Tests de `Stop` con todos los Tracks sonando.
 ///
-/// **Con un Track, una nota colgada era un descuido; con dieciséis en dieciséis
-/// canales, apagar solo uno deja quince instrumentos sonando.** Esta suite fija
-/// que parar apaga todo, incluido el caso con Delay positivo que la rebanada 6
-/// dejó anotado como deuda: analizado, no reproducido.
-final class StopWithSixteenTracksTests: XCTestCase {
+/// **Con un Track, una nota colgada era un descuido; con doce en doce canales,
+/// apagar solo uno deja once instrumentos sonando.** Esta suite fija que parar
+/// apaga todo, incluido el caso con Delay positivo que la rebanada 6 dejó
+/// anotado como deuda: analizado, no reproducido.
+final class StopWithEveryTrackTests: XCTestCase {
 
     private final class Recorder: @unchecked Sendable {
         private let lock = NSLock()
@@ -62,10 +62,10 @@ final class StopWithSixteenTracksTests: XCTestCase {
         return channels
     }
 
-    /// Dieciséis Tracks con material, cada uno con su altura y su canal.
-    private func sixteen(groove: Groove = .default) -> Pattern {
+    /// Todos los Tracks con material, cada uno con su altura y su canal.
+    private func everyTrack(groove: Groove = .default) -> Pattern {
         var pattern = Pattern()
-        for index in 0..<16 {
+        for index in 0..<Pattern.trackCount {
             let track = Cycle(
                 shape: Shape(steps: Steps(4)!, pulses: Pulses(4)!),
                 pool: PitchPool().inserting(Pitch(48 + index)!),
@@ -94,12 +94,12 @@ final class StopWithSixteenTracksTests: XCTestCase {
         while !condition() && Date() < deadline { usleep(5_000) }
     }
 
-    // MARK: - Parar con los dieciséis sonando
+    // MARK: - Parar con todos sonando
 
     func testStoppingLeavesNoNoteHangingOnAnyChannel() {
         let recorder = Recorder()
         let transport = transport(recorder)
-        transport.publish(sixteen())
+        transport.publish(everyTrack())
 
         transport.play()
         waitUntil { self.hanging(in: recorder.captured).count >= 8 || recorder.captured.count > 64 }
@@ -111,27 +111,28 @@ final class StopWithSixteenTracksTests: XCTestCase {
             "quedaron notas colgadas: \(hanging(in: recorder.captured))")
     }
 
-    /// El `all notes off` llega a **los dieciséis canales**, no solo al primero.
+    /// El `all notes off` llega a **todos los canales en uso**, no solo al primero.
     func testStoppingSilencesEveryChannelInUse() {
         let recorder = Recorder()
         let transport = transport(recorder)
-        transport.publish(sixteen())
+        transport.publish(everyTrack())
 
         transport.play()
         waitUntil { recorder.captured.count > 16 }
         transport.stop()
 
-        XCTAssertEqual(allNotesOffChannels(in: recorder.captured), Set(1...16))
+        XCTAssertEqual(
+            allNotesOffChannels(in: recorder.captured), Set(1...Pattern.trackCount))
     }
 
     /// **La deuda de la rebanada 6**: con Delay positivo, parar entre el note-on
     /// y su note-off es más probable, porque el evento se emite desplazado
-    /// respecto a su rejilla. Con dieciséis Tracks a la vez, más todavía.
+    /// respecto a su rejilla. Con doce Tracks a la vez, más todavía.
     func testStoppingWithPositiveDelayLeavesNothingHanging() {
         let recorder = Recorder()
         let transport = transport(recorder)
         transport.publish(
-            sixteen(
+            everyTrack(
                 groove: Groove(
                     velocity: .default,
                     sustain: Sustain(percent: 200)!,
