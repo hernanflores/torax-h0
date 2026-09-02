@@ -59,21 +59,21 @@ revisar el diseño antes de seguir.
 
 ## FASE 3: EL GATE EN EL CAMINO DE EMISIÓN
 
-- [~] Task: El Track inaudible no emite, pero su rejilla avanza (FR3)
-  - [ ] Tests (Red): con el Track 1 muteado, un recorrido de varias vueltas no
+- [x] Task: El Track inaudible no emite, pero su rejilla avanza (FR3) [9becb80]
+  - [x] Tests (Red): con el Track 1 muteado, un recorrido de varias vueltas no
         produce ningún mensaje suyo y sí los del resto.
-  - [ ] Tests (Red): **la prueba de la fase** — mutear, dejar pasar dos vueltas y
+  - [x] Tests (Red): **la prueba de la fase** — mutear, dejar pasar dos vueltas y
         desmutear devuelve al Track en la posición que le tocaba, no en la
         primera. Es FR3 y el criterio de aceptación 2, y es lo que distingue esto
         de parar el Track.
-  - [ ] Tests (Red): un solo en el Track 2 silencia a los otros once sin alterar
+  - [x] Tests (Red): un solo en el Track 2 silencia a los otros once sin alterar
         sus rejillas.
-  - [ ] Implementación (Green): una lectura de la máscara por ventana en el hilo
+  - [x] Implementación (Green): una lectura de la máscara por ventana en el hilo
         del scheduler y la comprobación por Track antes de llamar al
         `NoteEmitter`. El `PatternScheduler` no cambia.
-  - [ ] Verificar el camino de tiempo real: sin asignaciones, sin locks, sin
+  - [x] Verificar el camino de tiempo real: sin asignaciones, sin locks, sin
         `await` (NFR1).
-  - [ ] Cobertura `MIDI` ≥80%.
+  - [x] Cobertura `MIDI` ≥80%.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: APAGAR LO QUE YA SUENA
