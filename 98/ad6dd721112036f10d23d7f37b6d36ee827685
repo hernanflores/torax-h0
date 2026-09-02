@@ -21,3 +21,30 @@ legibilidad puesto sobre Pattern.trackCount, la constante de la que derivan el
 reparto de anillos, los schedulers, las voces que se apagan al parar y la fila
 de seleccion. Escribirlo asi deja la decision reversible: si el ancho deja de
 ser el problema, la constante vuelve a subir sin que nada mas se entere.
+
+---
+
+VERIFICACION DE FASE 1 — LA DESVIACION QUEDA ESCRITA
+
+Comando: swift test --package-path Packages/Engine
+         swift test --package-path Packages/MIDI
+
+Resultado: Engine 425 pruebas, 0 fallos. MIDI 392 pruebas, 7 fallos, todos
+clientCreationFailed(-50) en VirtualLoopbackTests y en ninguna otra suite. Es el
+flake conocido midi-test-flake_20260826, aplazado a despues de la v2. Aisladas
+con --filter VirtualLoopbackTests las cuatro pasan con 0 fallos; solo caen
+dentro de la suite completa, que es su firma documentada. La fase no toca codigo
+—dos ficheros .md— asi que no puede ser la causa.
+
+Verificacion manual propuesta:
+1. Pre Spec seccion 2, bajo la definicion de Cycle: nota fechada que dice que
+   son doce, por que (el ancho de banda sale de trackCount-1 y con dieciseis el
+   playhead no se lee a un metro) y que los step buttons 13-16 dejan de
+   seleccionar sin ser error, con el preset intacto.
+2. product.md Core Model: nota equivalente y mas corta, que remite a la Pre Spec.
+3. product.md MVP Scope: la linea de Patterns/Banks ya no afirma que la v2
+   rebanada 1 entrega los dieciseis.
+4. El 16 original de la Pre Spec no se ha borrado: la nota enmienda, no reescribe
+   el documento de diseño.
+
+Confirmacion del usuario: «OK» (2026-09-02).
