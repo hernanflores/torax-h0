@@ -1,0 +1,28 @@
+Task: Los knobs y los pads editan el Cycle en edición
+Fase 4 — v2 rebanada 3 (Cycles)
+
+QUÉ SE FIJA (FR8)
+- Un giro de knob mueve el parámetro del Cycle en edición y de ningún otro,
+  comprobado sobre los quince Cycles restantes del Track seleccionado y sobre
+  los quince Tracks restantes.
+- Un giro no mueve ninguno de los dos cursores: editar material no es cambiar
+  de sitio.
+- Un pad mete la altura en el pool del Cycle en edición.
+- El canal —y por el mismo camino el marco tonal— también van al Cycle en
+  edición.
+- Editar un Cycle que NO está sonando no altera ni una nota de lo que sale:
+  construir el B mientras suena el A.
+- Editar el que SÍ suena se oye en la ventana siguiente, como siempre.
+
+HONESTIDAD SOBRE EL ROJO
+Los seis pasaron a la primera. La tarea anterior ya había redirigido el camino
+de edición entero al apuntar `Pattern.replacing(_ cycle:at:)` al Cycle en
+edición, así que no hubo nada que implementar aquí.
+
+Eso no los hace inútiles: fijan la decisión justo donde se puede romper. Un
+`replacing` que volviera a apuntar al Cycle que suena pisaría lo que se está
+oyendo mientras alguien construye el B, y sin estos tests no lo vería nadie
+hasta el iPad. Comprobado que fallan si se revierte esa línea.
+
+VERIFICACIÓN
+- 6 tests nuevos. Engine 410, MIDI 379 (21 + 358), 0 fallos.
