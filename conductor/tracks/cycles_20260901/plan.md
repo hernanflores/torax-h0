@@ -209,10 +209,14 @@ regresión la bloquea.
   camino de edición entero. No los hace inútiles — fijan la decisión donde se
   puede romper: un `replacing` que volviera a apuntar al Cycle que suena
   pisaría lo que se está oyendo, y no lo vería nadie hasta el iPad.
-- [~] Task: Cuántos Cycles activos se ajusta táctilmente
-  - [ ] Tests (Red): la vía táctil mueve el número de activos del Track seleccionado y publica, como `setChannel` y `setFrame`
-  - [ ] Tests (Red): ningún CC llega hasta ahí — es configuración, no material generativo (`product-guidelines.md`)
-  - [ ] Implementación (Green)
+- [x] Task: Cuántos Cycles activos se ajusta táctilmente — `b4ba89b`
+  - [x] Tests (Red): la vía táctil mueve el número de activos del Track seleccionado y publica, como `setChannel` y `setFrame`
+  - [x] Tests (Red): ningún CC llega hasta ahí — es configuración, no material generativo (`product-guidelines.md`)
+  - [x] Implementación (Green)
+
+  El test de la frontera barre **los 128 controladores** con cuatro valores cada
+  uno sobre los dieciséis Tracks: asignar un CC por descuido rompería la
+  frontera de `product-guidelines.md` sin que nadie lo viera.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: La pantalla muestra el desarrollo
