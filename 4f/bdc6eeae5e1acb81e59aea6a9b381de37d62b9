@@ -1,0 +1,47 @@
+Task: Cada Track avanza al cerrar su propia vuelta
+Fase 3 — v2 rebanada 3 (Cycles)
+
+QUÉ CAMBIA
+- `TrackScheduler` gana estado de reproducción propio: `track`, `cursor` y
+  `turnStartStep`, más `refresh(with: Track)` y `restartCycles()`.
+- `advanceCycleIfTheTurnClosed(before:)` corre dentro del bucle de la ventana,
+  ANTES de mirar si el Step dispara.
+- El `emit` de `TrackScheduler` entrega el Cycle que produjo el evento;
+  `PatternScheduler` lo reenvía en vez de leerlo del Pattern.
+- `PatternScheduler` refresca con el Track entero y llama a `restartCycles()`
+  al construir, que es lo que hace Play (FR6, adelantado aquí porque construir
+  es el único sitio donde no hay que acordarse de llamarlo).
+
+LAS DOS DECISIONES QUE IMPORTAN
+
+1. El cursor de reproducción vive en el SCHEDULER, no en el snapshot.
+   El `cursor` que trae un Track publicado es viejo por construcción: lo
+   escribe el hilo principal, que no sabe ni puede saber por dónde va el
+   sonido. Tomarlo del snapshot devolvería el desarrollo al principio cada vez
+   que alguien girase un knob. Del snapshot se toma el material y cuántos
+   Cycles hay activos; por cuál va, lo decide el hilo que suena. Es la misma
+   frontera que ya separa a `random` y a `nextStep`.
+
+2. La vuelta se mide desde `turnStartStep`, no con `step % steps`.
+   Con un módulo sobre el índice absoluto, un Cycle de 12 Steps que entrara en
+   el Step 16 duraría hasta el 24 —ocho Steps— en vez de doce. Medir desde el
+   inicio de la vuelta le da a cada Cycle una vuelta de su propia longitud.
+
+EL CYCLE VIAJA CON EL EVENTO
+Desde que el material puede cambiar DENTRO de una ventana, preguntarle al
+Pattern por el Cycle daría el de la vuelta equivocada en los Steps
+posteriores al cambio. No es una lectura del snapshot: el scheduler ya lo
+tiene delante. La vía del arnés no tiene Cycle y usa el hueco vacío, como
+antes.
+
+VERIFICACIÓN
+- 8 tests nuevos en `CycleAdvanceTests`, todos sobre `PatternScheduler` con el
+  horizonte dado a mano: sin hilos y sin carreras contra el reloj.
+- El de deriva recorre MIL vueltas, no dos compases: un error de un Step por
+  vuelta es inaudible al principio y evidente al minuto.
+- Uno comprueba que el resultado no depende de cómo se trocee el horizonte
+  —96 ventanas de un Step contra una de 96—, que es lo que descarta que el
+  avance esté contando ventanas en vez de vueltas.
+- Engine 410 tests, MIDI 350 (21 + 329), 0 fallos. iOS BUILD SUCCEEDED.
+- Sin medición de jitter todavía: se toca el hilo, y por eso la Fase 6 es
+  obligatoria y bloqueante. Medir por tarea sería medir tres veces lo mismo.
