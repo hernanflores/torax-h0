@@ -1,0 +1,30 @@
+Task: El Track inaudible no emite, pero su rejilla avanza (FR3)
+
+Fase 3 del track mute-solo_20260902. TDD: 9 tests en rojo, implementacion, 9 en
+verde. Suites completas: MIDI 409+21, Engine 427, 0 fallos.
+
+Ficheros:
+- Packages/MIDI/Sources/MIDI/PatternScheduler.swift: propiedad 'mutes'
+  (MuteMask?), lectura unica por ventana en advance(), guard dentro del cierre.
+- Packages/MIDI/Sources/MIDI/SchedulerThread.swift: la pasa al PatternScheduler.
+- Packages/MIDI/Sources/MIDI/Transport.swift: 'public let mutes = MuteMask()',
+  entregado al hilo en play().
+- Packages/MIDI/Tests/MIDITests/MuteGateTests.swift (nuevo).
+
+Donde va el gate y por que ahi. Dentro del cierre de emision, no alrededor de
+'schedulers[index].advance(...)': la rejilla se mueve dentro de esa llamada, asi
+que saltarsela seria parar el Track — justo lo que la spec dice que el mute no
+hace. La prueba de la fase lo fija: mutear, dejar pasar seis Steps, desmutear, y
+los siguientes eventos caen en 8 y 12, no en 0 y 4.
+
+Una lectura por ventana, no una por evento. Mismo argumento que el snapshot: dos
+lecturas podrian caer a ambos lados de un gesto y partir la ventana. El test
+'testTheMaskIsReadOncePerWindow' cambia la mascara desde dentro del cierre de
+emision y exige que la ventana salga entera.
+
+El test del hilo real no mide cuando deja de emitir (seria una carrera contra el
+reloj) sino que deja de emitir y no vuelve: cuenta tras asentar, y comprueba que
+no crece.
+
+Cobertura MIDI: 92,01% de lineas. PatternScheduler.swift 100%, SchedulerThread
+100% de lineas.
