@@ -1,0 +1,46 @@
+Task: El `Track` nuevo: dieciséis Cycles, cuántos activos y por cuál va
+Fase 2 — v2 rebanada 3 (Cycles)
+
+QUÉ CAMBIA
+- `Track` nuevo en `Engine/Track.swift`: tupla de dieciséis `Cycle`,
+  `activeCount` y `cursor`. Construido con un Cycle, deja los dieciséis
+  huecos iguales a él, uno activo y el cursor en el primero (FR10).
+  API: `cycle(at:)`, `current`, `replacing(_:at:)`, `replacingCurrent(_:)`,
+  `==` escrita a mano sobre los dieciséis y los dos contadores.
+- `Pattern` pasa a guardar dieciséis `Track`. `track(at:)` devuelve el
+  contenedor y gana `cycle(at:)`, que devuelve el material vigente — que es
+  lo que piden el scheduler, el emisor y la pantalla. `replacing` tiene ahora
+  dos sobrecargas: la del Track y la del Cycle, que sustituye el vigente y
+  conserva el resto del Track.
+- Los quince Cycles restantes arrancan iguales al primero y no vacíos: subir
+  el número de activos tiene que entregar algo que ya suena, no silencio.
+
+EL HALLAZGO: LA PILA DEL HILO
+El test de concurrencia del handoff empezó a reventar con SIGBUS. No es el
+handoff: es que construir un Pattern deja varios temporales de 37 KB vivos en
+el mismo marco, y la pila por defecto de un `Thread` secundario son 512 KB.
+Medido: desborda con 512 KB, pasa con 1 MB.
+
+Importa fuera del test. El hilo del scheduler es un `Thread` con esa misma
+pila por defecto y copia el snapshot en cada ventana, así que el margen se
+había reducido dieciséis veces sin que nadie lo mirara. Ahora reserva 1 MB
+explícitamente, con el porqué escrito en `start()`. Es reserva virtual: no
+cuesta memoria residente, y desbordarla sería un SIGBUS en el hilo que
+produce el audio.
+
+EL DETECTOR DE TAMAÑO SALTÓ
+`testTheSnapshotIsSixteenTracksWideAndNothingMore` tenía una cota de 4 KB
+puesta en la rebanada 1 de la v2 como detector de cambio de orden. Cycles la
+rompió (37 120 bytes) y obligó a volver a mirar la decisión — que ya estaba
+tomada y medida en la Fase 1. Cota nueva: 64 KB. Se anota que el escalón
+siguiente de la Pre Spec, los Patterns por Bank, no pasa por aquí: eso es
+persistencia y lo que cruza al hilo sigue siendo un Pattern.
+
+VERIFICACIÓN
+- Engine: 393 tests (10 nuevos en `TrackTests`), 0 fallos.
+- MIDI: 342 tests (21 + 321), 0 fallos.
+- Dos aserciones de tamaño actualizadas, con nota fechada: `Pattern` mide
+  ahora dieciséis Tracks. Ninguna otra aserción cambió.
+- xcodebuild para iOS: BUILD SUCCEEDED.
+- Sin medición de jitter: no se mueve ningún instante. El coste de copiar el
+  snapshot nuevo está medido en la Fase 1; el del hilo, en la Fase 6.
