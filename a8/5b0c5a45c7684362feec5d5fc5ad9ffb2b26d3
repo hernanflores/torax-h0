@@ -1,0 +1,26 @@
+Task: La regla de audibilidad (FR2)
+
+Fase 2 del track mute-solo_20260902. TDD: 10 tests en rojo, implementacion, 10
+en verde.
+
+Ficheros:
+- Packages/MIDI/Sources/MIDI/MuteMask.swift: MuteState.isAudible(_:).
+- Packages/MIDI/Tests/MIDITests/AudibilityTests.swift (nuevo).
+
+Los casos que importan y por que:
+- Un solo deja sonando a uno y calla a once que NO estan muteados: es el solo
+  quien los excluye, y el test lo comprueba explicitamente.
+- Dos solos suenan los dos (aditivo).
+- Soltar el ultimo solo devuelve los doce; soltar uno de dos deja al otro
+  mandando.
+- Soleado y muteado calla, tambien con otro Track soleado sonando al lado.
+- Un mute puesto mientras habia un solo sobrevive a soltar el solo: no se nota
+  al oido cuando se pone, y tiene que seguir ahi despues.
+
+Sin asignaciones: operaciones sobre enteros, sin Array ni colecciones
+intermedias. La llama el hilo del scheduler una vez por Track y por ventana.
+
+Cobertura MIDI: 91,89% de lineas (umbral 80%). MuteMask.swift 100% de lineas.
+Medida en un solo proceso con el .profdata fusionado a mano, segun la ampliacion
+del 2026-08-30 del workflow (la pasada falla por el flake conocido de
+VirtualLoopbackTests y SwiftPM no fusiona el perfil cuando falla).
