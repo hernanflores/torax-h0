@@ -46,15 +46,15 @@ revisar el diseño antes de seguir.
   - [x] Documentar en el tipo **por qué una palabra y no dos atómicos**: dos
         lecturas podrían caer a ambos lados de un cambio y dar un instante en el
         que todo calla o nada.
-- [~] Task: La regla de audibilidad (FR2)
-  - [ ] Tests (Red): sin nada activo suenan los doce; con un mute suenan once;
+- [x] Task: La regla de audibilidad (FR2) [a85b0c5]
+  - [x] Tests (Red): sin nada activo suenan los doce; con un mute suenan once;
         con un solo suena uno; con dos solos suenan dos; **soleado y muteado
         calla**; quitar el último solo devuelve los doce.
-  - [ ] Implementación (Green): la regla como función pura sobre el valor leído,
+  - [x] Implementación (Green): la regla como función pura sobre el valor leído,
         en un solo sitio.
-  - [ ] Comprobar que no asigna: sin `Array`, sin colecciones intermedias — la
+  - [x] Comprobar que no asigna: sin `Array`, sin colecciones intermedias — la
         va a llamar el hilo del scheduler.
-  - [ ] Cobertura `MIDI` ≥80%.
+  - [x] Cobertura `MIDI` ≥80%.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: EL GATE EN EL CAMINO DE EMISIÓN
