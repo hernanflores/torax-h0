@@ -1,0 +1,52 @@
+Tasks: Cuántos Cycles, cuál suena y cuál se edita
+       Ajustar cuántos Cycles hay activos
+Fase 5 — v2 rebanada 3 (Cycles)
+
+Las dos tareas de la fase van en un commit: la fila que muestra las tres
+cosas y el control que ajusta el número son la MISMA fila. Partirlas habría
+dado dos commits que no compilan por separado.
+
+QUÉ CAMBIA
+- `Engine/CyclePosition.swift`: deduce el Cycle en curso del tiempo
+  transcurrido. Con 8 tests.
+- `Transport.cyclesInCourse`, con la misma forma que `playheads`.
+- `TransportModel`: `cycleInCourse`, `activeCycleCount`, `editingCycle` y
+  `setActiveCycleCount(_:)`.
+- `TrackSelectorView.cyclesRow`, tercera fila junto al selector y el canal.
+- `ContentView.reservedBelowStage` sube de 260 a 324 por la fila nueva.
+
+POR QUÉ SE DEDUCE Y NO SE LEE
+El cursor de reproducción vive en el hilo del scheduler y es suyo.
+Publicarlo obligaría a ese hilo a escribir algo en cada vuelta: trabajo en el
+camino de tiempo real para que la pantalla no tenga que dividir. La deducción
+es exacta porque el avance lo es.
+
+POR QUÉ SE SUMA EN VEZ DE DIVIDIR
+Dos Cycles pueden tener Steps distintos, y entonces sus vueltas duran
+distinto: dividir el tiempo por «una vuelta» daría el Cycle equivocado en
+cuanto alguien mezclara longitudes. Se suman las vueltas de los activos y se
+recorre la pasada — como mucho dieciséis iteraciones, sea cual sea el tiempo
+transcurrido, y sin deriva que crezca (hay un test a una hora).
+
+La duración del Step sale del Cycle 1, como en el scheduler: es la
+limitación 8 (la Division no cambia de Cycle a Cycle). Deducir con otra cosa
+haría que la pantalla y el sonido discreparan justo donde la limitación vive.
+
+POR QUÉ 10 Hz Y NO 60
+El relleno se mueve al cerrar una vuelta, que a los tempos de la app son
+segundos. Un repintado por fotograma sería carga visual sin nada que enseñar
+— y esta rebanada tiene medición de jitter obligatoria. Los anillos siguen a
+`.animation`, donde lo que se mueve sí es continuo.
+
+VERIFICACIÓN EN SIMULADOR
+Dos capturas en `captures/`:
+- `cycles-row.png`: la pantalla entera con la fila nueva, un Cycle activo.
+- `cycles-states.png`: cuatro activos y el tercero en edición, tomada con un
+  parche temporal de `Pattern.initial` que se revirtió después.
+
+**Lo que el simulador no puede enseñar: el Cycle sonando.** No tiene destinos
+MIDI, así que `canPlay` es falso y no hay transporte ni reloj del que
+deducir. El relleno se verifica en dispositivo, en la Fase 6.
+
+- Engine 418 tests, MIDI 385 (21 + 364), 0 fallos. iOS BUILD SUCCEEDED.
+- `App` no lleva cobertura: la lógica está en `CyclePosition`, con tests.
