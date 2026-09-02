@@ -187,12 +187,17 @@ regresión la bloquea.
 > `MIDI`, en `ControlInput`. Dos cursores conviviendo: el que suena lo mueve el
 > scheduler, el que se edita lo mueve el knob 10.
 
-- [~] Task: El knob 10 mueve el Cycle en edición
-  - [ ] Tests (Red): el knob 10 del preset mueve el Cycle en edición del **Track seleccionado**, dentro del rango activo y frenando en los extremos
-  - [ ] Tests (Red): mover el Cycle en edición **no altera** el cursor de reproducción ni lo que suena (FR7)
-  - [ ] Tests (Red): cambiar de Track con un step button deja cada Track con **su** Cycle en edición donde estaba
-  - [ ] Implementación (Green): entra en `ControlMapping` como los otros nueve knobs
-  - [ ] **Documentar la desviación**: la Pre Spec dice «con CTRL ajusta 1–16 Cycles activos» y el BeatStep Pro no tiene CTRL. Nota fechada en la Pre Spec o en `product.md`, como se hizo con los pads en la rebanada 7
+- [x] Task: El knob 10 mueve el Cycle en edición — `21b1f0b`
+  - [x] Tests (Red): el knob 10 del preset mueve el Cycle en edición del **Track seleccionado**, dentro del rango activo y frenando en los extremos
+  - [x] Tests (Red): mover el Cycle en edición **no altera** el cursor de reproducción ni lo que suena (FR7)
+  - [x] Tests (Red): cambiar de Track con un step button deja cada Track con **su** Cycle en edición donde estaba
+  - [x] Implementación (Green): entra en `ControlMapping` como los otros nueve knobs
+  - [x] **Documentar la desviación**: la Pre Spec dice «con CTRL ajusta 1–16 Cycles activos» y el BeatStep Pro no tiene CTRL. Nota fechada en la Pre Spec o en `product.md`, como se hizo con los pads en la rebanada 7
+
+  Entra como CC 79, el décimo del bloque y el último del rango de propósito
+  general. **No entra en `assignments`**: no es un `TrackParameter` —los nueve
+  primeros mueven parámetros del Cycle, este mueve a cuál se apunta— y meterlo
+  ahí obligaría a inventarle un caso al enum que el modelo no tiene.
 - [ ] Task: Los knobs y los pads editan el Cycle en edición
   - [ ] Tests (Red): un giro de knob mueve el parámetro del Cycle en edición y **no** el de los otros quince Cycles ni el de los otros quince Tracks (FR8)
   - [ ] Tests (Red): un pad mete la altura en el pool de ese Cycle
