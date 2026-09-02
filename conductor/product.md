@@ -30,6 +30,22 @@ Project (estado completo + ajustes)
 - **Track:** una voz/carril musical y de control. Donde residen los parámetros generativos.
 - **Cycle:** snapshot de parámetros de un Track. Permite que ese Track varíe en pasadas sucesivas del loop sin cambiar de Pattern.
 
+> **Nota del 2026-09-02 — son doce Tracks por Pattern, no dieciséis.** El árbol
+> de arriba escribe 16 porque lo escribe la Pre Spec; la app implementa **12**
+> desde el track `ui-declutter_20260902`.
+>
+> **La razón es de lectura.** Los Tracks se dibujan como anillos concéntricos y
+> el ancho de cada banda sale de repartir el radio entre `trackCount - 1`. Con
+> dieciséis, cada banda queda en unos pocos puntos y el playhead deja de leerse a
+> un metro — el requisito de `product-guidelines.md`, que es condición de uso y
+> no preferencia estética. Con doce, la misma fórmula da bandas un tercio más
+> anchas sin tocar el dibujo.
+>
+> **El modelo no cambia de forma**: doce es un límite puesto sobre una constante,
+> no un concepto nuevo. Si el ancho deja de ser el problema, la constante vuelve
+> a subir. La nota larga, con lo que pierden los step buttons 13–16 del
+> controlador, está en la Pre Spec.
+
 El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren eventos → **Tonal** define el pool de notas y su movimiento armónico → **Groove** convierte la secuencia en interpretación (dinámica, probabilidad, duración, desplazamiento) → **Cycles / LFO / Random** aportan desarrollo en el tiempo.
 
 ## Interaction Model
@@ -93,7 +109,7 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 **Fuera de v1:**
 
 - Acordes polifónicos simultáneos (Style *Poly*) — explícitamente fuera de scope en la Pre Spec.
-- Patterns, Banks; guardado/Autosave/Backup Project. *(Múltiples Tracks salieron de aquí el 2026-09-01: la v2 rebanada 1 entrega los dieciséis.)*
+- Patterns, Banks; guardado/Autosave/Backup Project. *(Múltiples Tracks salieron de aquí el 2026-09-01: la v2 rebanada 1 entregó dieciséis, que el 2026-09-02 pasaron a **doce** por legibilidad de los anillos — ver la nota del Core Model.)*
 - Note Repeater (Repeats/Time/Ramp/Pace); Harmony; Voicing/Style; Range/Phrase; LFO y Random Modulation. *(Cycles salió de aquí el 2026-09-02: la v2 rebanada 3 lo entrega — hasta dieciséis por Track, recorridos a cada vuelta del anillo.)*
 - Ableton Link, MIDI Program Change, encadenado de Patterns.
 
