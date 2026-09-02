@@ -30,12 +30,16 @@ regresión la bloquea.
 > de 20 ms? Y para quitar de en medio una copia que hoy pasa desapercibida y con
 > Cycles no pasaría.
 
-- [~] Task: El snapshot deja de copiarse una vez por evento (NFR3)
-  - [ ] Tests (Red): emitir N eventos hace **como mucho una** lectura del handoff por ventana, no una por evento — hoy `Transport.play()` llama a `handoff.load()` dentro del cierre de emisión, para leer el canal y la Division del Track
-  - [ ] Tests (Red): el canal y la Division con que sale cada nota siguen siendo los del **mismo** snapshot que produjo el evento, que es la razón por la que aquella lectura existía
-  - [ ] Tests (Red): cambiar el canal mientras suena se sigue oyendo en el evento siguiente
-  - [ ] Implementación (Green): el snapshot recogido una vez por ventana se pasa al emisor, en vez de releerlo por evento
-  - [ ] **Es una corrección, no una optimización prematura**: con 2,25 KB era invisible; con 36 KB es una copia por nota
+- [x] Task: El snapshot deja de copiarse una vez por evento (NFR3) — `8e2a9b2`
+  - [x] Tests (Red): emitir N eventos hace **como mucho una** lectura del handoff por ventana, no una por evento — hoy `Transport.play()` llama a `handoff.load()` dentro del cierre de emisión, para leer el canal y la Division del Track
+  - [x] Tests (Red): el canal y la Division con que sale cada nota siguen siendo los del **mismo** snapshot que produjo el evento, que es la razón por la que aquella lectura existía
+  - [x] Tests (Red): cambiar el canal mientras suena se sigue oyendo en el evento siguiente
+  - [x] Implementación (Green): el snapshot recogido una vez por ventana se pasa al emisor, en vez de releerlo por evento
+  - [x] **Es una corrección, no una optimización prematura**: con 2,25 KB era invisible; con 36 KB es una copia por nota
+
+  Rojo medido antes de implementar: **188 lecturas para 168 notas**. Verde:
+  **7 lecturas para 168 notas** —una por ventana, más la de Play—. El contador
+  vive en `PatternHandoff` y solo se compila en DEBUG.
 - [ ] Task: Cuánto cuesta un snapshot con los 256 Cycles
   - [ ] Medir `MemoryLayout` y el tiempo de un `load()` sobre un valor **del tamaño real** —un tipo de prueba, sin renombrar nada todavía—
   - [ ] Comparar contra la ventana de 20 ms y contra la medición del 2026-08-31 —2,25 KB en 274 ns—, que es la única referencia que hay
