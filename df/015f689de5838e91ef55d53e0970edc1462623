@@ -1,0 +1,33 @@
+Task: Rejilla `12-tracks-cycles` (FR8)
+
+NO SE MIDE NADA. Las mediciones de jitter estan suspendidas desde el 2026-09-02.
+Lo que esta tarea protege es la otra promesa de esa suspension: que el arnes se
+queda «listo por si se retoma». Una rejilla que pide dieciseis Tracks sobre un
+Pattern de doce no lo estaria — JitterHarness.pattern acota con
+min(count, Pattern.trackCount), asi que pedir dieciseis daria doce en silencio y
+un informe que dice «16 Tracks» y midio doce.
+
+CAMBIOS
+- App/JitterMeasurementModel.swift: los casos sixteenTracks y
+  sixteenTracksWithCycles pasan a everyTrack y everyTrackWithCycles, con
+  etiquetas «12 Tracks» y «12 Tracks · 4 Cycles» y sufijos 12-tracks y
+  12-tracks-cycles. trackCount deja de ser el literal 16 y pasa a
+  Pattern.trackCount, para que el proximo cambio no vuelva a dejarlo atras.
+- El nombre del caso deja de decir un numero: everyTrack no vuelve a mentir
+  cuando la constante se mueva. Las etiquetas visibles si lo dicen, porque son lo
+  que el operador lee al elegir rejilla.
+- conductor/workflow.md: la seccion «Medicion de jitter: suspendida» nombraba la
+  rejilla vieja. Actualizada, con nota fechada de por que el cambio no lleva
+  medicion.
+
+LO QUE NO SE TOCA, A PROPOSITO. Los device-verification.md de las rebanadas 2 y 3
+conservan `16 Tracks` y `--grid=16-tracks-cycles`: registran ejecuciones que
+ocurrieron, y con dieciseis. Reescribirlos falsearia el registro. El de la
+rebanada 3 lleva una nota fechada que dice como traducir los comandos para
+repetir el procedimiento hoy.
+
+VERIFICACION
+- xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: SUCCEEDED.
+- Coherencia comprobada a mano: --grid= resuelve por fileNameSuffix, asi que la
+  invocacion es --grid=12-tracks-cycles y el informe sale como
+  jitter-report-12-tracks-cycles.txt.
