@@ -130,12 +130,20 @@ regresión la bloquea.
 > `MIDI`. La fase que hace que Cycles se oiga. Toca el hilo de tiempo real y el
 > instante en que cambia el material: es la que la medición final juzga.
 
-- [~] Task: Cada Track avanza al cerrar su propia vuelta
-  - [ ] Tests (Red): un Track de N Steps cambia de Cycle **en el Step 0** de la vuelta siguiente, comprobado sobre el índice de Step y no de oído (FR5)
-  - [ ] Tests (Red): dos Tracks de longitudes distintas —16 Steps y 12— no cambian de Cycle a la vez (FR4)
-  - [ ] Tests (Red): con Divisions distintas, cada uno avanza según **su** vuelta, no según el tiempo del otro
-  - [ ] Tests (Red): el avance recorre muchas vueltas sin deriva —mil ciclos, no dos compases—, que es como se ven los fallos de fase
-  - [ ] Implementación (Green): el cursor avanza en el hilo del scheduler, sin asignaciones ni locks
+- [x] Task: Cada Track avanza al cerrar su propia vuelta — `4fbdc6e`
+  - [x] Tests (Red): un Track de N Steps cambia de Cycle **en el Step 0** de la vuelta siguiente, comprobado sobre el índice de Step y no de oído (FR5)
+  - [x] Tests (Red): dos Tracks de longitudes distintas —16 Steps y 12— no cambian de Cycle a la vez (FR4)
+  - [x] Tests (Red): con Divisions distintas, cada uno avanza según **su** vuelta, no según el tiempo del otro
+  - [x] Tests (Red): el avance recorre muchas vueltas sin deriva —mil ciclos, no dos compases—, que es como se ven los fallos de fase
+  - [x] Implementación (Green): el cursor avanza en el hilo del scheduler, sin asignaciones ni locks
+
+  **Dos decisiones que no estaban escritas.** El cursor de reproducción vive en
+  el scheduler y no en el snapshot: el que trae un Track publicado es viejo por
+  construcción —lo escribe el hilo principal, que no sabe por dónde va el
+  sonido— y hacerle caso devolvería el desarrollo al principio en cada giro de
+  knob. Y la vuelta se mide desde el Step en que empezó, no con un módulo sobre
+  el índice absoluto, para que un Cycle de 12 Steps que entra en el 16 dure doce
+  y no ocho.
 - [ ] Task: El Cycle vigente decide lo que suena, entero
   - [ ] Tests (Red): al cambiar de Cycle cambian a la vez Shape, pool, marco tonal, Groove y canal — no la mitad de uno y la mitad de otro
   - [ ] Tests (Red): el Cycle nuevo se lee **una sola vez** al cruzar el límite, no por evento
