@@ -1,0 +1,32 @@
+Correccion en vuelo de la Fase 3, sobre la verificacion manual: el usuario
+confirmo los puntos 1-4 y rechazo el 5 — «Sigue del mismo tamaño, agrandemos.
+Queda mucho espacio muerto del lado izquierdo de la pantalla».
+
+DIAGNOSTICO. Los doce puntos que la pastilla libero al perder su segunda linea no
+llegaron al anillo, y ademas faltaban otros noventa y seis. reservedBelowStage
+era un literal —324— que sumaba a mano la navegacion, el selector de 56 puntos,
+la fila de canal y la de Cycles. Ese mismo dia la fila de canal se fue a la
+pantalla MIDI y la pastilla bajo a 44, y el literal siguio reservando las dos
+cosas. El anillo pagaba la diferencia: unos 108 puntos de lado que no usaba
+nadie.
+
+El «espacio muerto a la izquierda» es la otra mitad. El anillo es cuadrado y lo
+acota la altura, asi que sale mas estrecho que su columna; esa diferencia se
+quedaba como un hueco vacio entre el anillo y la lectura.
+
+CAMBIOS
+- reservedBelowStage pasa de literal a suma de constantes con nombre
+  —navigationRowHeight, contentSpacing, trackScreenSpacing, selectorRowHeight,
+  rowSpacing, cyclesRowHeight—. Da 216 en vez de 324. Escrito asi, cambiar el
+  alto de una fila cambia la reserva sola, que es lo que el propio comentario
+  decia que era y no era.
+- El sobrante entre el lado del anillo y su columna se lo queda la lectura, en
+  vez de quedarse en blanco. Es texto que envuelve, y product-guidelines.md pide
+  que el valor grande no se corte: ancho de mas es justo lo que evita partirlo.
+- Retirada una nota obsoleta que afirmaba que «el anillo pequeño es intencional,
+  ocupa un quinto del ancho». Era de la epoca del handoff y contradecia al
+  reparto real desde el 2026-09-01, que hace lo contrario.
+
+VERIFICACION
+- xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: SUCCEEDED.
+- Pendiente de confirmar en dispositivo que el anillo crece y el hueco desaparece.
