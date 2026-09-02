@@ -73,12 +73,19 @@ regresión la bloquea.
 > `Engine` puro. Sin CoreMIDI, sin simulador, sin hardware. Es el renombrado y el
 > nivel nuevo: mecánico en volumen, delicado en la frontera de tiempo real.
 
-- [~] Task: `Track` pasa a llamarse `Cycle`
-  - [ ] Tests (Red): los tests que hoy miden el `Track` —Shape, pool, marco tonal, Groove, canal— siguen midiendo lo mismo sobre `Cycle`, sin cambiar una sola aserción
-  - [ ] Tests (Red): `_isPOD(Cycle.self)` sigue siendo verdadero
-  - [ ] Implementación (Green): renombrado mecánico en `Engine` y en `MIDI`
-  - [ ] **Es el vocabulario de la Pre Spec** (NFR7): «Cycle: snapshot de parámetros de un Track». Mantener `Track` para esto sería inventarle un sinónimo al concepto que ya tiene nombre
-  - [ ] Un commit propio y solo con el renombrado: mezclado con lógica no habría forma de revisarlo
+- [x] Task: `Track` pasa a llamarse `Cycle` — `c45ba2b`
+  - [x] Tests (Red): los tests que hoy miden el `Track` —Shape, pool, marco tonal, Groove, canal— siguen midiendo lo mismo sobre `Cycle`, sin cambiar una sola aserción
+  - [x] Tests (Red): `_isPOD(Cycle.self)` sigue siendo verdadero
+  - [x] Implementación (Green): renombrado mecánico en `Engine` y en `MIDI`
+  - [x] **Es el vocabulario de la Pre Spec** (NFR7): «Cycle: snapshot de parámetros de un Track». Mantener `Track` para esto sería inventarle un sinónimo al concepto que ya tiene nombre
+  - [x] Un commit propio y solo con el renombrado: mezclado con lógica no habría forma de revisarlo
+
+  **Lo que conserva el nombre, y por qué:** `Pattern.track(at:)`,
+  `Pattern.trackCount`, `Transport.track`, `ControlInput.track`,
+  `TrackScheduler` y `TrackParameter`. Los dos últimos siguen siendo lo que
+  dicen ser; los otros devuelven hoy el único Cycle de ese Track, y así la
+  tarea siguiente solo cambia el tipo y no todas las llamadas. Nota fechada en
+  `Pattern` para que el estado intermedio no se lea como un descuido.
 - [ ] Task: El `Track` nuevo: dieciséis Cycles, cuántos activos y por cuál va
   - [ ] Tests (Red): un Track recién construido tiene dieciséis Cycles, **uno activo** y el cursor en el primero — que es el comportamiento de hoy (FR10)
   - [ ] Tests (Red): `_isPOD(Track.self)` y `_isPOD(Pattern.self)` siguen siendo verdaderos con el nivel nuevo dentro
