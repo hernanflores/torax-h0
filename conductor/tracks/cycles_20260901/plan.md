@@ -86,12 +86,24 @@ regresión la bloquea.
   dicen ser; los otros devuelven hoy el único Cycle de ese Track, y así la
   tarea siguiente solo cambia el tipo y no todas las llamadas. Nota fechada en
   `Pattern` para que el estado intermedio no se lea como un descuido.
-- [~] Task: El `Track` nuevo: dieciséis Cycles, cuántos activos y por cuál va
-  - [ ] Tests (Red): un Track recién construido tiene dieciséis Cycles, **uno activo** y el cursor en el primero — que es el comportamiento de hoy (FR10)
-  - [ ] Tests (Red): `_isPOD(Track.self)` y `_isPOD(Pattern.self)` siguen siendo verdaderos con el nivel nuevo dentro
-  - [ ] Tests (Red): sustituir un Cycle devuelve un Track nuevo con **solo ese** cambiado, comprobado sobre los otros quince
-  - [ ] Tests (Red): leer un índice de Cycle fuera de 0–15 no revienta — mismo criterio que un pad fuera de la superficie
-  - [ ] Implementación (Green): almacenamiento inline de tamaño fijo, por la misma razón que `PitchPool` y `Pattern` lo son
+- [x] Task: El `Track` nuevo: dieciséis Cycles, cuántos activos y por cuál va — `253b2e9`
+  - [x] Tests (Red): un Track recién construido tiene dieciséis Cycles, **uno activo** y el cursor en el primero — que es el comportamiento de hoy (FR10)
+  - [x] Tests (Red): `_isPOD(Track.self)` y `_isPOD(Pattern.self)` siguen siendo verdaderos con el nivel nuevo dentro
+  - [x] Tests (Red): sustituir un Cycle devuelve un Track nuevo con **solo ese** cambiado, comprobado sobre los otros quince
+  - [x] Tests (Red): leer un índice de Cycle fuera de 0–15 no revienta — mismo criterio que un pad fuera de la superficie
+  - [x] Implementación (Green): almacenamiento inline de tamaño fijo, por la misma razón que `PitchPool` y `Pattern` lo son
+
+  **Hallazgo no previsto: la pila del hilo.** El test de concurrencia del
+  handoff empezó a reventar con SIGBUS. Construir un Pattern deja varios
+  temporales de 37 KB vivos en el mismo marco y la pila por defecto de un
+  `Thread` secundario son 512 KB — medido: desborda con 512 KB y pasa con 1 MB.
+  **Importa fuera del test:** el hilo del scheduler es un `Thread` con esa misma
+  pila por defecto y copia el snapshot cada ventana, así que su margen se había
+  reducido dieciséis veces sin que nadie lo mirara. Ahora reserva 1 MB, con el
+  porqué escrito en `start()`.
+
+  Y el detector de tamaño del snapshot saltó, que es para lo que estaba puesto:
+  la cota pasa de 4 KB a 64 KB, con la decisión de la Fase 1 escrita al lado.
 - [ ] Task: Cuántos Cycles activos, y qué pasa al moverlo
   - [ ] Tests (Red): el rango es 1–16 y se frena en los extremos, como Steps y Division
   - [ ] Tests (Red): **subir el número copia el Cycle en edición** al que empieza a existir (FR3), y el copiado suena igual hasta que se edita
