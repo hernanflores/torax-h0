@@ -17,7 +17,7 @@ pulsarlo.
 `Engine`, es la señal de que se está metiendo mezcla en el material: parar y
 revisar el diseño antes de seguir.
 
-## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
+## FASE 1: LA DESVIACIÓN QUEDA ESCRITA [checkpoint: e7f0571]
 
 - [x] Task: Anotar mute/solo en la Pre Spec y el sitio del par en el handoff (FR11) [e7f0571]
   - [x] Nota fechada 2026-09-02 en `Pre Spec Torax H-0.md`: mute y solo por
@@ -28,7 +28,7 @@ revisar el diseño antes de seguir.
         enseñará **este mismo** estado, no otro.
   - [x] Dejar dicho en las dos que el solo es **aditivo** y que el mute manda
         sobre él, que es la regla que un lector daría por supuesta al revés.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: LA MÁSCARA Y LA REGLA
 
