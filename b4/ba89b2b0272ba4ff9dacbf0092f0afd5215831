@@ -1,0 +1,23 @@
+Task: Cuántos Cycles activos se ajusta táctilmente
+Fase 4 — v2 rebanada 3 (Cycles)
+
+QUÉ CAMBIA
+`ControlInput.setActiveCycleCount(_:)`, con la misma forma que `setChannel` y
+`setFrame`: acota, compara, publica solo si cambió algo, y toca únicamente al
+Track seleccionado.
+
+Las tres reglas difíciles —subir copia el Cycle en edición, bajar descarta por
+el final y acota el cursor de edición sin tocar el de reproducción— viven en
+`Track.withActiveCount(_:)`, donde se testean sin controlador de por medio.
+Aquí solo se comprueba que la vía real las hereda.
+
+EL TEST QUE VIGILA LA FRONTERA
+`testNoControlChangeCanMoveTheActiveCount` barre los 128 controladores MIDI
+con cuatro valores cada uno y comprueba que ninguno mueve el número en
+ninguno de los dieciséis Tracks. Es la frontera de `product-guidelines.md`
+—knobs para material generativo, pantalla para configuración— convertida en
+algo que se rompe con ruido si alguien asigna un CC por descuido.
+
+VERIFICACIÓN
+- 6 tests nuevos en `ActiveCycleCountInputTests`.
+- Engine 410, MIDI 385 (21 + 364), 0 fallos. iOS BUILD SUCCEEDED.
