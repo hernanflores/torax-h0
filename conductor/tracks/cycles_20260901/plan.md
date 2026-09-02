@@ -155,10 +155,18 @@ regresión la bloquea.
   ventana. Con Cycles sí puede: un Track que arrancaba mudo y dejaba de serlo al
   cambiar de Cycle no sonaba en esa vuelta, y uno que enmudecía seguía llamando
   al emisor con altura `nil`. Las dos reproducidas con test antes de arreglar.
-- [~] Task: Lo que cambia de Cycle y lo que no puede cambiar todavía
-  - [ ] Tests (Red): Steps, Pulses, Rotate, pool, marco tonal, Groove y canal cambian con el Cycle
-  - [ ] **Division es el caso difícil y se decide aquí, con test.** Cambiar la Division reubica todos los Steps futuros respecto a un origen que ya pasó — es la limitación que `TrackScheduler` ya documenta para el snapshot en caliente. En el límite de vuelta el origen sí es reubicable: si no lo es sin romper la fase con los otros quince, **se acota explícitamente** y va a *Known Limitations* del spec
-  - [ ] Implementación (Green)
+- [x] Task: Lo que cambia de Cycle y lo que no puede cambiar todavía — `a9d9442`
+  - [x] Tests (Red): Steps, Pulses, Rotate, pool, marco tonal, Groove y canal cambian con el Cycle
+  - [x] **Division es el caso difícil y se decide aquí, con test.** Cambiar la Division reubica todos los Steps futuros respecto a un origen que ya pasó — es la limitación que `TrackScheduler` ya documenta para el snapshot en caliente. En el límite de vuelta el origen sí es reubicable: si no lo es sin romper la fase con los otros quince, **se acota explícitamente** y va a *Known Limitations* del spec
+  - [x] Implementación (Green)
+
+  **Se acota: la Division no cambia de Cycle a Cycle.** Resolverlo exige una
+  línea de tiempo rebasable por Track, y eso rompe el invariante del que depende
+  que los dieciséis suenen en fase sin sincronización posterior —todas las
+  rejillas contra el mismo origen—. Es trabajo en el núcleo de timing, con
+  jitter obligatorio, para un caso que nadie ha pedido: cambiar de compás a
+  mitad de patrón. Queda en *Known Limitations* 8 del `spec.md` y fijado con dos
+  tests.
 - [ ] Task: Play reinicia los dieciséis al Cycle 1
   - [ ] Tests (Red): tras `play()`, los dieciséis cursores están en 0 (FR6)
   - [ ] Tests (Red): dos pasadas de Play producen la **misma** secuencia de Cycles y las mismas omisiones — la promesa de `tech-stack.md`
