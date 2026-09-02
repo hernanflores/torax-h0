@@ -30,3 +30,25 @@ CAMBIOS
 VERIFICACION
 - xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: SUCCEEDED.
 - Pendiente de confirmar en dispositivo que el anillo crece y el hueco desaparece.
+
+---
+
+VERIFICACION DE FASE 3 — EL SELECTOR DICE SOLO SU NUMERO
+
+Comando: xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+Resultado: BUILD SUCCEEDED. Sin tests nuevos: es una vista SwiftUI sin logica y
+workflow.md dice que App no se mide; lo que decide cuantas pastillas hay es
+Pattern.trackCount, cubierto en Engine.
+
+Verificacion manual y su resultado:
+1. Doce pastillas, un solo numero centrado. CONFIRMADO.
+2. Los tres estados se distinguen a un metro. CONFIRMADO.
+3. La fila Channel ha desaparecido de la pantalla Track. CONFIRMADO.
+4. Las pastillas y los step buttons seleccionan igual. CONFIRMADO.
+5. El anillo respira mas. RECHAZADO en la primera pasada: «Sigue del mismo
+   tamaño, agrandemos. Queda mucho espacio muerto del lado izquierdo de la
+   pantalla». Corregido en 9ef9ff7 —reservedBelowStage de 324 a 216, y el
+   sobrante del anillo se lo queda la lectura— y CONFIRMADO despues: «Se ve OK».
+6. La pantalla MIDI sigue en discontinuo. Aceptado, es la Fase 4.
+
+Confirmacion del usuario: «Se ve OK, avancemos» (2026-09-02).
