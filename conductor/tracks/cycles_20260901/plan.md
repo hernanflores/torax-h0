@@ -40,11 +40,23 @@ regresión la bloquea.
   Rojo medido antes de implementar: **188 lecturas para 168 notas**. Verde:
   **7 lecturas para 168 notas** —una por ventana, más la de Play—. El contador
   vive en `PatternHandoff` y solo se compila en DEBUG.
-- [~] Task: Cuánto cuesta un snapshot con los 256 Cycles
-  - [ ] Medir `MemoryLayout` y el tiempo de un `load()` sobre un valor **del tamaño real** —un tipo de prueba, sin renombrar nada todavía—
-  - [ ] Comparar contra la ventana de 20 ms y contra la medición del 2026-08-31 —2,25 KB en 274 ns—, que es la única referencia que hay
-  - [ ] Medir también el anillo completo: cuatro ranuras, ~147 KB, reservadas al construir
-  - [ ] Registrar los números en la git note **y** en la documentación de `PatternHandoff`, que es donde alguien los buscará
+- [x] Task: Cuánto cuesta un snapshot con los 256 Cycles — `1998ebc`
+  - [x] Medir `MemoryLayout` y el tiempo de un `load()` sobre un valor **del tamaño real** —un tipo de prueba, sin renombrar nada todavía—
+  - [x] Comparar contra la ventana de 20 ms y contra la medición del 2026-08-31 —2,25 KB en 274 ns—, que es la única referencia que hay
+  - [x] Medir también el anillo completo: cuatro ranuras, ~147 KB, reservadas al construir
+  - [x] Registrar los números en la git note **y** en la documentación de `PatternHandoff`, que es donde alguien los buscará
+
+  | | tamaño | `load()` | % de la ventana |
+  |---|---|---|---|
+  | Hoy | 2304 B | ~125 ns | 0,0006% |
+  | Con Cycles | **36 992 B** | **~870 ns** | **0,0044%** |
+
+  Anillo de cuatro ranuras: **147 968 B**, reservados al construir. La
+  referencia del 2026-08-31 no era comparable —otra máquina, un Track de 112
+  bytes—, así que el snapshot de hoy se midió en la misma pasada. Dieciséis
+  veces más bytes cuestan **siete** veces más tiempo, no dieciséis: la
+  extrapolación lineal de la nota de riesgo 1 era pesimista por un factor de
+  cinco.
 - [ ] Task: La decisión, tomada con el dato delante
   - [ ] Presupuesto: un `load()` **por debajo del 1% de la ventana**. Por encima, se para y se decide explícitamente
   - [ ] Si no cabe, la alternativa está escrita y es otro diseño, no un ajuste: el avance pasa al hilo principal (FR5 cambia) o se publica por Track en vez de entero. **Se elige aquí, no a mitad de la Fase 3**
