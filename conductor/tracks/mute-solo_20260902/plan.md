@@ -30,7 +30,7 @@ revisar el diseño antes de seguir.
         sobre él, que es la regla que un lector daría por supuesta al revés.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: LA MÁSCARA Y LA REGLA
+## FASE 2: LA MÁSCARA Y LA REGLA [checkpoint: a85b0c5]
 
 - [x] Task: `MuteMask` — doce mutes y doce solos en una palabra (FR1) [2d30365]
   - [x] Tests (Red): alternar el mute del Track 0 y del 11 no toca a los demás;
@@ -55,7 +55,7 @@ revisar el diseño antes de seguir.
   - [x] Comprobar que no asigna: sin `Array`, sin colecciones intermedias — la
         va a llamar el hilo del scheduler.
   - [x] Cobertura `MIDI` ≥80%.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: EL GATE EN EL CAMINO DE EMISIÓN
 
