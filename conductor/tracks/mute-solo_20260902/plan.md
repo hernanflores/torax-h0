@@ -138,24 +138,24 @@ revisar el diseño antes de seguir.
   - [x] `stop()` y el cambio de Track, Cycle o Pattern **no** lo tocan (FR10).
   - [x] Si algo de esto pide un test, va a `MIDI` y no a `App` — la regla del
         `workflow.md`.
-- [~] Task: El par M/S debajo de cada pastilla (FR5)
-  - [ ] Segunda fila en `TrackSelectorView`, dos botones por Track alineados con
+- [x] Task: El par M/S debajo de cada pastilla (FR5) [7151795]
+  - [x] Segunda fila en `TrackSelectorView`, dos botones por Track alineados con
         su pastilla, con `Brutalist` y `Typography`: sin estilo propio (NFR5).
-  - [ ] Los tres estados legibles sin texto: `M` activo relleno, `S` activo
+  - [x] Los tres estados legibles sin texto: `M` activo relleno, `S` activo
         relleno con su color, reposo con el borde apagado.
-  - [ ] La pastilla del Track inaudible **por el solo de otro** se atenúa: sin
+  - [x] La pastilla del Track inaudible **por el solo de otro** se atenúa: sin
         eso, once Tracks apagados no tendrían marca.
-  - [ ] Ajustar la altura del escenario en `ContentView`: la fila nueva entra en
+  - [x] Ajustar la altura del escenario en `ContentView`: la fila nueva entra en
         el cálculo que hoy sale de `selectorRowHeight`, para que los anillos no
         se recorten.
-  - [ ] Área de pulsación utilizable con el dedo, sin invadir la pastilla.
-- [ ] Task: El anillo del Track inaudible se atenúa (FR6)
-  - [ ] Tests (Red): si la decisión de atenuar es un cálculo, vive donde se
+  - [x] Área de pulsación utilizable con el dedo, sin invadir la pastilla.
+- [x] Task: El anillo del Track inaudible se atenúa (FR6) [d66e5e9]
+  - [x] Tests (Red): si la decisión de atenuar es un cálculo, vive donde se
         testea —`Engine` no, así que `MIDI` o una función pura de la vista— y no
         dentro del `body`.
-  - [ ] Implementación (Green): trazo atenuado en `RingView`, **playhead
+  - [x] Implementación (Green): trazo atenuado en `RingView`, **playhead
         intacto**: corre y no suena.
-  - [ ] Comprobar que no se añade repintado por fotograma: la atenuación cambia
+  - [x] Comprobar que no se añade repintado por fotograma: la atenuación cambia
         con el gesto, no con el reloj.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
