@@ -115,11 +115,14 @@ regresión la bloquea.
   regla de FR3 —se copia el Cycle en edición, no el primero ni el que suena— y
   la de FR9. El tercer contador deja el Pattern en 37 248 bytes contra los
   36 992 del tipo de prueba de la Fase 1: un 0,7%, que no mueve la decisión.
-- [~] Task: El recorrido, como función pura
-  - [ ] Tests (Red): con N activos, el cursor recorre 0…N−1 y vuelve a 0
-  - [ ] Tests (Red): con un solo Cycle activo el cursor no se mueve nunca (FR10)
-  - [ ] Tests (Red): con el cursor fuera del rango —porque el rango bajó— el avance siguiente entra en 0 (FR9)
-  - [ ] Implementación (Green): aritmética de enteros, sin asignaciones. **Vive en `Engine` y no en el scheduler**: es una regla del modelo y así se testea sin hilos
+- [x] Task: El recorrido, como función pura — `9fb8bbb`
+  - [x] Tests (Red): con N activos, el cursor recorre 0…N−1 y vuelve a 0
+  - [x] Tests (Red): con un solo Cycle activo el cursor no se mueve nunca (FR10)
+  - [x] Tests (Red): con el cursor fuera del rango —porque el rango bajó— el avance siguiente entra en 0 (FR9)
+  - [x] Implementación (Green): aritmética de enteros, sin asignaciones. **Vive en `Engine` y no en el scheduler**: es una regla del modelo y así se testea sin hilos
+
+  FR9 no necesitó caso aparte: si el cursor ya está fuera del rango, sumarle uno
+  lo deja igual de fuera y la comparación lo devuelve a 0.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: El scheduler avanza en el límite de vuelta
