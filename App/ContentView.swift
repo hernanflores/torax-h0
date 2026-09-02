@@ -175,6 +175,9 @@ struct ContentView: View {
                 hasMaterial: model.tracksWithMaterial,
                 accent: Palette.accent(for: family),
                 onSelect: { model.selectTrack($0) },
+                mix: model.mix,
+                onToggleMute: { model.toggleMute($0) },
+                onToggleSolo: { model.toggleSolo($0) },
                 activeCycles: model.activeCycleCount,
                 editingCycle: model.editingCycle,
                 cycleInCourse: { model.cycleInCourse },
@@ -271,7 +274,7 @@ struct ContentView: View {
     /// fila cambia la reserva sola.
     static let reservedBelowStage: CGFloat =
         navigationRowHeight + contentSpacing + trackScreenSpacing
-        + selectorRowHeight + rowSpacing + cyclesRowHeight
+        + selectorRowHeight + mixRowSpacing + mixRowHeight + rowSpacing + cyclesRowHeight
 
     /// La fila de pestañas y el transporte, arriba del todo.
     static let navigationRowHeight: CGFloat = 44
@@ -281,6 +284,10 @@ struct ContentView: View {
     static let trackScreenSpacing: CGFloat = 24
     /// Una pastilla de Track: solo su número desde el 2026-09-02.
     static let selectorRowHeight: CGFloat = 44
+    /// Entre la pastilla y su par M/S, que va pegado a ella.
+    static let mixRowSpacing: CGFloat = 6
+    /// El par M/S debajo de cada pastilla, desde el 2026-09-02.
+    static let mixRowHeight: CGFloat = 32
     /// Entre el selector y la fila de Cycles.
     static let rowSpacing: CGFloat = 16
     /// La fila de Cycles: su etiqueta, su separación y sus botones.
