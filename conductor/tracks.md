@@ -305,7 +305,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: Mute y Solo por Track**
+- [~] **Track: Mute y Solo por Track**
   *Link: [conductor/tracks/mute-solo_20260902/index.md](./tracks/mute-solo_20260902/index.md)*
 
   Planificado el 2026-09-02, en siete fases. El par **M / S** debajo de cada
