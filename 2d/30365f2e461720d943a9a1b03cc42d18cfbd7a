@@ -1,0 +1,26 @@
+Task: MuteMask — doce mutes y doce solos en una palabra (FR1)
+
+Fase 2 del track mute-solo_20260902. TDD: 11 tests en rojo (el tipo no existia),
+implementacion, 11 en verde.
+
+Ficheros:
+- Packages/MIDI/Sources/MIDI/MuteMask.swift (nuevo): MuteState, el valor leido
+  de golpe (dos UInt16, POD), y MuteMask, el sitio donde vive (TXAtomicUInt64
+  sobre CToraxAtomics, como AtomicFlag y AtomicCounter).
+- Packages/MIDI/Tests/MIDITests/MuteMaskTests.swift (nuevo).
+
+Disposicion: mute en los bits 0-11, solo a partir del 16. El hueco 12-15 se deja
+a proposito por si trackCount vuelve a subir a dieciseis.
+
+Decisiones que los tests fijan, no la implementacion:
+- Una sola lectura devuelve los dos campos. No hay API para leer el mute sin el
+  solo, y esa ausencia es el punto del tipo.
+- Mute y solo del mismo Track son independientes: es lo que hace representable
+  'soleado y muteado', que un boton de tres posiciones no podria.
+- Mutear los doce no desborda al campo del solo — el fallo que la disposicion en
+  una palabra hace posible.
+- Un indice fuera de rango no cambia nada: viene de un step button, que es
+  hardware.
+
+Sin CAS por escritor unico (actor principal), documentado en el tipo con la
+condicion que lo invalidaria.
