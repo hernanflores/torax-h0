@@ -51,7 +51,7 @@ final class TrackSchedulerTests: XCTestCase {
         scheduler.advance(
             toHorizon: Int64(stepIndex) * stepNanoseconds,
             refreshingFrom: handoff
-        ) { step, _, _, _ in steps.append(step) }
+        ) { _, step, _, _, _ in steps.append(step) }
         return steps
     }
 
@@ -83,7 +83,8 @@ final class TrackSchedulerTests: XCTestCase {
         var scheduler = TrackScheduler(
             timeline: timeline, material: .cycle(track(steps: 16, pulses: 4)))
         var offsets: [Int64] = []
-        scheduler.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: nil) { _, _, _, offset in
+        scheduler.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: nil) {
+            _, _, _, _, offset in
             offsets.append(offset)
         }
         XCTAssertEqual(offsets, [0, 4, 8, 12].map { Int64($0) * stepNanoseconds })

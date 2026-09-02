@@ -40,7 +40,7 @@ final class SchedulerShiftTests: XCTestCase {
         from handoff: PatternHandoff? = nil
     ) -> [(step: Int, offset: Int64)] {
         var emitted: [(step: Int, offset: Int64)] = []
-        scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) { step, _, _, offset in
+        scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) { _, step, _, _, offset in
             emitted.append((step, offset))
         }
         return emitted
@@ -188,7 +188,8 @@ final class SchedulerShiftTests: XCTestCase {
         handoff.publish(Engine.Pattern().replacing(track(timing: 75, delay: 50), at: 0))
 
         var seen: [(groove: Groove, offset: Int64, step: Int)] = []
-        scheduler.advance(toHorizon: 4 * step, refreshingFrom: handoff) { step, _, groove, offset in
+        scheduler.advance(toHorizon: 4 * step, refreshingFrom: handoff) {
+            _, step, _, groove, offset in
             seen.append((groove, offset, step))
         }
 

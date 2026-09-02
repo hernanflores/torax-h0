@@ -53,15 +53,20 @@ public final class PatternScheduler {
         schedulers = .allocate(capacity: Pattern.trackCount)
 
         for index in 0..<Pattern.trackCount {
-            let cycle = pattern.cycle(at: index)!
-            schedulers.advanced(by: index).initialize(
-                to: TrackScheduler(
-                    timeline: MusicalTimeline(tempo: tempo, division: cycle.shape.division),
-                    material: .cycle(cycle),
-                    startingAtStep: startingStep,
-                    seed: Self.seed(seed, forTrack: index)
-                )
+            let track = pattern.track(at: index)!
+            let cycle = track.current
+            var scheduler = TrackScheduler(
+                timeline: MusicalTimeline(tempo: tempo, division: cycle.shape.division),
+                material: .cycle(cycle),
+                startingAtStep: startingStep,
+                seed: Self.seed(seed, forTrack: index)
             )
+            // **Play arranca los dieciséis en su Cycle 1** (FR6): construir esto
+            // es lo que hace Play, así que el reinicio va aquí y no en otro
+            // sitio que hubiera que acordarse de llamar.
+            scheduler.refresh(with: track)
+            scheduler.restartCycles()
+            schedulers.advanced(by: index).initialize(to: scheduler)
         }
     }
 
@@ -159,7 +164,7 @@ public final class PatternScheduler {
         if let published = handoff?.load() {
             pattern = published
             for index in 0..<Pattern.trackCount {
-                schedulers[index].refresh(with: pattern.cycle(at: index)!)
+                schedulers[index].refresh(with: pattern.track(at: index)!)
             }
         }
 
@@ -168,16 +173,21 @@ public final class PatternScheduler {
             // arnés de medición no tiene Track detrás: mide la rejilla.
             let emits = schedulers[index].material.emitsAnything
 
-            // Una copia por Track y por ventana, fuera del cierre: dentro sería
-            // una por evento, que es justo la lectura que esta firma existe para
-            // quitar. El índice no puede fallar: el Pattern siempre tiene
-            // dieciséis.
-            let source = pattern.cycle(at: index)!
+            // **El Cycle lo entrega el scheduler del Track, evento a evento, y
+            // no se lee del Pattern.** Desde que el Cycle avanza en el límite de
+            // vuelta, el material puede cambiar *dentro* de una ventana, así que
+            // preguntarle al Pattern daría el Cycle de la vuelta equivocada en
+            // los Steps posteriores al cambio. No es una lectura del snapshot:
+            // el scheduler ya lo tiene delante.
+            //
+            // La vía del arnés no tiene Cycle detrás; se le da el del hueco
+            // vacío, que es lo que se le daba antes.
+            let fallback = pattern.cycle(at: index)!
 
             schedulers[index].advance(toHorizon: horizonNanoseconds, refreshingFrom: nil) {
-                step, pitch, groove, offset in
+                source, step, pitch, groove, offset in
                 guard emits else { return }
-                emit(index, source, step, pitch, groove, offset)
+                emit(index, source ?? fallback, step, pitch, groove, offset)
             }
         }
     }

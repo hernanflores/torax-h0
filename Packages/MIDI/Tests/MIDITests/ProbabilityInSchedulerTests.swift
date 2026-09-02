@@ -50,7 +50,7 @@ final class ProbabilityInSchedulerTests: XCTestCase {
         scheduler.advance(
             toHorizon: Int64(16 * rounds) * stepNanoseconds,
             refreshingFrom: nil
-        ) { step, pitch, _, _ in emitted.append((step, pitch)) }
+        ) { _, step, pitch, _, _ in emitted.append((step, pitch)) }
         return emitted
     }
 
@@ -121,7 +121,7 @@ final class ProbabilityInSchedulerTests: XCTestCase {
     func testTheMeasurementHarnessNeverSkips() {
         var scheduler = TrackScheduler(timeline: timeline, material: .everyStep)
         var count = 0
-        scheduler.advance(toHorizon: 64 * stepNanoseconds, refreshingFrom: nil) { _, _, _, _ in
+        scheduler.advance(toHorizon: 64 * stepNanoseconds, refreshingFrom: nil) { _, _, _, _, _ in
             count += 1
         }
         XCTAssertEqual(count, 64)

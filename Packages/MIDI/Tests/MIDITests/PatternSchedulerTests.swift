@@ -70,7 +70,8 @@ final class PatternSchedulerTests: XCTestCase {
 
         var single = TrackScheduler(timeline: timeline(.sixteenth), material: .cycle(only))
         var expected: [(step: Int, pitch: Int?)] = []
-        single.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: nil) { step, pitch, _, _ in
+        single.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: nil) {
+            _, step, pitch, _, _ in
             expected.append((step, pitch?.value))
         }
 

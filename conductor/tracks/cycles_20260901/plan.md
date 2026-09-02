@@ -130,7 +130,7 @@ regresión la bloquea.
 > `MIDI`. La fase que hace que Cycles se oiga. Toca el hilo de tiempo real y el
 > instante en que cambia el material: es la que la medición final juzga.
 
-- [ ] Task: Cada Track avanza al cerrar su propia vuelta
+- [~] Task: Cada Track avanza al cerrar su propia vuelta
   - [ ] Tests (Red): un Track de N Steps cambia de Cycle **en el Step 0** de la vuelta siguiente, comprobado sobre el índice de Step y no de oído (FR5)
   - [ ] Tests (Red): dos Tracks de longitudes distintas —16 Steps y 12— no cambian de Cycle a la vez (FR4)
   - [ ] Tests (Red): con Divisions distintas, cada uno avanza según **su** vuelta, no según el tiempo del otro
