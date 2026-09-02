@@ -130,15 +130,15 @@ revisar el diseño antes de seguir.
 
 ## FASE 6: LA PANTALLA
 
-- [~] Task: Cablear el estado en `TransportModel` (FR9, FR10)
-  - [ ] Los dos vectores de doce publicados para la vista, espejados al
+- [x] Task: Cablear el estado en `TransportModel` (FR9, FR10) [c4814e4]
+  - [x] Los dos vectores de doce publicados para la vista, espejados al
         `MuteMask` en un solo sitio — el mismo criterio que ya rige para la
         selección de Track: táctil y controlador entran por la misma puerta.
-  - [ ] El gesto del controlador de la fase 5 desemboca aquí, no en la vista.
-  - [ ] `stop()` y el cambio de Track, Cycle o Pattern **no** lo tocan (FR10).
-  - [ ] Si algo de esto pide un test, va a `MIDI` y no a `App` — la regla del
+  - [x] El gesto del controlador de la fase 5 desemboca aquí, no en la vista.
+  - [x] `stop()` y el cambio de Track, Cycle o Pattern **no** lo tocan (FR10).
+  - [x] Si algo de esto pide un test, va a `MIDI` y no a `App` — la regla del
         `workflow.md`.
-- [ ] Task: El par M/S debajo de cada pastilla (FR5)
+- [~] Task: El par M/S debajo de cada pastilla (FR5)
   - [ ] Segunda fila en `TrackSelectorView`, dos botones por Track alineados con
         su pastilla, con `Brutalist` y `Typography`: sin estilo propio (NFR5).
   - [ ] Los tres estados legibles sin texto: `M` activo relleno, `S` activo
