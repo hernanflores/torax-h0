@@ -1,0 +1,34 @@
+Task: Lo que cambia de Cycle y lo que no puede cambiar todavía
+Fase 3 — v2 rebanada 3 (Cycles)
+
+LA DECISIÓN DIFÍCIL DE LA FASE, TOMADA
+Division NO cambia de Cycle a Cycle. Los otros siete parámetros sí, cada uno
+con su test: Steps (que además cambia la longitud de la vuelta), Pulses,
+Rotate, pool, marco tonal, Groove y canal.
+
+POR QUÉ SE ACOTA
+La rejilla de un Track la fija la `MusicalTimeline` con la que se construye su
+`TrackScheduler`, en Play, y no se vuelve a leer. Cambiar la Division reubica
+todos los Steps futuros respecto a un origen que ya pasó. Hacerlo bien exige
+una línea de tiempo rebasable por Track, y eso rompe el invariante del que
+depende que los dieciséis suenen en fase sin sincronización posterior: todas
+las rejillas se miden contra el MISMO origen. Es trabajo en el núcleo de
+timing, con medición de jitter obligatoria, para un caso que nadie ha pedido
+todavía —cambiar de compás a mitad de patrón— y con riesgo de regresión
+exactamente donde la v1 se pasó midiendo.
+
+QUÉ PASA EN LA PRÁCTICA
+El Cycle nuevo suena, con todo lo demás suyo, sobre la rejilla del Cycle que
+estuviera vigente al pulsar Play. No se rompe nada: se ignora un campo.
+
+DÓNDE QUEDA ESCRITO
+- Known Limitations 8 del `spec.md`, con el porqué.
+- Nota en la documentación de `TrackScheduler`, que ya declaraba esta misma
+  limitación para el snapshot en caliente. Con Cycles hay una vía más de
+  llegar a ella: antes había que girar el knob mientras sonaba; ahora basta
+  con darle Divisions distintas a dos Cycles.
+- Dos tests en `WhatChangesWithTheCycleTests` que fijan el comportamiento con
+  números, así que el día que se resuelva se verá que cambian.
+
+VERIFICACIÓN
+- 6 tests nuevos. MIDI 361 (21 + 340), Engine 410, 0 fallos.
