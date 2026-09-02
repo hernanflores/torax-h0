@@ -125,7 +125,7 @@ regresión la bloquea.
   lo deja igual de fuera y la comparación lo devuelve a 0.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 3: El scheduler avanza en el límite de vuelta
+## Phase 3: El scheduler avanza en el límite de vuelta [checkpoint: 0802798]
 
 > `MIDI`. La fase que hace que Cycles se oiga. Toca el hilo de tiempo real y el
 > instante en que cambia el material: es la que la medición final juzga.
