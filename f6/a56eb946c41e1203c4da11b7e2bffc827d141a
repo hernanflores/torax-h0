@@ -25,3 +25,24 @@ lee por mix y se escribe por los dos toggles.
 FR10 cubierto de paso: stop() conserva mutes y solos.
 
 Fuera del hilo del scheduler (NFR1): apply corre donde corre stop().
+
+--- Verificación de fase (Fase 4) — 2026-09-02 ---
+
+Comandos:
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests \
+    --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+                                                              → 426 tests, 0 fallos
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|\
+    JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests' → 21 tests, 1 omitido, 0 fallos
+
+Cobertura MIDI: 92,05% de líneas (umbral 80%).
+
+Cobertura del diff: Transport.swift, cubierto por TrackSilenceTests (7) y
+MuteSilencesTests (10), más los 4 de StopWithEveryTrackTests que no cambiaron.
+
+Verificación manual: la fase no tiene superficie todavía —el gesto llega en las
+fases 5 y 6—, así que se verificó por lectura: el barrido compara dos fotos y
+cubre solo la diferencia, conserva el orden de stop() y los dieciséis Cycles, y
+la limitación del canal compartido queda escrita en el método.
+
+Confirmación del usuario: «avancemos».
