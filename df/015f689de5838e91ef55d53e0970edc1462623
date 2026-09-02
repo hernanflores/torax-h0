@@ -31,3 +31,21 @@ VERIFICACION
 - Coherencia comprobada a mano: --grid= resuelve por fileNameSuffix, asi que la
   invocacion es --grid=12-tracks-cycles y el informe sale como
   jitter-report-12-tracks-cycles.txt.
+
+---
+
+VERIFICACION DE FASE 5 — EL ARNES QUEDA COHERENTE
+
+Comando: xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+Resultado: BUILD SUCCEEDED. Sin medicion de jitter: suspendida el 2026-09-02.
+
+Verificacion manual propuesta:
+1. El panel de medicion lista «12 Tracks» y «12 Tracks · 4 Cycles».
+2. --grid=12-tracks-cycles es el nombre valido; el viejo se rechaza listando los
+   disponibles.
+3. workflow.md nombra ya 12-tracks-cycles y explica por que el renombrado no
+   llevo medicion.
+4. Los device-verification.md de las rebanadas 2 y 3 conservan los nombres
+   viejos, con nota fechada: registran ejecuciones que ocurrieron.
+
+Confirmacion del usuario: «OK» (2026-09-02).
