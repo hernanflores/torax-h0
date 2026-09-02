@@ -19,7 +19,7 @@ revisar el diseño antes de seguir.
 
 ## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
 
-- [ ] Task: Anotar mute/solo en la Pre Spec y el sitio del par en el handoff (FR11)
+- [~] Task: Anotar mute/solo en la Pre Spec y el sitio del par en el handoff (FR11)
   - [ ] Nota fechada 2026-09-02 en `Pre Spec Torax H-0.md`: mute y solo por
         Track, qué son y —lo que importa— que **viven fuera del material**, por
         encima del Pattern. La Pre Spec no los tenía en absoluto.
