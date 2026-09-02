@@ -35,3 +35,42 @@ En la documentación de `PatternHandoff`, con la tabla, y en
 VERIFICACIÓN
 - Los 5 tests nuevos pasan; la suite de `PatternHandoff` sigue pasando.
 - Sin medición de jitter: no se toca el camino de emisión.
+
+---
+
+VERIFICACIÓN DE FASE — Phase 1: El coste, medido antes de construir
+Fecha: 2026-09-02
+
+COMANDOS EJECUTADOS
+  swift test --package-path Packages/Engine
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+RESULTADO
+  Engine: 383 tests, 0 fallos, cobertura 99,26% de líneas.
+  MIDI:   342 tests (21 + 321, partición de CI), 0 fallos,
+          cobertura 91,80% de líneas medida en un proceso con el profdata
+          fusionado a mano, según la ampliación del 2026-08-30 de workflow.md.
+  App:    BUILD SUCCEEDED.
+  Sin aparición del flake clientCreationFailed(-50) en esta pasada.
+
+VERIFICACIÓN MANUAL PROPUESTA
+  1. BeatStep Pro al iPad, iPad a un multitímbrico.
+  2. Compilar y ejecutar en dispositivo.
+  3. Play: suena el 16/5 de siempre, sin cortes ni notas duplicadas, playhead
+     avanzando como antes.
+  4. Girar el knob de Pulses: el cambio se oye en el Step siguiente, sin salto
+     de valor — verifica que quitar la relectura por evento no retrasó la
+     respuesta.
+  5. Cambiar el canal de un Track en pantalla mientras suena: las notas se van
+     al canal nuevo. Era la razón por la que existía la lectura por evento.
+  6. Stop: nada queda sonando.
+
+CONFIRMACIÓN DEL USUARIO
+  "si, funciono." — 2026-09-02.
+
+SIN MEDICIÓN DE JITTER EN ESTA FASE
+La fase quita trabajo del camino de emisión y no mueve ningún instante, que es
+el caso que la nota del 2026-08-28 de workflow.md exime. La medición
+obligatoria y bloqueante es la de la Fase 6.
