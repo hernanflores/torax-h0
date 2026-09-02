@@ -198,12 +198,17 @@ regresión la bloquea.
   general. **No entra en `assignments`**: no es un `TrackParameter` —los nueve
   primeros mueven parámetros del Cycle, este mueve a cuál se apunta— y meterlo
   ahí obligaría a inventarle un caso al enum que el modelo no tiene.
-- [~] Task: Los knobs y los pads editan el Cycle en edición
-  - [ ] Tests (Red): un giro de knob mueve el parámetro del Cycle en edición y **no** el de los otros quince Cycles ni el de los otros quince Tracks (FR8)
-  - [ ] Tests (Red): un pad mete la altura en el pool de ese Cycle
-  - [ ] Tests (Red): editar un Cycle que **no** está sonando no altera lo que suena — construir el B mientras suena el A
-  - [ ] Tests (Red): editar el Cycle que **sí** está sonando se oye en el Step siguiente, como hoy
-  - [ ] Implementación (Green)
+- [x] Task: Los knobs y los pads editan el Cycle en edición — `395b67c`
+  - [x] Tests (Red): un giro de knob mueve el parámetro del Cycle en edición y **no** el de los otros quince Cycles ni el de los otros quince Tracks (FR8)
+  - [x] Tests (Red): un pad mete la altura en el pool de ese Cycle
+  - [x] Tests (Red): editar un Cycle que **no** está sonando no altera lo que suena — construir el B mientras suena el A
+  - [x] Tests (Red): editar el Cycle que **sí** está sonando se oye en el Step siguiente, como hoy
+  - [x] Implementación (Green)
+
+  **Los seis pasaron a la primera**: la tarea anterior ya había redirigido el
+  camino de edición entero. No los hace inútiles — fijan la decisión donde se
+  puede romper: un `replacing` que volviera a apuntar al Cycle que suena
+  pisaría lo que se está oyendo, y no lo vería nadie hasta el iPad.
 - [ ] Task: Cuántos Cycles activos se ajusta táctilmente
   - [ ] Tests (Red): la vía táctil mueve el número de activos del Track seleccionado y publica, como `setChannel` y `setFrame`
   - [ ] Tests (Red): ningún CC llega hasta ahí — es configuración, no material generativo (`product-guidelines.md`)
