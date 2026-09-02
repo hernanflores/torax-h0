@@ -182,7 +182,7 @@ regresión la bloquea.
   cursor fuera del rango a propósito— deduplicando pares canal+altura.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 4: La entrada edita el Cycle en edición
+## Phase 4: La entrada edita el Cycle en edición [checkpoint: b4ba89b]
 
 > `MIDI`, en `ControlInput`. Dos cursores conviviendo: el que suena lo mueve el
 > scheduler, el que se edita lo mueve el knob 10.
