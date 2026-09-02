@@ -1,0 +1,36 @@
+Task: El knob 10 mueve el Cycle en edición
+Fase 4 — v2 rebanada 3 (Cycles)
+
+QUÉ CAMBIA
+- `Track.editingCycle` y `Track.replacingEditing(_:)`.
+- `Pattern.editingCycle(at:)`, y `Pattern.replacing(_ cycle:at:)` pasa a
+  apuntar al Cycle EN EDICIÓN en vez de al que suena. Es el camino de toda
+  edición (FR8), así que apunta donde debe.
+- `ControlMapping.editingCycleController`: el décimo knob del bloque, CC 79.
+  No entra en `assignments` porque no es un `TrackParameter`: los nueve
+  primeros mueven parámetros del Cycle, este mueve A CUÁL se apunta. Meterlo
+  en la tabla obligaría a inventarle un caso al enum que el modelo no tiene.
+- `ControlInput.moveEditingCycle(by:)`, despachado antes que la búsqueda de
+  parámetro.
+
+POR QUÉ NO CAMBIA NADA PARA QUIEN NO USE CYCLES
+Con `activeCount` 1, el cursor de edición y el de reproducción valen los dos
+0, así que `editingCycle` y `current` son el mismo Cycle. Los 352 tests de
+MIDI y los 410 de Engine pasan sin tocar una aserción.
+
+LA DESVIACIÓN DE LA PRE SPEC, ANOTADA
+La tabla de Shape dice «Cycles: selecciona/edita el Cycle actual; con CTRL
+ajusta 1–16 Cycles activos». El BeatStep Pro no tiene CTRL. El knob se queda
+con la mitad primaria y cuántos hay activos se ajusta táctilmente.
+
+No es una concesión al hardware: `product-guidelines.md` ya pone la
+configuración del lado táctil y el material generativo del lado de los knobs,
+y cuántos Cycles recorre un Track es configuración, igual que el canal. El
+gesto de CTRL agrupaba las dos cosas porque había un modificador que lo hacía
+barato, no porque sean lo mismo. Nota fechada en la Pre Spec, junto a la del
+2026-08-31 sobre los pads, que es la misma clase de desviación.
+
+VERIFICACIÓN
+- 8 tests nuevos en `EditingCycleInputTests`, incluido el de que cada Track
+  conserva su Cycle en edición al cambiar de Track y volver.
+- Engine 410, MIDI 373 (21 + 352), 0 fallos. iOS BUILD SUCCEEDED.
