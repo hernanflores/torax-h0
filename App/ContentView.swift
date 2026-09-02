@@ -196,24 +196,36 @@ struct ContentView: View {
     /// patrón permanezca visible bajo él; con dos regiones que no se solapan la
     /// regla se cumple sin excepción, y deja de ser algo que hay que recordar.
     ///
-    /// **El anillo pequeño es intencional.** Ocupa un quinto del ancho porque lo
-    /// que se lee de un vistazo es la *forma* —cuáles tienen material, cuál está
-    /// elegido, por dónde va el tiempo—, no el detalle de un Step. El detalle es
-    /// el panel.
+    /// **El anillo se lleva la columna ancha**, que es lo que
+    /// `product-guidelines.md` implica: lo expresivo es el material musical y el
+    /// ancho se reparte según eso, no según cuánto texto hay que poner. Lo que se
+    /// lee de un vistazo es la *forma* —cuáles tienen material, cuál está
+    /// elegido, por dónde va el tiempo—; el detalle está en el panel.
+    ///
+    /// > La versión anterior de esta nota decía que el anillo ocupaba «un quinto
+    /// > del ancho» y que eso era intencional. Se quedó de la época del handoff y
+    /// > contradecía al reparto real, que hace justo lo contrario desde el
+    /// > 2026-09-01. Ver `columns(in:)`.
     private func stage(width: CGFloat, height: CGFloat) -> some View {
         let columns = Self.columns(in: width)
         // **El anillo es cuadrado, así que lo acota la dimensión más corta.**
-        // Con solo el ancho crecía hasta empujar el selector y la fila de canal
-        // fuera de la pantalla, y esas dos son controles: quedarse sin verlos es
+        // Con solo el ancho crecía hasta empujar el selector y la fila de Cycles
+        // fuera de la pantalla, y las dos son controles: quedarse sin verlos es
         // peor que un anillo algo menor.
         let side = min(columns.rings, height - Self.reservedBelowStage)
+        // **Lo que el anillo no usa no se queda muerto.** Cuando manda la altura,
+        // el anillo sale más estrecho que su columna y esa diferencia era un
+        // hueco vacío a la izquierda de la lectura. Se la queda la lectura, que
+        // es texto que envuelve: `product-guidelines.md` pide que el valor grande
+        // no se corte, y ancho de más es exactamente lo que evita partirlo.
+        let slack = max(columns.rings - side, 0)
 
         return HStack(alignment: .top, spacing: Self.gutter) {
             rings
                 .frame(width: side, height: side)
 
             readout
-                .frame(width: columns.readout, height: side)
+                .frame(width: columns.readout + slack, height: side)
 
             families
                 .frame(width: columns.families, height: side)
@@ -221,14 +233,30 @@ struct ContentView: View {
     }
 
     /// Lo que hay que dejar libre debajo del escenario: la fila de navegación,
-    /// el selector de los dieciséis, la fila de canal y la de Cycles, con sus
-    /// separaciones.
+    /// el selector de Tracks y la de Cycles, con sus separaciones.
     ///
-    /// Es una suma de constantes de layout y no una medida: si alguna cambia de
-    /// alto, este número cambia con ella. **Subió de 260 a 324 el 2026-09-02**,
-    /// al entrar la fila de Cycles: su etiqueta, sus botones de 44 puntos y la
-    /// separación con la de canal.
-    static let reservedBelowStage: CGFloat = 324
+    /// **Es una suma escrita como suma, y no un número.** Antes era un literal —
+    /// 260, luego 324— y eso lo dejó mintiendo dos veces el mismo día: la fila de
+    /// canal se fue a la pantalla MIDI y la pastilla bajó de 56 puntos a 44, pero
+    /// el 324 seguía reservándolos. El anillo pagaba la diferencia, unos 108
+    /// puntos de lado que no usaba nadie. Escrito así, cambiar el alto de una
+    /// fila cambia la reserva sola.
+    static let reservedBelowStage: CGFloat =
+        navigationRowHeight + contentSpacing + trackScreenSpacing
+        + selectorRowHeight + rowSpacing + cyclesRowHeight
+
+    /// La fila de pestañas y el transporte, arriba del todo.
+    static let navigationRowHeight: CGFloat = 44
+    /// Entre la navegación y la pantalla.
+    static let contentSpacing: CGFloat = 20
+    /// Entre el escenario y el selector.
+    static let trackScreenSpacing: CGFloat = 24
+    /// Una pastilla de Track: solo su número desde el 2026-09-02.
+    static let selectorRowHeight: CGFloat = 44
+    /// Entre el selector y la fila de Cycles.
+    static let rowSpacing: CGFloat = 16
+    /// La fila de Cycles: su etiqueta, su separación y sus botones.
+    static let cyclesRowHeight: CGFloat = 16 + 8 + 44
 
     /// El hueco entre columnas.
     static let gutter: CGFloat = 24
@@ -237,9 +265,9 @@ struct ContentView: View {
     ///
     /// > **Aquí el handoff se contradice consigo mismo, y gana la app.** El mock
     /// > da al anillo 190 puntos de 924 —un quinto— y el resto a la lectura. Esas
-    /// > proporciones se dibujaron para **cinco** anillos; con dieciséis, un
-    /// > quinto del ancho deja cada banda en unos 6 puntos y el mapa deja de
-    /// > poder contarse. El anillo es lo que la pantalla existe para enseñar
+    /// > proporciones se dibujaron para **cinco** anillos; con doce, un quinto del
+    /// > ancho deja cada banda en unos 8 puntos y el mapa deja de poder
+    /// > contarse. El anillo es lo que la pantalla existe para enseñar
     /// > —`product-guidelines.md`: lo expresivo es el material musical— así que
     /// > se lleva el ancho grande y la lectura se queda con el estrecho.
     /// >
@@ -258,7 +286,7 @@ struct ContentView: View {
         return (rings, readout, families)
     }
 
-    /// La columna izquierda: los dieciséis anillos y nada más.
+    /// La columna izquierda: los doce anillos y nada más.
     private var rings: some View {
         // `TimelineView` redibuja al ritmo de la pantalla, pero **la posición no
         // la decide él**: cada fotograma vuelve a preguntar al modelo, que la
