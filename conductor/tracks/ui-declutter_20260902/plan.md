@@ -106,7 +106,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
 
 ## FASE 4: LA PANTALLA MIDI
 
-- [ ] Task: `3 · MIDI` deja de estar en discontinuo (FR5)
+- [x] Task: `3 · MIDI` deja de estar en discontinuo (FR5) [38d846f]
   - [ ] Añadir el caso a `Screen` con su etiqueta; `unavailableScreens` queda en
         `["4 · Banks", "5 · Tracks"]`.
   - [ ] Pantalla vacía con su título, para que el cambio de navegación se
