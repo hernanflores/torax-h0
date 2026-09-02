@@ -89,20 +89,20 @@ revisar el diseño antes de seguir.
         a ser el caso "los doce".
   - [x] Conservar el sellado una ventana por delante y el orden de las dos
         pasadas, con su porqué ya escrito en `Transport`.
-- [~] Task: Volverse inaudible apaga (FR4)
-  - [ ] Tests (Red): mutear un Track que suena dispara su barrido; **soltar** un
+- [x] Task: Volverse inaudible apaga (FR4) [f6a56eb]
+  - [x] Tests (Red): mutear un Track que suena dispara su barrido; **soltar** un
         solo que excluía a otros dispara el barrido de los que acaban de quedar
         fuera; desmutear no dispara nada.
-  - [ ] Tests (Red): un Track que ya era inaudible y recibe otro gesto no vuelve
+  - [x] Tests (Red): un Track que ya era inaudible y recibe otro gesto no vuelve
         a barrerse — el apagado va con la transición, no con el estado.
-  - [ ] Implementación (Green): al cambiar la máscara, comparar audibilidad antes
+  - [x] Implementación (Green): al cambiar la máscara, comparar audibilidad antes
         y después y barrer los que pasaron de audibles a inaudibles.
-  - [ ] Verificar que ocurre **fuera** del hilo del scheduler (NFR1), como el de
+  - [x] Verificar que ocurre **fuera** del hilo del scheduler (NFR1), como el de
         `stop()`.
-  - [ ] Anotar en el código la limitación de canal compartido: el `CC 123` es por
+  - [x] Anotar en el código la limitación de canal compartido: el `CC 123` es por
         canal, así que dos Tracks en el mismo canal se apagan juntos y el otro
         vuelve en su siguiente pulso.
-  - [ ] Cobertura `MIDI` ≥80%.
+  - [x] Cobertura `MIDI` ≥80%.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: EL GESTO DEL CONTROLADOR
