@@ -104,12 +104,17 @@ regresión la bloquea.
 
   Y el detector de tamaño del snapshot saltó, que es para lo que estaba puesto:
   la cota pasa de 4 KB a 64 KB, con la decisión de la Fase 1 escrita al lado.
-- [~] Task: Cuántos Cycles activos, y qué pasa al moverlo
-  - [ ] Tests (Red): el rango es 1–16 y se frena en los extremos, como Steps y Division
-  - [ ] Tests (Red): **subir el número copia el Cycle en edición** al que empieza a existir (FR3), y el copiado suena igual hasta que se edita
-  - [ ] Tests (Red): bajar el número descarta por el final, y el Cycle en edición se acota de inmediato si queda fuera (FR9)
-  - [ ] Tests (Red): bajar el número **no toca el cursor de reproducción** — de eso se encarga el scheduler al cerrar la vuelta
-  - [ ] Implementación (Green)
+- [x] Task: Cuántos Cycles activos, y qué pasa al moverlo — `5b9ca53`
+  - [x] Tests (Red): el rango es 1–16 y se frena en los extremos, como Steps y Division
+  - [x] Tests (Red): **subir el número copia el Cycle en edición** al que empieza a existir (FR3), y el copiado suena igual hasta que se edita
+  - [x] Tests (Red): bajar el número descarta por el final, y el Cycle en edición se acota de inmediato si queda fuera (FR9)
+  - [x] Tests (Red): bajar el número **no toca el cursor de reproducción** — de eso se encarga el scheduler al cerrar la vuelta
+  - [x] Implementación (Green)
+
+  Entra con esta tarea el **segundo cursor**, el de edición (FR7): lo pedían la
+  regla de FR3 —se copia el Cycle en edición, no el primero ni el que suena— y
+  la de FR9. El tercer contador deja el Pattern en 37 248 bytes contra los
+  36 992 del tipo de prueba de la Fase 1: un 0,7%, que no mueve la decisión.
 - [ ] Task: El recorrido, como función pura
   - [ ] Tests (Red): con N activos, el cursor recorre 0…N−1 y vuelve a 0
   - [ ] Tests (Red): con un solo Cycle activo el cursor no se mueve nunca (FR10)
