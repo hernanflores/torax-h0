@@ -77,7 +77,13 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
 
 ## FASE 3: EL SELECTOR DICE SOLO SU NÚMERO
 
-- [ ] Task: Doce pastillas, un número cada una (FR4)
+> **Enmienda del 2026-09-02 — las dos tareas van en un commit.** Quitar el canal
+> de la pastilla y quitar la fila que lo edita son la misma edición: los
+> parámetros `channels` y `onChannelChange` sirven a las dos, y dejar una sin la
+> otra no compila. Se marcan con el mismo SHA.
+
+
+- [x] Task: Doce pastillas, un número cada una (FR4) [d582038]
   - [ ] Quitar el canal del `label` del botón y dejar el número centrado, con los
         tres estados intactos.
   - [ ] La fila pasa de dieciséis a doce posiciones, derivadas de
@@ -85,7 +91,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
   - [ ] Actualizar la documentación de la vista: la razón de «una fila y no dos»
         sigue siendo válida y la de «el canal en pequeño y debajo» desaparece con
         el código.
-- [ ] Task: La pantalla Track pierde su fila `Channel` (FR7)
+- [x] Task: La pantalla Track pierde su fila `Channel` (FR7) [d582038]
   - [ ] Retirar `channelRow`, `selectedChannel` y los parámetros `channels` /
         `onChannelChange` de `TrackSelectorView`.
   - [ ] `ContentView` deja de pasárselos; `model.channels` y `model.setChannel`
