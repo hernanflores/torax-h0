@@ -1,0 +1,33 @@
+Task: El Cycle vigente decide lo que suena, entero
+Fase 3 — v2 rebanada 3 (Cycles)
+
+QUÉ SE FIJA
+- Al cruzar el límite cambian a la vez las cinco familias: Shape, pool, marco
+  tonal, Groove y canal. Un test las comprueba las cinco en el Step 15 y en el
+  16, así que un cambio parcial dejaría alguna en el valor anterior.
+- El Groove con que sale cada nota es el del mismo Cycle que la produjo.
+- El Cycle se lee una vez por límite, no una por evento: en cuatro vueltas hay
+  exactamente tres cambios.
+
+EL FALLO QUE ESTO ENCONTRÓ
+La tarea anterior dejó dentro una regresión sutil. `PatternScheduler` calculaba
+`material.emitsAnything` UNA VEZ POR VENTANA y lo usaba para decidir si emitir.
+Eso era correcto mientras el material no podía cambiar a mitad de ventana;
+con Cycles sí puede. Consecuencias, las dos reproducidas con test:
+  - un Track que arrancaba mudo y dejaba de serlo al cambiar de Cycle no
+    sonaba en esa vuelta;
+  - uno que enmudecía seguía llamando al emisor con altura nil durante el
+    resto de la ventana.
+La comprobación se mueve a `TrackScheduler`, por Step, donde el material es el
+vigente.
+
+DÓNDE VA LA COMPROBACIÓN, Y POR QUÉ AHÍ
+Después de la tirada de Probability, no antes. Delante cambiaría cuánta
+aleatoriedad consume un Cycle mudo, y entonces llenarle el pool mientras suena
+desplazaría las omisiones de un patrón que nadie tocó — que es el mismo
+argumento por el que un Step que no dispara no consume tirada.
+
+VERIFICACIÓN
+- 5 tests nuevos en `CurrentCycleDecidesEverythingTests`. Dos de ellos
+  arrancaron en rojo por el fallo de arriba.
+- Engine 410, MIDI 355 (21 + 334), 0 fallos. iOS BUILD SUCCEEDED.
