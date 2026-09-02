@@ -267,7 +267,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: Doce Tracks, pantalla MIDI y limpieza del selector**
+- [~] **Track: Doce Tracks, pantalla MIDI y limpieza del selector**
   *Link: [conductor/tracks/ui-declutter_20260902/index.md](./tracks/ui-declutter_20260902/index.md)*
 
   Tres ajustes de superficie sobre la pantalla de las rebanadas 1–3, todos para
