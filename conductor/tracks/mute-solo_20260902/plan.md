@@ -32,21 +32,21 @@ revisar el diseño antes de seguir.
 
 ## FASE 2: LA MÁSCARA Y LA REGLA
 
-- [~] Task: `MuteMask` — doce mutes y doce solos en una palabra (FR1)
-  - [ ] Tests (Red): alternar el mute del Track 0 y del 11 no toca a los demás;
+- [x] Task: `MuteMask` — doce mutes y doce solos en una palabra (FR1) [2d30365]
+  - [x] Tests (Red): alternar el mute del Track 0 y del 11 no toca a los demás;
         mute y solo del mismo Track son independientes; los bits por encima de
         `Pattern.trackCount` no se pueden encender; el valor inicial es todo a
         cero.
-  - [ ] Tests (Red): una sola lectura devuelve los dos juegos —el tipo no expone
+  - [x] Tests (Red): una sola lectura devuelve los dos juegos —el tipo no expone
         forma de leer el mute sin el solo—, que es lo que impide la mezcla de
         dos instantes.
-  - [ ] Implementación (Green): `MuteMask` en `Packages/MIDI`, un `UInt64`
+  - [x] Implementación (Green): `MuteMask` en `Packages/MIDI`, un `UInt64`
         atómico con las primitivas de `Atomics.swift`; bits 0–11 mute, 16–27
         solo.
-  - [ ] Documentar en el tipo **por qué una palabra y no dos atómicos**: dos
+  - [x] Documentar en el tipo **por qué una palabra y no dos atómicos**: dos
         lecturas podrían caer a ambos lados de un cambio y dar un instante en el
         que todo calla o nada.
-- [ ] Task: La regla de audibilidad (FR2)
+- [~] Task: La regla de audibilidad (FR2)
   - [ ] Tests (Red): sin nada activo suenan los doce; con un mute suenan once;
         con un solo suena uno; con dos solos suenan dos; **soleado y muteado
         calla**; quitar el último solo devuelve los doce.
