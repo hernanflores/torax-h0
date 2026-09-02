@@ -78,18 +78,18 @@ revisar el diseño antes de seguir.
 
 ## FASE 4: APAGAR LO QUE YA SUENA
 
-- [~] Task: Factorizar el barrido de silencio de `Transport.stop()` (FR4)
-  - [ ] Tests (Red): el barrido acotado a un Track manda `CC 123` por su canal y
+- [x] Task: Factorizar el barrido de silencio de `Transport.stop()` (FR4) [59c8ba7]
+  - [x] Tests (Red): el barrido acotado a un Track manda `CC 123` por su canal y
         los note-off de las alturas de sus dieciséis Cycles, y **nada** por los
         canales de los demás.
-  - [ ] Tests (Red): `stop()` sigue apagando los doce exactamente como hoy — la
+  - [x] Tests (Red): `stop()` sigue apagando los doce exactamente como hoy — la
         suite `StopWithEveryTrackTests` no cambia de expectativas.
-  - [ ] Implementación (Green): extraer el doble barrido —`CC 123` primero,
+  - [x] Implementación (Green): extraer el doble barrido —`CC 123` primero,
         alturas después— a un método que reciba qué Tracks apagar; `stop()` pasa
         a ser el caso "los doce".
-  - [ ] Conservar el sellado una ventana por delante y el orden de las dos
+  - [x] Conservar el sellado una ventana por delante y el orden de las dos
         pasadas, con su porqué ya escrito en `Transport`.
-- [ ] Task: Volverse inaudible apaga (FR4)
+- [~] Task: Volverse inaudible apaga (FR4)
   - [ ] Tests (Red): mutear un Track que suena dispara su barrido; **soltar** un
         solo que excluía a otros dispara el barrido de los que acaban de quedar
         fuera; desmutear no dispara nada.
