@@ -23,7 +23,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
         la constante vuelve a subir.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: DOCE TRACKS EN EL MOTOR
+## FASE 2: DOCE TRACKS EN EL MOTOR [checkpoint: 3d979c5]
 
 > **Enmienda del 2026-09-02 — las cuatro tareas van en un commit.** El plan las
 > separaba y no son separables: `trackCount` es **una** constante, y en cuanto
@@ -73,7 +73,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
         declarando dieciséis.
   - [ ] Implementación (Green): acotar en la selección de Track, no en el mapeo —
         la tabla del preset describe el hardware y `preset/` no cambia.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: EL SELECTOR DICE SOLO SU NÚMERO
 
