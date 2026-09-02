@@ -21,3 +21,43 @@ algo que se rompe con ruido si alguien asigna un CC por descuido.
 VERIFICACIÓN
 - 6 tests nuevos en `ActiveCycleCountInputTests`.
 - Engine 410, MIDI 385 (21 + 364), 0 fallos. iOS BUILD SUCCEEDED.
+
+---
+
+VERIFICACIÓN DE FASE — Phase 4: La entrada edita el Cycle en edición
+Fecha: 2026-09-02
+
+COMANDOS EJECUTADOS
+  swift test --package-path Packages/Engine
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+RESULTADO
+  Engine: 410 tests, 0 fallos, cobertura 99,14% de líneas.
+  MIDI:   385 tests (21 + 364, partición de CI), 0 fallos, cobertura 92,19%.
+          ControlInput 100% de líneas, ControlMapping 100%.
+  App:    BUILD SUCCEEDED.
+  20 tests nuevos en EditingCycleInputTests,
+  EditingTargetsTheEditingCycleTests y ActiveCycleCountInputTests.
+  Sin aparición del flake clientCreationFailed(-50).
+
+VERIFICACIÓN MANUAL PROPUESTA
+La pantalla todavía no muestra nada de Cycles —eso es la Fase 5—, así que el
+knob 10 mueve algo invisible y `setActiveCycleCount` existe sin que nadie lo
+llame. Lo que se pidió confirmar:
+  1. BeatStep Pro al iPad, iPad a un multitímbrico.
+  2. Play: suena como antes; todos los Tracks siguen con un Cycle activo.
+  3. El knob 10 no hace nada, que es lo correcto con un Cycle activo.
+  4. Los otros nueve knobs y los pads responden en el Step siguiente. El
+     camino de edición cambió de destino entero, aunque con un Cycle apunte al
+     mismo sitio.
+  5. Los step buttons cambian de Track y cada uno conserva sus ajustes.
+  6. Stop: nada queda sonando.
+
+CONFIRMACIÓN DEL USUARIO
+  "Si, avancemos!" — 2026-09-02.
+
+SIN MEDICIÓN DE JITTER EN ESTA FASE
+`ControlInput` corre en el hilo de control, nunca en el del scheduler. No se
+mueve ningún instante.
