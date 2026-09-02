@@ -144,11 +144,17 @@ regresión la bloquea.
   knob. Y la vuelta se mide desde el Step en que empezó, no con un módulo sobre
   el índice absoluto, para que un Cycle de 12 Steps que entra en el 16 dure doce
   y no ocho.
-- [~] Task: El Cycle vigente decide lo que suena, entero
-  - [ ] Tests (Red): al cambiar de Cycle cambian a la vez Shape, pool, marco tonal, Groove y canal — no la mitad de uno y la mitad de otro
-  - [ ] Tests (Red): el Cycle nuevo se lee **una sola vez** al cruzar el límite, no por evento
-  - [ ] Tests (Red): un Cycle con el pool vacío no emite nada y **no rompe el recorrido**: la vuelta se cuenta igual y el siguiente sí suena (NFR3 de la rebanada 1: el coste crece con lo que suena)
-  - [ ] Implementación (Green)
+- [x] Task: El Cycle vigente decide lo que suena, entero — `e5f6fce`
+  - [x] Tests (Red): al cambiar de Cycle cambian a la vez Shape, pool, marco tonal, Groove y canal — no la mitad de uno y la mitad de otro
+  - [x] Tests (Red): el Cycle nuevo se lee **una sola vez** al cruzar el límite, no por evento
+  - [x] Tests (Red): un Cycle con el pool vacío no emite nada y **no rompe el recorrido**: la vuelta se cuenta igual y el siguiente sí suena (NFR3 de la rebanada 1: el coste crece con lo que suena)
+  - [x] Implementación (Green)
+
+  **Encontró una regresión de la tarea anterior.** La decisión de emitir se
+  tomaba una vez por ventana, de cuando el material no podía cambiar a mitad de
+  ventana. Con Cycles sí puede: un Track que arrancaba mudo y dejaba de serlo al
+  cambiar de Cycle no sonaba en esa vuelta, y uno que enmudecía seguía llamando
+  al emisor con altura `nil`. Las dos reproducidas con test antes de arreglar.
 - [ ] Task: Lo que cambia de Cycle y lo que no puede cambiar todavía
   - [ ] Tests (Red): Steps, Pulses, Rotate, pool, marco tonal, Groove y canal cambian con el Cycle
   - [ ] **Division es el caso difícil y se decide aquí, con test.** Cambiar la Division reubica todos los Steps futuros respecto a un origen que ya pasó — es la limitación que `TrackScheduler` ya documenta para el snapshot en caliente. En el límite de vuelta el origen sí es reubicable: si no lo es sin romper la fase con los otros quince, **se acota explícitamente** y va a *Known Limitations* del spec
