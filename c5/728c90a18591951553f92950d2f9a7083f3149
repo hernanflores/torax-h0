@@ -1,0 +1,24 @@
+Task: La decisión, tomada con el dato delante
+Fase 1 — v2 rebanada 3 (Cycles)
+
+LA DECISIÓN
+El snapshot con los 256 Cycles cabe: un load() cuesta ~870 ns, el 0,0044% de
+la ventana de 20 ms, contra un presupuesto del 1%. Se queda el diseño tal como
+estaba escrito — FR5 intacto, avance del Cycle en el hilo del scheduler, y se
+publica el Pattern entero por ventana.
+
+QUÉ QUEDA DESCARTADO, Y POR QUÉ IMPORTA ESCRIBIRLO
+Las dos alternativas que el plan guardaba para el caso contrario —mover el
+avance al hilo principal (FR5 cambiaría) o publicar por Track en vez de
+entero— quedan cerradas aquí. Se escriben como descartadas para que no se
+reabran a mitad de la Fase 3: haría falta que el número se moviera tres
+órdenes de magnitud.
+
+LO QUE ESTE NÚMERO NO DICE
+Es una copia de memoria en debug sobre macOS, no jitter en un iPad. Lo que
+descarta es que el TAMAÑO sea el problema. El coste real del hilo con los
+dieciséis Tracks avanzando lo mide la Fase 6, que sigue siendo bloqueante.
+
+DÓNDE QUEDA
+Enmienda fechada del 2026-09-02 en el NFR2 de `spec.md`, con la tabla y la
+comparación contra el snapshot de hoy medido en la misma pasada.
