@@ -182,10 +182,29 @@ pantalla.
   la Division del Track que emite: una copia del snapshot entero **por nota**.
   Con 2,25 KB pasaba desapercibido; con 36 KB no. Se corrige en esta rebanada,
   que es la que lo vuelve caro.
-- **NFR4 — Medición de jitter obligatoria y bloqueante.** Con los dieciséis
-  Tracks sonando y los dieciséis avanzando de Cycle. Umbral: máximo < 2 ms,
-  σ < 0,5 ms. Referencias: rebanada 6 (máx 0,151 ms, σ 0,009–0,013 ms) y la que
-  deje la Fase 6 de `multi-track`. Una regresión bloquea la rebanada.
+- **NFR4 — ~~Medición de jitter obligatoria y bloqueante.~~ Retirado el
+  2026-09-02.** Decía: con los dieciséis Tracks sonando y los dieciséis
+  avanzando de Cycle, umbral máximo < 2 ms y σ < 0,5 ms, y una regresión bloquea
+  la rebanada.
+
+  > **Por qué se retira.** Decisión del usuario del 2026-09-02, después de que
+  > la recogida del informe del dispositivo fallara: no se hacen más mediciones
+  > de jitter en el proyecto. Está escrita en `workflow.md`, en *Medición de
+  > jitter: suspendida*, con el coste de la decisión detallado.
+  >
+  > **Qué queda sin comprobar en esta rebanada, concretamente:** el trabajo que
+  > la Fase 3 añadió al hilo del scheduler —una decisión en el límite de cada
+  > vuelta y un cambio de material justo ahí— y la carga de la fila de Cycles
+  > repintándose a 10 Hz.
+  >
+  > **Qué sí está medido:** el tamaño. Un `load()` del snapshot con los 256
+  > Cycles cuesta ~870 ns, el 0,0044% de la ventana de 20 ms (Fase 1). Eso
+  > descarta que el tamaño sea el problema, y era la incógnita por la que la
+  > Fase 1 iba primero. Lo que no descarta es el coste del avance en sí.
+  >
+  > La herramienta se queda: la rejilla `16 Tracks · 4 Cycles` y su
+  > procedimiento están en el repositorio y en `device-verification.md`, listos
+  > para el día que se quiera volver a medir.
 - **NFR5 — El aleatorio sigue siendo reproducible.** Misma semilla, misma
   secuencia. Cambiar de Cycle no resiembra el generador: Probability es un valor
   del Cycle, el estado del generador es del scheduler, y esa frontera no se mueve.

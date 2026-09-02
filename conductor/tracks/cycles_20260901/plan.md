@@ -253,14 +253,18 @@ regresión la bloquea.
 > La fase que decide si la rebanada vale. El snapshot es dieciséis veces mayor y
 > hay una decisión nueva en el límite de vuelta: las dos se cobran aquí.
 
-- [ ] Task: Jitter con los dieciséis sonando y avanzando
-  - [ ] iPad real, con el arnés, en la división más rápida y el tempo más alto ya usados — comparable con las mediciones anteriores
-  - [ ] **Los dieciséis Tracks con varios Cycles cada uno**, avanzando: es el peor caso realista de esta rebanada
-  - [ ] Umbral: **máximo < 2 ms, σ < 0,5 ms**. Se registra el número, no la impresión
-  - [ ] Se compara contra la referencia de la rebanada 6 —máx 0,151 ms, σ 0,009–0,013 ms— y contra la que deje la Fase 6 de `multi-track`, y **la diferencia se explica**
-  - [ ] Atención al **límite de vuelta**: si hay un pico, mirar si cae en el Step 0 de una vuelta. Ahí es donde esta rebanada añade trabajo
-  - [ ] Si hay regresión: **la rebanada se para** y se bisecta con el arnés. No se cierra con una medición mala explicada
-  - [ ] El resultado va a `product.md`, junto a las anteriores
+- [x] Task: ~~Jitter con los dieciséis sonando y avanzando~~ — **retirada el 2026-09-02**
+
+  **No se hace, por decisión del usuario**, tomada después de que la recogida del
+  informe del dispositivo fallara: no se hacen más mediciones de jitter en el
+  proyecto. Escrita en `workflow.md`, en *Medición de jitter: suspendida*, con
+  el coste detallado; y en el NFR4 del `spec.md`, con lo que queda sin comprobar
+  en esta rebanada.
+
+  Lo que sí se hizo antes de retirarla: **la rejilla del arnés que hacía falta**
+  —`16 Tracks · 4 Cycles`, porque la de `16 Tracks` dejaba un Cycle por Track y
+  habría medido los dieciséis quietos— y el procedimiento entero escrito en
+  `device-verification.md`. La herramienta queda lista por si se retoma.
 - [ ] Task: Verificación en dispositivo
   - [ ] BeatStep Pro y un multitímbrico
   - [ ] Un Track con 3 Cycles distintos: se oye el desarrollo A/B/C y el retorno a A, sin tocar nada
