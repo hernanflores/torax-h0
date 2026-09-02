@@ -11,17 +11,17 @@ sale distinto**, para no tener que decidirlo en caliente.
 
 ## 0. Antes de empezar
 
-- [ ] **Los encoders del BeatStep Pro en `Relative #2`**, en MIDI Control Center.
+- [x] **Los encoders del BeatStep Pro en `Relative #2`**, en MIDI Control Center.
       Sin eso un clic se decodifica como ±63 y todos los parámetros saltan a su
       extremo. Nota del 2026-08-28 en `workflow.md`.
-- [ ] **El sintetizador conectado y sonando** con lo entregado hasta la rebanada
+- [x] **El sintetizador conectado y sonando** con lo entregado hasta la rebanada
       1 de la v2. Si algo no suena antes de tocar esta pantalla, no es esta
       rebanada.
-- [ ] **Material en varios Tracks, no solo en el 1.** La pantalla arranca con
+- [x] **Material en varios Tracks, no solo en el 1.** La pantalla arranca con
       material únicamente en el Track 1; para lo que se mide aquí hacen falta
       varios anillos con reparto propio. Se seleccionan con los step buttons y se
       les dan alturas con los pads.
-- [ ] **Brillo al que se usa de verdad**, no al máximo: el criterio de
+- [x] **Brillo al que se usa de verdad**, no al máximo: el criterio de
       legibilidad es a un metro y en las condiciones reales.
 
 ---
@@ -76,12 +76,12 @@ Arguments ▸ Arguments Passed On Launch*, se añaden los tres, se elige el iPad
 como destino y se pulsa Run. **Hay que acordarse de quitarlos después**, o
 cualquier ejecución posterior arrancará midiendo.
 
-- [ ] Lanzada con `--auto-measure --samples=1000 --grid=recta`.
-- [ ] **Pulsar Play en la app en cuanto arranque**, y dejarlo sonando toda la
+- [x] Lanzada con `--auto-measure --samples=1000 --grid=recta`.
+- [x] **Pulsar Play en la app en cuanto arranque**, y dejarlo sonando toda la
       pasada. Los anillos tienen que verse moviéndose: si el playhead no corre,
       la medición no vale y hay que repetirla.
-- [ ] Dejar la pantalla `1 · Track` a la vista. Son unos 8 minutos, tres tempos.
-- [ ] Recoger `Documents/jitter-report-recta.txt`:
+- [x] Dejar la pantalla `1 · Track` a la vista. Son unos 8 minutos, tres tempos.
+- [x] Recoger `Documents/jitter-report-recta.txt`:
 
       xcrun devicectl device info files --device <ID> \
         --domain-type appDataContainer --domain-identifier com.toraxh0.ToraxH0 \
@@ -172,10 +172,15 @@ la carga.
 > **Es el riesgo declarado de la rebanada** (FR2), y el que la inversión de
 > columnas de la Fase 3 existía para acotar.
 
-- [ ] Con el transporte corriendo, **a un metro de la pantalla**: se ve por dónde
+- [x] Con el transporte corriendo, **a un metro de la pantalla**: se ve por dónde
       va el tiempo en el Track seleccionado.
-- [ ] Con dos Tracks en Divisions distintas: se ve que sus playheads van a
+- [x] Con dos Tracks en Divisions distintas: se ve que sus playheads van a
       velocidades distintas, cada uno sobre su anillo.
+
+**Se lee. FR2 cumplido y el riesgo se cierra** (2026-09-02). No hace falta el
+anillo grande aparte, que era la respuesta escrita si no se leía. La inversión
+de columnas de la Fase 3 —el anillo pasa a llevarse el ancho grande— es lo que
+lo resolvió, y se decidió antes de llegar al dispositivo.
 
 | Resultado | Qué hacer |
 |---|---|
@@ -188,9 +193,16 @@ la carga.
 
 > **El riesgo 6 de la spec**, y la razón por la que el ámbar existía.
 
-- [ ] Tocar los tres tabs y mirar **de reojo**, no de frente: SHAPE verde, GROOVE
+- [x] Tocar los tres tabs y mirar **de reojo**, no de frente: SHAPE verde, GROOVE
       mauve, TONAL violeta.
-- [ ] Con poca luz, que es la condición de uso que `product-guidelines.md` nombra.
+- [x] Con poca luz, que es la condición de uso que `product-guidelines.md` nombra.
+
+**Se distinguen. El mauve del handoff se queda** (2026-09-02). Cierra el riesgo 6
+de la spec y la pregunta que el ámbar dejó abierta desde la Fase 1: mauve y el
+violeta de Tonal caen del mismo lado del círculo y aun así no se confunden de
+reojo. La razón del ámbar —separarse por tono y no solo por luminosidad— se
+queda escrita en `Palette.groove` como registro de por qué se comprobó, no como
+pendiente.
 
 | Resultado | Qué hacer |
 |---|---|
@@ -201,14 +213,14 @@ la carga.
 
 ## 4. La lectura grande, a un metro
 
-- [ ] Girar un knob de **cada** familia y comprobar que el panel responde en el
+- [x] Girar un knob de **cada** familia y comprobar que el panel responde en el
       Step siguiente, con el color de la familia que se movió.
-- [ ] **El tab activo salta a la familia del knob que se giró.** Es la regla que
+- [x] **El tab activo salta a la familia del knob que se giró.** Es la regla que
       se eligió en la Fase 3: el giro manda, porque la pantalla es el espejo del
       controlador.
-- [ ] `Probability 100%` —la lectura más larga— **se lee entera**, en dos
+- [x] `Probability 100%` —la lectura más larga— **se lee entera**, en dos
       líneas. Es la corrección del 2026-09-02.
-- [ ] **Los anillos no se tapan en ningún momento**, gire lo que gire. Desde
+- [x] **Los anillos no se tapan en ningún momento**, gire lo que gire. Desde
       FR14 es estructural —viven en otra columna— así que un solape sería un
       fallo de layout, no de la regla.
 
@@ -216,11 +228,14 @@ la carga.
 
 ## 5. Lo que se corrigió el 2026-09-02, y hay que ver que quedó bien
 
-- [ ] Con **dos o más destinos MIDI disponibles**: la barra superior escribe el
+- [x] Con **dos o más destinos MIDI disponibles**: la barra superior escribe el
       nombre del dispositivo **una sola vez**, y el selector es una flecha.
-- [ ] Un nombre largo de CoreMIDI **no empuja las tres columnas hacia abajo** ni
+- [x] Un nombre largo de CoreMIDI **no empuja las tres columnas hacia abajo** ni
       corta la interfaz por el borde inferior.
-- [ ] La fila de canal se ve entera, sin cortarse.
+- [x] La fila de canal se ve entera, sin cortarse.
+
+**Los tres arreglos del 2026-09-02 quedaron bien**, verificados en dispositivo el
+mismo día — que es donde se habían encontrado.
 
 > Esto no se pudo verificar en simulador: hacen falta dos o más dispositivos MIDI
 > y el simulador no tiene ninguno — con menos de dos el selector ni siquiera
@@ -230,8 +245,13 @@ la carga.
 
 ## 6. Registro
 
-- [ ] Los números y las decisiones, en la git note de la tarea. **Un número, no
+- [x] Los números y las decisiones, en la git note de la tarea. **Un número, no
       una impresión.**
-- [ ] Este fichero, con lo que salió de cada bloque.
-- [ ] Si algo se decidió distinto de lo que la spec dice, la enmienda va a
+- [x] Este fichero, con lo que salió de cada bloque.
+- [x] Si algo se decidió distinto de lo que la spec dice, la enmienda va a
       `spec.md` con su razón — no solo aquí.
+
+**Verificación completa y aprobada el 2026-09-02**, en iPad Air (4ª gen) con
+BeatStep Pro. Ninguno de los dos riesgos que la rebanada declaraba —la
+legibilidad del playhead sobre dieciséis anillos, y el mauve contra el violeta—
+se materializó, y ninguna decisión de la spec hubo que enmendar en dispositivo.
