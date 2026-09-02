@@ -9,7 +9,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
 
 **Ninguna fase mide jitter** (NFR6, suspendido el 2026-09-02).
 
-## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
+## FASE 1: LA DESVIACIÓN QUEDA ESCRITA [checkpoint: 98ad6dd]
 
 - [x] Task: Anotar el 16 → 12 en la Pre Spec y en `product.md` (FR9) [98ad6dd]
   - [ ] Nota fechada 2026-09-02 en `Pre Spec Torax H-0.md`: doce Tracks por
@@ -21,7 +21,7 @@ pantalla porque `trackCount` es de quien todo lo demás deriva.
   - [ ] Dejar dicho que **el modelo no cambia de forma**: doce es un límite de
         legibilidad, no un concepto nuevo; si el ancho deja de ser el problema,
         la constante vuelve a subir.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: DOCE TRACKS EN EL MOTOR
 
