@@ -39,7 +39,12 @@ public final class Transport: @unchecked Sendable {
     ///
     /// **Sobrevive a `stop()`**: parar y volver a arrancar conserva mutes y
     /// solos, porque es mezcla y no transporte.
-    public let mutes = MuteMask()
+    ///
+    /// **No es pública, y esa es la decisión.** Quien la tocara directamente se
+    /// saltaría el apagado de `toggleMute(_:)`, que es justo lo que evita la
+    /// nota colgada. Fuera se llega por `mix` para leer y por los dos toggles
+    /// para escribir.
+    let mutes = MuteMask()
 
     private let playheadClock = PlayheadClock()
     private let cyclePlaybackClock = CyclePlaybackClock()
@@ -162,6 +167,55 @@ public final class Transport: @unchecked Sendable {
 
     deinit {
         scheduler?.stop()
+    }
+
+    // MARK: - La mezcla
+
+    /// Qué Tracks se oyen ahora mismo.
+    public var mix: MuteState { mutes.load() }
+
+    /// Alterna el mute de un Track, y apaga lo que deje de sonar.
+    ///
+    /// **Es la única puerta.** El gesto táctil y el del controlador entran los
+    /// dos por aquí, por la misma razón que la selección de Track: dos caminos
+    /// que cambiaran la máscara serían dos sitios donde olvidarse del apagado.
+    public func toggleMute(_ index: Int) {
+        apply { $0.togglingMute(index) }
+    }
+
+    /// Alterna el solo de un Track, y apaga a los que deje fuera.
+    public func toggleSolo(_ index: Int) {
+        apply { $0.togglingSolo(index) }
+    }
+
+    /// Cambia la mezcla y apaga a quien **acaba de** volverse inaudible.
+    ///
+    /// **El apagado va con la transición, no con el estado.** Se comparan las
+    /// dos fotos y se barre solo la diferencia: mutear a quien ya callaba por el
+    /// solo de otro no manda nada, y volverse audible tampoco —no hay ninguna
+    /// nota que cerrar—. Barrer por estado mandaría un `all notes off` cada vez
+    /// que alguien roza un botón.
+    ///
+    /// **Con el transporte parado no se manda nada**, por lo mismo: no hay nada
+    /// sonando. El estado sí cambia, y se nota en cuanto se pulse Play.
+    ///
+    /// **Fuera del hilo del scheduler** (NFR1): esto es un gesto de usuario, y
+    /// corre donde corre `stop()`.
+    private func apply(_ change: (MuteState) -> MuteState) {
+        let before = mutes.load()
+        let after = change(before)
+        guard after != before else { return }
+
+        mutes.store(after)
+
+        guard isPlaying else { return }
+
+        var silenced: Set<Int> = []
+        for index in 0..<Pattern.trackCount
+        where before.isAudible(index) && !after.isAudible(index) {
+            silenced.insert(index)
+        }
+        silence(tracks: silenced, atHostTime: silenceHostTime)
     }
 
     /// Publica un Track nuevo. Se recoge en la ventana siguiente, suene o no.
