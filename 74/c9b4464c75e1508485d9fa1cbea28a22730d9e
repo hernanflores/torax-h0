@@ -1,0 +1,37 @@
+---
+
+VERIFICACIÓN DE FASE — Phase 6: La medición y el dispositivo
+Fecha: 2026-09-02
+
+RESULTADO
+  Engine: 422 tests, 0 fallos, cobertura 99,14% de líneas.
+  MIDI:   389 tests (25 + 368, partición de CI), 0 fallos, cobertura 92,19%.
+  App:    BUILD SUCCEEDED.
+
+LA MEDICIÓN DE JITTER NO SE HIZO
+Era obligatoria y bloqueante (NFR4). Retirada el 2026-09-02 por decisión del
+usuario, después de que fallara la recogida del informe del dispositivo:
+"no pude obtener el archivo. a partir de ahora no hagamos mas mediciones de
+jitter".
+
+Antes de retirarla se dejó hecho lo que faltaba para poder medir: la rejilla
+`16 Tracks · 4 Cycles` —la de `16 Tracks` dejaba un Cycle por Track y habría
+medido los dieciséis quietos— con sus tests, y el procedimiento entero en
+`device-verification.md`, incluido el paso de recogida que falló y la vía de
+respaldo por `--console`.
+
+La decisión y su coste están escritos en `workflow.md` (*Medición de jitter:
+suspendida*), en el NFR4 del `spec.md` y en `product.md`. Es la primera
+rebanada del proyecto que se cierra sin número de timing.
+
+VERIFICACIÓN EN DISPOSITIVO: PASADA
+Los cinco puntos del bloque 2 de `device-verification.md`, confirmados por el
+usuario ("validado con el ipad"). Encontró un fallo de pantalla —la vista
+enseñaba el Cycle que suena en vez del que se edita—, arreglado en c9f5b2a.
+
+CIERRE
+- `product.md`: Cycles sale de «fuera de v1»; la serie de mediciones queda
+  cerrada con la nota de suspensión.
+- Pre Spec: nota fechada sobre el gesto de CTRL.
+- `tracks.md`: rebanada 3 cerrada, rebanada 4 (persistencia) descrita.
+- PR #27 contra `main`, checks en verde.
