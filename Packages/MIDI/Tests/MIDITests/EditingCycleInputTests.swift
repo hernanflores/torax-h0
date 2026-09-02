@@ -165,3 +165,182 @@ final class EditingCycleInputTests: XCTestCase {
         }
     }
 }
+
+/// Tests de que toda edición apunta al Cycle en edición.
+///
+/// **FR8 — los knobs, los pads y lo táctil mueven el Cycle en edición del Track
+/// seleccionado.** Los otros quince Cycles y los otros quince Tracks no se
+/// tocan. Es lo que permite construir el Cycle B mientras suena el A, y es
+/// también el sitio donde una implementación descuidada destruiría trabajo: un
+/// `replacing` que apuntara al Cycle que suena pisaría lo que se está oyendo.
+final class EditingTargetsTheEditingCycleTests: XCTestCase {
+
+    private let tempo = Tempo(beatsPerMinute: 120)!
+    private let stepNanoseconds: Int64 = 125_000_000
+    private let clockwise: UInt8 = 0x01
+
+    private func cycle(pulses: Int = 5, pitch: Int = 48) -> Cycle {
+        Cycle(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(pulses)!),
+            pool: PitchPool().inserting(Pitch(pitch)!)
+        )
+    }
+
+    private func input(activeCycles: Int = 3, editing: Int = 1) -> ControlInput {
+        var pattern = Pattern()
+        for index in 0..<Pattern.trackCount {
+            pattern = pattern.replacing(
+                Track(cycle()).withActiveCount(activeCycles).withEditing(editing), at: index)
+        }
+        return ControlInput(pattern: pattern, publish: { _ in })
+    }
+
+    private func turn(_ input: ControlInput, cc: Int, by value: UInt8) {
+        input.receive(
+            .controlChange(
+                channel: MIDIChannel(1)!, controller: MIDIController(cc)!, value: value))
+    }
+
+    // MARK: - Los knobs
+
+    /// **Un giro mueve el parámetro del Cycle en edición y de ningún otro.** Se
+    /// comprueba sobre los quince Cycles restantes del mismo Track y sobre los
+    /// quince Tracks restantes: un `replacing` que escribiera de más no se vería
+    /// mirando solo el que se tocó.
+    func testAKnobMovesOnlyTheEditingCycleOfTheSelectedTrack() {
+        let input = input(editing: 1)
+        let before = input.pattern
+
+        // CC 71 es Pulses.
+        turn(input, cc: 71, by: clockwise)
+
+        XCTAssertNotEqual(
+            input.pattern.track(at: 0)?.cycle(at: 1), before.track(at: 0)?.cycle(at: 1),
+            "no movió el Cycle en edición")
+
+        for slot in 0..<Track.cycleCount where slot != 1 {
+            XCTAssertEqual(
+                input.pattern.track(at: 0)?.cycle(at: slot), before.track(at: 0)?.cycle(at: slot),
+                "tocó el Cycle \(slot + 1) del Track seleccionado")
+        }
+        for track in 1..<Pattern.trackCount {
+            XCTAssertEqual(
+                input.pattern.track(at: track), before.track(at: track),
+                "tocó el Track \(track + 1)")
+        }
+    }
+
+    /// Y no mueve ninguno de los dos cursores: girar un knob edita material, no
+    /// cambia de sitio.
+    func testAKnobMovesNeitherCursor() {
+        let input = input(editing: 1)
+
+        turn(input, cc: 71, by: clockwise)
+
+        XCTAssertEqual(input.pattern.track(at: 0)?.editing, 1)
+        XCTAssertEqual(input.pattern.track(at: 0)?.cursor, 0)
+    }
+
+    // MARK: - Los pads
+
+    /// Un pad mete la altura en el pool **del Cycle en edición**.
+    func testAPadFillsThePoolOfTheEditingCycle() {
+        let input = input(editing: 2)
+        let before = input.pattern.track(at: 0)!.cycle(at: 2)!.pool.count
+
+        input.receive(
+            .noteOn(
+                channel: MIDIChannel(1)!, note: MIDINote(38)!,
+                velocity: MIDIVelocity(unchecked: 100)))
+
+        XCTAssertEqual(input.pattern.track(at: 0)?.cycle(at: 2)?.pool.count, before + 1)
+        XCTAssertEqual(
+            input.pattern.track(at: 0)?.cycle(at: 0)?.pool.count, before,
+            "metió la altura en un Cycle que no se estaba editando")
+    }
+
+    // MARK: - Lo táctil
+
+    /// El canal y el marco tonal también son del Cycle en edición: son
+    /// ediciones, y `product-guidelines.md` las pone del lado táctil, no en otro
+    /// nivel del modelo.
+    func testTouchEditsAlsoTargetTheEditingCycle() {
+        let input = input(editing: 1)
+
+        XCTAssertTrue(input.setChannel(Channel(11)!))
+
+        XCTAssertEqual(input.pattern.track(at: 0)?.cycle(at: 1)?.channel, Channel(11)!)
+        XCTAssertEqual(
+            input.pattern.track(at: 0)?.cycle(at: 0)?.channel, Channel(1)!,
+            "cambió el canal de un Cycle que no se estaba editando")
+    }
+
+    // MARK: - Contra lo que suena
+
+    /// **Construir el B mientras suena el A.** Editar un Cycle que no está
+    /// sonando no altera ni una nota de lo que sale, hasta que la vuelta cierre.
+    func testEditingACycleThatIsNotSoundingChangesNothingThatSounds() {
+        let handoff = PatternHandoff(Pattern())
+        var pattern = Pattern()
+        pattern = pattern.replacing(
+            Track(cycle(pitch: 48)).withActiveCount(2)
+                .replacing(cycle(pitch: 60), at: 1)
+                .withEditing(1),
+            at: 0
+        )
+        handoff.publish(pattern)
+
+        let scheduler = PatternScheduler(tempo: tempo, pattern: pattern)
+        let input = ControlInput(pattern: pattern, publishingTo: handoff)
+
+        // Se edita el Cycle 2 —el que no suena— a mitad de la primera vuelta.
+        var heard: [Int?] = []
+        scheduler.advance(toHorizon: 8 * stepNanoseconds, refreshingFrom: handoff) {
+            _, _, _, pitch, _, _ in
+            heard.append(pitch?.value)
+        }
+        turn(input, cc: 71, by: clockwise)
+        scheduler.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: handoff) {
+            _, _, _, pitch, _, _ in
+            heard.append(pitch?.value)
+        }
+
+        XCTAssertFalse(heard.isEmpty)
+        XCTAssertTrue(
+            heard.allSatisfy { $0 == 48 }, "la edición del Cycle 2 se coló en la vuelta del 1")
+    }
+
+    /// Y editar el que **sí** está sonando se oye en la ventana siguiente, como
+    /// siempre: la edición en caliente no se pierde por tener Cycles.
+    func testEditingTheSoundingCycleIsHeardOnTheNextWindow() {
+        let handoff = PatternHandoff(Pattern())
+        let pattern = Pattern().replacing(
+            Track(cycle(pitch: 48)).withActiveCount(2)
+                .replacing(cycle(pitch: 60), at: 1)
+                .withEditing(0),
+            at: 0
+        )
+        handoff.publish(pattern)
+
+        let scheduler = PatternScheduler(tempo: tempo, pattern: pattern)
+        let input = ControlInput(pattern: pattern, publishingTo: handoff)
+
+        scheduler.advance(toHorizon: 4 * stepNanoseconds, refreshingFrom: handoff) {
+            _, _, _, _, _, _ in
+        }
+
+        // Se sube un semitono el pool del Cycle que suena, metiendo otra altura.
+        input.receive(
+            .noteOn(
+                channel: MIDIChannel(1)!, note: MIDINote(37)!,
+                velocity: MIDIVelocity(unchecked: 100)))
+
+        var heard: Set<Int> = []
+        scheduler.advance(toHorizon: 16 * stepNanoseconds, refreshingFrom: handoff) {
+            _, _, _, pitch, _, _ in
+            if let value = pitch?.value { heard.insert(value) }
+        }
+
+        XCTAssertGreaterThan(heard.count, 1, "la edición en caliente no llegó a sonar")
+    }
+}

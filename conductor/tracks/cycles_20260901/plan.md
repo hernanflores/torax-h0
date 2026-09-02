@@ -198,7 +198,7 @@ regresión la bloquea.
   general. **No entra en `assignments`**: no es un `TrackParameter` —los nueve
   primeros mueven parámetros del Cycle, este mueve a cuál se apunta— y meterlo
   ahí obligaría a inventarle un caso al enum que el modelo no tiene.
-- [ ] Task: Los knobs y los pads editan el Cycle en edición
+- [~] Task: Los knobs y los pads editan el Cycle en edición
   - [ ] Tests (Red): un giro de knob mueve el parámetro del Cycle en edición y **no** el de los otros quince Cycles ni el de los otros quince Tracks (FR8)
   - [ ] Tests (Red): un pad mete la altura en el pool de ese Cycle
   - [ ] Tests (Red): editar un Cycle que **no** está sonando no altera lo que suena — construir el B mientras suena el A
