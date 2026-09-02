@@ -1,0 +1,35 @@
+Fix: la pantalla enseñaba el Cycle que suena en vez del que se edita
+Fase 5 — v2 rebanada 3 (Cycles)
+
+EL SÍNTOMA, TAL COMO LLEGÓ
+«Con el transport en Stop, después de mover el knob 10, el track actual ya no
+responde a otros knobs. Puedo cambiar de tracks, y en el resto de los tracks
+los knobs funcionan.»
+
+QUÉ PASABA DE VERDAD
+Los knobs SÍ editaban, y el Cycle correcto. Lo que fallaba era la vista:
+`TransportModel.track`, `RingStack`, `Playhead.forEachTrack`, la pastilla de
+canal y el mapa de material leían `Pattern.cycle(at:)` —el Cycle que suena— en
+vez de `editingCycle(at:)`. Con el knob 10 movido esos son dos Cycles
+distintos, así que girar Pulses cambiaba el Cycle 2 y la pantalla seguía
+dibujando el 1.
+
+POR QUÉ EL SÍNTOMA APUNTABA AL SITIO EQUIVOCADO
+«Dejó de responder» describe la entrada, y la entrada estaba bien. Y cambiar
+de Track lo «arreglaba» porque el Track nuevo tenía su cursor de edición en 0,
+donde los dos accesos coinciden — lo que reforzaba la pista falsa.
+
+LA REGLA, AHORA ESCRITA
+Todo lo que la pantalla muestra es el Cycle en edición: es lo que los knobs
+están moviendo. Lo único que enseña el que suena es el relleno de la fila de
+Cycles. Con un solo Cycle activo son el mismo, que es por lo que esto no se
+pudo ver hasta que hubo varios — y por lo que ningún test anterior lo cogía.
+
+CÓMO QUEDA VIGILADO
+4 tests en `TheScreenShowsTheEditingCycleTests`, sobre un Pattern con los dos
+cursores divergentes. El primero comprueba que los dos accesos NO devuelven lo
+mismo en ese estado: sin él, los otros tres pasarían por casualidad.
+
+VERIFICACIÓN
+- Engine 422 tests, MIDI 385, 0 fallos. iOS BUILD SUCCEEDED.
+- Confirmado en dispositivo: "ahora sí, funciona todo bien".
