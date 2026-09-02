@@ -192,7 +192,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: v2 rebanada 3 — Cycles: el Track varía por vuelta**
+- [~] **Track: v2 rebanada 3 — Cycles: el Track varía por vuelta**
   *Link: [conductor/tracks/cycles_20260901/index.md](./tracks/cycles_20260901/index.md)*
 
   Planificado el 2026-09-01. Un Track deja de repetir un juego de parámetros
