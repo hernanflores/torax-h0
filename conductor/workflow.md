@@ -35,7 +35,7 @@
 >   veces mayor. Lo que sí está medido es el **tamaño**: un `load()` cuesta
 >   ~870 ns, el 0,0044% de la ventana (Fase 1 de `cycles_20260901`).
 >
-> **El arnés se queda en el repositorio**, con su rejilla `16-tracks-cycles` y
+> **El arnés se queda en el repositorio**, con su rejilla `12-tracks-cycles` y
 > sus tests. No se borra: si algún día se quiere volver a medir, la herramienta
 > está y el procedimiento está escrito en los `device-verification.md` de las
 > rebanadas 2 y 3.
@@ -43,6 +43,15 @@
 > **La última referencia válida**, por si hace falta comparar algún día:
 > v2 rebanada 2, 2026-09-02 — máx 0,158 ms, σ 0,013–0,014 ms, 1000 eventos por
 > tempo.
+>
+> **Nota del 2026-09-02 — la rejilla cambió de nombre.** Al bajar a doce Tracks
+> (`ui-declutter_20260902`), `16 Tracks` y `16 Tracks · 4 Cycles` pasaron a
+> `12 Tracks` y `12 Tracks · 4 Cycles`, con sufijos `12-tracks` y
+> `12-tracks-cycles`. **No se midió nada**: una rejilla que pide dieciséis Tracks
+> sobre un Pattern de doce dejaría el arnés roto esperando a que alguien lo
+> corriera, y lo que esta suspensión promete es que la herramienta siga lista.
+> Los `device-verification.md` de las rebanadas 2 y 3 conservan los nombres
+> viejos a propósito: registran ejecuciones que ocurrieron.
 
 ## Coverage Requirements
 

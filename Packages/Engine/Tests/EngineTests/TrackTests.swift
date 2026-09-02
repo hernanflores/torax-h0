@@ -67,13 +67,19 @@ final class TrackTests: XCTestCase {
     ///
     /// La cifra que decidió el diseño está medida en `CycleSnapshotCostTests`
     /// —sobre un tipo de prueba con dos contadores, 36 992 bytes de Pattern—; el
-    /// tipo real lleva tres y sale a 37 248, un 0,7% más. No mueve la decisión ni
-    /// un orden de magnitud. Esto solo vigila que no gane un campo por descuido.
-    func testTheTrackIsSixteenCyclesAndThreeCounters() {
+    /// tipo real lleva tres y salía a 37 248, un 0,7% más. No mueve la decisión
+    /// ni un orden de magnitud. Esto solo vigila que no gane un campo por
+    /// descuido.
+    ///
+    /// > **Al pasar a doce Tracks el 2026-09-02 el Pattern bajó a 27 936 bytes**,
+    /// > un cuarto menos. La medición de arriba sigue siendo el techo, así que
+    /// > no hay nada que volver a medir.
+    func testTheTrackIsItsCyclesAndThreeCounters() {
         XCTAssertEqual(
             MemoryLayout<Track>.size,
-            MemoryLayout<Cycle>.size * 16 + MemoryLayout<Int>.size * 3)
-        XCTAssertEqual(MemoryLayout<Pattern>.size, MemoryLayout<Track>.size * 16)
+            MemoryLayout<Cycle>.size * Track.cycleCount + MemoryLayout<Int>.size * 3)
+        XCTAssertEqual(
+            MemoryLayout<Pattern>.size, MemoryLayout<Track>.size * Pattern.trackCount)
     }
 
     // MARK: - Sustituir un Cycle

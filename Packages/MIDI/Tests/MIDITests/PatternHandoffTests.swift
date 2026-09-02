@@ -218,8 +218,13 @@ final class PatternHandoffTests: XCTestCase {
     /// > un detector de cambio de orden. El siguiente escalón de la Pre Spec
     /// > —dieciséis Patterns por Bank— **no** pasa por aquí: eso es persistencia,
     /// > y lo que cruza al hilo del scheduler sigue siendo un Pattern.
-    func testTheSnapshotIsSixteenTracksWideAndNothingMore() {
-        XCTAssertEqual(MemoryLayout<Pattern>.size, MemoryLayout<Track>.size * 16)
+    /// >
+    /// > **Al pasar a doce Tracks el 2026-09-02 el snapshot bajó a 27 936
+    /// > bytes.** La medición de arriba sigue siendo el techo, así que la
+    /// > decisión no se vuelve a tomar: bajar no la pone en cuestión.
+    func testTheSnapshotIsItsTracksWideAndNothingMore() {
+        XCTAssertEqual(
+            MemoryLayout<Pattern>.size, MemoryLayout<Track>.size * Pattern.trackCount)
         XCTAssertLessThan(MemoryLayout<Pattern>.size, 65_536, "el snapshot creció de orden")
     }
 }

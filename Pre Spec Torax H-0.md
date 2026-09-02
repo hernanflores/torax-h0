@@ -20,6 +20,31 @@ Project (estado completo + ajustes guardados)
 - **Track:** una voz/carril musical y de control. Es donde residen los parámetros generativos.
 - **Cycle:** snapshot de parámetros de un Track. Permite que ese Track varíe en pasadas sucesivas del loop sin cambiar de Pattern.
 
+> **Nota del 2026-09-02 — son doce Tracks por Pattern, no dieciséis.** Esta
+> sección escribe 16 en tres sitios —la línea de la sección 1, el árbol de
+> memoria y la definición de Pattern— y la app implementa **12** desde el track
+> `ui-declutter_20260902`.
+>
+> **La razón es de lectura, no de motor.** Los dieciséis Tracks se dibujan como
+> anillos concéntricos y el ancho de banda de cada uno sale de repartir el radio
+> entre `trackCount - 1`. Con dieciséis, cada banda queda en unos pocos puntos y
+> el playhead deja de leerse a un metro, que es el requisito de
+> `product-guidelines.md` —no una preferencia estética, sino la condición de uso:
+> la pantalla se mira de reojo, en movimiento y con poca luz—. Con doce, la misma
+> fórmula da bandas un tercio más anchas sin tocar el dibujo.
+>
+> **El modelo no cambia de forma.** Doce es un límite de legibilidad puesto sobre
+> una constante, `Pattern.trackCount`, de la que todo lo demás deriva: el reparto
+> de los anillos, el número de schedulers, las voces que se apagan al parar y la
+> fila de selección. No hay ningún concepto nuevo ni ninguno que desaparezca, y
+> si algún día el ancho deja de ser el problema —una pantalla mayor, otra
+> representación— la constante vuelve a subir.
+>
+> **Lo que sí pierde el hardware.** El BeatStep Pro tiene dieciséis step buttons y
+> cada uno seleccionaba un Track; del 13 al 16 dejan de seleccionar. No es un
+> error: no publican, como un CC sin asignar. El preset no cambia, porque la
+> tabla describe el hardware y no lo que la app hace con él.
+
 ### Guardado
 
 - **Autosave:** protege el estado de trabajo reciente y restaura el último Bank tras reiniciar.

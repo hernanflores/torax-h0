@@ -7,7 +7,7 @@ private typealias Pattern = Engine.Pattern
 
 /// Tests de por dónde sale lo que emite cada Track.
 ///
-/// **Dieciséis Tracks y dieciséis canales.** Sin esto los dieciséis sonarían al
+/// **Cada Track en su canal.** Sin esto los doce sonarían al
 /// mismo instrumento, y no habría forma de juzgar nada en dispositivo.
 final class PatternChannelEmissionTests: XCTestCase {
 
@@ -39,10 +39,10 @@ final class PatternChannelEmissionTests: XCTestCase {
         XCTAssertEqual(channels(of: track), [5, 5])
     }
 
-    /// Los mensajes de un Track llevan **su** canal, sobre los dieciséis.
+    /// Los mensajes de un Track llevan **su** canal, sobre los doce.
     func testEachTrackEmitsOnItsOwnChannel() {
         let pattern = Pattern()
-        for index in 0..<16 {
+        for index in 0..<Pattern.trackCount {
             XCTAssertEqual(
                 channels(of: pattern.cycle(at: index)!), [index + 1, index + 1],
                 "Track \(index + 1)")

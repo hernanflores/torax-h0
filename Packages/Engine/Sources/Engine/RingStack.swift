@@ -1,7 +1,7 @@
-/// Los dieciséis anillos concéntricos, dispuestos.
+/// Los doce anillos concéntricos, dispuestos.
 ///
 /// **Es la pantalla 1 del handoff** (FR1): del exterior al interior, Track 1 al
-/// 16, cada uno con su propio reparto. Lo que este tipo aporta sobre `Ring` es
+/// 12, cada uno con su propio reparto. Lo que este tipo aporta sobre `Ring` es
 /// *dónde* va cada anillo; el reparto de cada uno lo sigue haciendo `Ring`, que
 /// ya documenta por qué no se recalcula en dos sitios.
 ///
@@ -17,11 +17,16 @@
 ///
 /// > **Las proporciones no son las del handoff, y no pueden serlo.** El
 /// > click-through dibuja **cinco** anillos de 180 a 52px sobre un lienzo de
-/// > 190px, es decir un paso de 16px de radio entre anillos. Dieciséis anillos
-/// > con ese paso pedirían un lienzo tres veces mayor del que la pantalla
-/// > reserva. Lo que se conserva es lo que el handoff decide de verdad —el orden
+/// > 190px, es decir un paso de 16px de radio entre anillos. Doce anillos con
+/// > ese paso pedirían un lienzo mucho mayor del que la pantalla reserva. Lo que
+/// > se conserva es lo que el handoff decide de verdad —el orden
 /// > exterior→interior, el paso constante y el hueco central— y lo que se
-/// > recalcula es la escala, que es consecuencia de que sean dieciséis y no cinco.
+/// > recalcula es la escala, que es consecuencia de que sean doce y no cinco.
+/// >
+/// > **Y al bajar de dieciséis a doce el 2026-09-02, esa escala es lo único que
+/// > cambia**: `spacing` reparte el mismo radio entre once saltos en vez de
+/// > quince, así que cada banda sale un tercio más ancha sin tocar una línea de
+/// > dibujo. Era la razón de la reducción.
 ///
 /// No es código de tiempo real: construirlo asigna memoria. Se hace en el hilo
 /// principal, para dibujar.
@@ -30,7 +35,7 @@ public struct RingStack: Equatable, Sendable {
     /// Un anillo y su sitio.
     public struct Band: Equatable, Sendable {
 
-        /// Qué Track dibuja, de 0 a 15.
+        /// Qué Track dibuja, de 0 a `Pattern.trackCount - 1`.
         public let track: Int
 
         /// Su reparto, ya resuelto.
@@ -81,20 +86,36 @@ public struct RingStack: Equatable, Sendable {
 
     /// Cuánto baja el radio de un anillo al siguiente.
     ///
-    /// Constante a propósito: es lo que hace que dieciséis anillos se lean como
-    /// una escala ordenada y no como un montón de círculos.
+    /// Constante a propósito: es lo que hace que los anillos se lean como una
+    /// escala ordenada y no como un montón de círculos.
     public static var spacing: Double {
         (outermost - centreHole) / Double(Pattern.trackCount - 1)
     }
 
+    /// El radio del anillo N, **interpolando entre los dos extremos**.
+    ///
+    /// No es `outermost - spacing * index`, que es la misma recta pero
+    /// acumulando error: al llegar al último anillo la resta repetida caía en
+    /// 0,2799999999999999 contra un `centreHole` de 0,28, y la invariante «el
+    /// anillo interior no invade el hueco central» fallaba por un bit. Con doce
+    /// bandas el error aparecía y con dieciséis no, que es la clase de fragilidad
+    /// que conviene quitar en vez de tolerar.
+    ///
+    /// Interpolando, los dos extremos salen **exactos**: en el índice 0 el
+    /// factor es 0 y en el último es 1, sin aritmética intermedia que redondee.
+    static func radius(ofBandAt index: Int) -> Double {
+        let fraction = Double(index) / Double(Pattern.trackCount - 1)
+        return outermost * (1 - fraction) + centreHole * fraction
+    }
+
     // MARK: - Las bandas
 
-    /// Los dieciséis, del exterior al interior.
+    /// Los doce, del exterior al interior.
     public let bands: [Band]
 
-    /// Dispone los dieciséis Tracks del Pattern.
+    /// Dispone los doce Tracks del Pattern.
     ///
-    /// **Los dieciséis siempre, tengan material o no** (FR1). Un anillo que
+    /// **Los doce siempre, tengan material o no** (FR1). Un anillo que
     /// apareciera y desapareciera con el material movería a los demás de sitio,
     /// y eso es movimiento no derivado del reloj musical, que
     /// `product-guidelines.md` prohíbe.
@@ -109,7 +130,7 @@ public struct RingStack: Equatable, Sendable {
             return Band(
                 track: index,
                 ring: Ring(shape: cycle.shape),
-                radius: Self.outermost - Self.spacing * Double(index),
+                radius: Self.radius(ofBandAt: index),
                 hasMaterial: !cycle.pool.isEmpty
             )
         }
