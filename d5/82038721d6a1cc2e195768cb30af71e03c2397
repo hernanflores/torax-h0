@@ -1,0 +1,34 @@
+Tasks (Fase 3, las dos en un commit): doce pastillas con un numero cada una, y la
+pantalla Track pierde su fila Channel. FR4, FR7.
+
+POR QUE VAN JUNTAS. Quitar el canal de la pastilla y quitar la fila que lo edita
+son la misma edicion: los parametros `channels` y `onChannelChange` de la vista
+sirven a los dos, y dejar uno sin el otro no compila ni tiene sentido. Se marcan
+las dos con el mismo SHA.
+
+CAMBIOS
+- App/TrackSelectorView.swift: la pastilla pasa de un VStack con el numero arriba
+  y el canal debajo a un solo Text. Como el Track N arranca en el canal N, la
+  pastilla escribia el mismo numero dos veces: un dato que no informaba y ocupaba
+  alto. Los tres estados —elegido, con material, vacio— no cambian: siguen
+  saliendo del relleno y del trazo, sin texto.
+- La fila pasa de un ForEach(0..<16) literal a Pattern.trackCount. Dibujaba
+  dieciseis pastillas cuando ya habia doce Tracks, asi que las cuatro ultimas
+  eran botones muertos desde la Fase 2.
+- La fila de Cycles pasa de 1...16 a 1...Track.cycleCount. Ese si son dieciseis y
+  lo siguen siendo; escribirlo derivado evita que el proximo cambio de nivel
+  tenga que buscar el literal.
+- Retiradas channelRow, selectedChannel y los parametros channels /
+  onChannelChange. ContentView deja de pasarlos; model.channels y
+  model.setChannel se quedan, que es lo que la pantalla MIDI usara en la Fase 4.
+- Corregida la cabecera del tipo, que seguia diciendo «dieciseis Tracks» y que
+  los anillos eran «la rebanada siguiente» — existen desde la rebanada 2.
+- La altura minima de la pastilla baja de 56 a 44 puntos: sin la segunda linea no
+  hay nada que sostenga los 56, y los 12 que se liberan van al anillo, que es el
+  protagonista segun product-guidelines.md.
+
+VERIFICACION
+- xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: SUCCEEDED.
+- Sin tests: es una vista SwiftUI sin logica, y workflow.md dice que App no se
+  mide. Lo que decide cuantas pastillas hay es Pattern.trackCount, que si esta
+  cubierto en Engine.
