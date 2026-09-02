@@ -260,6 +260,21 @@ struct ContentView: View {
         // resuelve contra el origen que publicó el bucle del scheduler. El
         // movimiento deriva del reloj musical; lo que el temporizador decide es
         // cuándo repintar, no dónde está el tiempo.
+        //
+        // > **Y de aquí sale cómo hay que medir la carga visual** (NFR2). Lo que
+        // > hace que el `Canvas` se repinte no es el `TimelineView` por sí solo:
+        // > es que los playheads cambien de fotograma a fotograma. Con el
+        // > transporte parado, sus entradas son idénticas y SwiftUI no vuelve a
+        // > dibujar aunque el temporizador siga latiendo — comprobado con una
+        // > sonda: menos de 30 ejecuciones del `Canvas` en 8 segundos, incluso
+        // > forzando `paused: false`.
+        // >
+        // > Consecuencia: **el arnés por sí solo no produce carga visual
+        // > ninguna.** Corre su propio scheduler en una tarea aparte y no toca
+        // > `TransportModel`, así que los anillos se quedan quietos y lo que se
+        // > mediría es el timing con la pantalla congelada. La medición de la
+        // > Fase 6 exige el transporte de la app corriendo *a la vez* que el
+        // > arnés; está escrito en `device-verification.md`.
         TimelineView(.animation(paused: !model.isPlaying)) { _ in
             RingStackView(
                 stack: model.rings,
