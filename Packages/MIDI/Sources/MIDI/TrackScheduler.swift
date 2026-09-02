@@ -141,9 +141,17 @@ public enum SchedulerMaterial: Equatable, Sendable {
 /// un Track publicado altera la duración del Step, así que reubicaría todos los
 /// Steps futuros respecto a un origen que ya pasó: hace falta rebasar la línea
 /// de tiempo en un límite de Step, no solo leer un valor nuevo. En esta rebanada
-/// no hay entrada de control y ningún parámetro es editable, así que no se puede
-/// provocar; llega con el track de entrada de control. Steps, Pulses y Rotate sí
-/// cambian en caliente y están cubiertos por tests.
+/// Steps, Pulses y Rotate sí cambian en caliente y están cubiertos por tests.
+///
+/// > **Con Cycles hay una vía más de llegar aquí, y queda acotada.** Desde la
+/// > rebanada 3 de la v2, dos Cycles de un mismo Track pueden declarar Divisions
+/// > distintas. No se aplica: el Cycle nuevo suena con todo lo suyo —Steps,
+/// > Pulses, Rotate, pool, marco tonal, Groove y canal— sobre la rejilla del
+/// > Cycle que estuviera vigente al pulsar Play. Resolverlo exigiría rebasar la
+/// > línea de tiempo por Track, que es romper el invariante que mantiene en fase
+/// > a los dieciséis: todas las rejillas se miden contra el mismo origen. Está
+/// > en *Known Limitations* del spec del track `cycles_20260901`, y fijado con
+/// > tests en `WhatChangesWithTheCycleTests`.
 public struct TrackScheduler {
 
     /// Material vigente. Se conserva entre ventanas: si una lectura del snapshot

@@ -366,3 +366,126 @@ final class CurrentCycleDecidesEverythingTests: XCTestCase {
         XCTAssertEqual(heard, Array(16..<32), "el Cycle con material no llegó a sonar")
     }
 }
+
+/// Qué parámetros cambian de verdad al cambiar de Cycle, y cuál no.
+///
+/// **Los tests de aquí no describen un ideal sino lo que pasa.** Uno de los ocho
+/// parámetros —Division— no cambia, y esto lo deja fijado con un número en vez de
+/// dejarlo como una sorpresa que alguien encuentre en el iPad. El porqué está en
+/// *Known Limitations* del `spec.md`.
+final class WhatChangesWithTheCycleTests: XCTestCase {
+
+    private let tempo = Tempo(beatsPerMinute: 120)!
+    private let stepNanoseconds: Int64 = 125_000_000
+
+    /// Dos Cycles y lo emitido en las dos primeras vueltas.
+    private func turns(
+        _ first: Cycle, _ second: Cycle, upToStep stepIndex: Int = 32
+    ) -> [(step: Int, pitch: Int?, source: Cycle, offset: Int64)] {
+        let track = Track(first).withActiveCount(2).replacing(second, at: 1)
+        let scheduler = PatternScheduler(tempo: tempo, pattern: Pattern().replacing(track, at: 0))
+
+        var events: [(step: Int, pitch: Int?, source: Cycle, offset: Int64)] = []
+        scheduler.advance(toHorizon: Int64(stepIndex) * stepNanoseconds, refreshingFrom: nil) {
+            track, source, step, pitch, _, offset in
+            guard track == 0 else { return }
+            events.append((step, pitch?.value, source, offset))
+        }
+        return events
+    }
+
+    private func cycle(
+        steps: Int = 16, pulses: Int = 16, rotate: Int = 0, pitch: Int = 48,
+        division: Division = .sixteenth
+    ) -> Cycle {
+        Cycle(
+            shape: Shape(
+                steps: Steps(steps)!, pulses: Pulses(pulses)!, rotate: Rotate(rotate),
+                division: division),
+            pool: PitchPool().inserting(Pitch(pitch)!)
+        )
+    }
+
+    // MARK: - Lo que sí cambia
+
+    /// Pulses cambia el reparto euclidiano de la vuelta nueva.
+    func testPulsesChangeWithTheCycle() {
+        let events = turns(cycle(pulses: 16), cycle(pulses: 4))
+
+        XCTAssertEqual(events.filter { $0.step < 16 }.count, 16)
+        XCTAssertEqual(events.filter { $0.step >= 16 }.count, 4)
+    }
+
+    /// Steps cambia la longitud del anillo, y con ella la de la vuelta: el
+    /// tercer cambio de Cycle cae donde diga el Cycle que esté sonando.
+    func testStepsChangeWithTheCycleAndSoDoesTheTurnLength() {
+        let events = turns(cycle(steps: 16, pitch: 48), cycle(steps: 8, pitch: 72), upToStep: 32)
+
+        // El primero ocupa los Steps 0–15; el segundo entra en el 16 y cierra su
+        // vuelta ocho Steps después, en el 24.
+        XCTAssertEqual(events.first(where: { $0.pitch == 72 })?.step, 16)
+        XCTAssertEqual(events.first(where: { $0.step > 16 && $0.pitch == 48 })?.step, 24)
+    }
+
+    /// Rotate cambia dónde caen los Pulses de la vuelta nueva.
+    func testRotateChangesWithTheCycle() {
+        let events = turns(cycle(pulses: 4, rotate: 0), cycle(pulses: 4, rotate: 1))
+
+        let firstTurn = events.filter { $0.step < 16 }.map { $0.step }
+        let secondTurn = events.filter { $0.step >= 16 }.map { $0.step - 16 }
+        XCTAssertNotEqual(firstTurn, secondTurn, "Rotate no cambió el reparto")
+        XCTAssertEqual(secondTurn, firstTurn.map { ($0 + 1) % 16 }.sorted())
+    }
+
+    /// El pool, el marco tonal, el Groove y el canal cambian con el Cycle: lo
+    /// comprueba `CurrentCycleDecidesEverythingTests` sobre las cinco familias a
+    /// la vez. Aquí solo se fija que la altura emitida sale del pool nuevo, que
+    /// es lo que llega al sintetizador.
+    func testThePoolChangesWithTheCycle() {
+        let events = turns(cycle(pitch: 48), cycle(pitch: 72))
+
+        XCTAssertTrue(events.filter { $0.step < 16 }.allSatisfy { $0.pitch == 48 })
+        XCTAssertTrue(events.filter { $0.step >= 16 }.allSatisfy { $0.pitch == 72 })
+    }
+
+    // MARK: - Lo que no cambia: Division
+
+    /// **Division NO cambia de Cycle a Cycle. Decidido el 2026-09-02, con este
+    /// test delante.**
+    ///
+    /// La rejilla temporal de un Track la fija la `MusicalTimeline` con la que se
+    /// construye su scheduler, en Play, y no se vuelve a leer. Cambiar la
+    /// Division a mitad de reproducción reubicaría todos los Steps futuros
+    /// respecto a un origen que ya pasó, y hacerlo bien exigiría rebasar la línea
+    /// de tiempo por Track — es decir, romper el invariante que mantiene en fase
+    /// a los dieciséis sin sincronización posterior: **todas las rejillas se
+    /// miden contra el mismo origen**.
+    ///
+    /// Así que se acota: el segundo Cycle suena, con todo lo demás suyo, sobre la
+    /// rejilla del Cycle que estaba vigente al pulsar Play. Está escrito en
+    /// *Known Limitations* del `spec.md`.
+    func testTheDivisionOfLaterCyclesIsIgnoredAndTheGridStays() {
+        let events = turns(
+            cycle(pitch: 48, division: .sixteenth),
+            cycle(pitch: 72, division: .quarter)
+        )
+
+        // El material del segundo Cycle sí entra: la altura es la suya.
+        XCTAssertEqual(events.first(where: { $0.step == 16 })?.pitch, 72)
+        // Pero cae sobre la rejilla de 1/16 —125 ms por Step— y no sobre la de
+        // 1/4, que serían 500 ms.
+        XCTAssertEqual(events.first(where: { $0.step == 16 })?.offset, 16 * stepNanoseconds)
+        XCTAssertEqual(events.first(where: { $0.step == 17 })?.offset, 17 * stepNanoseconds)
+    }
+
+    /// Y la Division del Cycle 1 sí manda, porque es la que había al construir:
+    /// la limitación es «no cambia», no «se ignora siempre».
+    func testTheDivisionOfTheFirstCycleDoesSetTheGrid() {
+        let events = turns(
+            cycle(pitch: 48, division: .eighth),
+            cycle(pitch: 72, division: .eighth)
+        )
+
+        XCTAssertEqual(events.first(where: { $0.step == 1 })?.offset, 2 * stepNanoseconds)
+    }
+}

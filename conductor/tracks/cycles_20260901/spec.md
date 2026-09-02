@@ -248,6 +248,29 @@ Además:
 7. **El renombrado toca casi todo.** `Track` pasa a `Cycle` en `Engine` y en
    `MIDI`: es mecánico, pero es amplio, y los tests existentes se leerán distinto
    aunque midan lo mismo.
+8. **La Division no cambia de Cycle a Cycle.** *Decidido el 2026-09-02 en la
+   Fase 3, con el test delante.* Los otros siete parámetros —Steps, Pulses,
+   Rotate, pool, marco tonal, Groove y canal— sí cambian. La Division de un Cycle
+   posterior se ignora: su material suena, con todo lo demás suyo, sobre la
+   rejilla del Cycle que estuviera vigente al pulsar Play.
+
+   **Por qué se acota en vez de resolverse.** La rejilla de un Track la fija la
+   `MusicalTimeline` con la que se construye su `TrackScheduler`, y no se vuelve
+   a leer. Cambiar la Division reubica todos los Steps futuros respecto a un
+   origen que ya pasó, así que hacerlo bien exige **rebasar la línea de tiempo
+   por Track** — y eso es exactamente el invariante que mantiene en fase a los
+   dieciséis sin sincronización posterior: *todas las rejillas se miden contra el
+   mismo origen*. Tocarlo es trabajo en el núcleo de timing, con medición de
+   jitter obligatoria, para un caso que nadie ha pedido todavía: cambiar de
+   compás a mitad de patrón.
+
+   Está fijado con dos tests en `WhatChangesWithTheCycleTests`, así que si algún
+   día se resuelve, se verá que cambian.
+
+   Es la misma limitación que `TrackScheduler` ya documentaba para el snapshot en
+   caliente, ahora alcanzable por una vía más: antes hacía falta girar el knob de
+   Division mientras sonaba; ahora basta con darle Divisions distintas a dos
+   Cycles.
 
 ## Out of Scope
 
