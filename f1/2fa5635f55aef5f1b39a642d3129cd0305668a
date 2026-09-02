@@ -39,3 +39,27 @@ VERIFICACION
   VirtualLoopbackTests — el flake conocido, aplazado. Cobertura 81,32% de lineas
   (umbral 80%).
 - xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: SUCCEEDED.
+
+---
+
+VERIFICACION DE FASE 4 — LA PANTALLA MIDI
+
+Comandos: swift test --package-path Packages/MIDI
+          xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado: MIDI 400 pruebas, 7 fallos, todos clientCreationFailed(-50) en
+VirtualLoopbackTests — flake conocido midi-test-flake_20260826, aplazado a
+despues de la v2. Cobertura 81,32% de lineas (umbral 80%). BUILD SUCCEEDED.
+
+Verificacion manual propuesta:
+1. La pestaña 3 · MIDI deja el borde discontinuo y es pulsable; Banks y Tracks
+   siguen sin estarlo.
+2. Doce filas Track 1..12, cada una con dieciseis canales; de fabrica se ve la
+   diagonal Track N en canal N.
+3. Con el hardware sonando, cambiar el canal del Track 1 cambia el instrumento
+   de destino inmediatamente, sin girar ningun knob.
+4. Cambiar el canal de un Track que no es el seleccionado no mueve la seleccion.
+5. Dos Tracks pueden compartir canal, y el contador de la cabecera baja.
+6. La fila del Track seleccionado se distingue con el acento.
+
+Confirmacion del usuario: «OK» (2026-09-02).
