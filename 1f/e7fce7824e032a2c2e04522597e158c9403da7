@@ -1,0 +1,22 @@
+Task: Pasada completa en iPad con el BeatStep Pro
+
+Fase 7 del track mute-solo_20260902.
+
+Los diez criterios de aceptacion verificados en dispositivo el 2026-09-02, con
+BeatStep Pro y sinte externo. Siete se comprobaron en la verificacion de la Fase
+6; el usuario confirmo despues haber probado tambien los dos que faltaban —el 4
+(soleado y muteado calla) y el 8 (parar y arrancar conserva la mezcla)—.
+
+Fichero: conductor/tracks/mute-solo_20260902/device-verification.md.
+
+Los dos que importaban al oido, y por que quedan senalados: el criterio 2
+—desmutear devuelve el Track en fase— es la promesa entera de la feature y en
+pantalla se ve igual que un stop, asi que solo se distingue escuchando. Y el 1
+con Sustain al 200% sobre una Division larga es el modo de fallo caro: sin el
+barrido de FR4, mutear a mitad de nota deja el sinte sonando segundos.
+
+El documento registra ademas lo que la pasada no cubre: la ventana de 20 ms del
+look-ahead y el caso de dos Tracks compartiendo canal. Los dos estan como
+limitaciones conocidas en la spec y documentados en el codigo.
+
+Sin medicion de jitter (NFR6, suspendida el 2026-09-02).
