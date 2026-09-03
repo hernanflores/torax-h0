@@ -63,15 +63,17 @@ track se alarga.
         enteros. *(El plan pedía almacenamiento inline de 24 huecos; se ajusta el
         2026-09-03, con menos estado del previsto.)*
   - [x] Cobertura `Engine` ≥90%.
-- [ ] Task: La corrección de fase, como función pura (FR6)
-  - [ ] Tests (Red): con la rejilla adelantada respecto al tick de negra, la
-        corrección devuelve un desplazamiento negativo del origen; atrasada,
-        positivo; en fase, cero.
-  - [ ] Tests (Red): la corrección **está acotada** — un tick absurdamente
+- [x] Task: La corrección de fase, como función pura (FR6) [5c91654]
+  - [x] Tests (Red): con la rejilla **adelantada** —su límite cae antes que el
+        tick— la corrección es **positiva** y retrasa el origen; atrasada,
+        negativa; en fase, cero. *(El plan escribía los signos al revés; se
+        corrige el 2026-09-03: lo que se devuelve es lo que hay que sumar al
+        origen.)*
+  - [x] Tests (Red): la corrección **está acotada** — un tick absurdamente
         desviado no produce un salto arbitrario del origen.
-  - [ ] Implementación (Green): función pura sobre origen, periodo e instante del
+  - [x] Implementación (Green): función pura sobre origen, periodo e instante del
         tick.
-  - [ ] Documentar por qué se corrige por negra y no por tick: corregir a 24 ppqn
+  - [x] Documentar por qué se corrige por negra y no por tick: corregir a 24 ppqn
         mete el jitter del cable en cada evento.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
