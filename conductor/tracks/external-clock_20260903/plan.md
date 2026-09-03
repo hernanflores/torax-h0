@@ -33,10 +33,10 @@ track se alarga.
   - [x] Dejar escrita la alternativa descartada —emitir al recibir cada tick— y
         por qué: devuelve el jitter al planificador del SO, y ya no hay arnés que
         mida ese daño en el modo esclavizado.
-- [ ] Task: Anotar en `product.md` que el reloj deja de ser solo interno (NFR5)
-  - [ ] Nota fechada: el MVP promete «transporte (play/stop) y reloj interno»;
+- [x] Task: Anotar en `product.md` que el reloj deja de ser solo interno (NFR5) [f0d3bd1]
+  - [x] Nota fechada: el MVP promete «transporte (play/stop) y reloj interno»;
         sigue siendo cierto y ahora además se puede seguir a un maestro externo.
-  - [ ] Dejar dicho que la app **no emite clock** (limitación 2), para que la
+  - [x] Dejar dicho que la app **no emite clock** (limitación 2), para que la
         nota no se lea como sincronía en los dos sentidos.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
