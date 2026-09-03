@@ -110,13 +110,13 @@ track se alarga.
   - [x] Tests (Red): con `External`, los mismos mensajes sí llegan al transporte.
   - [x] Implementación (Green): la fuente como estado del transporte, no de la
         vista; el filtro en un solo sitio, antes de repartir.
-- [ ] Task: Armar y arrancar con el Start (FR4)
-  - [ ] Tests (Red): con `External`, `play()` deja el transporte armado y **sin
+- [x] Task: Armar y arrancar con el Start (FR4) [2387086]
+  - [x] Tests (Red): con `External`, `play()` deja el transporte armado y **sin
         emitir**; al llegar el Start empieza a emitir desde el paso 0.
-  - [ ] Tests (Red): los doce Tracks arrancan con el mismo origen — el invariante
+  - [x] Tests (Red): los doce Tracks arrancan con el mismo origen — el invariante
         de fase de `multi-track` sigue en pie.
-  - [ ] Tests (Red): un Start recibido **sin haber armado** no arranca nada.
-  - [ ] Implementación (Green): estado armado en `Transport`, y el origen fijado
+  - [x] Tests (Red): un Start recibido **sin haber armado** no arranca nada.
+  - [x] Implementación (Green): estado armado en `Transport`, y el origen fijado
         en el instante del Start como hoy se fija en el de Play.
 - [ ] Task: Parar con el Stop externo, sin dejar notas colgadas (FR5)
   - [ ] Tests (Red): el Stop externo apaga por el mismo camino que `stop()`
