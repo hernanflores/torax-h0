@@ -1,0 +1,27 @@
+Tarea: Parar con el Stop externo, sin dejar notas colgadas (Fase 4, FR5)
+
+Qué cambia
+`receive(.stop, atHostTime:)` llama a `stop()`. Nada más: el barrido ya estaba
+factorizado en `silence(tracks:atHostTime:)` desde el track `mute-solo`, así que
+no hizo falta tocarlo.
+
+Decisiones
+- **Se reutiliza `stop()` entero**, no una variante. El apagado tiene dos pasadas
+  con un orden que importa y un `silenceHostTime` sellado una ventana por
+  delante; duplicarlo sería mantener dos paradas iguales a mano.
+- **Desarma además de parar**, porque `stop()` ya lo hace: tras un Stop del
+  maestro, su siguiente Start no arranca sin volver a pulsar Play.
+- Un Stop con el transporte parado no hace nada ni emite: por el cable llegan
+  Stops de sesiones que no son la nuestra.
+
+Tests (4)
+El Stop del maestro para y manda el all notes off; desarma y deja el transporte
+insensible al Start siguiente; un Stop con el transporte parado es inocuo y
+silencioso; y con `Internal` el Stop del maestro no para nada.
+
+Verificación
+- swift test --package-path Packages/MIDI (partición, resto) → 469 tests, 0 fallos
+
+Ficheros
+- Packages/MIDI/Sources/MIDI/Transport.swift (modificado)
+- Packages/MIDI/Tests/MIDITests/ExternalStopTests.swift (nuevo)
