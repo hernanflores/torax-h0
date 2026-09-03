@@ -1,0 +1,64 @@
+Tareas: El tempo interno deja de ser una constante (FR8), el selector
+Internal/External (FR3) y la barra dice el tempo y su fuente (FR9) — Fase 5
+
+Las tres van en un commit porque son la misma pantalla y los mismos ficheros;
+separarlas habría sido partir un cambio que solo se entiende junto.
+
+Qué cambia
+- `Transport.tempo` y `setTempo(beatsPerMinute:)`: el tempo de la app, validado
+  por el tipo `Tempo` (20–300). Fuera de rango se rechaza y el vigente sobrevive.
+- `Transport.currentTempo` y `isFollowingEstablishedClock`: lo que suena de
+  verdad, para que la pantalla no tenga que saber por dónde cruza el reloj.
+- `Tempo.displayBeatsPerMinute`: el redondeo a un decimal, en `Engine` y con
+  tests. Estaba en la vista, donde no se puede medir.
+- `ChannelMapView.Clock`: selector Internal/External, tempo con −10/−1/+1/+10 y
+  una línea de estado (`Waiting for clock`, `Following external clock`,
+  `Clock lost — holding last tempo`, `External clock detected`, `No clock`).
+- La barra: `120.0 BPM` pasa a ser el tempo vigente, con `INT`/`EXT` al lado.
+
+Decisiones
+- **El tempo interno se publica por el `ClockHandoff`**, igual que el del
+  maestro. El scheduler no distingue de dónde viene el periodo, así que cambiar
+  el tempo mientras suena no reinicia nada: `TempoMap` rebasa conservando el
+  instante musical.
+- **El tempo y el estado se calculan al preguntar**, no se guardan. Guardarlos
+  exigiría un temporizador de interfaz que los refresque, que es el antipatrón
+  que `product-guidelines.md` nombra y que el playhead ya evita. Para que SwiftUI
+  repinte tras un gesto hay un `clockRevision`, que es estado observable mínimo.
+- **Los controles de tempo se deshabilitan con External.** El número es del
+  maestro; ofrecer un control que no hace nada sería prometer algo que no existe.
+
+Lo que encontró la verificación en el simulador
+La sección de reloj, puesta encima de los canales, **empujaba la fila del Track
+12 fuera de pantalla** —el 11 ya salía cortado—. Ver los doce a la vez es la
+razón de que esa pantalla exista (lo dice su propia documentación), así que el
+reloj se movió a la columna derecha, que estaba vacía. Con eso caben los doce.
+
+Un test tuvo que cambiar: `testInternalPublishesNothing` decía que con `Internal`
+no se publica nada, y desde que el tempo de la app también viaja por el handoff
+eso dejó de ser cierto **y de ser lo que importaba**. Ahora comprueba lo que sí
+importa: que una ráfaga de ticks del maestro no pisa el tempo de la app.
+
+Tests (11 nuevos)
+`InternalTempoTests` (7): el valor por defecto; se acepta dentro del rango y en
+los dos extremos; fuera de rango se rechaza y el vigente sobrevive; el tempo
+interno llega al scheduler; con `External` no le pisa el periodo al maestro; y
+volver a `Internal` republica el de la app.
+`MusicalTimeTests` (2): estimaciones vecinas muestran el mismo valor, y un cambio
+real sí se ve.
+`ExternalTempoTests` (1 reescrito), `ClockDropoutTests` (ya cubría el estado).
+
+Verificación
+- Engine → 467 tests, 0 fallos
+- MIDI, partición de CI → 21 (1 omitido) + 491, 0 fallos
+- xcodebuild -destination 'generic/platform=iOS' → BUILD SUCCEEDED
+- Simulador iPad Pro 11": pantalla MIDI con los doce Tracks visibles y el reloj a
+  la derecha; barra con `120.0 BPM INT` sin descolocarse.
+
+Ficheros
+- Packages/MIDI/Sources/MIDI/Transport.swift (modificado)
+- Packages/Engine/Sources/Engine/MusicalTime.swift (modificado)
+- App/ChannelMapView.swift, App/ContentView.swift, App/TransportModel.swift (modificados)
+- Packages/MIDI/Tests/MIDITests/InternalTempoTests.swift (nuevo)
+- Packages/Engine/Tests/EngineTests/MusicalTimeTests.swift (modificado)
+- Packages/MIDI/Tests/MIDITests/ExternalTempoTests.swift (modificado)
