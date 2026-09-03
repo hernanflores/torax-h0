@@ -15,7 +15,7 @@ iPadOS 17 como mínimo: cubre iPads desde ~2018 y da acceso a SwiftUI maduro (`O
 | Lenguaje | Swift |
 | UI | SwiftUI |
 | MIDI | CoreMIDI |
-| Reloj | Scheduler look-ahead + timestamps de CoreMIDI |
+| Reloj | Scheduler look-ahead + timestamps de CoreMIDI; interno o esclavo de un clock MIDI externo |
 | Concurrencia | Snapshot inmutable, sin locks en el camino de timing |
 | Persistencia | `Codable` → JSON en disco |
 | Módulos | Paquetes SPM separados |
@@ -87,6 +87,51 @@ bajar el Delay a negativo **mientras suena** mueve un presupuesto que el origen
 ya no puede acompañar, así que recorta una ventana de eventos una sola vez.
 Las dos están registradas como limitaciones conocidas en
 `conductor/tracks/mvp-groove-temporal_20260830/spec.md`.
+
+### Enmienda — 2026-09-03: el tempo deja de ser constante, y el origen puede corregirse en vuelo
+
+**Qué cambia.** Dos cosas que hasta ahora estaban fijas desde el instante de
+Play:
+
+1. **El `Tempo` de la `MusicalTimeline`** se fijaba al arrancar el transporte y
+   no cambiaba en toda la pasada. Pasa a poder **derivarse de un reloj MIDI
+   externo** a 24 ppqn, estimado sobre una ventana del orden de una negra.
+2. **El origen de la rejilla** —que la enmienda del 2026-08-30 ya movió de `Play`
+   a `Play + presupuesto`— pasa a **corregirse en vuelo**: una vez cada 24 ticks
+   se compara la fase contra el maestro y se ajusta.
+
+**Por qué.** El controlador es el instrumento, y hasta ahora la app y el hardware
+no podían compartir pulso: el tempo era el literal de 120 BPM de
+`TransportModel`. Seguir a un maestro externo exige las dos cosas —el tempo,
+porque lo pone otro; el origen, porque un tempo estimado acierta de media y se
+separa despacio—.
+
+**Qué se conserva, que es lo que importa.** **El look-ahead no se toca.** Los
+eventos se siguen sellando hacia el futuro con `MIDISendEventList` y un timestamp
+de entrega, así que **el jitter sigue sin depender de cuándo despierta el hilo**.
+Lo único que cambia es de dónde sale el número del periodo: antes de una
+constante, ahora de una estimación. La ventana, la disciplina de ranura del
+snapshot y la regla de tiempo real siguen exactamente igual.
+
+**La alternativa descartada: emitir al recibir cada tick.** Es la implementación
+obvia de un esclavo MIDI —llega el tick, se manda la nota— y sigue el tempo sin
+estimar nada. Se descarta porque devuelve el jitter al planificador del SO, que
+es justo lo que esta sección existe para evitar. Y el coste no se podría acotar:
+el arnés mide contra su propio reloj y no sabe medir siguiendo a un maestro
+externo, así que la degradación se juzgaría de oído. La estimación paga latencia
+—un cambio de tempo tarda hasta una ventana más una negra en verse— y eso sí es
+un coste acotado y escrito.
+
+**Por qué la fase se corrige por negra y no por tick.** Corregir a 24 ppqn mete
+el jitter del cable en cada evento: el reloj entrante tiene el suyo, y empujar el
+origen con cada tick lo traslada a la salida. Una vez por negra —del orden de
+medio segundo a 120 BPM— acota la deriva sin propagar ese ruido.
+
+**Lo que introduce.** Con reloj externo, un cambio brusco de tempo del maestro
+tarda hasta una ventana de look-ahead más una negra en oírse, y el re-anclaje
+puede dejar un salto perceptible si el maestro tiene mucho jitter propio. Las
+dos están registradas como limitaciones conocidas en
+`conductor/tracks/external-clock_20260903/spec.md`.
 
 ## Concurrencia
 
