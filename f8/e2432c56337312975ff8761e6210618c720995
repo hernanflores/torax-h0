@@ -1,0 +1,49 @@
+Correcciones de la segunda pasada en dispositivo (Fase 6), 2026-09-03
+
+1. El transporte del maestro no mandaba
+Síntoma: había que pulsar Play en la app antes de pulsarlo en el BeatStep; sin
+eso, el Start del hardware no hacía nada. El usuario lo describió como no
+intuitivo.
+
+Qué cambia: con `External`, el Start del maestro arranca siempre —y reinicia
+desde el paso 0 si ya sonaba— y su Stop para siempre. Desaparece el estado armado
+y con él `Waiting for clock`. El Play de la app arranca en el momento.
+
+Qué se conserva: manda un solo transporte, que era lo que el armado buscaba; y
+con `Internal` el maestro sigue sin tocar nada, que es lo que hace útil al
+selector.
+
+Enmienda escrita en el FR4 del `spec.md`, con el porqué y la fecha, y los
+criterios de aceptación 1 y 2 reescritos.
+
+2. El tempo seguía al maestro y la pantalla no se enteraba
+Causa: `beatsPerMinute` y `clockStatus` se calculan al preguntar —para no
+guardar una copia que alguien tenga que refrescar—, y quien los mueve es el hilo
+de recepción de CoreMIDI, que no salta al principal a propósito: ese salto metería
+la cola del hilo principal dentro de la estimación del tempo. Sin estado
+observable que cambie, SwiftUI no tenía motivo para repintar.
+
+Qué cambia: la lectura de la barra y el bloque de reloj de la pantalla MIDI van
+dentro de un `TimelineView(.periodic(by: 0.25))`.
+
+Por qué no contradice la regla del playhead: `product-guidelines.md` llama
+antipatrón a **animar** con un temporizador algo que debería derivar del reloj
+musical. Esto no anima: relee un número de estado, cuatro veces por segundo.
+La alternativa —avisar desde el hilo de recepción— habría metido una asignación
+por negra en ese hilo, que es lo que NFR2 prohíbe.
+
+Tests
+`ExternalStartTests` se reescribe: Play arranca ya; el Start del maestro arranca
+sin tocar la app; con `Internal` no arranca. `ExternalStopTests`: el Stop del
+maestro para también lo que arrancó la app.
+
+Verificación
+- Engine → 467 tests, 0 fallos
+- MIDI (partición, resto) → 492 tests, 0 fallos
+- xcodebuild -destination 'generic/platform=iOS' → BUILD SUCCEEDED
+
+Ficheros
+- Packages/MIDI/Sources/MIDI/Transport.swift (modificado)
+- App/ContentView.swift, App/TransportModel.swift (modificados)
+- Packages/MIDI/Tests/MIDITests/ExternalStartTests.swift, ExternalStopTests.swift (modificados)
+- conductor/tracks/external-clock_20260903/spec.md, device-verification.md (modificados)
