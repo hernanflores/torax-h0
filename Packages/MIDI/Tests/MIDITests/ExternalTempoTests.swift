@@ -111,16 +111,24 @@ final class ExternalTempoTests: XCTestCase {
 
     // MARK: - Internal no publica
 
-    /// Con `Internal` el reloj del maestro no llega ni al estimador: la rejilla
-    /// del scheduler no puede moverse por un cable conectado.
-    func testInternalPublishesNothing() {
+    /// Con `Internal` el reloj del maestro no llega ni al estimador: lo que
+    /// cruza al scheduler sigue siendo el tempo de la app, y una ráfaga de ticks
+    /// a otra velocidad no lo mueve.
+    ///
+    /// *(Desde que el tempo interno también viaja por el handoff —tarea de la
+    /// Fase 5—, «no publica nada» dejó de ser cierto y de ser lo que importaba:
+    /// lo que importa es que el maestro no pise a la app.)*
+    func testInternalIgnoresTheMasterTicks() {
         let transport = makeTransport()
         transport.clockSource = .internal
+        transport.setTempo(beatsPerMinute: 120)
+        let before = transport.clockHandoff.reading.quarterNoteNanoseconds
 
         transport.receive(.timingClock, atHostTime: 0)
-        feed(transport, ticks: 48, beatsPerMinute: 120)
+        feed(transport, ticks: 48, beatsPerMinute: 90)
 
-        XCTAssertFalse(transport.clockHandoff.reading.isEstablished)
+        XCTAssertEqual(transport.clockHandoff.reading.quarterNoteNanoseconds, before)
+        XCTAssertEqual(before, 500_000_000)
     }
 
     // MARK: - Arrancar olvida al maestro anterior

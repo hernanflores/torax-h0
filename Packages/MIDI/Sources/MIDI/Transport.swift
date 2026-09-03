@@ -58,9 +58,77 @@ public final class Transport: @unchecked Sendable {
     /// Cambiarlo en caliente es lo que hace el selector de la pantalla `3 ·
     /// MIDI`, y no toca lo que esté sonando: solo decide a quién se hace caso a
     /// partir de ahora.
+    ///
+    /// **Volver a `Internal` republica el tempo de la app**, para que mande sin
+    /// tener que tocarlo otra vez.
     public var clockSource: ClockSource {
         get { followsExternalClock.value ? .external : .internal }
-        set { followsExternalClock.value = newValue == .external }
+        set {
+            followsExternalClock.value = newValue == .external
+            if newValue == .internal { publishInternalTempo() }
+        }
+    }
+
+    /// El tempo de la app.
+    ///
+    /// **Era una constante de 120 BPM** desde la rebanada 1 del MVP. Sigue
+    /// existiendo cuando manda un maestro externo: es a lo que se vuelve al
+    /// elegir `Internal`, y lo que suena si el maestro se corta antes de haber
+    /// dicho ninguno.
+    public private(set) var tempo: Tempo
+
+    /// Fija el tempo de la app. Devuelve si el valor era válido.
+    ///
+    /// **Fuera del rango del tipo `Tempo` se rechaza y no pasa nada más**: un
+    /// control que se pase no puede dejar el transporte sin tempo.
+    ///
+    /// Cambiarlo mientras suena no reinicia la rejilla ni pierde el paso en
+    /// curso: el cambio llega al scheduler por el mismo camino que el de un
+    /// maestro externo, y `TempoMap` rebasa conservando el instante musical.
+    @discardableResult
+    public func setTempo(beatsPerMinute: Double) -> Bool {
+        guard let updated = Tempo(beatsPerMinute: beatsPerMinute) else { return false }
+
+        tempo = updated
+        publishInternalTempo()
+        return true
+    }
+
+    /// El tempo que está sonando de verdad.
+    ///
+    /// Con reloj interno es el de la app; con reloj externo, el estimado del
+    /// maestro — y el de la app mientras el maestro no haya dicho ninguno, que
+    /// es también lo que sigue sonando si se corta.
+    ///
+    /// **Es lo que la barra enseña.** Existe para que la pantalla no tenga que
+    /// saber por dónde cruza el reloj ni cómo se empaqueta.
+    public var currentTempo: Tempo {
+        let reading = clockHandoff.reading
+        guard clockSource == .external, reading.isEstablished,
+            let followed = Tempo(
+                beatsPerMinute: 60.0 * 1_000_000_000.0 / Double(reading.quarterNoteNanoseconds))
+        else { return tempo }
+
+        return followed
+    }
+
+    /// Si se está siguiendo a un maestro que ya dijo su tempo.
+    public var isFollowingEstablishedClock: Bool {
+        clockSource == .external && clockHandoff.reading.isEstablished
+    }
+
+    /// Publica el tempo de la app, si es ella quien manda.
+    ///
+    /// **El tempo interno viaja por el mismo sitio que el del maestro.** El
+    /// scheduler no distingue de dónde viene el periodo de la negra, así que hay
+    /// un solo mecanismo que mantener en vez de dos caminos que hacen lo mismo.
+    private func publishInternalTempo() {
+        guard clockSource == .internal else { return }
+
+        clockHandoff.publish(
+            quarterNoteNanoseconds: UInt32(
+                (60.0 / tempo.beatsPerMinute * 1_000_000_000.0).rounded()),
+            accumulatedCorrectionNanoseconds: 0)
     }
 
     /// Armado: la app pidió sonar y espera el Start del maestro.
@@ -207,6 +275,7 @@ public final class Transport: @unchecked Sendable {
         self.send = send
         self.handoff = PatternHandoff(pattern)
         self.lastPublishedPattern = pattern
+        self.tempo = configuration.timeline.tempo
     }
 
     /// Atajo para quien todavía piensa en un Track: lo pone en la primera
@@ -460,6 +529,7 @@ public final class Transport: @unchecked Sendable {
         clockHandoff.clear()
         accumulatedCorrectionNanoseconds = 0
         lastTickNanoseconds.value = 0
+        publishInternalTempo()
         gridOriginNanoseconds = Int64(
             HostClock.nanoseconds(fromHostTicks: origin ?? HostClock.now()))
 

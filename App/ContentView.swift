@@ -161,6 +161,14 @@ struct ContentView: View {
             .monospacedDigit()
             .foregroundStyle(Palette.mutedBright)
 
+            // **Quién manda el tempo, en dos letras.** Sin esto, el mismo número
+            // puede venir de la app o del maestro y no hay forma de saberlo — que
+            // es justo lo que hay que ver de un vistazo cuando el tempo no es el
+            // que esperabas.
+            Text(model.clockSourceMark)
+                .font(Typography.caption)
+                .foregroundStyle(model.followsExternalClock ? Palette.groove : Palette.muted)
+
             transport
         }
     }
@@ -208,6 +216,14 @@ struct ContentView: View {
     /// visita.
     private var midiScreen: some View {
         ChannelMapView(
+            clock: ChannelMapView.Clock(
+                revision: model.clockRevision,
+                isExternal: model.followsExternalClock,
+                beatsPerMinute: model.beatsPerMinute,
+                status: model.clockStatus
+            ),
+            onClockSourceChange: { model.setFollowsExternalClock($0) },
+            onTempoChange: { model.setTempo($0) },
             channels: model.channels,
             selected: model.selectedTrackIndex,
             accent: Palette.accent(for: family),

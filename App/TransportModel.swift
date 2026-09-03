@@ -339,13 +339,70 @@ final class TransportModel {
     var rings: RingStack { RingStack(pattern: pattern) }
     var canPlay: Bool { selection.hasEndpoint && transport != nil }
 
-    /// El tempo, en la unidad que la barra muestra.
+    /// El tempo vigente, en la unidad que la barra muestra.
     ///
-    /// **De solo lectura** (limitación 4 de la spec): el tempo editable está
-    /// fuera de alcance de esta rebanada, así que la barra lo informa y no lo
-    /// ofrece. Enseñarlo como si fuera un control sería prometer algo que no
-    /// existe.
-    var beatsPerMinute: Double { Self.tempo.beatsPerMinute }
+    /// **Ya no es una constante** (track `external-clock_20260903`): con reloj
+    /// interno es el de la app, editable en la pantalla MIDI; con reloj externo,
+    /// el que se está estimando del maestro.
+    ///
+    /// **Redondeado a un decimal, y por eso estable.** El estimado se mueve en
+    /// las milésimas de un tick a otro y un último decimal que baila es ilegible
+    /// a un metro. Lo que se redondea es lo que se enseña; lo que suena usa el
+    /// valor entero.
+    ///
+    /// **Se calcula al preguntar, no se guarda.** Guardarlo obligaría a alguien
+    /// a refrescarlo, y ese alguien sería un temporizador de interfaz — el mismo
+    /// antipatrón que `product-guidelines.md` nombra y que el playhead ya evita.
+    /// Leerlo es una lectura atómica.
+    var beatsPerMinute: Double {
+        guard let transport else { return 120 }
+        return transport.currentTempo.displayBeatsPerMinute
+    }
+
+    /// Si la app sigue a un maestro externo.
+    var followsExternalClock: Bool { transport?.clockSource == .external }
+
+    /// Qué está pasando con el reloj externo, en una línea. `nil` con reloj
+    /// interno, que no tiene nada que contar.
+    ///
+    /// En inglés y sin traducir, como el resto del vocabulario de interfaz.
+    var clockStatus: String? {
+        guard let transport, transport.clockSource == .external else { return nil }
+
+        return switch (transport.isPlaying, transport.isArmed, transport.clockHasDropped()) {
+        case (_, true, _): "Waiting for clock"
+        case (true, _, true): "Clock lost — holding last tempo"
+        case (true, _, false): "Following external clock"
+        case (false, _, _):
+            transport.isFollowingEstablishedClock ? "External clock detected" : "No clock"
+        }
+    }
+
+    /// La marca de la barra: quién manda el tempo, en dos letras.
+    var clockSourceMark: String { followsExternalClock ? "EXT" : "INT" }
+
+    /// Elige quién manda el tempo.
+    ///
+    /// No toca lo que esté sonando: decide a quién se hace caso a partir de
+    /// ahora.
+    func setFollowsExternalClock(_ isExternal: Bool) {
+        transport?.clockSource = isExternal ? .external : .internal
+        clockRevision &+= 1
+    }
+
+    /// Fija el tempo de la app. Fuera del rango 20–300 no hace nada.
+    func setTempo(_ beatsPerMinute: Double) {
+        guard transport?.setTempo(beatsPerMinute: beatsPerMinute) == true else { return }
+        clockRevision &+= 1
+    }
+
+    /// Cambia con cada gesto sobre el reloj.
+    ///
+    /// **Existe para que SwiftUI repinte.** El tempo y el estado se calculan al
+    /// preguntar, así que no hay estado observable que cambie al tocarlos y la
+    /// pantalla MIDI se quedaría con el valor viejo. Tocar esto es decirle a la
+    /// vista que vuelva a preguntar, sin guardar una copia que mantener al día.
+    private(set) var clockRevision: UInt64 = 0
 
     init() {
         // La entrada de control se construye primero y publica por el relevo:
