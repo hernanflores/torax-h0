@@ -62,3 +62,26 @@ Ficheros
 - Packages/MIDI/Tests/MIDITests/InternalTempoTests.swift (nuevo)
 - Packages/Engine/Tests/EngineTests/MusicalTimeTests.swift (modificado)
 - Packages/MIDI/Tests/MIDITests/ExternalTempoTests.swift (modificado)
+
+---
+
+Verificación de fase — FASE 5: LA PANTALLA — FUENTE, TEMPO Y QUIÉN MANDA
+
+Tests automáticos
+- Engine → 467 tests, 0 fallos
+- MIDI, partición de CI → 21 (1 omitido) + 491, 0 fallos
+- xcodebuild -destination 'generic/platform=iOS' → BUILD SUCCEEDED
+- Simulador iPad Pro 11": pantalla MIDI y barra verificadas por captura.
+
+Hallazgo de la verificación
+La sección de reloj encima de los canales empujaba la fila del Track 12 fuera de
+pantalla. Se movió a la columna derecha, que estaba vacía.
+
+Verificación manual propuesta
+1. Los doce Tracks siguen visibles en `3 · MIDI`, con el bloque Clock a la derecha.
+2. Con Internal, +10 y −1 mueven el número en el bloque y en la barra, acotado a 20–300.
+3. Con External los botones de tempo se apagan y el estado dice `No clock`;
+   volver a Internal recupera el tempo de la app.
+4. La barra muestra INT / EXT junto al BPM.
+
+Confirmación del usuario: «Sí, avancemos» (2026-09-03).
