@@ -102,7 +102,7 @@ track se alarga.
         (ver `workflow.md`).
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 4: EL TRANSPORTE OBEDECE AL MAESTRO
+## FASE 4: EL TRANSPORTE OBEDECE AL MAESTRO [checkpoint: 473d58f]
 
 - [x] Task: La fuente de reloj, y que `Internal` ignore de verdad (FR3) [7410679]
   - [x] Tests (Red): con `Internal`, un Start, un Stop y una ráfaga de clock **no
@@ -154,7 +154,7 @@ track se alarga.
         de una negra—, no un literal en milisegundos: a 20 BPM medio segundo es
         menos de un tick.
   - [x] Cobertura `MIDI` ≥80%.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: LA PANTALLA — FUENTE, TEMPO Y QUIÉN MANDA
 
