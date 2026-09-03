@@ -230,6 +230,11 @@ public final class ControlInput: @unchecked Sendable {
             return press(note)
         case .noteOff:
             return false
+
+        // El controlador manda su reloj por el mismo cable que los knobs. No es
+        // entrada de control: quien lo atiende es el transporte.
+        case .timingClock, .start, .stop:
+            return false
         }
     }
 

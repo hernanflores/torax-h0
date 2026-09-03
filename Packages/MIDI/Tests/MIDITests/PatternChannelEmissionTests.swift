@@ -27,6 +27,9 @@ final class PatternChannelEmissionTests: XCTestCase {
             case .noteOn(let channel, _, _): seen.append(channel.number)
             case .noteOff(let channel, _, _): seen.append(channel.number)
             case .controlChange(let channel, _, _): seen.append(channel.number)
+
+            // El emisor nunca produce mensajes de sistema: no llevan canal.
+            case .timingClock, .start, .stop: XCTFail("El emisor no manda \(message)")
             }
         }
         return seen
