@@ -158,27 +158,29 @@ track se alarga.
 
 ## FASE 5: LA PANTALLA — FUENTE, TEMPO Y QUIÉN MANDA
 
-- [ ] Task: El tempo interno deja de ser una constante (FR8)
-  - [ ] Tests (Red, en `Engine` o `MIDI` según dónde caiga la lógica): fijar un
+- [x] Task: El tempo interno deja de ser una constante (FR8) [e065d64]
+  - [x] Tests (Red, en `Engine` o `MIDI` según dónde caiga la lógica): fijar un
         tempo dentro de 20–300 lo acepta; fuera, se rechaza sin romper el
         vigente.
-  - [ ] Implementación (Green): quitar la constante de `TransportModel` y llevar
+  - [x] Implementación (Green): quitar la constante de `TransportModel` y llevar
         el tempo a estado editable; control en la pantalla `3 · MIDI`.
-  - [ ] Comprobar que cambiar el tempo **mientras suena** no reinicia la fase ni
+  - [x] Comprobar que cambiar el tempo **mientras suena** no reinicia la fase ni
         pierde el paso en curso.
-- [ ] Task: El selector `Internal / External` (FR3)
-  - [ ] Implementación: en `3 · MIDI`, junto al tempo, con el lenguaje visual de
+- [x] Task: El selector `Internal / External` (FR3) [e065d64]
+  - [x] Implementación: en `3 · MIDI`, junto al tempo, con el lenguaje visual de
         `Brutalist.swift` y el vocabulario en inglés.
-  - [ ] El estado de enganche visible: siguiendo, esperando el Start, o
+  - [x] El estado de enganche visible: siguiendo, esperando el Start, o
         desenganchado por corte (FR4, FR7).
-  - [ ] Un tempo de maestro fuera de rango se dice, no se acota en silencio (FR2).
-- [ ] Task: La barra dice el tempo vigente y su fuente (FR9)
-  - [ ] Tests (Red): el redondeo a un decimal es estable — una sucesión de
+  - [x] Un tempo de maestro fuera de rango se dice, no se acota en silencio (FR2).
+- [x] Task: La barra dice el tempo vigente y su fuente (FR9) [e065d64]
+  - [x] Tests (Red): el redondeo a un decimal es estable — una sucesión de
         estimaciones que difieren en la milésima no cambia el texto.
-  - [ ] Implementación (Green): el `%.1f BPM` que ya existe pasa a leer el tempo
+  - [x] Implementación (Green): el `%.1f BPM` que ya existe pasa a leer el tempo
         vigente; junto a él, `INT` / `EXT`.
-  - [ ] Verificar en el simulador que sigue legible a un metro y que la barra no
-        se descoloca al aparecer la marca.
+  - [x] Verificar en el simulador que sigue legible a un metro y que la barra no
+        se descoloca al aparecer la marca. *(Y encontró un fallo: la sección de
+        reloj encima de los canales empujaba la fila del Track 12 fuera de
+        pantalla. Se movió a la columna derecha.)*
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: DISPOSITIVO Y MEDICIÓN
