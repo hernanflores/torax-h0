@@ -33,6 +33,13 @@ struct RingStackView: View {
     /// mentiría en quince de los dieciséis.
     let playheads: [Playhead?]
 
+    /// Cuáles se oyen. Un Track inaudible se dibuja atenuado **y su playhead
+    /// sigue girando**: corre y no suena, que es exactamente lo que hace.
+    ///
+    /// Llega decidido desde fuera —la regla de audibilidad vive en `MIDI`, donde
+    /// se testea— porque aquí solo se dibuja.
+    let audible: [Bool]
+
     var body: some View {
         Canvas { context, size in
             let available = min(size.width, size.height) / 2
@@ -65,8 +72,17 @@ struct RingStackView: View {
         let isSelected = band.track == selected
         let radius = available * band.radius
         let width = available * RingStack.bandWidth
+        // **Atenuar el anillo, no borrarlo.** Un anillo que desapareciera diría
+        // que el Track se paró, y lo que ocurre es lo contrario: sigue
+        // corriendo. El playhead se dibuja aparte y a plena intensidad, que es
+        // donde se ve esa diferencia.
+        let heard = audible.indices.contains(band.track) ? audible[band.track] : true
+        let dim = heard ? 1.0 : 0.3
         let pulseColour = pulseColour(isSelected: isSelected, hasMaterial: band.hasMaterial)
-        let gapColour = isSelected ? Palette.step.opacity(0.55) : Palette.border.opacity(0.55)
+            .opacity(dim)
+        let gapColour =
+            (isSelected ? Palette.step.opacity(0.55) : Palette.border.opacity(0.55))
+            .opacity(dim)
 
         // **Arcos y no puntos.** Se dibujó primero con una marca por Step, como
         // el anillo único de la v1, y con dieciséis anillos no funciona: los

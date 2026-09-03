@@ -105,6 +105,25 @@ The bundled `.dc.html` files are **design references built in HTML**, not produc
 - Matrix cells: filled colored cell = track has data in that pattern; dashed empty cell = no data; color intensity ties to the track's own accent.
 **Interactions:** Tap M or S on a row → toggles that row's mute/solo color state.
 
+> **Nota del 2026-09-02 — el par M/S se implementa en la pantalla Track, no
+> aquí.** El prototipo pone mute y solo en esta pantalla 5, que no existe en la
+> app: las pantallas disponibles son `1 · Track`, `2 · Tonal` y `3 · MIDI`, y
+> `4 · Banks` y `5 · Tracks` siguen sin construirse. El track
+> `mute-solo_20260902` pone el par debajo de cada pastilla de la fila de Tracks
+> de la pantalla `1 · Track`, que es donde ya se elige el Track y donde el gesto
+> cae bajo el dedo sin cambiar de pantalla.
+>
+> **Cuando la pantalla 5 exista, enseñará este mismo estado.** Mute y solo viven
+> por encima del Pattern, en una sola capa: las dos pantallas serán dos vistas de
+> lo mismo, no dos estados que sincronizar.
+>
+> **Se conserva el vocabulario de color de este documento:** `M` activo en mauve
+> —el acento de GROOVE— y `S` activo en purple —el de TONAL—, con el reposo en el
+> borde apagado de los controles vacíos. Lo que el prototipo dejó como nota al
+> pie sí se implementa: el solo **implica** el silencio de los no soleados, y el
+> Track que calla por el solo de otro se atenúa para que once silencios no
+> parezcan un fallo.
+
 ## State Management (as prototyped)
 - `screen`: which of the 5 screens is active (top nav in the click-through; in the real app this maps to actual navigation/tab state).
 - `paramTab`: 'shape' | 'groove' | 'tonal' — drives the readout panel's value/label/color on screen 1.

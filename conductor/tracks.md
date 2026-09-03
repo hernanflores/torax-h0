@@ -303,6 +303,50 @@ escalón es el que se nota.
 
   Integrado por [PR #28](https://github.com/hernanflores/torax-h0/pull/28).
 
+---
+
+- [x] **Track: Mute y Solo por Track** — M/S por Track suenan y se accionan con el dedo y con los step buttons 15/16; verificado en iPad
+  *Link: [conductor/tracks/mute-solo_20260902/index.md](./tracks/mute-solo_20260902/index.md)*
+
+  Planificado el 2026-09-02, en siete fases. El par **M / S** debajo de cada
+  pastilla de Track, y el mismo gesto en el controlador: hoy, para oír la caja
+  sola hay que vaciarle el pool a los demás — destruir material para conseguir un
+  silencio temporal.
+
+  **Mute no para el Track: le quita la salida.** La rejilla avanza y los Cycles
+  rotan; al quitarlo, el Track vuelve **en fase**. **El estado vive por encima
+  del Pattern** —es mezcla, no material— así que `Engine` no se toca: los doce
+  mutes y los doce solos van en una sola palabra atómica, porque dos atómicos
+  permitirían leer el mute de antes con el solo de después. El **solo es
+  aditivo** y el mute manda sobre él.
+
+  **En el controlador, sin temporizadores:** mantener el step button 16 y pulsar
+  el N mutea el Track N; con el 15, lo solea. Los dos quedaron libres al bajar a
+  doce Tracks, y el hardware ya envía la soltada.
+
+  **El riesgo caro es la nota colgada:** con Sustain al 200% sobre una Division
+  larga, mutear sin apagar dejaría el sinte sonando segundos. Se reutiliza el
+  barrido de `Transport.stop()`, acotado al Track que se queda inaudible.
+
+  **Sin medición de jitter**, suspendida el 2026-09-02: decide *si* se emite, no
+  *cuándo*.
+
+  **Cerrado el 2026-09-02**, en siete fases, con los diez criterios de
+  aceptación verificados en iPad. `Engine` no se tocó en ninguna fase, que era
+  el NFR2 y también la señal de diseño: si la mezcla hubiera empujado hacia el
+  motor, es que se estaría metiendo en el material.
+
+  **Dos cosas salieron por el camino y no estaban en el plan.** `Transport.mutes`
+  nació pública en la Fase 3 y se cerró en la Fase 4: dejaba dos caminos para
+  cambiar la mezcla y uno se saltaba el apagado, que es la nota colgada que FR4
+  existe para evitar. Y la tabla de `preset/README.md` seguía diciendo
+  «Seleccionar Track 2–16, sin Track detrás en v1», desactualizada desde la
+  bajada a doce; ahora describe los modificadores.
+
+  **Deja sin tocar** la persistencia —cuando llegue, decidirá si la mezcla se
+  guarda con el Project—, la pantalla `5 · Tracks` con su vista de conjunto, y
+  el mute de Patterns y Banks.
+
 ## Defectos conocidos
 
 Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres

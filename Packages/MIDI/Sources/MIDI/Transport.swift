@@ -31,6 +31,21 @@ public final class Transport: @unchecked Sendable {
     /// Ancla temporal del playhead. Vive aquí y no en el hilo porque el hilo se
     /// crea y se tira en cada Play; el reloj tiene que sobrevivir a eso para que
     /// quien dibuja consulte siempre al mismo sitio.
+    /// La mezcla: qué Tracks se oyen.
+    ///
+    /// **Vive en el transporte y no en el Pattern** porque no es material —ver
+    /// la nota del 2026-09-02 en la Pre Spec—, y vive aquí y no en la pantalla
+    /// porque quien la lee es el hilo del scheduler, que el transporte arranca.
+    ///
+    /// **Sobrevive a `stop()`**: parar y volver a arrancar conserva mutes y
+    /// solos, porque es mezcla y no transporte.
+    ///
+    /// **No es pública, y esa es la decisión.** Quien la tocara directamente se
+    /// saltaría el apagado de `toggleMute(_:)`, que es justo lo que evita la
+    /// nota colgada. Fuera se llega por `mix` para leer y por los dos toggles
+    /// para escribir.
+    let mutes = MuteMask()
+
     private let playheadClock = PlayheadClock()
     private let cyclePlaybackClock = CyclePlaybackClock()
 
@@ -154,6 +169,55 @@ public final class Transport: @unchecked Sendable {
         scheduler?.stop()
     }
 
+    // MARK: - La mezcla
+
+    /// Qué Tracks se oyen ahora mismo.
+    public var mix: MuteState { mutes.load() }
+
+    /// Alterna el mute de un Track, y apaga lo que deje de sonar.
+    ///
+    /// **Es la única puerta.** El gesto táctil y el del controlador entran los
+    /// dos por aquí, por la misma razón que la selección de Track: dos caminos
+    /// que cambiaran la máscara serían dos sitios donde olvidarse del apagado.
+    public func toggleMute(_ index: Int) {
+        apply { $0.togglingMute(index) }
+    }
+
+    /// Alterna el solo de un Track, y apaga a los que deje fuera.
+    public func toggleSolo(_ index: Int) {
+        apply { $0.togglingSolo(index) }
+    }
+
+    /// Cambia la mezcla y apaga a quien **acaba de** volverse inaudible.
+    ///
+    /// **El apagado va con la transición, no con el estado.** Se comparan las
+    /// dos fotos y se barre solo la diferencia: mutear a quien ya callaba por el
+    /// solo de otro no manda nada, y volverse audible tampoco —no hay ninguna
+    /// nota que cerrar—. Barrer por estado mandaría un `all notes off` cada vez
+    /// que alguien roza un botón.
+    ///
+    /// **Con el transporte parado no se manda nada**, por lo mismo: no hay nada
+    /// sonando. El estado sí cambia, y se nota en cuanto se pulse Play.
+    ///
+    /// **Fuera del hilo del scheduler** (NFR1): esto es un gesto de usuario, y
+    /// corre donde corre `stop()`.
+    private func apply(_ change: (MuteState) -> MuteState) {
+        let before = mutes.load()
+        let after = change(before)
+        guard after != before else { return }
+
+        mutes.store(after)
+
+        guard isPlaying else { return }
+
+        var silenced: Set<Int> = []
+        for index in 0..<Pattern.trackCount
+        where before.isAudible(index) && !after.isAudible(index) {
+            silenced.insert(index)
+        }
+        silence(tracks: silenced, atHostTime: silenceHostTime)
+    }
+
     /// Publica un Track nuevo. Se recoge en la ventana siguiente, suene o no.
     ///
     /// > **Puente de la v2, fase 2.** El handoff ya publica los dieciséis
@@ -192,7 +256,8 @@ public final class Transport: @unchecked Sendable {
             handoff: handoff,
             playhead: playheadClock,
             cyclePlaybackClock: cyclePlaybackClock,
-            pattern: starting
+            pattern: starting,
+            mutes: mutes
         ) {
             [emitter, send, tempo = configuration.timeline.tempo]
             _, source, _, pitch, groove, hostTime in
@@ -268,45 +333,68 @@ public final class Transport: @unchecked Sendable {
         scheduler.stop()
         self.scheduler = nil
 
-        let silenceAt =
-            HostClock.now()
+        // **Parar es apagar los doce.** El ámbito es lo único que distingue esto
+        // de silenciar un Track al mutearlo: el procedimiento —`all notes off`
+        // por canal y después el barrido de alturas— es el mismo, y está escrito
+        // una sola vez en `silence(tracks:atHostTime:)`.
+        silence(tracks: Set(0..<Pattern.trackCount), atHostTime: silenceHostTime)
+    }
+
+    /// Cuándo sellar un apagado: una ventana por delante.
+    ///
+    /// **Por qué no «ahora».** CoreMIDI emite en orden de timestamp, así que un
+    /// note-off a 0 saldría *antes* que cualquier note-on que el hilo ya hubiera
+    /// programado con timestamp futuro — es decir, antes de la nota que existe
+    /// para apagar. Sellarlo una ventana por delante lo pone detrás de todo lo
+    /// ya entregado, porque nada puede estar programado más allá del look-ahead.
+    ///
+    /// El retraso es el de la ventana, unos milisegundos.
+    var silenceHostTime: UInt64 {
+        HostClock.now()
             &+ HostClock.hostTicks(
                 fromNanoseconds: UInt64(max(0, configuration.lookAheadNanoseconds)))
+    }
 
-        // **Se apaga Track por Track, cada uno por su canal.** Con dieciséis
-        // Tracks en hasta dieciséis canales, apagar solo uno dejaría sonando a
-        // los otros quince: exactamente el defecto que este método existe para
-        // evitar, multiplicado.
-        // **Dos pasadas, y el orden importa.** Primero el `all notes off` de
-        // cada canal y después los note-off del material: si el sintetizador
-        // honra el primero, lo demás es confirmación; si no lo honra, el barrido
-        // lo cubre. Mezclarlos dejaría un `all notes off` de un canal detrás del
-        // note-off de otro, que es ruido sin orden.
-        //
-        // Se apaga Track por Track y canal por canal: con dieciséis Tracks en
-        // hasta dieciséis canales, apagar solo uno dejaría sonando a los otros
-        // quince, que es este mismo defecto multiplicado.
-        // **Se barren los dieciséis Cycles de cada Track, no solo el vigente.**
-        // El cursor de reproducción vive en el hilo del scheduler, así que desde
-        // aquí no se sabe cuál estaba sonando: saberlo exigiría que ese hilo
-        // publicara algo en cada vuelta, y eso es trabajo en el camino de tiempo
-        // real para resolver un caso de parada. El `cursor` del snapshot no
-        // sirve — es el de edición, y puede apuntar a cualquier sitio.
-        //
-        // Tampoco se barren solo los activos: bajar el número mientras suena
-        // deja el cursor fuera del rango a propósito (FR9), así que un Cycle que
-        // ya no se recorre puede ser justo el que está sonando.
+    /// Apaga lo que esos Tracks tuvieran sonando.
+    ///
+    /// **Dos pasadas, y el orden importa.** Primero el `all notes off` de cada
+    /// canal implicado y después los note-off del material: si el sintetizador
+    /// honra el primero, lo demás es confirmación; si no lo honra —que los hay—,
+    /// el barrido lo cubre. Mezclarlos dejaría un `all notes off` de un canal
+    /// detrás del note-off de otro, que es ruido sin orden.
+    ///
+    /// **Se barren los dieciséis Cycles de cada Track, no solo el vigente.** El
+    /// cursor de reproducción vive en el hilo del scheduler, así que desde aquí
+    /// no se sabe cuál estaba sonando: saberlo exigiría que ese hilo publicara
+    /// algo en cada vuelta, y eso es trabajo en el camino de tiempo real para
+    /// resolver un caso de parada. El `cursor` del snapshot no sirve — es el de
+    /// edición, y puede apuntar a cualquier sitio.
+    ///
+    /// Tampoco se barren solo los activos: bajar el número mientras suena deja
+    /// el cursor fuera del rango a propósito (FR9 de `cycles`), así que un Cycle
+    /// que ya no se recorre puede ser justo el que está sonando.
+    ///
+    /// **El barrido de alturas no depende de que el Cycle tenga material
+    /// ahora:** vaciar el pool mientras suena deja notas encendidas que ya no
+    /// están en él, y por eso el `all notes off` de la primera pasada no es
+    /// redundante.
+    ///
+    /// **Un canal compartido se apaga entero, y con él los Tracks que lo
+    /// comparten.** El `all notes off` es un mensaje de canal: no existe forma
+    /// de apagar «lo del Track 3» si el Track 4 emite por el mismo sitio. El
+    /// otro Track vuelve en su siguiente pulso —no queda mudo—, y la pantalla
+    /// MIDI existe para ver un choque de canales antes de que ocurra.
+    func silence(tracks: Set<Int>, atHostTime silenceAt: UInt64) {
+        guard !tracks.isEmpty else { return }
+
         var silenced: Set<Int> = []
-        for index in 0..<Pattern.trackCount {
+        for index in tracks.sorted() {
             guard let track = lastPublishedPattern.track(at: index) else { continue }
 
             for slot in 0..<Track.cycleCount {
                 guard let cycle = track.cycle(at: slot) else { continue }
                 let channel = MIDIChannel(cycle.channel)
 
-                // No depende de que el Cycle tenga material **ahora**: vaciar el
-                // pool mientras suena deja notas encendidas que ya no están en
-                // él, y el barrido del pool no las cubre por definición.
                 guard silenced.insert(channel.number).inserted else { continue }
                 send(
                     .controlChange(
@@ -319,11 +407,11 @@ public final class Transport: @unchecked Sendable {
             }
         }
 
-        // El barrido de alturas, sin repetir un par canal+altura: dieciséis
-        // Tracks por dieciséis Cycles por ocho alturas serían dos mil mensajes,
-        // y en la práctica casi todos son el mismo.
+        // Sin repetir un par canal+altura: doce Tracks por dieciséis Cycles por
+        // ocho alturas serían dos mil mensajes, y en la práctica casi todos son
+        // el mismo.
         var swept: Set<Int> = []
-        for index in 0..<Pattern.trackCount {
+        for index in tracks.sorted() {
             guard let track = lastPublishedPattern.track(at: index) else { continue }
 
             for slot in 0..<Track.cycleCount {

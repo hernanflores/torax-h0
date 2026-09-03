@@ -45,6 +45,33 @@ Project (estado completo + ajustes guardados)
 > error: no publican, como un CC sin asignar. El preset no cambia, porque la
 > tabla describe el hardware y no lo que la app hace con él.
 
+> **Nota del 2026-09-02 — mute y solo por Track, y por qué no están en este
+> árbol.** La Pre Spec no los menciona en ningún sitio: se añaden en el track
+> `mute-solo_20260902`, un par **M / S** por Track accionable desde la pantalla y
+> desde el controlador.
+>
+> **No entran en la estructura de arriba a propósito.** Todo lo que cuelga de
+> `Project` es **material**: lo que el Pattern dice que suene. Mute y solo son
+> **mezcla** —qué se escucha ahora mismo de ese material—, y meterlos en el Track
+> los ataría al Pattern: cambiar de Pattern movería los silencios, y silenciar un
+> Track sería editarlo. Viven por encima, en una capa que no se guarda con el
+> material.
+>
+> **Mute no para el Track: le quita la salida.** La rejilla avanza, el playhead
+> gira y los Cycles rotan igual; lo único que se suprime es la emisión. Quitarlo
+> devuelve el Track **en fase** con el resto, que es lo que hace un mixer y lo que
+> un «stop del Track» rompería.
+>
+> **El solo es aditivo y el mute manda sobre él.** Varios Tracks pueden estar en
+> solo a la vez y suenan todos ellos —aislar bombo y caja juntos es la operación
+> normal, y el solo exclusivo la prohibiría—. Un Track soleado **y** muteado
+> calla: la regla se lee del revés con facilidad, y de ahí que se escriba.
+>
+> **En el hardware son los step buttons 15 y 16**, mantenidos como modificador:
+> con el 16 hundido, pulsar el N mutea el Track N; con el 15, lo solea. Los dos
+> quedaron libres al bajar a doce Tracks (nota de arriba), así que el gesto no le
+> quita nada a la selección.
+
 ### Guardado
 
 - **Autosave:** protege el estado de trabajo reciente y restaura el último Bank tras reiniciar.

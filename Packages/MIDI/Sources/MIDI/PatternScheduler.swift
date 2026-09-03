@@ -32,6 +32,18 @@ public final class PatternScheduler {
     /// que es el mismo patrón que ya usa `PatternHandoff` con sus ranuras.
     private let schedulers: UnsafeMutablePointer<TrackScheduler>
 
+    /// Qué Tracks se oyen ahora mismo, o `nil` si a nadie le importa.
+    ///
+    /// **`nil` es la vía del arnés de medición**, que mide la rejilla y no la
+    /// mezcla: sin máscara suenan los doce, que es lo que hacía antes de que
+    /// esto existiera.
+    ///
+    /// **Es una referencia, y se lee una vez por ventana.** No entra en el
+    /// `Pattern` porque no es material —cambiar de Pattern no mueve la mezcla—,
+    /// y no viaja por el handoff porque no hace falta: es una palabra atómica,
+    /// no un snapshot de decenas de kilobytes.
+    private let mutes: MuteMask?
+
     /// Cada Track lleva su propia rejilla porque lleva su propia Division.
     ///
     /// Se construyen aquí, con el tempo compartido: **el origen es el mismo para
@@ -43,15 +55,17 @@ public final class PatternScheduler {
     ///   - pattern: con qué material se arranca.
     ///   - seed: semilla base del aleatorio. Cada Track deriva la suya, para que
     ///     dos Tracks con la misma Probability no omitan los mismos Pulses.
+    ///   - mutes: la mezcla vigente. `nil` deja sonar a los doce.
     public convenience init(
         tempo: Tempo,
         pattern: Pattern,
         startingAtStep startingStep: Int = 0,
-        seed: UInt64 = SeededRandom.defaultSeed
+        seed: UInt64 = SeededRandom.defaultSeed,
+        mutes: MuteMask? = nil
     ) {
         self.init(
             tempo: tempo, pattern: pattern, startingAtStep: startingStep,
-            seed: seed, playbackClock: nil)
+            seed: seed, playbackClock: nil, mutes: mutes)
     }
 
     init(
@@ -59,9 +73,11 @@ public final class PatternScheduler {
         pattern: Pattern,
         startingAtStep startingStep: Int = 0,
         seed: UInt64 = SeededRandom.defaultSeed,
-        playbackClock: CyclePlaybackClock?
+        playbackClock: CyclePlaybackClock?,
+        mutes: MuteMask? = nil
     ) {
         self.pattern = pattern
+        self.mutes = mutes
         schedulers = .allocate(capacity: Pattern.trackCount)
 
         for index in 0..<Pattern.trackCount {
@@ -183,6 +199,16 @@ public final class PatternScheduler {
             }
         }
 
+        // **La mezcla se lee una vez por ventana, como el snapshot y por la
+        // misma razón.** Dos lecturas dentro de la misma ventana podrían caer a
+        // ambos lados de un gesto y partirla: unos Steps del Track sonarían y
+        // otros no, sin que nadie haya pedido eso. Una lectura, una decisión
+        // para los doce.
+        //
+        // Sin máscara suenan todos: es la vía del arnés, que mide la rejilla y
+        // no la mezcla.
+        let mix = mutes?.load()
+
         for index in 0..<Pattern.trackCount {
             // **El Cycle lo entrega el scheduler del Track, evento a evento, y
             // no se lee del Pattern.** Desde que el Cycle avanza en el límite de
@@ -195,8 +221,17 @@ public final class PatternScheduler {
             // vacío, que es lo que se le daba antes.
             let fallback = pattern.cycle(at: index)!
 
+            // **El Track inaudible avanza igual y no emite.** La rejilla se
+            // mueve dentro de `advance`, así que saltarse la llamada pararía el
+            // Track: lo que se salta es la emisión, dentro del cierre. Es el
+            // mismo criterio que ya rige para un Track sin material (NFR3), y
+            // es lo que hace que quitar el mute devuelva el Track **en fase**
+            // en vez de al principio del anillo.
+            let audible = mix?.isAudible(index) ?? true
+
             schedulers[index].advance(toHorizon: horizonNanoseconds, refreshingFrom: nil) {
                 source, step, pitch, groove, offset in
+                guard audible else { return }
                 emit(index, source ?? fallback, step, pitch, groove, offset)
             }
         }

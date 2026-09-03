@@ -113,6 +113,20 @@ La frontera es firme:
 | **Knobs y pads** | Todo parámetro generativo: Steps, Pulses, Rotate, Division, Velocity, Sustain, Timing, Delay, Probability, pool de Pitch. |
 | **Pantalla táctil** | Configuración: selección de Scale y Root, **el canal MIDI de cada Track**, mapeos MIDI, guardado, selección de dispositivo. Y el transporte. |
 
+> **Excepción del 2026-09-02: mute y solo están en las dos superficies.** Se
+> accionan con el dedo —el par M/S bajo cada pastilla de Track— y con los step
+> buttons 15 y 16 mantenidos como modificador. Las dos vías terminan en el mismo
+> sitio, por la misma razón que la selección de Track: si no coincidieran, la
+> pantalla mentiría sobre lo que el hardware acaba de hacer.
+>
+> **No rompe la frontera, porque no la cruza.** La tabla reparte *parámetros
+> generativos* contra *configuración*, y la mezcla no es ninguna de las dos: no
+> cambia lo que el Track toca, solo si se oye. Es también la razón por la que
+> sigue disponible sin controlador conectado sin contradecir la regla de abajo
+> —silenciar no es editar—.
+>
+> Track `mute-solo_20260902`.
+
 **Sin controlador conectado la app es de solo lectura y transporte:** se reproduce y se ve el estado, no se editan parámetros generativos. La configuración táctil sigue disponible — no es un parámetro generativo.
 
 Consecuencia para el desarrollo: probar el motor sin hardware exige un **controlador virtual de desarrollo** que inyecte eventos MIDI relativos. Es una herramienta de test, excluida del build de producción; no es un modo de edición táctil por la puerta de atrás.
