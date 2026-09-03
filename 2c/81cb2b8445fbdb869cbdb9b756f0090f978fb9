@@ -1,0 +1,37 @@
+Tarea: El seguidor de reloj — de ticks a `Tempo` (Fase 2, FR2)
+
+Qué hace
+`ClockFollower` recibe instantes de tick de un reloj MIDI externo (24 ppqn) y
+publica el `Tempo` estimado. Devuelve `.quarterNote(atNanoseconds:)` en el tick
+que cierra cada negra — el instante que la corrección de fase va a necesitar.
+
+Decisiones
+- **Se promedia la negra entera, no el intervalo suelto.** El intervalo entre dos
+  ticks lleva todo el jitter del cable; sobre 24 el error se divide entre 24.
+  Consecuencia declarada: el tempo se actualiza una vez por negra y no antes.
+- **Sin ventana en memoria.** El plan pedía «almacenamiento inline de 24 huecos».
+  No hace falta: la media de 24 intervalos contiguos es la distancia entre sus
+  extremos partida por 24, así que bastan el instante del ancla y un contador.
+  Menos estado, y el tipo queda trivial sin depender de una tupla de 24 enteros.
+  Se ajusta el plan en consecuencia.
+- **Fuera de rango se rechaza, no se acota.** Se conserva el último tempo válido
+  y se marca `isOutOfRange`, que es lo que la pantalla dirá (FR2 de la spec).
+  Volver al rango limpia la marca: el estado describe la negra vigente.
+- `reset()` para el arranque del transporte: el maestro anterior no dice nada del
+  siguiente.
+
+Tests (14)
+Tempo establecido a 120 BPM y en los dos extremos del rango; sin tempo antes de
+cerrar la primera negra; la negra se reporta cada 24 ticks y con el instante del
+tick que la cierra; un tick tardío intermedio no mueve el tempo y uno tardío de
+cierre reparte su error; fuera de rango se rechaza, conserva el último válido y
+la marca se limpia al volver; un cambio sostenido entra al cerrar la negra
+siguiente y no antes; reset; reloj que no avanza; y `_isPOD` sobre el tipo.
+
+Verificación
+- swift test --package-path Packages/Engine → 441 tests, 0 fallos
+- Cobertura: ClockFollower.swift 100% de líneas; Engine 98,55% (umbral 90%)
+
+Ficheros
+- Packages/Engine/Sources/Engine/ClockFollower.swift (nuevo)
+- Packages/Engine/Tests/EngineTests/ClockFollowerTests.swift (nuevo)
