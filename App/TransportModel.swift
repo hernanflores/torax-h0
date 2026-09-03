@@ -234,6 +234,18 @@ final class TransportModel {
         var transport: Transport?
         func publish(_ pattern: Pattern) { transport?.publish(pattern) }
 
+        /// Entrega un mensaje entrante al reloj del transporte y dice si era
+        /// suyo.
+        ///
+        /// **Existe para poder llamarlo desde el hilo de recepción de
+        /// CoreMIDI.** `transport` en el modelo está aislado al hilo principal,
+        /// y saltar allí para atender un tick metería la cola del principal
+        /// dentro de la estimación del tempo — que es justo lo que el reloj no
+        /// puede permitirse.
+        func receive(_ message: MIDIMessage, atHostTime hostTime: UInt64) -> Bool {
+            transport?.receive(message, atHostTime: hostTime) ?? false
+        }
+
         /// El gesto del controlador desemboca en el transporte, que es quien
         /// apaga lo que deje de sonar. **No hay un segundo camino**: si la
         /// pantalla y el controlador tocaran la máscara por su cuenta, uno de
@@ -454,9 +466,17 @@ final class TransportModel {
     /// Cablea la entrada de control: los giros publican por el transporte, que
     /// es quien tiene el handoff que lee el scheduler.
     private func connectControlInput() {
+        let relay = self.relay
         do {
-            let input = try CoreMIDIInput { [weak self] message in
-                // El callback llega desde el hilo de recepción de CoreMIDI. El
+            let input = try CoreMIDIInput { [weak self, relay] message, hostTime in
+                // **El reloj se atiende aquí mismo, sin saltar al principal.**
+                // Un tick vive de cuándo llegó, y la cola del hilo principal
+                // metería su propio retraso en la estimación del tempo. El
+                // transporte dice si el mensaje era suyo; si lo era, no hay nada
+                // más que hacer con él.
+                if relay.receive(message, atHostTime: hostTime) { return }
+
+                // El resto llega desde el hilo de recepción de CoreMIDI. El
                 // salto al principal es obligado: aquí se muta estado observable
                 // que lee la interfaz. No está en el camino de timing, así que
                 // el coste del salto es irrelevante — lo que tiene que ser

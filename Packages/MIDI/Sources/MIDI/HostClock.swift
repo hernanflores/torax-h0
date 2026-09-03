@@ -35,6 +35,19 @@ public enum HostClock {
 
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
+    /// Traduce el timestamp de un paquete entrante de CoreMIDI.
+    ///
+    /// **Cero significa «ahora»** en CoreMIDI, y quien recibe el mensaje no
+    /// tiene por qué conocer esa convención: tomado al pie de la letra, un cero
+    /// pondría el instante del tick en el arranque de la máquina y el tempo
+    /// estimado sería absurdo.
+    ///
+    /// Realtime: llamado desde el hilo de recepción de CoreMIDI.
+    /// Sin asignaciones, sin locks, sin await.
+    public static func arrival(_ timeStamp: UInt64, now: UInt64 = HostClock.now()) -> UInt64 {
+        timeStamp == 0 ? now : timeStamp
+    }
+
     public static func hostTicks(fromNanoseconds nanoseconds: UInt64) -> UInt64 {
         nanoseconds &* UInt64(timebase.denom) / UInt64(timebase.numer)
     }

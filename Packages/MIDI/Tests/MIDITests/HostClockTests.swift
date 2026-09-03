@@ -50,3 +50,19 @@ final class HostClockTests: XCTestCase {
             Double(stepNanoseconds), accuracy: 1)
     }
 }
+
+/// Tests del instante de llegada de un paquete entrante.
+///
+/// **Es la convención que rompería el reloj externo sin avisar.** Un cero
+/// tomado al pie de la letra pone el tick en el arranque de la máquina, y el
+/// tempo estimado a partir de ahí no se parece a nada.
+final class HostClockArrivalTests: XCTestCase {
+
+    func testAZeroStampMeansNow() {
+        XCTAssertEqual(HostClock.arrival(0, now: 12_345), 12_345)
+    }
+
+    func testARealStampIsRespected() {
+        XCTAssertEqual(HostClock.arrival(999, now: 12_345), 999)
+    }
+}
