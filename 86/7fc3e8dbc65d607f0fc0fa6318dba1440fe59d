@@ -35,3 +35,27 @@ Verificación
 Ficheros
 - Packages/MIDI/Sources/MIDI/ClockHandoff.swift (nuevo)
 - Packages/MIDI/Tests/MIDITests/ClockHandoffTests.swift (nuevo)
+
+---
+
+Verificación de fase — FASE 3: LA ENTRADA OYE SYSTEM REAL-TIME
+
+Alcance: ClockHandoff.swift (nuevo), MIDIMessage.swift y ControlInput.swift
+(modificados), cubiertos por ClockHandoffTests y SystemRealTimeParsingTests.
+
+Tests automáticos
+- swift test --package-path Packages/Engine → 452 tests, 0 fallos
+- swift test --package-path Packages/MIDI, partición de CI → 21 (1 omitido) + 454, 0 fallos
+Cobertura MIDI: 92,39% de líneas (umbral 80%); ClockHandoff 100%, MIDIMessage 94,20%.
+
+Flake: la pasada en un solo proceso falla las 4 de VirtualLoopbackTests y ningún
+otro test — firma exacta de midi-test-flake_20260826. Con la partición, 475 pasan.
+
+Verificación manual propuesta
+1. Los tres mensajes nuevos no llevan canal, y el tipo de UMP manda sobre el
+   status; lo descartado a propósito queda listado.
+2. ClockHandoff entrega los dos valores en una palabra, con la corrección
+   acumulada para que el scheduler aplique diferencias.
+3. Ejecutar los dos filtros de test.
+
+Confirmación del usuario: «avancemos» (2026-09-03).
