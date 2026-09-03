@@ -100,6 +100,13 @@ public final class Transport: @unchecked Sendable {
 
     /// Suma de las correcciones de fase publicadas desde el arranque.
     private var accumulatedCorrectionNanoseconds: Int32 = 0
+
+    /// Instante del último tick recibido, en nanosegundos de host.
+    ///
+    /// Lo escribe el hilo de recepción y lo lee la interfaz al pintar el estado
+    /// del reloj, así que va en un atómico. Cero mientras no haya llegado
+    /// ninguno.
+    private let lastTickNanoseconds = AtomicCounter(0)
     private let cyclePlaybackClock = CyclePlaybackClock()
 
     private var scheduler: SchedulerThread?
@@ -339,6 +346,13 @@ public final class Transport: @unchecked Sendable {
     private func follow(tickAtHostTime hostTime: UInt64) {
         let instant = Int64(HostClock.nanoseconds(fromHostTicks: hostTime))
 
+        // **Tras un corte se vuelve a anclar antes de medir.** El hueco entre el
+        // último tick de antes y el primero de después no es una negra, y
+        // medirlo daría un tempo inventado que además puede caer dentro del
+        // rango válido — así que ni siquiera se rechazaría.
+        if clockHasDropped(atHostTime: hostTime) { clockFollower.reanchor() }
+        lastTickNanoseconds.value = UInt64(instant)
+
         guard case .quarterNote(let closing) = clockFollower.receive(tickAtNanoseconds: instant),
             let tempo = clockFollower.tempo
         else { return }
@@ -361,6 +375,29 @@ public final class Transport: @unchecked Sendable {
         clockHandoff.publish(
             quarterNoteNanoseconds: UInt32(quarterNote.rounded()),
             accumulatedCorrectionNanoseconds: accumulatedCorrectionNanoseconds)
+    }
+
+    /// Si el maestro dejó de mandar ticks.
+    ///
+    /// **Un corte no para la música**: lo que suena sigue al último tempo
+    /// conocido y la pantalla lo dice. Es el criterio de `product-guidelines.md`
+    /// —un dispositivo desconectado se comunica con un estado, no con una
+    /// disculpa— y evita que un cable flojo silencie una sesión.
+    ///
+    /// **El margen es una negra del tempo vigente, no un literal.** A 20 BPM
+    /// medio segundo es menos de un tick, así que un umbral fijo declararía
+    /// cortes falsos; y a 300 BPM sería tan largo que la desconexión tardaría en
+    /// notarse. Con el margen relativo, perder un tick —o unos cuantos— no saca
+    /// del modo esclavo, y una desconexión real se ve en menos de un segundo.
+    ///
+    /// Sin ningún tick recibido no hay corte: no se estaba siguiendo a nadie.
+    public func clockHasDropped(atHostTime now: UInt64 = HostClock.now()) -> Bool {
+        let last = lastTickNanoseconds.value
+        guard last != 0, let tempo = clockFollower.tempo else { return false }
+
+        let quarterNote = 60.0 / tempo.beatsPerMinute * 1_000_000_000.0
+        let elapsed = Double(HostClock.nanoseconds(fromHostTicks: now)) - Double(last)
+        return elapsed > quarterNote
     }
 
     /// Cuánto puede moverse el origen de una vez.
@@ -396,6 +433,7 @@ public final class Transport: @unchecked Sendable {
             clockFollower.reset()
             clockHandoff.clear()
             accumulatedCorrectionNanoseconds = 0
+            lastTickNanoseconds.value = 0
             armed.value = true
             return
         }
@@ -421,6 +459,7 @@ public final class Transport: @unchecked Sendable {
         clockFollower.reset()
         clockHandoff.clear()
         accumulatedCorrectionNanoseconds = 0
+        lastTickNanoseconds.value = 0
         gridOriginNanoseconds = Int64(
             HostClock.nanoseconds(fromHostTicks: origin ?? HostClock.now()))
 

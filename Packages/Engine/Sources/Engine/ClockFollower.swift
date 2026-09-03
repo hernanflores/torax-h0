@@ -72,6 +72,24 @@ public struct ClockFollower: Equatable, Sendable {
         self = ClockFollower()
     }
 
+    /// Vuelve a anclar sin olvidar el tempo.
+    ///
+    /// **Es lo que hace falta tras un corte.** Si el maestro deja de mandar y
+    /// vuelve, la distancia entre el último tick de antes y el primero de
+    /// después no es una negra: es el hueco. Medirlo daría un tempo inventado
+    /// —y en un hueco de unos segundos, uno que además cae dentro del rango
+    /// válido, así que ni siquiera se rechazaría—.
+    ///
+    /// Se conserva el tempo porque es el que sigue sonando mientras no haya otro
+    /// mejor.
+    ///
+    /// Realtime: llamado desde el hilo de recepción de CoreMIDI.
+    /// Sin asignaciones, sin locks, sin await.
+    public mutating func reanchor() {
+        isAnchored = false
+        ticksSinceAnchor = 0
+    }
+
     /// Recibe un tick del maestro y devuelve si con él se cerró una negra.
     ///
     /// El primer tick tras `init()` o `reset()` fija el ancla y no estima nada.

@@ -220,6 +220,35 @@ final class ClockFollowerTests: XCTestCase {
         XCTAssertTrue(follower.isOutOfRange)
     }
 
+    // MARK: - Re-anclar tras un corte
+
+    /// Volver a anclar conserva el tempo: es el que sigue sonando mientras no
+    /// haya otro mejor.
+    func testReanchoringKeepsTheTempo() {
+        var follower = ClockFollower()
+        _ = follower.receive(tickAtNanoseconds: 0)
+        feed(&follower, ticks: 24, beatsPerMinute: 120)
+
+        follower.reanchor()
+
+        XCTAssertEqual(follower.tempo?.beatsPerMinute ?? 0, 120, accuracy: 0.01)
+    }
+
+    /// Y **el hueco no se mide**: tras re-anclar, la negra siguiente se cuenta
+    /// desde el primer tick que vuelve, no desde el último de antes del corte.
+    func testTheGapIsNotMeasuredAfterReanchoring() {
+        var follower = ClockFollower()
+        _ = follower.receive(tickAtNanoseconds: 0)
+        let last = feed(&follower, ticks: 24, beatsPerMinute: 120)
+
+        follower.reanchor()
+        let afterGap = last + 2_000_000_000
+        _ = follower.receive(tickAtNanoseconds: afterGap)
+        feed(&follower, ticks: 24, beatsPerMinute: 90, from: afterGap)
+
+        XCTAssertEqual(follower.tempo?.beatsPerMinute ?? 0, 90, accuracy: 0.01)
+    }
+
     // MARK: - Reglas de tiempo real
 
     /// Lo alimenta el callback de recepción de CoreMIDI, así que no puede
