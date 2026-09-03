@@ -1,0 +1,37 @@
+Tarea: El reloj cruza al hilo del scheduler sin lock (Fase 3, FR6, NFR2)
+
+Qué hace
+`ClockHandoff` publica un `ClockReading` —duración de la negra y corrección de
+fase acumulada— del hilo de recepción de CoreMIDI al del scheduler, sin lock.
+
+Decisiones
+- **Una palabra, no dos atómicos.** La negra más larga del rango (20 BPM) son
+  3.000 millones de ns y entran en 32 bits; la corrección acumulada va en los
+  otros 32 con signo. Dos atómicos permitirían leer el periodo de una
+  publicación con la corrección de otra. Mismo criterio que `MuteMask`.
+- **La corrección es acumulada, no la última.** El scheduler guarda cuánto
+  llevaba aplicado y aplica la diferencia: si lee dos veces la misma publicación,
+  la diferencia es cero; si se salta una, la recupera entera. Sin esto haría
+  falta un intercambio atómico, que `CToraxAtomics` no tiene, o el riesgo de
+  aplicar la misma corrección varias veces.
+- **`quarterNoteNanoseconds == 0` es «sin tempo»**, no un cero disfrazado: sin
+  tempo del maestro el transporte no puede sellar nada.
+- Un solo escritor —el hilo de recepción—, así que acumular es leer y escribir
+  sin carrera.
+
+Tests (6)
+Ida y vuelta; extremos del rango incluida la negra de 20 BPM y los dos extremos
+de Int32; handoff nuevo no establecido; `clear()` vuelve a ese estado; el valor
+que cruza es trivial (`_isPOD`); y el detector de lecturas mezcladas: 20.000
+publicaciones correlacionadas desde otro hilo, comprobando que el par siempre
+viene de la misma.
+
+Verificación
+- swift test --package-path Packages/MIDI, partición de CI → 21 (1 omitido) + 454, 0 fallos
+- Cobertura MIDI: 92,39% de líneas (umbral 80%). ClockHandoff.swift, 100%.
+- La pasada en un proceso vuelve a fallar solo las 4 de VirtualLoopbackTests:
+  flake conocido, no del cambio.
+
+Ficheros
+- Packages/MIDI/Sources/MIDI/ClockHandoff.swift (nuevo)
+- Packages/MIDI/Tests/MIDITests/ClockHandoffTests.swift (nuevo)
