@@ -79,16 +79,16 @@ track se alarga.
 
 ## FASE 3: LA ENTRADA OYE SYSTEM REAL-TIME
 
-- [ ] Task: `MIDIMessage` entiende clock, start y stop (FR1)
-  - [ ] Tests (Red): una palabra UMP de tipo 0x1 con `0xF8`, `0xFA` y `0xFC`
+- [x] Task: `MIDIMessage` entiende clock, start y stop (FR1) [3253e83]
+  - [x] Tests (Red): una palabra UMP de tipo 0x1 con `0xF8`, `0xFA` y `0xFC`
         produce los tres casos nuevos.
-  - [ ] Tests (Red): `0xFB` (Continue), `0xFE` y `0xFF` **devuelven `nil`** —
+  - [x] Tests (Red): `0xFB` (Continue), `0xFE` y `0xFF` **devuelven `nil`** —
         declarados y descartados, no olvidados.
-  - [ ] Tests (Red): las tres formas de mensaje de canal que ya se parseaban
+  - [x] Tests (Red): las tres formas de mensaje de canal que ya se parseaban
         siguen parseándose igual; el tipo 0x1 no roba nada al 0x2.
-  - [ ] Implementación (Green): abrir el `guard` del tipo en
+  - [x] Implementación (Green): abrir el `guard` del tipo en
         `init?(universalPacketWord:)` y añadir los casos al enum.
-  - [ ] Comprobar que los mensajes nuevos **no tienen canal**: son de sistema, y
+  - [x] Comprobar que los mensajes nuevos **no tienen canal**: son de sistema, y
         meterlos en el `MIDIChannel` obligado del resto sería mentir sobre el
         protocolo.
 - [ ] Task: El reloj cruza al hilo del scheduler sin lock (FR6, NFR2)
