@@ -1,0 +1,42 @@
+Tarea: `MIDIMessage` entiende clock, start y stop (Fase 3, FR1)
+
+Qué cambia
+- `MIDIMessage` gana `.timingClock`, `.start` y `.stop`, sin canal.
+- `init?(universalPacketWord:)` interpreta el tipo 0x1 (System Real-Time) además
+  del 0x2 (voz de canal). Continue (0xFB), Active Sensing (0xFE) y Reset (0xFF)
+  se descartan con el motivo escrito; los status de sistema sin significado
+  asignado, también.
+- `universalPacketWord(group:)` empaqueta los tres como tipo 0x1.
+- `ControlInput.receive` los ignora explícitamente: llegan por el mismo cable que
+  los knobs, pero quien los atiende es el transporte.
+
+Decisiones
+- **Un solo enum, no dos.** Meterlos en `MIDIMessage` mantiene un solo
+  vocabulario de «lo que puede llegar»; el precio es que los switches exhaustivos
+  del paquete tienen que nombrarlos, que es justamente la propiedad buena.
+- **El empaquetado se implementa aunque nada lo llame.** La app no es maestro de
+  clock (limitación 2 de la spec), pero dejar `universalPacketWord` parcial
+  rompería la ida y vuelta, que es la invariante con la que este fichero se
+  verifica desde la rebanada 2.
+- **El tipo manda sobre el status**: un 0xF8 dentro de un paquete de voz de canal
+  no es un clock. Hay un test que lo fija.
+
+Efecto colateral
+Dos helpers de test (`PatternChannelEmissionTests`, `StopWithEveryTrackTests`)
+tenían switches exhaustivos sobre `MIDIMessage`. Se les añade el caso de sistema:
+en el primero como `XCTFail` —el emisor nunca los produce— y en el segundo como
+ignorado junto al control change.
+
+Verificación
+- swift test --package-path Packages/MIDI, partición de CI → 21 (1 omitido) + 448, 0 fallos
+- Cobertura MIDI (un proceso, profdata fusionado a mano, sin Engine/Sources):
+  92,33% de líneas (umbral 80%). MIDIMessage.swift 94,20%.
+- La pasada en un proceso falla las 4 de VirtualLoopbackTests: firma exacta del
+  flake conocido `midi-test-flake_20260826`, y pasan con la partición.
+
+Ficheros
+- Packages/MIDI/Sources/MIDI/MIDIMessage.swift (modificado)
+- Packages/MIDI/Sources/MIDI/ControlInput.swift (modificado)
+- Packages/MIDI/Tests/MIDITests/SystemRealTimeParsingTests.swift (nuevo)
+- Packages/MIDI/Tests/MIDITests/PatternChannelEmissionTests.swift (modificado)
+- Packages/MIDI/Tests/MIDITests/StopWithEveryTrackTests.swift (modificado)
