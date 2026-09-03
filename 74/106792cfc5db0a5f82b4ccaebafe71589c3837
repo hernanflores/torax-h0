@@ -1,0 +1,32 @@
+Tarea: La fuente de reloj, y que `Internal` ignore de verdad (Fase 4, FR3)
+
+Qué hace
+- `ClockSource`: `.internal` (por defecto) y `.external`.
+- `Transport.clockSource`, sobre una `AtomicFlag`: la escribe la pantalla, la lee
+  el hilo de recepción de CoreMIDI.
+- `Transport.receive(_:atHostTime:)`: punto único de entrada del reloj. Devuelve
+  si el mensaje era suyo, para que lo que no lo es siga hacia la entrada de
+  control.
+
+Decisiones
+- **El filtro por fuente, en un solo sitio y antes de repartir.** Con `Internal`
+  no se consume nada: un maestro puede estar mandando por el mismo puerto del que
+  llegan los knobs sin que pase nada.
+- **No se consume de más.** Un control change con `External` elegido sigue su
+  camino; tragárselo dejaría los knobs mudos.
+- **Recibe el instante del paquete**, no lo consulta: el reloj vive de cuándo
+  llegó cada tick. El parámetro todavía no se usa —lo usan las tareas
+  siguientes— pero la firma es la definitiva para no cambiarla dos veces.
+
+Tests (6)
+Por defecto es Internal; Internal no consume ninguno de los tres y un Start no
+arranca; External consume los tres y no se traga un control change; y la fuente
+se puede cambiar en caliente en los dos sentidos.
+
+Verificación
+- swift test --package-path Packages/MIDI (partición, resto) → 460 tests, 0 fallos
+
+Ficheros
+- Packages/MIDI/Sources/MIDI/ClockSource.swift (nuevo)
+- Packages/MIDI/Sources/MIDI/Transport.swift (modificado)
+- Packages/MIDI/Tests/MIDITests/ClockSourceTests.swift (nuevo)
