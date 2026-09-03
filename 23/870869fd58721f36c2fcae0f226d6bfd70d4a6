@@ -1,0 +1,37 @@
+Tarea: Armar y arrancar con el Start (Fase 4, FR4)
+
+Qué cambia
+- `Transport.isArmed`, sobre una `AtomicFlag`: lo lee el hilo de recepción de
+  CoreMIDI para decidir si un Start arranca.
+- `play()` con `External` arma y vuelve sin sonar. Con `Internal`, sin cambios.
+- `receive(.start, atHostTime:)` arranca **solo si estaba armado**.
+- `stop()` desarma, aunque no estuviera sonando.
+- `SchedulerThread.start(atHostTime:)`: el origen de la rejilla puede venir de
+  fuera; sin él, sigue siendo el instante en que arranca el bucle.
+
+Decisiones
+- **Un camino único para empezar a sonar** (`startPlaying(atHostTime:)`), venga
+  de `play()` o del Start del maestro: dos caminos serían dos formas de arrancar
+  que habría que mantener iguales.
+- **El transporte lo pide la app; el maestro decide cuándo.** Un Start sin armar
+  no hace nada: si arrancara, un botón del hardware pondría a sonar una app que
+  nadie había puesto en marcha.
+- **El origen es el instante del Start**, no el del arranque del hilo: entre los
+  dos hay el retraso de crear un hilo, pequeño pero no cero, y no tiene por qué
+  pagarlo la fase.
+- `playheadClock` pasa de privado a interno para que el test pueda comprobar
+  contra qué instante nace la rejilla.
+
+Tests (5)
+Play arma sin emitir; un Start sin armar no hace nada; Stop desarma y deja el
+transporte insensible al Start; armar dos veces es idempotente; y el ciclo
+completo —armar, Start, sonar, origen en el instante del Start, parar—, agrupado
+en un solo test porque cada arranque del bucle empeora el flake de CoreMIDI.
+
+Verificación
+- swift test --package-path Packages/MIDI, partición de CI → 21 (1 omitido) + 465, 0 fallos
+
+Ficheros
+- Packages/MIDI/Sources/MIDI/Transport.swift (modificado)
+- Packages/MIDI/Sources/MIDI/SchedulerThread.swift (modificado)
+- Packages/MIDI/Tests/MIDITests/ExternalStartTests.swift (nuevo)
