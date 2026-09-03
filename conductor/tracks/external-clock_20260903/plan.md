@@ -156,7 +156,7 @@ track se alarga.
   - [x] Cobertura `MIDI` ≥80%.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 5: LA PANTALLA — FUENTE, TEMPO Y QUIÉN MANDA
+## FASE 5: LA PANTALLA — FUENTE, TEMPO Y QUIÉN MANDA [checkpoint: e065d64]
 
 - [x] Task: El tempo interno deja de ser una constante (FR8) [e065d64]
   - [x] Tests (Red, en `Engine` o `MIDI` según dónde caiga la lógica): fijar un
@@ -181,7 +181,7 @@ track se alarga.
         se descoloca al aparecer la marca. *(Y encontró un fallo: la sección de
         reloj encima de los canales empujaba la fila del Track 12 fuera de
         pantalla. Se movió a la columna derecha.)*
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: DISPOSITIVO Y MEDICIÓN
 
