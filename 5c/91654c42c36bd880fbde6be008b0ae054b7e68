@@ -1,0 +1,33 @@
+Tarea: La corrección de fase, como función pura (Fase 2, FR6)
+
+Qué hace
+`PhaseCorrection.nanoseconds(...)` devuelve cuántos nanosegundos hay que sumar al
+origen de la rejilla para alinearla con un tick de negra del maestro: la
+distancia con signo desde el límite de rejilla más cercano hasta el tick.
+
+Decisiones
+- **Signo**: positivo cuando la rejilla va adelantada —su límite cayó antes que
+  el tick—, lo que retrasa el origen; negativo cuando va atrasada.
+- **Contra el límite más cercano**, no contra el anterior: pasada la mitad de la
+  negra, el pulso que viene está más cerca que el que pasó. Sin esto, un desfase
+  de un milisegundo por el lado de arriba se corregiría con casi una negra.
+- **Acotada** por un límite que pasa quien llama. Lo que sobra se corrige en las
+  negras siguientes; un límite de cero desactiva la corrección sin obligar a una
+  rama fuera.
+- **Fase siempre en [0, negra)**: el resto de Swift conserva el signo del
+  dividendo y el origen puede caer después del tick —lo hace en el arranque, por
+  el presupuesto de Delay negativo de la enmienda del 2026-08-30—.
+- Sin estado: es una función, y quien la llama decide si aplicarla.
+
+Tests (11)
+Tick sobre la rejilla y sobre el origen; los dos signos; el límite más cercano;
+idempotencia (aplicar la corrección deja error cero); origen posterior al tick;
+acotado por los dos lados; límite cero; y negra de duración no positiva.
+
+Verificación
+- swift test --package-path Packages/Engine → 452 tests, 0 fallos
+- Cobertura: PhaseCorrection.swift 100% de líneas; Engine 98,58% (umbral 90%)
+
+Ficheros
+- Packages/Engine/Sources/Engine/PhaseCorrection.swift (nuevo)
+- Packages/Engine/Tests/EngineTests/PhaseCorrectionTests.swift (nuevo)
