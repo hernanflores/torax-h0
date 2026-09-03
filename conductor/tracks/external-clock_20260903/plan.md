@@ -185,7 +185,7 @@ track se alarga.
 
 ## FASE 6: DISPOSITIVO Y MEDICIÓN
 
-- [ ] Task: Verificar los diez criterios de aceptación en iPad (NFR6)
+- [~] Task: Verificar los diez criterios de aceptación en iPad (NFR6)
   - [ ] BeatStep Pro como maestro y un sinte recibiendo; recorrer los criterios 1
         a 9 y anotar cada resultado.
   - [ ] El criterio 4 —dos minutos sin separarse— es el que **no tiene número**
