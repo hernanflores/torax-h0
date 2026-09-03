@@ -91,14 +91,14 @@ track se alarga.
   - [x] Comprobar que los mensajes nuevos **no tienen canal**: son de sistema, y
         meterlos en el `MIDIChannel` obligado del resto sería mentir sobre el
         protocolo.
-- [ ] Task: El reloj cruza al hilo del scheduler sin lock (FR6, NFR2)
-  - [ ] Tests (Red): escribir periodo y corrección desde un hilo y leerlos desde
+- [x] Task: El reloj cruza al hilo del scheduler sin lock (FR6, NFR2) [867fc3e]
+  - [x] Tests (Red): escribir periodo y corrección desde un hilo y leerlos desde
         otro devuelve siempre un par coherente, nunca la mitad de dos escrituras.
-  - [ ] Implementación (Green): un tipo en `MIDI` sobre las primitivas de
+  - [x] Implementación (Green): un tipo en `MIDI` sobre las primitivas de
         `Atomics.swift`, con el mismo patrón que `PlayheadClock`.
-  - [ ] Verificar que el camino del callback de recepción no asigna: llega 40
+  - [x] Verificar que el camino del callback de recepción no asigna: llega 40
         veces por segundo a 100 BPM.
-  - [ ] Cobertura `MIDI` ≥80%, medida en un proceso y filtrando `Engine/Sources`
+  - [x] Cobertura `MIDI` ≥80%, medida en un proceso y filtrando `Engine/Sources`
         (ver `workflow.md`).
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
