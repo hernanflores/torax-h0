@@ -40,7 +40,7 @@ track se alarga.
         nota no se lea como sincronía en los dos sentidos.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: EL ESTIMADOR DE TEMPO, PURO Y EN `ENGINE`
+## FASE 2: EL ESTIMADOR DE TEMPO, PURO Y EN `ENGINE` [checkpoint: 5c91654]
 
 - [x] Task: El seguidor de reloj — de ticks a `Tempo` (FR2) [2c81cb2]
   - [x] Tests (Red): 24 ticks equiespaciados a 500 ms/negra dan 120 BPM exactos;
@@ -75,7 +75,7 @@ track se alarga.
         tick.
   - [x] Documentar por qué se corrige por negra y no por tick: corregir a 24 ppqn
         mete el jitter del cable en cada evento.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: LA ENTRADA OYE SYSTEM REAL-TIME
 
