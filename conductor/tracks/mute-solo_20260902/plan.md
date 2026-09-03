@@ -128,7 +128,7 @@ revisar el diseño antes de seguir.
   - [x] Cobertura `MIDI` ≥80%.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 6: LA PANTALLA
+## FASE 6: LA PANTALLA [checkpoint: d66e5e9]
 
 - [x] Task: Cablear el estado en `TransportModel` (FR9, FR10) [c4814e4]
   - [x] Los dos vectores de doce publicados para la vista, espejados al
@@ -157,11 +157,11 @@ revisar el diseño antes de seguir.
         intacto**: corre y no suena.
   - [x] Comprobar que no se añade repintado por fotograma: la atenuación cambia
         con el gesto, no con el reloj.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 7: VERIFICACIÓN EN DISPOSITIVO Y CIERRE
 
-- [ ] Task: Pasada completa en iPad con el BeatStep Pro
+- [~] Task: Pasada completa en iPad con el BeatStep Pro
   - [ ] Los diez criterios de aceptación de la spec, uno a uno, con el sinte
         externo escuchando.
   - [ ] Atención especial al criterio 1 con **Sustain al 200% y una Division
