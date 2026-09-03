@@ -289,7 +289,15 @@ public final class Transport: @unchecked Sendable {
             if armed.value { startPlaying(atHostTime: hostTime) }
             return true
 
-        case .timingClock, .stop:
+        case .stop:
+            // Simétrico al Start, y por el mismo camino que el botón de la
+            // pantalla: `stop()` desarma y hace el barrido de apagado. Parar de
+            // otra forma sería tener dos paradas que mantener iguales, y la que
+            // se olvidara del barrido dejaría notas colgadas.
+            stop()
+            return true
+
+        case .timingClock:
             return true
 
         case .noteOn, .noteOff, .controlChange:
