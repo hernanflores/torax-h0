@@ -77,7 +77,7 @@ track se alarga.
         mete el jitter del cable en cada evento.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: LA ENTRADA OYE SYSTEM REAL-TIME
+## FASE 3: LA ENTRADA OYE SYSTEM REAL-TIME [checkpoint: 867fc3e]
 
 - [x] Task: `MIDIMessage` entiende clock, start y stop (FR1) [3253e83]
   - [x] Tests (Red): una palabra UMP de tipo 0x1 con `0xF8`, `0xFA` y `0xFC`
@@ -100,7 +100,7 @@ track se alarga.
         veces por segundo a 100 BPM.
   - [x] Cobertura `MIDI` ≥80%, medida en un proceso y filtrando `Engine/Sources`
         (ver `workflow.md`).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: EL TRANSPORTE OBEDECE AL MAESTRO
 
