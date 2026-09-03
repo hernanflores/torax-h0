@@ -114,7 +114,11 @@ track se alarga.
   - [x] Tests (Red): con `External`, `play()` deja el transporte armado y **sin
         emitir**; al llegar el Start empieza a emitir desde el paso 0.
   - [x] Tests (Red): los doce Tracks arrancan con el mismo origen — el invariante
-        de fase de `multi-track` sigue en pie.
+        de fase de `multi-track` sigue en pie. *(Sin test nuevo: el arranque por
+        Start entrega **un** origen a `SchedulerThread`, el mismo para los doce, y
+        la propiedad la fija ya `testTwoDivisionsShareTheOriginAndDoNotDrift` de
+        `PatternSchedulerTests`. Escribir otro exigiría arrancar el bucle una vez
+        más, que es lo que empeora el flake de CoreMIDI.)*
   - [x] Tests (Red): un Start recibido **sin haber armado** no arranca nada.
   - [x] Implementación (Green): estado armado en `Transport`, y el origen fijado
         en el instante del Start como hoy se fija en el de Play.
