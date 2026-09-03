@@ -18,3 +18,23 @@ con la misma respuesta son dos sitios que pueden discrepar.
 
 Sin repintado nuevo por fotograma: la atenuacion cambia con el gesto, no con el
 reloj.
+
+--- Verificación de fase (Fase 6) — 2026-09-02 ---
+
+Comandos:
+  xcodebuild -project ToraxH0.xcodeproj -scheme ToraxH0 \
+    -destination 'generic/platform=iOS' build            → BUILD SUCCEEDED
+  swift test --package-path Packages/Engine              → 427 tests, 0 fallos
+  swift test --package-path Packages/MIDI (partición CI) → 437 + 21, 0 fallos
+
+Cobertura del diff: los tres ficheros cambiados son de App, que no se mide. La
+única lógica —la regla de audibilidad— vive en MIDI y está cubierta por
+AudibilityTests; audibleTracks la pregunta doce veces sin guardar copia.
+
+Verificación manual en iPad con BeatStep Pro y sinte externo. Se propusieron
+siete pasos: mutear desde la pantalla (calla, se atenúa, el playhead sigue),
+desmutear (vuelve en fase), dos solos aditivos, el gesto de los step buttons 16
+y 15 sin mover la selección, Sustain al 200% sin nota colgada, y que los anillos
+no se recorten con la fila nueva.
+
+Confirmación del usuario: «Funciono OK».
