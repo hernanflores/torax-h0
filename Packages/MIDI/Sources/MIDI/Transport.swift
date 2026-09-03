@@ -131,17 +131,6 @@ public final class Transport: @unchecked Sendable {
             accumulatedCorrectionNanoseconds: 0)
     }
 
-    /// Armado: la app pidió sonar y espera el Start del maestro.
-    ///
-    /// **Es un estado del transporte, no de la pantalla**, porque quien lo mira
-    /// para decidir si un Start arranca es el hilo de recepción de CoreMIDI.
-    private let armed = AtomicFlag(false)
-
-    /// Si el transporte espera el Start del maestro.
-    ///
-    /// Sonando ya no está armado: está tocando.
-    public var isArmed: Bool { armed.value }
-
     /// Interno y no privado para que los tests puedan comprobar **contra qué
     /// instante nace la rejilla**, que es lo que el arranque por Start del
     /// maestro cambia.
@@ -381,10 +370,16 @@ public final class Transport: @unchecked Sendable {
 
         switch message {
         case .start:
-            // **Solo dispara si la app lo pidió.** El transporte lo decide la
-            // app; el maestro decide *cuándo*. Un Start sobre un transporte que
-            // nadie armó arrancaría música que nadie pidió.
-            if armed.value { startPlaying(atHostTime: hostTime) }
+            // **El transporte del maestro manda sobre el de la app** (decisión
+            // del 2026-09-03, en dispositivo). Elegir `External` es decir que el
+            // hardware lleva el transporte: tener que pulsar Play en el iPad
+            // antes de darle a Play en el controlador no era intuitivo, y dejaba
+            // el gesto del hardware sin efecto la mitad de las veces.
+            //
+            // Un Start sobre un transporte que ya suena lo reinicia desde el
+            // paso 0, que es lo que hace el Start de cualquier secuenciador.
+            if isPlaying { stop() }
+            startPlaying(atHostTime: hostTime)
             return true
 
         case .stop:
@@ -491,22 +486,6 @@ public final class Transport: @unchecked Sendable {
     public func play() {
         guard !isPlaying else { return }
 
-        // **Con reloj externo, Play arma y no suena.** Manda un solo transporte:
-        // la app pide sonar y el maestro decide cuándo, así que la música
-        // empieza con su Start. La pantalla lo enseña como `Waiting for clock`.
-        guard clockSource == .internal else {
-            // **Armar también olvida al maestro anterior.** Pedir sonar empieza
-            // una sesión nueva; lo que se supiera de la anterior no vale, y su
-            // fase se medía contra una rejilla que ya no existe. El estimador
-            // vuelve a llenarse con los ticks que sigan llegando mientras espera.
-            clockFollower.reset()
-            clockHandoff.clear()
-            accumulatedCorrectionNanoseconds = 0
-            lastTickNanoseconds.value = 0
-            armed.value = true
-            return
-        }
-
         startPlaying()
     }
 
@@ -521,8 +500,6 @@ public final class Transport: @unchecked Sendable {
     ///
     /// Realtime: puede llamarse desde el hilo de recepción de CoreMIDI.
     private func startPlaying(atHostTime origin: UInt64? = nil) {
-        armed.value = false
-
         // **Arrancar olvida al maestro anterior.** Su tempo no dice nada del
         // siguiente, y su fase mucho menos: la rejilla nace ahora.
         clockFollower.reset()
@@ -633,11 +610,6 @@ public final class Transport: @unchecked Sendable {
     /// - Sends an All Notes Off message and note-off messages for pitches in the last published track.
     /// - Does nothing when playback is already stopped.
     public func stop() {
-        // **Desarmar también es parar.** Con reloj externo, Play deja el
-        // transporte esperando el Start; Stop tiene que deshacer eso aunque no
-        // hubiera empezado a sonar, o el maestro arrancaría música que la app ya
-        // no pide.
-        armed.value = false
         gridOriginNanoseconds = 0
 
         guard let scheduler else { return }

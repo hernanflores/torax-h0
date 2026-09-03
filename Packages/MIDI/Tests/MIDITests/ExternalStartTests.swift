@@ -45,63 +45,56 @@ final class ExternalStartTests: XCTestCase {
         while !condition() && Date() < deadline { usleep(5_000) }
     }
 
-    // MARK: - Armar no es sonar
+    // MARK: - Play arranca ya
 
-    /// Pulsar Play con `External` no suena: deja el transporte esperando el
-    /// Start del maestro. Es lo que la pantalla enseña como `Waiting for clock`.
-    func testPlayArmsWithoutSounding() {
+    /// Con `External`, Play suena en el momento: **el maestro manda, pero no
+    /// hace falta esperarlo.** Antes armaba y esperaba el Start, y en
+    /// dispositivo resultó no ser intuitivo (2026-09-03).
+    func testPlayStartsImmediatelyEvenWithAnExternalClock() {
         let recorder = Recorder()
         let transport = makeTransport(recorder)
 
         transport.play()
 
-        XCTAssertTrue(transport.isArmed)
-        XCTAssertFalse(transport.isPlaying)
-        XCTAssertTrue(recorder.all.isEmpty, "armado y aun así emitió")
-    }
+        XCTAssertTrue(transport.isPlaying)
 
-    /// Un Start que llega sin haber armado no arranca nada: el transporte lo
-    /// pide la app, y el maestro solo decide **cuándo**.
-    func testAStartWithoutArmingDoesNothing() {
-        let recorder = Recorder()
-        let transport = makeTransport(recorder)
+        waitUntil { !recorder.all.isEmpty }
+        XCTAssertFalse(recorder.all.isEmpty, "arrancó y no emitió nada")
 
-        transport.receive(.start, atHostTime: HostClock.now())
-
-        XCTAssertFalse(transport.isPlaying)
-        XCTAssertFalse(transport.isArmed)
-        XCTAssertTrue(recorder.all.isEmpty)
-    }
-
-    /// Y desarmar desde la pantalla deja el transporte insensible al Start.
-    func testStoppingWhileArmedDisarms() {
-        let recorder = Recorder()
-        let transport = makeTransport(recorder)
-
-        transport.play()
         transport.stop()
-
-        XCTAssertFalse(transport.isArmed)
-
-        transport.receive(.start, atHostTime: HostClock.now())
-        XCTAssertFalse(transport.isPlaying)
     }
 
-    /// Armar dos veces no cambia nada: el botón no acumula estado.
-    func testArmingTwiceIsIdempotent() {
-        let transport = makeTransport(Recorder())
+    // MARK: - El maestro manda
 
-        transport.play()
-        transport.play()
+    /// **El Start del maestro arranca aunque nadie haya pulsado Play.** Elegir
+    /// `External` es decir que el transporte lo lleva el hardware.
+    func testAMasterStartPlaysWithoutTouchingTheApp() {
+        let recorder = Recorder()
+        let transport = makeTransport(recorder)
 
-        XCTAssertTrue(transport.isArmed)
+        transport.receive(.start, atHostTime: HostClock.now())
+
+        XCTAssertTrue(transport.isPlaying)
+        transport.stop()
+    }
+
+    /// Con `Internal` sigue sin arrancar: el selector es lo que decide a quién
+    /// se hace caso, y esa parte no cambia.
+    func testAMasterStartDoesNothingWhileInternal() {
+        let recorder = Recorder()
+        let transport = makeTransport(recorder)
+        transport.clockSource = .internal
+
+        transport.receive(.start, atHostTime: HostClock.now())
+
         XCTAssertFalse(transport.isPlaying)
+        XCTAssertTrue(recorder.all.isEmpty)
     }
 
     // MARK: - El Start dispara
 
-    /// Ciclo completo con el maestro: armar, Start, sonar, y que el origen de la
-    /// rejilla sea el instante del Start.
+    /// Ciclo completo con el maestro: Start, sonar con el origen en su propio
+    /// instante, y parar.
     ///
     /// Va todo en un test —y no en cuatro— porque cada arranque del bucle
     /// empeora el flake de CoreMIDI de la suite.
@@ -109,12 +102,10 @@ final class ExternalStartTests: XCTestCase {
         let recorder = Recorder()
         let transport = makeTransport(recorder)
 
-        transport.play()
         let origin = HostClock.now()
         transport.receive(.start, atHostTime: origin)
 
         XCTAssertTrue(transport.isPlaying)
-        XCTAssertFalse(transport.isArmed, "sonando ya no está armado, está tocando")
 
         // El origen de la rejilla es el instante del Start, no el del arranque
         // del hilo: el playhead se mide contra él. Se espera a que el hilo lo

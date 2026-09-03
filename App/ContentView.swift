@@ -148,26 +148,7 @@ struct ContentView: View {
 
             midiStatus
 
-            // **El punto decimal no depende del locale.** La interfaz va en
-            // inglés y sin traducir (NFR7), y el handoff escribe `120.0 BPM`;
-            // interpolar un `Double` daba `120,0` en un iPad en español, que es
-            // la mitad del texto en un idioma y la otra mitad en otro.
-            Text(
-                String(
-                    format: "%.1f BPM", locale: Locale(identifier: "en_US_POSIX"),
-                    model.beatsPerMinute)
-            )
-            .font(Typography.captionStrong)
-            .monospacedDigit()
-            .foregroundStyle(Palette.mutedBright)
-
-            // **Quién manda el tempo, en dos letras.** Sin esto, el mismo número
-            // puede venir de la app o del maestro y no hay forma de saberlo — que
-            // es justo lo que hay que ver de un vistazo cuando el tempo no es el
-            // que esperabas.
-            Text(model.clockSourceMark)
-                .font(Typography.caption)
-                .foregroundStyle(model.followsExternalClock ? Palette.groove : Palette.muted)
+            clockReadout
 
             transport
         }
@@ -215,6 +196,14 @@ struct ContentView: View {
     /// estado que se mira de reojo mientras se toca, no configuración que se
     /// visita.
     private var midiScreen: some View {
+        // Mismo motivo que en la barra: el tempo y el estado del maestro los
+        // escribe el hilo de recepción, así que hay que repreguntar.
+        TimelineView(.periodic(from: .now, by: 0.25)) { _ in
+            channelMap
+        }
+    }
+
+    private var channelMap: some View {
         ChannelMapView(
             clock: ChannelMapView.Clock(
                 revision: model.clockRevision,
@@ -369,6 +358,46 @@ struct ContentView: View {
         }
         .padding(16)
         .brutalistPanel()
+    }
+
+    /// El tempo vigente y quién lo manda.
+    ///
+    /// **Se repregunta cuatro veces por segundo, y por eso hay un
+    /// `TimelineView`.** El tempo de un maestro externo lo escribe el hilo de
+    /// recepción de CoreMIDI, que no puede saltar al principal a avisar —eso
+    /// metería la cola del principal en la estimación—, así que no hay estado
+    /// observable que cambie y SwiftUI no tendría motivo para repintar. Sin
+    /// esto, el número se queda con el valor de cuando se dibujó.
+    ///
+    /// **No contradice la regla del playhead.** Lo que `product-guidelines.md`
+    /// llama antipatrón es animar con un temporizador algo que debería derivar
+    /// del reloj musical; esto no anima nada: relee un valor de estado. Cuatro
+    /// veces por segundo es lento para el ojo y sobra para un número.
+    private var clockReadout: some View {
+        TimelineView(.periodic(from: .now, by: 0.25)) { _ in
+            HStack(spacing: 8) {
+                // **El punto decimal no depende del locale.** La interfaz va en
+                // inglés y sin traducir (NFR7), y el handoff escribe `120.0 BPM`;
+                // interpolar un `Double` daba `120,0` en un iPad en español, que
+                // es la mitad del texto en un idioma y la otra mitad en otro.
+                Text(
+                    String(
+                        format: "%.1f BPM", locale: Locale(identifier: "en_US_POSIX"),
+                        model.beatsPerMinute)
+                )
+                .font(Typography.captionStrong)
+                .monospacedDigit()
+                .foregroundStyle(Palette.mutedBright)
+
+                // **Quién manda el tempo, en dos letras.** Sin esto, el mismo
+                // número puede venir de la app o del maestro y no hay forma de
+                // saberlo — que es justo lo que hay que ver de un vistazo cuando
+                // el tempo no es el que esperabas.
+                Text(model.clockSourceMark)
+                    .font(Typography.caption)
+                    .foregroundStyle(model.followsExternalClock ? Palette.groove : Palette.muted)
+            }
+        }
     }
 
     // MARK: - Estado MIDI

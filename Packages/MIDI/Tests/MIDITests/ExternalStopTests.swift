@@ -64,20 +64,18 @@ final class ExternalStopTests: XCTestCase {
             byMaster.allNotesOffCount, 0, "paró sin mandar ningún all notes off")
     }
 
-    /// Y desarma: el siguiente Start no arranca sin volver a pulsar Play.
-    func testTheMasterStopDisarms() {
+    /// El Stop del maestro para también lo que arrancó la app: elegir
+    /// `External` es decir que el transporte lo lleva el hardware.
+    func testTheMasterStopAlsoStopsWhatTheAppStarted() {
         let recorder = Recorder()
         let transport = makeTransport(recorder)
 
         transport.play()
-        XCTAssertTrue(transport.isArmed)
+        XCTAssertTrue(transport.isPlaying)
 
         transport.receive(.stop, atHostTime: HostClock.now())
 
-        XCTAssertFalse(transport.isArmed)
-
-        transport.receive(.start, atHostTime: HostClock.now())
-        XCTAssertFalse(transport.isPlaying, "arrancó con un Start después de un Stop")
+        XCTAssertFalse(transport.isPlaying)
     }
 
     // MARK: - Casos que no hacen nada

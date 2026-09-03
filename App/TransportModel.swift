@@ -381,11 +381,10 @@ final class TransportModel {
     var clockStatus: String? {
         guard let transport, transport.clockSource == .external else { return nil }
 
-        return switch (transport.isPlaying, transport.isArmed, transport.clockHasDropped()) {
-        case (_, true, _): "Waiting for clock"
-        case (true, _, true): "Clock lost — holding last tempo"
-        case (true, _, false): "Following external clock"
-        case (false, _, _):
+        return switch (transport.isPlaying, transport.clockHasDropped()) {
+        case (true, true): "Clock lost — holding last tempo"
+        case (true, false): "Following external clock"
+        case (false, _):
             transport.isFollowingEstablishedClock ? "External clock detected" : "No clock"
         }
     }

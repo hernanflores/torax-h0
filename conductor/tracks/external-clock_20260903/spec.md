@@ -69,14 +69,22 @@ Con `Internal`, los tres mensajes de FR1 **se ignoran por completo**: conectar u
 cable no puede cambiar lo que suena. Con `External`, el transporte de pantalla
 arma y el maestro dispara (FR4).
 
-**FR4 — Con `External`, Play arma y el Start dispara.** Pulsar Play no suena:
-deja el transporte en espera y la pantalla lo dice —`Waiting for clock`, en
-inglés y sin traducir, como el resto del vocabulario de interfaz—. Al llegar el
-Start, el origen de la rejilla se fija en ese instante y los doce Tracks arrancan
-**en fase** desde el paso 0.
+**FR4 — Con `External`, el transporte del maestro manda sobre el de la app.** Su
+Start arranca —desde el paso 0, con el origen de la rejilla en el instante del
+Start y los doce Tracks **en fase**— haya pulsado Play alguien o no, y sobre un
+transporte que ya suena lo reinicia. El botón de la app sigue arrancando en el
+momento: el maestro manda, pero no hay que esperarlo.
 
-Un solo maestro manda: no hay estado en el que la app y el hardware lleven
-transportes distintos.
+> **Enmendado el 2026-09-03, verificando en dispositivo.** La versión anterior
+> decía que Play *armaba* y que la música empezaba con el Start del maestro, con
+> un estado `Waiting for clock`. Con el hardware delante resultó no ser
+> intuitivo: obligaba a pulsar Play en el iPad **antes** de darle a Play en el
+> controlador, y sin ese paso el gesto del hardware no hacía nada. Elegir
+> `External` ya es decir que el transporte lo lleva el hardware.
+>
+> Lo que se conserva es lo que la decisión original buscaba: **un solo maestro
+> manda**, y no hay estado en el que la app y el hardware lleven transportes
+> distintos.
 
 **FR5 — El Stop externo para y desarma.** Simétrico al Start, y con el **mismo
 barrido de notas** que `Transport.stop()` ya hace: `CC 123` por canal más el
@@ -151,10 +159,9 @@ recibiendo.
 
 ## Acceptance Criteria
 
-1. Con `External` y el BeatStep parado, Play deja la app en `Waiting for clock` y
-   no suena nada.
-2. Al pulsar Play en el BeatStep, los doce Tracks arrancan desde el paso 0, en
-   fase entre sí y con el hardware.
+1. Con `External`, pulsar Play en el BeatStep arranca la app **sin haber tocado
+   el iPad**; y si ya estaba sonando, la reinicia desde el paso 0.
+2. Los doce Tracks arrancan en fase entre sí y con el hardware.
 3. Cambiar el tempo del BeatStep mueve el de la app, y la barra muestra el valor
    nuevo sin fluctuar en el último decimal.
 4. Tocando dos minutos seguidos, la app **no se separa** audiblemente del

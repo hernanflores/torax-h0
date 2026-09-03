@@ -27,11 +27,10 @@ xcrun devicectl device install app --device <ID> \
 Marcar cada uno con lo observado. **Si alguno falla, se anota y se para**: el
 track no cierra con un criterio en rojo.
 
-- [ ] **1. Armar no suena.** Con `External` elegido en `3 · MIDI` y el BeatStep
-      **parado**, pulsar Play en la app. Tiene que quedarse en `Waiting for
-      clock` y no sonar nada.
-- [ ] **2. El Start arranca los doce en fase.** Pulsar Play en el BeatStep. Los
-      doce Tracks arrancan desde el paso 0, en fase entre sí y con el hardware.
+- [ ] **1. El maestro manda.** Con `External` elegido en `3 · MIDI` y **sin tocar
+      el iPad**, pulsar Play en el BeatStep: la app arranca. Con la app ya
+      sonando, otro Play del BeatStep la reinicia desde el paso 0.
+- [ ] **2. Los doce arrancan en fase**, entre sí y con el hardware.
 - [ ] **3. El tempo se sigue y se lee.** Mover el tempo del BeatStep. El número
       de la barra cambia y **no baila en el último decimal**.
 - [ ] **4. Dos minutos sin separarse.** Dejar sonar dos minutos junto al
