@@ -42,24 +42,27 @@ track se alarga.
 
 ## FASE 2: EL ESTIMADOR DE TEMPO, PURO Y EN `ENGINE`
 
-- [ ] Task: El seguidor de reloj — de ticks a `Tempo` (FR2)
-  - [ ] Tests (Red): 24 ticks equiespaciados a 500 ms/negra dan 120 BPM exactos;
+- [x] Task: El seguidor de reloj — de ticks a `Tempo` (FR2) [2c81cb2]
+  - [x] Tests (Red): 24 ticks equiespaciados a 500 ms/negra dan 120 BPM exactos;
         a 20 y a 300 BPM, los extremos del rango, el estimado cae dentro de una
         tolerancia declarada.
-  - [ ] Tests (Red): **un tick tardío aislado no mueve el tempo** más allá de la
+  - [x] Tests (Red): **un tick tardío aislado no mueve el tempo** más allá de la
         tolerancia — es el caso que separa un promedio de una lectura
         instantánea.
-  - [ ] Tests (Red): un tempo que implique menos de 20 o más de 300 BPM **se
+  - [x] Tests (Red): un tempo que implique menos de 20 o más de 300 BPM **se
         rechaza y se conserva el último válido**; sin ninguno válido todavía, el
         estimador se declara sin tempo.
-  - [ ] Tests (Red): un cambio real y sostenido de tempo se alcanza dentro de la
+  - [x] Tests (Red): un cambio real y sostenido de tempo se alcanza dentro de la
         ventana de una negra, y no antes — la latencia es una propiedad, no un
         accidente.
-  - [ ] Implementación (Green): tipo puro en `Packages/Engine`, junto a
+  - [x] Implementación (Green): tipo puro en `Packages/Engine`, junto a
         `MusicalTime.swift`. Recibe instantes; **no consulta la hora**.
-  - [ ] Sin asignaciones: ventana en almacenamiento inline de 24 huecos, no un
-        `Array`. Mismo criterio que el pool de pitches.
-  - [ ] Cobertura `Engine` ≥90%.
+  - [x] Sin asignaciones: **no hace falta ventana**. La media de 24 intervalos
+        contiguos es la distancia entre sus extremos partida por 24, así que
+        bastan el ancla y un contador; el tipo queda trivial sin una tupla de 24
+        enteros. *(El plan pedía almacenamiento inline de 24 huecos; se ajusta el
+        2026-09-03, con menos estado del previsto.)*
+  - [x] Cobertura `Engine` ≥90%.
 - [ ] Task: La corrección de fase, como función pura (FR6)
   - [ ] Tests (Red): con la rejilla adelantada respecto al tick de negra, la
         corrección devuelve un desplazamiento negativo del origen; atrasada,
