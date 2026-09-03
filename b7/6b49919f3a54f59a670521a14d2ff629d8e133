@@ -1,0 +1,42 @@
+Tarea: El corte de clock no para la música (Fase 4, FR7)
+
+Qué cambia
+- `Transport.clockHasDropped(atHostTime:)`: hay corte si pasó más de **una negra
+  del tempo vigente** desde el último tick.
+- `ClockFollower.reanchor()`: olvida el ancla y conserva el tempo.
+- `follow(tickAtHostTime:)` re-ancla antes de medir cuando detecta el corte.
+- El instante del último tick va en un `AtomicCounter`: lo escribe el hilo de
+  recepción y lo leerá la pantalla.
+
+El fallo que encontró el test
+`testTheClockCanComeBack` daba 2,64 s de negra —22,7 BPM— tras un hueco de dos
+segundos: el primer tick de vuelta cerraba una negra contra el ancla de antes del
+corte. Y **cae dentro del rango válido**, así que el rechazo por rango no lo
+habría salvado. De ahí `reanchor()`.
+
+Decisiones
+- **El margen es relativo al tempo.** A 20 BPM medio segundo es menos de un tick
+  y un umbral fijo daría cortes falsos; a 300 BPM sería tan largo que la
+  desconexión tardaría en notarse.
+- **El tempo sobrevive al corte**: es lo que hace que la música siga igual en vez
+  de callar o saltar. `product-guidelines.md`: un dispositivo desconectado se
+  comunica con un estado, no con una disculpa.
+- Sin ningún tick recibido no hay corte: no se estaba siguiendo a nadie.
+
+Tests (9 nuevos)
+`ClockDropoutTests` (7): reloj fluyendo no es corte; un tick perdido tampoco; el
+silencio mayor que el margen sí; el margen sigue al tempo (medio segundo a 20 BPM
+no es corte); el tempo sobrevive; el clock vuelve y se re-engancha con el tempo
+nuevo; y sin ticks no hay corte.
+`ClockFollowerTests` (2): re-anclar conserva el tempo y el hueco no se mide.
+
+Verificación
+- Engine → 465 tests, 0 fallos. Cobertura 98,61%; ClockFollower y TempoMap, 100%.
+- MIDI, partición de CI → 21 (1 omitido) + 484, 0 fallos. Cobertura 92,00%.
+- La pasada en un proceso falla las 4 de VirtualLoopbackTests: flake conocido.
+
+Ficheros
+- Packages/Engine/Sources/Engine/ClockFollower.swift (modificado)
+- Packages/Engine/Tests/EngineTests/ClockFollowerTests.swift (modificado)
+- Packages/MIDI/Sources/MIDI/Transport.swift (modificado)
+- Packages/MIDI/Tests/MIDITests/ClockDropoutTests.swift (nuevo)
