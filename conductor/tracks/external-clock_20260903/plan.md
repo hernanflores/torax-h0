@@ -128,16 +128,21 @@ track se alarga.
   - [x] Tests (Red): un Stop con el transporte ya parado no hace nada ni falla.
   - [x] Implementación (Green): reutilizar el barrido existente; **no
         duplicarlo**.
-- [ ] Task: Seguir el tempo y re-anclar la fase (FR6)
-  - [ ] Tests (Red): con ticks a 120 BPM, los instantes programados coinciden con
-        los de una `MusicalTimeline` a 120 dentro de la tolerancia.
-  - [ ] Tests (Red): un cambio de tempo del maestro mueve los instantes
-        siguientes, y **ningún evento ya sellado se reprograma**.
-  - [ ] Tests (Red): la corrección de fase se aplica **una vez cada 24 ticks**,
+- [x] Task: Seguir el tempo y re-anclar la fase (FR6) [9a3b5df]
+  - [x] Tests (Red): con ticks a 120 BPM, los instantes programados coinciden con
+        los de una `MusicalTimeline` a 120 dentro de la tolerancia. *(Cubierto por
+        `TempoMapTests`: sin maestro el mapa es la identidad, y a 120 BPM contra
+        una referencia de 120 el ratio es 1.)*
+  - [x] Tests (Red): un cambio de tempo del maestro mueve los instantes
+        siguientes, y **ningún evento ya sellado se reprograma**. *(Lo segundo es
+        estructural —el mapa solo afecta a la ventana siguiente— y lo sostiene
+        `testChangingTempoDoesNotMoveTheCurrentInstant`; de punta a punta se ve en
+        dispositivo, Fase 6.)*
+  - [x] Tests (Red): la corrección de fase se aplica **una vez cada 24 ticks**,
         no más.
-  - [ ] Implementación (Green): el scheduler lee periodo y corrección del atómico
+  - [x] Implementación (Green): el scheduler lee periodo y corrección del atómico
         una vez por ventana, como ya lee el snapshot.
-  - [ ] Verificar la regla de tiempo real en el camino nuevo: sin asignaciones,
+  - [x] Verificar la regla de tiempo real en el camino nuevo: sin asignaciones,
         sin locks, sin `await`, sin logging.
 - [ ] Task: El corte de clock no para la música (FR7)
   - [ ] Tests (Red): sin ticks durante más del margen, el transporte **sigue** con
