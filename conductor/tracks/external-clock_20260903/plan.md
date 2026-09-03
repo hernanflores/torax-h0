@@ -19,7 +19,7 @@ track se alarga.
 **La Fase 6 mide jitter** (NFR4, excepción acotada a la suspensión del
 2026-09-02). Es la única fase que lo hace, y con reloj interno.
 
-## FASE 1: LAS DOS DESVIACIONES QUEDAN ESCRITAS
+## FASE 1: LAS DOS DESVIACIONES QUEDAN ESCRITAS [checkpoint: f0d3bd1]
 
 - [x] Task: Enmendar `tech-stack.md` — el tempo deja de ser fijo (NFR5) [da89a79]
   - [x] Enmienda fechada 2026-09-03 en *Arquitectura de timing*: el `Tempo` de la
@@ -38,7 +38,7 @@ track se alarga.
         sigue siendo cierto y ahora además se puede seguir a un maestro externo.
   - [x] Dejar dicho que la app **no emite clock** (limitación 2), para que la
         nota no se lea como sincronía en los dos sentidos.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: EL ESTIMADOR DE TEMPO, PURO Y EN `ENGINE`
 
