@@ -144,16 +144,16 @@ track se alarga.
         una vez por ventana, como ya lee el snapshot.
   - [x] Verificar la regla de tiempo real en el camino nuevo: sin asignaciones,
         sin locks, sin `await`, sin logging.
-- [ ] Task: El corte de clock no para la música (FR7)
-  - [ ] Tests (Red): sin ticks durante más del margen, el transporte **sigue** con
+- [x] Task: El corte de clock no para la música (FR7) [b76b499]
+  - [x] Tests (Red): sin ticks durante más del margen, el transporte **sigue** con
         el último tempo y se marca como desenganchado.
-  - [ ] Tests (Red): un tick perdido aislado **no** dispara el corte.
-  - [ ] Tests (Red): al volver el clock, se re-engancha sin parar y sin volver al
+  - [x] Tests (Red): un tick perdido aislado **no** dispara el corte.
+  - [x] Tests (Red): al volver el clock, se re-engancha sin parar y sin volver al
         paso 0.
-  - [ ] Implementación (Green): margen derivado del periodo estimado —del orden
+  - [x] Implementación (Green): margen derivado del periodo estimado —del orden
         de una negra—, no un literal en milisegundos: a 20 BPM medio segundo es
         menos de un tick.
-  - [ ] Cobertura `MIDI` ≥80%.
+  - [x] Cobertura `MIDI` ≥80%.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: LA PANTALLA — FUENTE, TEMPO Y QUIÉN MANDA
