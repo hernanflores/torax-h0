@@ -1,6 +1,6 @@
 # Track: Mute y Solo por Track
 
-**ID:** `mute-solo_20260902` · **Type:** Feature · **Status:** new
+**ID:** `mute-solo_20260902` · **Type:** Feature · **Status:** complete
 
 Los doce Tracks suenan a la vez y no hay forma de callar a uno: para oír la caja
 sola hay que **vaciarle el pool** a los demás, que destruye material para

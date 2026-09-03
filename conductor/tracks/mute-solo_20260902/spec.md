@@ -173,6 +173,19 @@ Se documentan porque son consecuencia del diseño elegido, no descuidos:
 - **El estado no persiste** entre arranques. No hay persistencia de proyecto
   todavía; cuando la haya, decidirá si la mezcla se guarda con él.
 
+> **Repaso al cerrar, 2026-09-02.** Las tres siguen siendo exactamente las tres:
+> la implementación no descubrió ninguna nueva. Lo que sí apareció, y no es una
+> limitación sino una decisión que conviene tener escrita:
+>
+> - **La máscara no lleva compare-and-swap**, porque hoy solo escribe el actor
+>   principal —el gesto táctil nace ahí y el del controlador salta al principal
+>   antes de aplicarse—. Si algún día escribiera otro hilo, deja de ser correcto.
+>   La condición está escrita en `MuteMask`, no solo sabida.
+> - **`Transport.mutes` es interna a propósito.** Se hizo pública en la Fase 3 y
+>   se cerró en la Fase 4 al ver que dejaba dos caminos para cambiar la mezcla, y
+>   uno de ellos se saltaba el apagado — que es justo la nota colgada que FR4
+>   existe para evitar. Fuera se lee por `mix` y se escribe por los dos toggles.
+
 ## Out of Scope
 
 - Persistencia del estado de mute/solo.

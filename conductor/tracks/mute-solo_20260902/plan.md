@@ -159,7 +159,7 @@ revisar el diseño antes de seguir.
         con el gesto, no con el reloj.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 7: VERIFICACIÓN EN DISPOSITIVO Y CIERRE
+## FASE 7: VERIFICACIÓN EN DISPOSITIVO Y CIERRE [checkpoint: 1fe7fce]
 
 - [x] Task: Pasada completa en iPad con el BeatStep Pro [1fe7fce]
   - [x] Los diez criterios de aceptación de la spec, uno a uno, con el sinte
@@ -170,8 +170,8 @@ revisar el diseño antes de seguir.
         **en fase**, no desde el principio. Se oye, no se deduce.
   - [x] Registrar en `device-verification.md` qué se probó y qué se oyó. **Sin
         medición de jitter** (NFR6).
-- [~] Task: Cierre del track
-  - [ ] Repasar que las limitaciones conocidas de la spec siguen siendo las tres
+- [x] Task: Cierre del track
+  - [x] Repasar que las limitaciones conocidas de la spec siguen siendo las tres
         que dice, y añadir las que la implementación haya descubierto.
-  - [ ] Actualizar `conductor/tracks.md` con el resultado.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Actualizar `conductor/tracks.md` con el resultado.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)

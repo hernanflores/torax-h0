@@ -305,7 +305,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: Mute y Solo por Track**
+- [x] **Track: Mute y Solo por Track** — M/S por Track suenan y se accionan con el dedo y con los step buttons 15/16; verificado en iPad
   *Link: [conductor/tracks/mute-solo_20260902/index.md](./tracks/mute-solo_20260902/index.md)*
 
   Planificado el 2026-09-02, en siete fases. El par **M / S** debajo de cada
@@ -330,6 +330,22 @@ escalón es el que se nota.
 
   **Sin medición de jitter**, suspendida el 2026-09-02: decide *si* se emite, no
   *cuándo*.
+
+  **Cerrado el 2026-09-02**, en siete fases, con los diez criterios de
+  aceptación verificados en iPad. `Engine` no se tocó en ninguna fase, que era
+  el NFR2 y también la señal de diseño: si la mezcla hubiera empujado hacia el
+  motor, es que se estaría metiendo en el material.
+
+  **Dos cosas salieron por el camino y no estaban en el plan.** `Transport.mutes`
+  nació pública en la Fase 3 y se cerró en la Fase 4: dejaba dos caminos para
+  cambiar la mezcla y uno se saltaba el apagado, que es la nota colgada que FR4
+  existe para evitar. Y la tabla de `preset/README.md` seguía diciendo
+  «Seleccionar Track 2–16, sin Track detrás en v1», desactualizada desde la
+  bajada a doce; ahora describe los modificadores.
+
+  **Deja sin tocar** la persistencia —cuando llegue, decidirá si la mezcla se
+  guarda con el Project—, la pantalla `5 · Tracks` con su vista de conjunto, y
+  el mute de Patterns y Banks.
 
 ## Defectos conocidos
 
