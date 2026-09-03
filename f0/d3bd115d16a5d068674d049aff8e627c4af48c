@@ -1,0 +1,18 @@
+Tarea: Anotar en `product.md` que el reloj deja de ser solo interno (Fase 1, NFR5)
+
+Qué cambia
+- Nota fechada 2026-09-03 en *MVP Scope — v1*, junto a la línea «Transporte
+  (play/stop) y reloj interno».
+
+Por qué
+La línea del MVP no deja de ser cierta —el reloj interno existe— pero se queda
+corta: la app pasa a poder seguir a un maestro externo, y el tempo interno deja
+de ser el literal de 120 BPM. La nota lo dice sin borrar la promesa original, que
+es como el resto de la página registra sus cambios.
+
+Lo que la nota deja explícito, para que no se lea de más: la sincronía va en un
+solo sentido. La app no emite clock y ser maestro es una decisión que no está
+tomada — es la limitación 2 de la spec del track.
+
+Ficheros
+- conductor/product.md (modificado)
