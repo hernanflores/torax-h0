@@ -104,11 +104,11 @@ track se alarga.
 
 ## FASE 4: EL TRANSPORTE OBEDECE AL MAESTRO
 
-- [ ] Task: La fuente de reloj, y que `Internal` ignore de verdad (FR3)
-  - [ ] Tests (Red): con `Internal`, un Start, un Stop y una ráfaga de clock **no
+- [x] Task: La fuente de reloj, y que `Internal` ignore de verdad (FR3) [7410679]
+  - [x] Tests (Red): con `Internal`, un Start, un Stop y una ráfaga de clock **no
         cambian nada** del transporte.
-  - [ ] Tests (Red): con `External`, los mismos mensajes sí llegan al transporte.
-  - [ ] Implementación (Green): la fuente como estado del transporte, no de la
+  - [x] Tests (Red): con `External`, los mismos mensajes sí llegan al transporte.
+  - [x] Implementación (Green): la fuente como estado del transporte, no de la
         vista; el filtro en un solo sitio, antes de repartir.
 - [ ] Task: Armar y arrancar con el Start (FR4)
   - [ ] Tests (Red): con `External`, `play()` deja el transporte armado y **sin
