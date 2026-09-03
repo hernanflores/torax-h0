@@ -1,0 +1,30 @@
+---
+
+Verificación de fase — FASE 4: EL TRANSPORTE OBEDECE AL MAESTRO
+
+Alcance: ClockSource.swift y TempoMap.swift (nuevos), Transport.swift,
+SchedulerThread.swift, ClockHandoff.swift y ClockFollower.swift (modificados),
+cubiertos por ClockSourceTests, ExternalStartTests, ExternalStopTests,
+ExternalTempoTests, ClockDropoutTests y TempoMapTests.
+
+Tests automáticos
+- swift test --package-path Packages/Engine → 465 tests, 0 fallos. Cobertura 98,61%.
+- swift test --package-path Packages/MIDI, partición de CI → 21 (1 omitido) + 484, 0 fallos.
+  Cobertura MIDI 92,00%.
+- xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → BUILD SUCCEEDED
+
+Dos cosas fuera del plan
+1. El tempo no se podía cambiar en caliente (igual que Division, y por el motivo
+   que TrackScheduler documenta). Se resuelve con TempoMap y su rebase, legítimo
+   porque el cambio llega a los doce Tracks a la vez.
+2. Un test encontró un fallo real: tras un corte, la primera negra se medía a
+   través del hueco —dos segundos dan 22,7 BPM, dentro del rango válido, así que
+   el rechazo por rango no lo salvaba—. De ahí ClockFollower.reanchor().
+
+Verificación manual propuesta
+1. TempoMap: el rebase, y por qué es legítimo aquí y no lo fue para la Division.
+2. Transport.follow: publicación por negra y corrección acotada a 5 ms.
+3. El bucle del scheduler: una lectura por ventana, y la diferencia de corrección.
+4. Ejecutar los cuatro filtros de test del reloj externo.
+
+Confirmación del usuario: «Avancemos» (2026-09-03).
