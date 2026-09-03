@@ -64,6 +64,23 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > Lo hace posible un bajo en menor bajo un arpegio en mayor, que con un marco
 > global no se podía expresar. Entra con la rebanada 1 de la v2
 > (`multi-track_20260831`).
+> **Nota del 2026-09-02 — mute y solo por Track.** Un par **M / S** bajo cada
+> pastilla de la fila de Tracks, y en el controlador con los step buttons 15 y 16
+> mantenidos como modificador.
+>
+> **Es la primera capacidad de la app que no es del material.** Todo lo demás
+> —Shape, Groove, Tonal, Cycles— vive en el Track y viaja con el Pattern; esto es
+> **mezcla**: qué se escucha ahora mismo de ese material. Por eso no aparece en
+> el Core Model de arriba, no entra en el snapshot que lee el scheduler y no se
+> guardará con el Project salvo que la persistencia decida lo contrario.
+>
+> **Mute no para el Track: le quita la salida.** La rejilla avanza y los Cycles
+> rotan, así que quitarlo lo devuelve **en fase** con el resto — es un mute de
+> mixer, no un stop. El **solo es aditivo** —varios a la vez suenan todos— y el
+> **mute manda sobre el solo**: un Track soleado y muteado calla.
+>
+> Track `mute-solo_20260902`.
+
 - **Mapeo:** preset listo para BeatStep Pro + **MIDI Learn** para reasignar a otro hardware.
 
 ## MVP Scope — v1
