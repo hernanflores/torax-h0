@@ -1,0 +1,64 @@
+Tarea: Seguir el tempo y re-anclar la fase (Fase 4, FR6)
+
+El hallazgo que condiciona la tarea
+El tempo se fija al construir `TrackScheduler` y no se vuelve a leer, igual que
+Division y con el mismo motivo escrito en el propio tipo: cambiar la duración del
+Step reubicaría todos los Steps futuros respecto a un origen que ya pasó. Leer el
+periodo del atómico por ventana, como decía el plan, no bastaba.
+
+Qué se hace en su lugar
+`TempoMap` (Engine): convierte entre tiempo de reloj y tiempo musical. Las
+rejillas siguen calculándose contra el tempo de referencia y el mapa estira o
+encoge esa línea. Al cambiar de tempo **se rebasa**: se conserva el instante
+musical en curso y solo cambia la pendiente, que es lo que evita el salto.
+
+Por qué es legítimo aquí y no lo fue para Division en `cycles_20260901`: rebasar
+la línea de **un** Track rompe el invariante que mantiene en fase a los doce; un
+cambio de tempo del maestro les llega a los doce a la vez y con el mismo rebase.
+
+Cableado
+- `Transport.follow(tickAtHostTime:)`: alimenta `ClockFollower`, y al cerrarse
+  cada negra calcula la corrección de fase contra el origen vigente —arranque más
+  lo ya corregido— y publica en `ClockHandoff`.
+- Límite de corrección: 5 ms por negra, para que un tick desviado no dé un salto.
+- `SchedulerThread`: lee el reloj **una vez por ventana**, sigue el tempo solo si
+  cambió y aplica la **diferencia** de corrección con lo ya aplicado.
+- `play()` y el arranque olvidan al maestro anterior: su tempo no dice nada del
+  siguiente y su fase se medía contra una rejilla que ya no existe.
+- `ClockReading.wallNanoseconds(forGridNanoseconds:referenceQuarterNoteNanoseconds:)`
+  escala la duración de los gates: sin esto, Sustain conservaría la longitud del
+  tempo viejo. Es una lectura atómica por nota, no por ventana; se acepta y queda
+  documentado, porque decide cuánto dura la nota y no cuándo cae.
+
+Tests (19 nuevos)
+- `TempoMapTests` (11): identidad sin maestro; medio y doble tempo; **el instante
+  en curso no se mueve al cambiar de tempo**; la pendiente nueva manda después;
+  ida y vuelta exacta; los dos sentidos del desplazamiento de origen; la
+  corrección se mide en tiempo de reloj aunque el maestro vaya a otro tempo;
+  negra no positiva ignorada; y `_isPOD`.
+- `ExternalTempoTests` (6): la negra publica el tempo; nada antes de cerrarla; un
+  cambio de tempo llega al scheduler; la corrección se aplica una vez por negra y
+  no por tick; `Internal` no publica; y arrancar olvida al maestro anterior.
+- `ClockHandoffTests` (2): las duraciones escalan con el maestro y sin maestro no
+  se tocan.
+
+Verificación
+- Engine → 463 tests, 0 fallos
+- MIDI, partición de CI → 21 (1 omitido) + 477, 0 fallos
+- xcodebuild -scheme ToraxH0 -destination 'generic/platform=iOS' → BUILD SUCCEEDED
+
+Lo que no se verifica aquí
+Que ningún evento ya sellado se reprograme es estructural: el mapa solo afecta a
+la ventana siguiente, y la continuidad en el instante del rebase está fijada por
+`testChangingTempoDoesNotMoveTheCurrentInstant`. Comprobarlo de punta a punta
+exigiría arrancar el bucle con un maestro simulado, que es un arranque más del
+scheduler en la suite —lo que empeora el flake— y se hará en dispositivo (Fase 6).
+
+Ficheros
+- Packages/Engine/Sources/Engine/TempoMap.swift (nuevo)
+- Packages/Engine/Tests/EngineTests/TempoMapTests.swift (nuevo)
+- Packages/MIDI/Sources/MIDI/Transport.swift (modificado)
+- Packages/MIDI/Sources/MIDI/SchedulerThread.swift (modificado)
+- Packages/MIDI/Sources/MIDI/ClockHandoff.swift (modificado)
+- Packages/MIDI/Tests/MIDITests/ExternalTempoTests.swift (nuevo)
+- Packages/MIDI/Tests/MIDITests/ClockHandoffTests.swift (modificado)
