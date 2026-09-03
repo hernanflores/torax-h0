@@ -1,0 +1,46 @@
+Corrección en vuelo (Fase 6): el reloj entrante no llegaba al transporte
+
+Síntoma en dispositivo
+Con `External` elegido, la app se quedaba en `Waiting for clock` para siempre: el
+Start del BeatStep no arrancaba nada y su tempo no movía el de la app.
+
+Causa
+`Transport.receive(_:atHostTime:)` **no tenía ningún llamador**. La Fase 4 lo
+implementó y lo dejó cubierto por tests, y la Fase 5 cableó la pantalla, pero
+nadie conectó el callback de `CoreMIDIInput` con él. Los ticks se parseaban
+correctamente —`MIDIMessage` ya entendía el tipo 0x1 desde la Fase 3— y se
+descartaban al llegar a `ControlInput`, que los ignora a propósito.
+
+Qué se arregla
+- `CoreMIDIInput.ReceiveHandler` pasa a entregar el **instante del paquete**
+  además del mensaje. Estaba anotado como hallazgo al abrir la Fase 4 y se quedó
+  sin hacer.
+- `HostClock.arrival(_:now:)`: cero significa «ahora» en CoreMIDI, y tomado al
+  pie de la letra pondría el tick en el arranque de la máquina.
+- `TransportModel` entrega cada mensaje al transporte **en el hilo de recepción**,
+  antes del salto al principal, y solo salta con lo que el transporte no consume.
+  Va por `TransportRelay`, que ya existía para el mismo problema: `transport` está
+  aislado al hilo principal y el reloj no puede pasar por ahí.
+
+Por qué no lo cazó ningún test
+La omisión estaba en el cableado de `App`, que no tiene target de test —lo
+documenta `workflow.md`, *Coverage Requirements*—. Los tests de `MIDI` cubrían
+las dos piezas por separado y ninguna sabía de la otra. **Es exactamente el tipo
+de hueco que la verificación en dispositivo existe para encontrar, y lo
+encontró**; lo que falló fue el orden, no el método: la Fase 5 debió cablearlo.
+
+Lo que sí queda cubierto ahora
+`HostClockArrivalTests` fija la convención del timestamp cero, que era la otra
+mitad del cambio y sí es lógica pura.
+
+Verificación
+- MIDI, partición de CI → 21 (1 omitido) + 493, 0 fallos
+- xcodebuild -destination 'generic/platform=iOS' → BUILD SUCCEEDED
+- Pendiente: repetir la pasada en dispositivo.
+
+Ficheros
+- Packages/MIDI/Sources/MIDI/CoreMIDIInput.swift (modificado)
+- Packages/MIDI/Sources/MIDI/HostClock.swift (modificado)
+- Packages/MIDI/Tests/MIDITests/HostClockTests.swift (modificado)
+- Packages/MIDI/Tests/MIDITests/CoreMIDIInputTests.swift (modificado)
+- App/TransportModel.swift (modificado)
