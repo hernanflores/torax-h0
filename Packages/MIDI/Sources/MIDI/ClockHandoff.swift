@@ -16,6 +16,24 @@ public struct ClockReading: Equatable, Sendable {
     /// salta una, la recupera entera.
     public let accumulatedCorrectionNanoseconds: Int32
 
+    /// Convierte una duración de rejilla en duración de reloj.
+    ///
+    /// **Lo que dura un Step no es solo cuándo empieza.** Sustain se expresa en
+    /// nanosegundos calculados con el tempo de referencia, así que sin escalarlos
+    /// un maestro lento dejaría gates de la longitud del tempo viejo: notas
+    /// cortas donde debería haber ligado.
+    ///
+    /// Sin maestro devuelve lo que recibe.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func wallNanoseconds(
+        forGridNanoseconds grid: Int64, referenceQuarterNoteNanoseconds reference: Double
+    ) -> Int64 {
+        guard isEstablished, reference > 0 else { return grid }
+        return Int64((Double(grid) * Double(quarterNoteNanoseconds) / reference).rounded())
+    }
+
     /// Si ya se cerró una negra con un tempo válido.
     ///
     /// Es un estado, no un cero disfrazado: sin tempo del maestro el transporte

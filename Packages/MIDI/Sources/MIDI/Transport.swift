@@ -78,6 +78,28 @@ public final class Transport: @unchecked Sendable {
     /// instante nace la rejilla**, que es lo que el arranque por Start del
     /// maestro cambia.
     let playheadClock = PlayheadClock()
+
+    /// Lo que el scheduler sabe del maestro externo.
+    ///
+    /// Interno para que los tests puedan leer lo que cruza sin arrancar el
+    /// bucle.
+    let clockHandoff = ClockHandoff()
+
+    /// Estima el tempo del maestro con sus ticks.
+    ///
+    /// **Solo lo toca el hilo de recepción de CoreMIDI**, que es de donde llegan
+    /// los ticks, así que no necesita protección. La única excepción es
+    /// `startPlaying`, que lo reinicia: pasa por el hilo principal, y ahí no hay
+    /// reproducción en curso con la que competir.
+    private var clockFollower = ClockFollower()
+
+    /// Instante en que arrancó la rejilla, en nanosegundos de host.
+    ///
+    /// Es contra lo que se mide la fase del maestro. Cero mientras no suene.
+    private var gridOriginNanoseconds: Int64 = 0
+
+    /// Suma de las correcciones de fase publicadas desde el arranque.
+    private var accumulatedCorrectionNanoseconds: Int32 = 0
     private let cyclePlaybackClock = CyclePlaybackClock()
 
     private var scheduler: SchedulerThread?
@@ -298,12 +320,56 @@ public final class Transport: @unchecked Sendable {
             return true
 
         case .timingClock:
+            follow(tickAtHostTime: hostTime)
             return true
 
         case .noteOn, .noteOff, .controlChange:
             return false
         }
     }
+
+    /// Alimenta el estimador con un tick y publica al cerrarse cada negra.
+    ///
+    /// **Publicar una vez por negra y no por tick es la decisión**: el reloj
+    /// entrante tiene su propio jitter, y empujar la rejilla con cada tick lo
+    /// trasladaría entero a la salida.
+    ///
+    /// Realtime: llamado desde el hilo de recepción de CoreMIDI.
+    /// Sin asignaciones, sin locks, sin await.
+    private func follow(tickAtHostTime hostTime: UInt64) {
+        let instant = Int64(HostClock.nanoseconds(fromHostTicks: hostTime))
+
+        guard case .quarterNote(let closing) = clockFollower.receive(tickAtNanoseconds: instant),
+            let tempo = clockFollower.tempo
+        else { return }
+
+        let quarterNote = 60.0 / tempo.beatsPerMinute * 1_000_000_000.0
+
+        // La fase se mide contra el origen vigente, que es el del arranque más
+        // lo ya corregido. Sin sumarlo, cada negra volvería a pedir la misma
+        // corrección y la rejilla se pasaría de largo.
+        if gridOriginNanoseconds != 0 {
+            let origin = gridOriginNanoseconds + Int64(accumulatedCorrectionNanoseconds)
+            let correction = PhaseCorrection.nanoseconds(
+                gridOriginNanoseconds: origin,
+                quarterNoteNanoseconds: quarterNote,
+                masterTickNanoseconds: closing,
+                limitNanoseconds: Self.phaseCorrectionLimitNanoseconds)
+            accumulatedCorrectionNanoseconds &+= Int32(correction)
+        }
+
+        clockHandoff.publish(
+            quarterNoteNanoseconds: UInt32(quarterNote.rounded()),
+            accumulatedCorrectionNanoseconds: accumulatedCorrectionNanoseconds)
+    }
+
+    /// Cuánto puede moverse el origen de una vez.
+    ///
+    /// **Cinco milisegundos por negra.** Acota lo que un tick desviado puede
+    /// hacerle a la rejilla —a 120 BPM son diez milisegundos por segundo, de
+    /// sobra para recuperar cualquier deriva real— y lo que sobra se corrige en
+    /// las negras siguientes en vez de en un salto.
+    static let phaseCorrectionLimitNanoseconds: Int64 = 5_000_000
 
     /// Publica los dieciséis Tracks. Se recogen en la ventana siguiente.
     public func publish(_ pattern: Pattern) {
@@ -323,6 +389,13 @@ public final class Transport: @unchecked Sendable {
         // la app pide sonar y el maestro decide cuándo, así que la música
         // empieza con su Start. La pantalla lo enseña como `Waiting for clock`.
         guard clockSource == .internal else {
+            // **Armar también olvida al maestro anterior.** Pedir sonar empieza
+            // una sesión nueva; lo que se supiera de la anterior no vale, y su
+            // fase se medía contra una rejilla que ya no existe. El estimador
+            // vuelve a llenarse con los ticks que sigan llegando mientras espera.
+            clockFollower.reset()
+            clockHandoff.clear()
+            accumulatedCorrectionNanoseconds = 0
             armed.value = true
             return
         }
@@ -343,6 +416,14 @@ public final class Transport: @unchecked Sendable {
     private func startPlaying(atHostTime origin: UInt64? = nil) {
         armed.value = false
 
+        // **Arrancar olvida al maestro anterior.** Su tempo no dice nada del
+        // siguiente, y su fase mucho menos: la rejilla nace ahora.
+        clockFollower.reset()
+        clockHandoff.clear()
+        accumulatedCorrectionNanoseconds = 0
+        gridOriginNanoseconds = Int64(
+            HostClock.nanoseconds(fromHostTicks: origin ?? HostClock.now()))
+
         // Los dieciséis con los que se arranca, leídos una sola vez: el
         // scheduler construye con ellos **una rejilla por Track**, cada una con
         // su Division. Sin pasarlos, el hilo caía en la vía del arnés —una sola
@@ -357,9 +438,10 @@ public final class Transport: @unchecked Sendable {
             playhead: playheadClock,
             cyclePlaybackClock: cyclePlaybackClock,
             pattern: starting,
-            mutes: mutes
+            mutes: mutes,
+            clock: clockHandoff
         ) {
-            [emitter, send, tempo = configuration.timeline.tempo]
+            [emitter, send, tempo = configuration.timeline.tempo, clockHandoff]
             _, source, _, pitch, groove, hostTime in
             // El canal y la duración del Step son del Track que emite: dieciséis
             // Tracks pueden estar en dieciséis canales y en Divisions distintas.
@@ -375,9 +457,22 @@ public final class Transport: @unchecked Sendable {
                 pitch: pitch,
                 groove: groove,
                 on: MIDIChannel(source.channel),
-                stepDurationNanoseconds: Int64(
-                    MusicalTimeline(tempo: tempo, division: source.shape.division)
-                        .stepDurationNanoseconds),
+                // **La duración se escala con el maestro.** Se calcula contra
+                // el tempo de referencia, como los instantes, y se convierte a
+                // tiempo de reloj: sin esto, seguir a un maestro lento dejaría
+                // los gates con la longitud del tempo viejo y Sustain sonaría
+                // corto.
+                //
+                // Es una lectura atómica por nota y no una por ventana, a
+                // diferencia del resto. Se acepta: aquí lo que se decide es
+                // cuánto dura la nota, no cuándo cae, y un cambio de tempo a
+                // media ventana como mucho la alarga o acorta lo que el maestro
+                // acaba de pedir.
+                stepDurationNanoseconds: clockHandoff.reading.wallNanoseconds(
+                    forGridNanoseconds: Int64(
+                        MusicalTimeline(tempo: tempo, division: source.shape.division)
+                            .stepDurationNanoseconds),
+                    referenceQuarterNoteNanoseconds: 60.0 / tempo.beatsPerMinute * 1_000_000_000.0),
                 atHostTime: hostTime,
                 send: send
             )
@@ -434,6 +529,7 @@ public final class Transport: @unchecked Sendable {
         // hubiera empezado a sonar, o el maestro arrancaría música que la app ya
         // no pide.
         armed.value = false
+        gridOriginNanoseconds = 0
 
         guard let scheduler else { return }
         scheduler.stop()

@@ -56,6 +56,30 @@ final class ClockHandoffTests: XCTestCase {
         XCTAssertEqual(handoff.reading.accumulatedCorrectionNanoseconds, 0)
     }
 
+    // MARK: - Escalar duraciones
+
+    /// **Sustain se mide en nanosegundos, así que sigue al maestro.** La
+    /// duración de un Step se calcula con el tempo de referencia; con un maestro
+    /// al doble de lento, el Step dura el doble de reloj.
+    func testDurationsScaleWithTheMaster() {
+        let handoff = ClockHandoff()
+        handoff.publish(
+            quarterNoteNanoseconds: 1_000_000_000, accumulatedCorrectionNanoseconds: 0)
+
+        XCTAssertEqual(
+            handoff.reading.wallNanoseconds(
+                forGridNanoseconds: 125_000_000, referenceQuarterNoteNanoseconds: 500_000_000),
+            250_000_000)
+    }
+
+    /// Sin maestro no se escala nada: la duración es la que calculó la rejilla.
+    func testWithoutAMasterDurationsAreUntouched() {
+        XCTAssertEqual(
+            ClockHandoff().reading.wallNanoseconds(
+                forGridNanoseconds: 125_000_000, referenceQuarterNoteNanoseconds: 500_000_000),
+            125_000_000)
+    }
+
     // MARK: - Reglas de tiempo real
 
     /// Lo que cruza es un valor trivial: se construye en el hilo de recepción de

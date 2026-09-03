@@ -85,6 +85,13 @@ public final class SchedulerThread: @unchecked Sendable {
     private let mutes: MuteMask?
     private let handler: StepHandler
 
+    /// Lo que se sabe del maestro externo, o `nil` si nadie sigue a ninguno.
+    ///
+    /// Se lee **una vez por ventana**, como el snapshot: leerlo por evento
+    /// permitiría que dos notas de la misma ventana cayeran sobre dos tempos
+    /// distintos.
+    private let clock: ClockHandoff?
+
     /// Ancla temporal para el playhead. `nil` cuando nadie la mira.
     private let playhead: PlayheadClock?
     private let cyclePlaybackClock: CyclePlaybackClock?
@@ -106,6 +113,7 @@ public final class SchedulerThread: @unchecked Sendable {
         playhead: PlayheadClock? = nil,
         pattern: Pattern? = nil,
         mutes: MuteMask? = nil,
+        clock: ClockHandoff? = nil,
         handler: @escaping StepHandler
     ) {
         self.init(
@@ -116,6 +124,7 @@ public final class SchedulerThread: @unchecked Sendable {
             cyclePlaybackClock: nil,
             pattern: pattern,
             mutes: mutes,
+            clock: clock,
             handler: handler)
     }
 
@@ -127,8 +136,10 @@ public final class SchedulerThread: @unchecked Sendable {
         cyclePlaybackClock: CyclePlaybackClock?,
         pattern: Pattern? = nil,
         mutes: MuteMask? = nil,
+        clock: ClockHandoff? = nil,
         handler: @escaping StepHandler
     ) {
+        self.clock = clock
         self.pattern = pattern
         self.mutes = mutes
         self.configuration = configuration
@@ -157,7 +168,7 @@ public final class SchedulerThread: @unchecked Sendable {
         let thread = Thread {
             [
                 configuration, material, pattern, handoff, playhead, cyclePlaybackClock,
-                mutes, handler, running,
+                mutes, clock, handler, running,
             ] in
             SchedulerThread.run(
                 configuration: configuration,
@@ -167,6 +178,7 @@ public final class SchedulerThread: @unchecked Sendable {
                 playhead: playhead,
                 cyclePlaybackClock: cyclePlaybackClock,
                 mutes: mutes,
+                clock: clock,
                 handler: handler,
                 running: running,
                 origin: origin
@@ -231,6 +243,7 @@ public final class SchedulerThread: @unchecked Sendable {
         playhead: PlayheadClock?,
         cyclePlaybackClock: CyclePlaybackClock?,
         mutes: MuteMask?,
+        clock: ClockHandoff?,
         handler: StepHandler,
         running: AtomicFlag,
         origin: UInt64? = nil
@@ -265,15 +278,48 @@ public final class SchedulerThread: @unchecked Sendable {
         // una vez, antes del bucle, y no se vuelve a tocar mientras suene.
         playhead?.start(atHostTime: gridOriginTicks)
 
+        // **El mapa entre el reloj y la rejilla.** Sin maestro es la identidad y
+        // todo se comporta como antes de este track. Con maestro, estira o
+        // encoge la línea de tiempo sin rehacer las rejillas de los doce Tracks,
+        // que es lo que `TrackScheduler` documenta como imposible en caliente.
+        var tempoMap = TempoMap(
+            referenceQuarterNoteNanoseconds: 60.0 / configuration.timeline.tempo.beatsPerMinute
+                * 1_000_000_000.0)
+        var followedQuarterNote: UInt32 = 0
+        var appliedCorrection: Int32 = 0
+
         while running.value {
+            let wallNanoseconds = Int64(
+                HostClock.nanoseconds(fromHostTicks: HostClock.now() &- startHostTicks))
+
+            // El reloj externo se lee **una vez por ventana**, como el snapshot:
+            // dos notas de la misma ventana no pueden caer sobre dos tempos
+            // distintos.
+            if let reading = clock?.reading, reading.isEstablished {
+                if reading.quarterNoteNanoseconds != followedQuarterNote {
+                    tempoMap.follow(
+                        quarterNoteNanoseconds: Double(reading.quarterNoteNanoseconds),
+                        atWallNanoseconds: wallNanoseconds)
+                    followedQuarterNote = reading.quarterNoteNanoseconds
+                }
+
+                // Se aplica la **diferencia** con lo ya aplicado: leer dos veces
+                // la misma publicación no corrige dos veces, y saltarse una la
+                // recupera entera.
+                let pending = reading.accumulatedCorrectionNanoseconds &- appliedCorrection
+                if pending != 0 {
+                    tempoMap.shiftOrigin(byWallNanoseconds: Int64(pending))
+                    appliedCorrection = reading.accumulatedCorrectionNanoseconds
+                }
+            }
+
             // El tiempo se mide contra el origen de la rejilla, que puede estar
             // por delante del arranque: durante el presupuesto, `elapsed` es
             // negativo. No es un caso especial —el horizonte sigue siendo
             // positivo por el look-ahead— y es lo que hace que el Step 0
             // adelantado se programe desde la primera vuelta.
             let elapsedNanoseconds =
-                Int64(HostClock.nanoseconds(fromHostTicks: HostClock.now() &- startHostTicks))
-                - budgetNanoseconds
+                tempoMap.gridNanoseconds(atWallNanoseconds: wallNanoseconds) - budgetNanoseconds
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
 
             scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) {
@@ -289,10 +335,18 @@ public final class SchedulerThread: @unchecked Sendable {
                 // *mientras suena*: entonces el presupuesto crece y el origen ya
                 // no puede acompañarlo, y una ventana de eventos se recorta una
                 // sola vez. Es la limitación 2 del spec del track.
+                //
+                // **El instante musical se convierte a tiempo de reloj con el
+                // mapa**, que es donde vive el tempo del maestro. Sin maestro la
+                // conversión es la identidad y la cuenta es la de siempre.
                 let hostTime =
                     startHostTicks
                     &+ HostClock.hostTicks(
-                        fromNanoseconds: UInt64(max(0, budgetNanoseconds + offset)))
+                        fromNanoseconds: UInt64(
+                            max(
+                                0,
+                                tempoMap.wallNanoseconds(
+                                    forGridNanoseconds: budgetNanoseconds + offset))))
                 handler(track, source, step, pitch, groove, hostTime)
             }
 
