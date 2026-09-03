@@ -31,3 +31,24 @@ Verificación
 Ficheros
 - Packages/Engine/Sources/Engine/PhaseCorrection.swift (nuevo)
 - Packages/Engine/Tests/EngineTests/PhaseCorrectionTests.swift (nuevo)
+
+---
+
+Verificación de fase — FASE 2: EL ESTIMADOR DE TEMPO, PURO Y EN `ENGINE`
+
+Alcance: ClockFollower.swift y PhaseCorrection.swift, cada uno con su fichero de
+tests (ClockFollowerTests, PhaseCorrectionTests).
+
+Tests automáticos
+- swift test --package-path Packages/Engine → 452 tests, 0 fallos (+25 en la fase)
+- swift test --package-path Packages/MIDI, partición de CI → 21 (1 omitido) + 437, 0 fallos
+Cobertura Engine: 98,58% (umbral 90%). Los dos ficheros nuevos, 100% de líneas.
+
+Verificación manual propuesta
+1. La decisión central de ClockFollower: se promedia la negra entera, con la
+   consecuencia de que el tempo se actualiza una vez por negra.
+2. La desviación del plan: no hay ventana de 24 huecos; bastan ancla y contador.
+3. El criterio del límite más cercano en PhaseCorrection.
+4. Ejecutar los dos filtros de test.
+
+Confirmación del usuario: «Si, avancemos» (2026-09-03).
