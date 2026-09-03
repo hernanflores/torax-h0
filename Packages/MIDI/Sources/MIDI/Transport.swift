@@ -46,6 +46,23 @@ public final class Transport: @unchecked Sendable {
     /// para escribir.
     let mutes = MuteMask()
 
+    /// Si se sigue a un maestro externo.
+    ///
+    /// **Atómica porque la escribe la pantalla y la lee el hilo de recepción de
+    /// CoreMIDI**, que atiende el reloj sin saltar al principal. Un `Bool`
+    /// desnudo sería una carrera de datos con el compilador de por medio.
+    private let followsExternalClock = AtomicFlag(false)
+
+    /// Quién manda el tempo. Por defecto, la app.
+    ///
+    /// Cambiarlo en caliente es lo que hace el selector de la pantalla `3 ·
+    /// MIDI`, y no toca lo que esté sonando: solo decide a quién se hace caso a
+    /// partir de ahora.
+    public var clockSource: ClockSource {
+        get { followsExternalClock.value ? .external : .internal }
+        set { followsExternalClock.value = newValue == .external }
+    }
+
     private let playheadClock = PlayheadClock()
     private let cyclePlaybackClock = CyclePlaybackClock()
 
@@ -227,6 +244,35 @@ public final class Transport: @unchecked Sendable {
     /// > Pattern entero, y esta sobrecarga desaparece.
     public func publish(_ track: Cycle) {
         publish(lastPublishedPattern.replacing(track, at: 0))
+    }
+
+    /// Atiende un mensaje entrante del reloj del maestro.
+    ///
+    /// Devuelve si el mensaje **era suyo**: los que no lo son siguen su camino
+    /// hacia la entrada de control. Consumir de más dejaría los knobs mudos al
+    /// elegir `External`.
+    ///
+    /// **El filtro por fuente está aquí y en un solo sitio.** Con `Internal` no
+    /// se consume nada, así que un maestro puede estar mandando Start, Stop y
+    /// clock por el mismo puerto del que llegan los knobs sin que pase nada.
+    ///
+    /// **Lo llama el hilo de recepción de CoreMIDI, sin saltar al principal**, y
+    /// con el instante que trae el paquete: el reloj vive de cuándo llegó cada
+    /// tick, y una cola de por medio metería su propio retraso en la
+    /// estimación.
+    ///
+    /// Realtime: llamado desde el hilo de recepción de CoreMIDI.
+    /// Sin asignaciones, sin locks, sin await.
+    @discardableResult
+    public func receive(_ message: MIDIMessage, atHostTime hostTime: UInt64) -> Bool {
+        guard followsExternalClock.value else { return false }
+
+        switch message {
+        case .timingClock, .start, .stop:
+            return true
+        case .noteOn, .noteOff, .controlChange:
+            return false
+        }
     }
 
     /// Publica los dieciséis Tracks. Se recogen en la ventana siguiente.
