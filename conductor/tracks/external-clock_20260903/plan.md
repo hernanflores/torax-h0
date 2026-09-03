@@ -21,16 +21,16 @@ track se alarga.
 
 ## FASE 1: LAS DOS DESVIACIONES QUEDAN ESCRITAS
 
-- [ ] Task: Enmendar `tech-stack.md` — el tempo deja de ser fijo (NFR5)
-  - [ ] Enmienda fechada 2026-09-03 en *Arquitectura de timing*: el `Tempo` de la
+- [x] Task: Enmendar `tech-stack.md` — el tempo deja de ser fijo (NFR5) [da89a79]
+  - [x] Enmienda fechada 2026-09-03 en *Arquitectura de timing*: el `Tempo` de la
         `MusicalTimeline` era constante desde el Play y pasa a poder derivarse de
         un reloj externo; el origen de la rejilla, que la enmienda del 2026-08-30
         ya movió a `Play + presupuesto`, pasa además a **corregirse en vuelo** una
         vez por negra.
-  - [ ] Dejar escrito **qué se conserva**, que es lo que importa: se sigue
+  - [x] Dejar escrito **qué se conserva**, que es lo que importa: se sigue
         sellando hacia el futuro y el jitter sigue sin depender de cuándo
         despierta el hilo. Lo que cambia es de dónde sale el número del periodo.
-  - [ ] Dejar escrita la alternativa descartada —emitir al recibir cada tick— y
+  - [x] Dejar escrita la alternativa descartada —emitir al recibir cada tick— y
         por qué: devuelve el jitter al planificador del SO, y ya no hay arnés que
         mida ese daño en el modo esclavizado.
 - [ ] Task: Anotar en `product.md` que el reloj deja de ser solo interno (NFR5)
