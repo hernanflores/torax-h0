@@ -141,7 +141,16 @@ public final class SchedulerThread: @unchecked Sendable {
 
     public var isRunning: Bool { running.value }
 
-    public func start() {
+    /// Arranca el bucle.
+    ///
+    /// **El origen se puede fijar desde fuera**, y lo hace el arranque por reloj
+    /// externo: la rejilla tiene que nacer en el instante del Start del maestro,
+    /// no en el momento en que este hilo llegue a preguntar la hora. Entre los
+    /// dos hay el retraso de crear un hilo, que es pequeño pero no es cero y no
+    /// tiene por qué pagarlo la fase.
+    ///
+    /// Sin él, el origen es el instante en que arranca el bucle, como siempre.
+    public func start(atHostTime origin: UInt64? = nil) {
         guard !running.value else { return }
         running.value = true
 
@@ -159,7 +168,8 @@ public final class SchedulerThread: @unchecked Sendable {
                 cyclePlaybackClock: cyclePlaybackClock,
                 mutes: mutes,
                 handler: handler,
-                running: running
+                running: running,
+                origin: origin
             )
         }
         thread.name = "com.toraxh0.scheduler"
@@ -222,7 +232,8 @@ public final class SchedulerThread: @unchecked Sendable {
         cyclePlaybackClock: CyclePlaybackClock?,
         mutes: MuteMask?,
         handler: StepHandler,
-        running: AtomicFlag
+        running: AtomicFlag,
+        origin: UInt64? = nil
     ) {
         // Con Pattern se recorren los dieciséis; sin él, la vía del arnés. Las
         // dos construyen el mismo scheduler.
@@ -232,7 +243,7 @@ public final class SchedulerThread: @unchecked Sendable {
                     tempo: configuration.timeline.tempo, pattern: $0,
                     playbackClock: cyclePlaybackClock, mutes: mutes)
             } ?? PatternScheduler(timeline: configuration.timeline, material: material)
-        let startHostTicks = HostClock.now()
+        let startHostTicks = origin ?? HostClock.now()
         let sleepNanoseconds = UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))
 
         // **El origen de la rejilla no es el instante de Play, sino

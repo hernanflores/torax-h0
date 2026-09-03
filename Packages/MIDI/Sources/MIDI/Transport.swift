@@ -63,7 +63,21 @@ public final class Transport: @unchecked Sendable {
         set { followsExternalClock.value = newValue == .external }
     }
 
-    private let playheadClock = PlayheadClock()
+    /// Armado: la app pidió sonar y espera el Start del maestro.
+    ///
+    /// **Es un estado del transporte, no de la pantalla**, porque quien lo mira
+    /// para decidir si un Start arranca es el hilo de recepción de CoreMIDI.
+    private let armed = AtomicFlag(false)
+
+    /// Si el transporte espera el Start del maestro.
+    ///
+    /// Sonando ya no está armado: está tocando.
+    public var isArmed: Bool { armed.value }
+
+    /// Interno y no privado para que los tests puedan comprobar **contra qué
+    /// instante nace la rejilla**, que es lo que el arranque por Start del
+    /// maestro cambia.
+    let playheadClock = PlayheadClock()
     private let cyclePlaybackClock = CyclePlaybackClock()
 
     private var scheduler: SchedulerThread?
@@ -268,8 +282,16 @@ public final class Transport: @unchecked Sendable {
         guard followsExternalClock.value else { return false }
 
         switch message {
-        case .timingClock, .start, .stop:
+        case .start:
+            // **Solo dispara si la app lo pidió.** El transporte lo decide la
+            // app; el maestro decide *cuándo*. Un Start sobre un transporte que
+            // nadie armó arrancaría música que nadie pidió.
+            if armed.value { startPlaying(atHostTime: hostTime) }
             return true
+
+        case .timingClock, .stop:
+            return true
+
         case .noteOn, .noteOff, .controlChange:
             return false
         }
@@ -288,6 +310,30 @@ public final class Transport: @unchecked Sendable {
     /// Starts playback using the currently published track. Subsequent scheduler events are emitted as MIDI notes.
     public func play() {
         guard !isPlaying else { return }
+
+        // **Con reloj externo, Play arma y no suena.** Manda un solo transporte:
+        // la app pide sonar y el maestro decide cuándo, así que la música
+        // empieza con su Start. La pantalla lo enseña como `Waiting for clock`.
+        guard clockSource == .internal else {
+            armed.value = true
+            return
+        }
+
+        startPlaying()
+    }
+
+    /// Arranca el bucle de verdad.
+    ///
+    /// **Es el camino único**, venga de `play()` con reloj interno o del Start
+    /// del maestro: dos caminos distintos serían dos formas de empezar a sonar
+    /// que habría que mantener iguales.
+    ///
+    /// El origen viene de fuera cuando lo dispara el maestro: la rejilla nace en
+    /// el instante de su Start y no cuando este hilo llegue a preguntar la hora.
+    ///
+    /// Realtime: puede llamarse desde el hilo de recepción de CoreMIDI.
+    private func startPlaying(atHostTime origin: UInt64? = nil) {
+        armed.value = false
 
         // Los dieciséis con los que se arranca, leídos una sola vez: el
         // scheduler construye con ellos **una rejilla por Track**, cada una con
@@ -329,7 +375,7 @@ public final class Transport: @unchecked Sendable {
             )
         }
         scheduler = thread
-        thread.start()
+        thread.start(atHostTime: origin)
     }
 
     /// Para el reloj y apaga lo que estuviera sonando.
@@ -375,6 +421,12 @@ public final class Transport: @unchecked Sendable {
     /// - Sends an All Notes Off message and note-off messages for pitches in the last published track.
     /// - Does nothing when playback is already stopped.
     public func stop() {
+        // **Desarmar también es parar.** Con reloj externo, Play deja el
+        // transporte esperando el Start; Stop tiene que deshacer eso aunque no
+        // hubiera empezado a sonar, o el maestro arrancaría música que la app ya
+        // no pide.
+        armed.value = false
+
         guard let scheduler else { return }
         scheduler.stop()
         self.scheduler = nil
