@@ -349,7 +349,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: Sincronía de reloj externo — el BeatStep Pro manda el tempo**
+- [~] **Track: Sincronía de reloj externo — el BeatStep Pro manda el tempo**
   *Link: [conductor/tracks/external-clock_20260903/index.md](./tracks/external-clock_20260903/index.md)*
 
   Planificado el 2026-09-03, en seis fases. La app deja de tener un tempo propio
