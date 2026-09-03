@@ -1,0 +1,21 @@
+Tarea: Enmendar `tech-stack.md` — el tempo deja de ser fijo (Fase 1, NFR5)
+
+Qué cambia
+- Enmienda fechada 2026-09-03 en *Arquitectura de timing*: el `Tempo` de la
+  `MusicalTimeline` pasa a poder derivarse de un clock externo a 24 ppqn, y el
+  origen de la rejilla pasa a corregirse en vuelo una vez por negra.
+- Fila «Reloj» del Resumen: añade «interno o esclavo de un clock MIDI externo».
+
+Por qué
+El Task Workflow §8 exige documentar la desviación antes de implementar, y esta
+lo es dos veces: la sección declara el tempo fijo desde Play y el origen fijado
+al arrancar. La enmienda deja escrito lo que NO cambia —el look-ahead, y con él
+la propiedad de que el jitter no dependa de cuándo despierta el hilo— porque es
+lo que un lector futuro daría por perdido al leer «reloj esclavo».
+
+También queda escrita la alternativa descartada (emitir al recibir cada tick) con
+su motivo: devuelve el jitter al planificador del SO y su coste no se podría
+acotar, porque el arnés no sabe medir siguiendo a un maestro externo.
+
+Ficheros
+- conductor/tech-stack.md (modificado)
