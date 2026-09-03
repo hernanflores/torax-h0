@@ -186,6 +186,14 @@ track se alarga.
 ## FASE 6: DISPOSITIVO Y MEDICIÓN
 
 - [~] Task: Verificar los diez criterios de aceptación en iPad (NFR6)
+  - [x] **Primera pasada, 2026-09-03: falló y encontró un defecto real.** La app
+        se quedaba en `Waiting for clock` para siempre y el tempo del BeatStep no
+        movía nada. Causa: `Transport.receive` no tenía ningún llamador — la
+        Fase 4 lo implementó con tests y la Fase 5 cableó la pantalla, pero nadie
+        conectó el callback de `CoreMIDIInput` con él. Arreglado en `03be820`,
+        junto con la entrega del instante del paquete, que estaba anotada como
+        hallazgo de la Fase 4 y se había quedado sin hacer.
+  - [ ] Segunda pasada, con el arreglo instalado.
   - [ ] BeatStep Pro como maestro y un sinte recibiendo; recorrer los criterios 1
         a 9 y anotar cada resultado.
   - [ ] El criterio 4 —dos minutos sin separarse— es el que **no tiene número**
