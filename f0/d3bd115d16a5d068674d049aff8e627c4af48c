@@ -16,3 +16,25 @@ tomada — es la limitación 2 de la spec del track.
 
 Ficheros
 - conductor/product.md (modificado)
+
+---
+
+Verificación de fase — FASE 1: LAS DOS DESVIACIONES QUEDAN ESCRITAS
+
+Tests automáticos (rama feat/external-clock)
+- swift test --package-path Packages/Engine → 427 tests, 0 fallos
+- swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests' → 21 tests, 1 omitido, 0 fallos
+- swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests → 437 tests, 0 fallos
+Sin rastro del flake `clientCreationFailed(-50)`.
+
+Cobertura: no aplica. La fase no toca código — solo conductor/tech-stack.md y
+conductor/product.md.
+
+Verificación manual propuesta
+1. Leer la enmienda del 2026-09-03 en tech-stack.md: qué cambia (tempo no fijo,
+   origen corregible en vuelo), qué se conserva (el look-ahead), la alternativa
+   descartada, y la fila «Reloj» del Resumen.
+2. Leer la nota del 2026-09-03 en product.md: no contradice la línea del MVP,
+   menciona el tempo interno editable y deja claro que la app no emite clock.
+
+Confirmación del usuario: «Aprobado» (2026-09-03).
