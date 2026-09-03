@@ -161,16 +161,16 @@ revisar el diseño antes de seguir.
 
 ## FASE 7: VERIFICACIÓN EN DISPOSITIVO Y CIERRE
 
-- [~] Task: Pasada completa en iPad con el BeatStep Pro
-  - [ ] Los diez criterios de aceptación de la spec, uno a uno, con el sinte
+- [x] Task: Pasada completa en iPad con el BeatStep Pro [1fe7fce]
+  - [x] Los diez criterios de aceptación de la spec, uno a uno, con el sinte
         externo escuchando.
-  - [ ] Atención especial al criterio 1 con **Sustain al 200% y una Division
+  - [x] Atención especial al criterio 1 con **Sustain al 200% y una Division
         larga**: es el caso que motiva FR4, y sin él la nota colgaría segundos.
-  - [ ] Atención especial al criterio 2: desmutear tiene que devolver el Track
+  - [x] Atención especial al criterio 2: desmutear tiene que devolver el Track
         **en fase**, no desde el principio. Se oye, no se deduce.
-  - [ ] Registrar en `device-verification.md` qué se probó y qué se oyó. **Sin
+  - [x] Registrar en `device-verification.md` qué se probó y qué se oyó. **Sin
         medición de jitter** (NFR6).
-- [ ] Task: Cierre del track
+- [~] Task: Cierre del track
   - [ ] Repasar que las limitaciones conocidas de la spec siguen siendo las tres
         que dice, y añadir las que la implementación haya descubierto.
   - [ ] Actualizar `conductor/tracks.md` con el resultado.
