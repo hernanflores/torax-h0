@@ -122,11 +122,11 @@ track se alarga.
   - [x] Tests (Red): un Start recibido **sin haber armado** no arranca nada.
   - [x] Implementación (Green): estado armado en `Transport`, y el origen fijado
         en el instante del Start como hoy se fija en el de Play.
-- [ ] Task: Parar con el Stop externo, sin dejar notas colgadas (FR5)
-  - [ ] Tests (Red): el Stop externo apaga por el mismo camino que `stop()`
+- [x] Task: Parar con el Stop externo, sin dejar notas colgadas (FR5) [a258e30]
+  - [x] Tests (Red): el Stop externo apaga por el mismo camino que `stop()`
         —`CC 123` por canal más el barrido de alturas— y desarma.
-  - [ ] Tests (Red): un Stop con el transporte ya parado no hace nada ni falla.
-  - [ ] Implementación (Green): reutilizar el barrido existente; **no
+  - [x] Tests (Red): un Stop con el transporte ya parado no hace nada ni falla.
+  - [x] Implementación (Green): reutilizar el barrido existente; **no
         duplicarlo**.
 - [ ] Task: Seguir el tempo y re-anclar la fase (FR6)
   - [ ] Tests (Red): con ticks a 120 BPM, los instantes programados coinciden con
