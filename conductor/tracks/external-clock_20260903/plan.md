@@ -183,7 +183,7 @@ track se alarga.
         pantalla. Se movió a la columna derecha.)*
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 6: DISPOSITIVO Y MEDICIÓN
+## FASE 6: DISPOSITIVO Y MEDICIÓN [checkpoint: 2edbcae]
 
 - [x] Task: Verificar los diez criterios de aceptación en iPad (NFR6)
   - [x] **Primera pasada, 2026-09-03: falló y encontró un defecto real.** La app
@@ -220,10 +220,10 @@ track se alarga.
         junto a la serie de mediciones anteriores.
   - [x] Anotar que el modo **esclavizado** queda sin número y por qué (limitación
         5).
-- [~] Task: Cerrar el track
-  - [ ] Suite completa de `Engine` y `MIDI`, con la partición de CI para `MIDI`;
+- [x] Task: Cerrar el track [PR #30]
+  - [x] Suite completa de `Engine` y `MIDI`, con la partición de CI para `MIDI`;
         cobertura contra los umbrales.
-  - [ ] Build de la app para iPadOS.
-  - [ ] Pull Request contra `main`, con los checks en verde y el cuerpo corto que
+  - [x] Build de la app para iPadOS.
+  - [x] Pull Request contra `main`, con los checks en verde y el cuerpo corto que
         exige `workflow.md`.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
