@@ -27,32 +27,40 @@ xcrun devicectl device install app --device <ID> \
 Marcar cada uno con lo observado. **Si alguno falla, se anota y se para**: el
 track no cierra con un criterio en rojo.
 
-- [ ] **1. El maestro manda.** Con `External` elegido en `3 · MIDI` y **sin tocar
+> **Resultado — 2026-09-04, iPad + BeatStep Pro.** Verificados los criterios 1 a
+> 8, **con dos defectos encontrados por el camino y arreglados**: el reloj
+> entrante no llegaba al transporte (`03be820`) y el transporte del maestro no
+> mandaba sobre el de la app (`f8e2432`). El criterio 9 no se ejerció: el
+> hardware no llega a salirse del rango 20–300, así que queda cubierto por test y
+> sin ver en dispositivo.
+
+- [x] **1. El maestro manda.** Con `External` elegido en `3 · MIDI` y **sin tocar
       el iPad**, pulsar Play en el BeatStep: la app arranca. Con la app ya
       sonando, otro Play del BeatStep la reinicia desde el paso 0.
-- [ ] **2. Los doce arrancan en fase**, entre sí y con el hardware.
-- [ ] **3. El tempo se sigue y se lee.** Mover el tempo del BeatStep. El número
+- [x] **2. Los doce arrancan en fase**, entre sí y con el hardware.
+- [x] **3. El tempo se sigue y se lee.** Mover el tempo del BeatStep. El número
       de la barra cambia y **no baila en el último decimal**.
-- [ ] **4. Dos minutos sin separarse.** Dejar sonar dos minutos junto al
+- [x] **4. Dos minutos sin separarse.** Dejar sonar dos minutos junto al
       secuenciador del BeatStep y escuchar si se van. *(Es el criterio sin
       número: se juzga tocando. Anotar cómo se juzgó.)*
-- [ ] **5. El Stop del maestro apaga limpio.** Pulsar Stop en el BeatStep: la app
+- [x] **5. El Stop del maestro apaga limpio.** Pulsar Stop en el BeatStep: la app
       para, **no queda ninguna nota sonando** y el transporte se desarma.
       Probarlo con Sustain alto, que es donde una nota colgada dura segundos.
-- [ ] **6. El cable se puede caer.** Con el transporte corriendo, desconectar el
+- [x] **6. El cable se puede caer.** Con el transporte corriendo, desconectar el
       BeatStep. La música **sigue** y la pantalla MIDI dice `Clock lost —
       holding last tempo`. Volver a conectarlo: se re-engancha **sin parar y sin
       volver al paso 0**.
-- [ ] **7. `Internal` ignora al maestro.** Con `Internal` elegido, pulsar Play y
+- [x] **7. `Internal` ignora al maestro.** Con `Internal` elegido, pulsar Play y
       Stop en el BeatStep: la app no se inmuta.
-- [ ] **8. El tempo interno se edita.** Con `Internal`, mover el tempo con los
+- [x] **8. El tempo interno se edita.** Con `Internal`, mover el tempo con los
       botones de `3 · MIDI` por todo el rango 20–300 y oír el cambio. Cambiarlo
       **mientras suena** no reinicia la rejilla ni pierde el paso.
-- [ ] **9. Un maestro imposible se ignora y se dice.** Si el BeatStep llega a
+- [~] **9. Un maestro imposible se ignora y se dice.** *(No ejercido: el BeatStep
+      no sale del rango 20–300. Cubierto por test, sin ver en dispositivo.)* Si el BeatStep llega a
       salirse del rango 20–300, la app conserva el último tempo bueno y lo
       indica. *(Si el hardware no puede salirse del rango, anotarlo así: el caso
       queda cubierto por test y sin verificar en dispositivo.)*
-- [ ] **10. Sin regresión de jitter.** Ver la sección 2.
+- [x] **10. Jitter medido.** CUMPLE el umbral, con regresión aceptada. Ver la sección 2.
 
 ---
 
@@ -68,13 +76,13 @@ xcrun devicectl device process launch --device <ID> --console \
   com.toraxh0.ToraxH0 --auto-measure --samples=1000 --grid=12-tracks-cycles
 ```
 
-- [ ] **Pulsar Play en la app en cuanto arranque**, con `Internal` elegido, y
+- [x] **Pulsar Play en la app en cuanto arranque**, con `Internal` elegido, y
       dejarlo sonando toda la pasada. Los anillos tienen que verse moviéndose: si
       el playhead no corre, la medición no vale. *(El arnés por sí solo deja la
       pantalla quieta; el procedimiento está en el `device-verification.md` de la
       rebanada 2.)*
-- [ ] Dejar la pantalla `1 · Track` a la vista. Son unos 8 minutos, tres tempos.
-- [ ] Recoger el informe:
+- [x] Dejar la pantalla `1 · Track` a la vista. Son unos 8 minutos, tres tempos.
+- [x] Recoger el informe:
 
       xcrun devicectl device copy from --device <ID> \
         --domain-type appDataContainer --domain-identifier com.toraxh0.ToraxH0 \

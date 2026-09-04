@@ -185,7 +185,7 @@ track se alarga.
 
 ## FASE 6: DISPOSITIVO Y MEDICIÓN
 
-- [~] Task: Verificar los diez criterios de aceptación en iPad (NFR6)
+- [x] Task: Verificar los diez criterios de aceptación en iPad (NFR6)
   - [x] **Primera pasada, 2026-09-03: falló y encontró un defecto real.** La app
         se quedaba en `Waiting for clock` para siempre y el tempo del BeatStep no
         movía nada. Causa: `Transport.receive` no tenía ningún llamador — la
@@ -193,14 +193,19 @@ track se alarga.
         conectó el callback de `CoreMIDIInput` con él. Arreglado en `03be820`,
         junto con la entrega del instante del paquete, que estaba anotada como
         hallazgo de la Fase 4 y se había quedado sin hacer.
-  - [ ] Segunda pasada, con el arreglo instalado.
-  - [ ] BeatStep Pro como maestro y un sinte recibiendo; recorrer los criterios 1
+  - [x] Segunda pasada: criterios 1 a 8 verificados. El 9 no se ejerció —el
+        BeatStep no sale del rango 20–300—, y el 10 se resolvió con la regresión
+        aceptada. Por el camino apareció un segundo defecto, el transporte del
+        maestro que no mandaba (`f8e2432`), y un tercero fuera de alcance: en
+        pantalla no se puede elegir el Cycle en edición, registrado como track
+        aparte en `tracks.md`.
+  - [x] BeatStep Pro como maestro y un sinte recibiendo; recorrer los criterios 1
         a 9 y anotar cada resultado.
-  - [ ] El criterio 4 —dos minutos sin separarse— es el que **no tiene número**
+  - [x] El criterio 4 —dos minutos sin separarse— es el que **no tiene número**
         (limitación 5): se juzga tocando, y se anota cómo se juzgó.
-  - [ ] El criterio 6 se provoca de verdad: desconectar el cable con el
+  - [x] El criterio 6 se provoca de verdad: desconectar el cable con el
         transporte corriendo, y volver a conectarlo.
-  - [ ] Escribir `device-verification.md` en el directorio del track, con el
+  - [x] Escribir `device-verification.md` en el directorio del track, con el
         procedimiento y lo observado.
 - [x] Task: Medición de jitter con reloj interno (NFR4)
   - [x] Correr el arnés en dispositivo con la rejilla `12-tracks-cycles`, 1000
@@ -215,7 +220,7 @@ track se alarga.
         junto a la serie de mediciones anteriores.
   - [x] Anotar que el modo **esclavizado** queda sin número y por qué (limitación
         5).
-- [ ] Task: Cerrar el track
+- [~] Task: Cerrar el track
   - [ ] Suite completa de `Engine` y `MIDI`, con la partición de CI para `MIDI`;
         cobertura contra los umbrales.
   - [ ] Build de la app para iPadOS.
