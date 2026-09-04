@@ -16,6 +16,14 @@ final class MIDIEndpointSelectionTests: XCTestCase {
     private var drums: MIDIEndpointInfo { destination(2, "Digitakt") }
     private var loopback: MIDIEndpointInfo { destination(9, VirtualLoopback.defaultName) }
 
+    /// El endpoint que crea el arnés de medición.
+    ///
+    /// **No se llama igual que el de loopback**, y ahí estaba el fallo: estos
+    /// tests solo probaban el otro nombre, así que pasaban en verde mientras el
+    /// del arnés —el único que aparece de verdad durante una medición— se colaba
+    /// en la lista. Encontrado el 2026-09-03.
+    private var harness: MIDIEndpointInfo { destination(10, VirtualLoopback.measurementName) }
+
     // MARK: - La lista refleja los destinos del sistema
 
     func testAvailableDestinationsMirrorTheSystemList() {
@@ -50,8 +58,25 @@ final class MIDIEndpointSelectionTests: XCTestCase {
     /// su endpoint virtual aparece en la lista del sistema. Elegirlo mandaría
     /// las notas al medidor en vez de al sintetizador.
     func testMeasurementEndpointIsNotEligible() {
-        let selection = MIDIEndpointSelection(.destination, discovering: [synth, loopback, drums])
+        let selection = MIDIEndpointSelection(
+            .destination, discovering: [synth, loopback, harness, drums])
         XCTAssertEqual(selection.available, [synth, drums])
+    }
+
+    /// **El del arnés, por su nombre propio.** Es el que existe mientras se mide,
+    /// y elegirlo mandaría las notas de la app al medidor.
+    func testTheHarnessEndpointIsNotEligibleEither() {
+        let selection = MIDIEndpointSelection(.destination, discovering: [synth, harness])
+
+        XCTAssertEqual(selection.available, [synth])
+        XCTAssertEqual(selection.selecting(harness).selected, synth)
+    }
+
+    /// Como fuente no se filtra: son destinos virtuales y nunca aparecen entre
+    /// las entradas.
+    func testOwnEndpointsAreNotFilteredAsSources() {
+        let selection = MIDIEndpointSelection(.source, discovering: [harness])
+        XCTAssertEqual(selection.available, [harness])
     }
 
     func testMeasurementEndpointCannotBeSelected() {
