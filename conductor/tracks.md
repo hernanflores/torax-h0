@@ -411,7 +411,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: Feedback visual en el controlador**
+- [~] **Track: Feedback visual en el controlador**
   *Link: [conductor/tracks/controller-feedback_20260904/index.md](./tracks/controller-feedback_20260904/index.md)*
 
   **Planificado el 2026-09-04, en siete fases.** Sale de la misma petición que la sincronía —2026-09-03— y se
