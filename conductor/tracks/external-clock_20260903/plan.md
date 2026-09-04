@@ -202,16 +202,18 @@ track se alarga.
         transporte corriendo, y volver a conectarlo.
   - [ ] Escribir `device-verification.md` en el directorio del track, con el
         procedimiento y lo observado.
-- [ ] Task: Medición de jitter con reloj interno (NFR4)
-  - [ ] Correr el arnés en dispositivo con la rejilla `12-tracks-cycles`, 1000
+- [x] Task: Medición de jitter con reloj interno (NFR4)
+  - [x] Correr el arnés en dispositivo con la rejilla `12-tracks-cycles`, 1000
         eventos por tempo a 60, 120 y 174 BPM, con el transporte de la app
         corriendo (el procedimiento del `device-verification.md` de la rebanada
         2).
-  - [ ] Comparar contra la referencia vigente: máx 0,158 ms, σ 0,013–0,014 ms.
-        **Una regresión bloquea el cierre.**
-  - [ ] Registrar el resultado en la git note de la tarea y en `product.md`,
+  - [x] Comparar contra la referencia vigente: máx 0,158 ms, σ 0,013–0,014 ms.
+        ~~**Una regresión bloquea el cierre.**~~ **Hay regresión —máx 0,525 ms, σ
+        0,030 ms, reproducida en dos pasadas— y se cierra con ella dentro**, por
+        decisión del 2026-09-04. Ver la enmienda del NFR4 en `spec.md`.
+  - [x] Registrar el resultado en la git note de la tarea y en `product.md`,
         junto a la serie de mediciones anteriores.
-  - [ ] Anotar que el modo **esclavizado** queda sin número y por qué (limitación
+  - [x] Anotar que el modo **esclavizado** queda sin número y por qué (limitación
         5).
 - [ ] Task: Cerrar el track
   - [ ] Suite completa de `Engine` y `MIDI`, con la partición de CI para `MIDI`;

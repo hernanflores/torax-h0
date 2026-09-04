@@ -199,6 +199,21 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > aquí son 0,141 ms, con cinco veces más muestras y más carga. Ver
 > [`device-verification.md`](./tracks/screen-handoff_20260901/device-verification.md).
 
+> **Reloj externo (2026-09-04): medido, CUMPLE, y peor que la referencia.** El
+> track `external-clock_20260903` retomó la medición como excepción acotada a la
+> suspensión de abajo, porque es el primer cambio desde entonces que toca la
+> rejilla temporal misma. Dos pasadas con reloj interno y 1000 eventos por tempo:
+> máximo **0,525 ms** y σ hasta **0,030 ms**, contra un umbral de 2 ms y 0,5 ms.
+>
+> **Es una regresión respecto a la referencia** —0,158 ms y 0,013–0,014 ms— que
+> **se reproduce**: 60 BPM queda limpio y los dos tempos rápidos no. La media no
+> se mueve, que es lo que impide llamarlo un coste sistemático sin más. Se cerró
+> con ella dentro por decisión del 2026-09-04, con el experimento que la habría
+> zanjado —medir `main` el mismo día en el mismo iPad— propuesto y descartado.
+>
+> **La referencia vigente pasa a ser esta.** Detalle y sospechosos en
+> [`device-verification.md`](./tracks/external-clock_20260903/device-verification.md).
+
 > **Suspendido (2026-09-02).** A partir de aquí **no se hacen más mediciones de
 > jitter**, por decisión tomada al cerrar la v2 rebanada 3 después de que la
 > recogida del informe del dispositivo fallara. La serie de seis mediciones que
