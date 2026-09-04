@@ -40,3 +40,30 @@ en edición, así que el Pattern inicial deja su Cycle en el hueco 0 y los otros
 quince siguen siendo el vacío.
 
 51 tests, 0 fallos. Persistence al 100,00% de líneas.
+
+--- Phase Verification & Checkpoint: Fase 3 (Los bytes llegan al disco sin romperse) ---
+
+Cobertura de tests de la fase: BankStore.swift -> BankStoreTests.swift;
+CycleRun y el cambio de TrackRecord -> RecordRoundTripTests, BankRecordTests,
+InvalidValueTests; el coste -> BankFileCostTests.
+
+Tests ejecutados:
+  swift test --package-path Packages/Persistence -> 51 tests, 0 fallos
+  Cobertura: 100,00% de líneas (>=90%).
+  Engine sin cambios en esta fase: 478 tests.
+
+Lo que la fase decidió, con la medida delante:
+- El formato cambió: los Cycles se guardan en series. Vacío 1,5 MB -> 136 KB.
+- La escritura sale del hilo principal; la lectura se queda.
+
+Verificación manual propuesta al usuario — tres comportamientos del disco, sin
+pantalla todavía:
+1. Un fichero ilegible se aparta, no se borra, y apartar dos veces no machaca
+   lo apartado antes.
+2. 'Versión desconocida' se distingue de 'fichero roto', para que la pantalla
+   pueda decir cuál.
+3. La atomicidad se apoya en .atomic; provocar una interrupción real exigiría
+   matar el proceso a mitad de escritura, y eso está escrito como lo que no se
+   prueba.
+
+Confirmación del usuario: 'Si' (2026-09-04).
