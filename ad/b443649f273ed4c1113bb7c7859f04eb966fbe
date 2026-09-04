@@ -1,0 +1,25 @@
+Task: Mute y solo no se guardan, y el tempo sí (Fase 1, persistence_20260904)
+
+Tercera de las cuatro tareas de documentación de la Fase 1. Cierra una decisión
+que llevaba abierta desde el 2026-09-02 por escrito y en dos ficheros.
+
+product.md:
+- La nota de mute/solo decía 'no se guardará con el Project salvo que la
+  persistencia decida lo contrario'. Decide: no. Al abrir la app suenan los
+  doce.
+- 'Fuera de v1' gana la nota de qué entra con la rebanada 4 —un Bank, sus
+  dieciséis Patterns, Autosave y Save/Reload— y qué sigue fuera: los otros
+  quince Banks, Project, Backup Project y el cambio de Pattern en vuelo.
+- El tempo pasa a guardarse con el Bank, como pide la Pre Spec.
+
+Pre Spec Torax H-0.md:
+- La nota de mute/solo confirma, ahora que hay disco, que 'una capa que no se
+  guarda con el material' sigue en pie.
+- La sección Guardado anota que de sus tres líneas se implementan dos y media:
+  Backup Project no existe, así que 'úsalo antes de un directo' aún no se
+  cumple.
+
+El *why*: lo que se guarda es material; mute y solo son mezcla. Guardarlos los
+ataría a un estado que no es suyo — cambiar de Pattern movería los silencios.
+
+Ficheros: conductor/product.md, Pre Spec Torax H-0.md (modificados), plan.md.
