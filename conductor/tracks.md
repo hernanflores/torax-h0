@@ -349,7 +349,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: Sincronía de reloj externo — el BeatStep Pro manda el tempo**
+- [x] **Track: Sincronía de reloj externo — el BeatStep Pro manda el tempo** — el BeatStep manda tempo y transporte, verificado en iPad; jitter CUMPLE con regresión aceptada
   *Link: [conductor/tracks/external-clock_20260903/index.md](./tracks/external-clock_20260903/index.md)*
 
   Planificado el 2026-09-03, en seis fases. La app deja de tener un tempo propio
@@ -380,6 +380,34 @@ escalón es el que se nota.
 
   **Deja fuera** Continue y Song Position, la app como maestro de clock, y todo
   el feedback visual, que es el track de abajo.
+
+  **Cerrado el 2026-09-04**, PR [#30](https://github.com/hernanflores/torax-h0/pull/30).
+  Seis fases, `Engine` al 98,61% y `MIDI` al 92,05%. El núcleo acabó siendo
+  `TempoMap`: el tempo estaba horneado en `TrackScheduler` igual que la Division
+  —cambiar la duración del Step reubica los Steps futuros contra un origen que ya
+  pasó— así que en vez de rehacer las doce rejillas se estira la línea de tiempo y
+  se rebasa en cada cambio. Es legítimo porque el cambio llega a los doce a la
+  vez, que es justo lo que impidió hacerlo para la Division en `cycles`.
+
+  **Tres defectos los encontró el dispositivo, no los tests.** `Transport.receive`
+  no tenía ningún llamador —la lógica estaba escrita y probada, y nadie la
+  conectó al callback de CoreMIDI—; el transporte del maestro no mandaba sobre el
+  de la app, que resultó no ser intuitivo con el hardware delante y cambió el FR4;
+  y el endpoint del arnés se colaba en la lista de destinos porque el filtro y su
+  test compartían el mismo nombre equivocado. Los dos primeros vivían en el
+  cableado de `App`, que no tiene target de test.
+
+  **Un test sí encontró uno**, y caro: al volver el clock tras un corte, la
+  primera negra se medía a través del hueco —dos segundos dan 22,7 BPM, dentro del
+  rango válido, así que el rechazo por rango no lo salvaba—.
+
+  **Cerrado con regresión de jitter dentro, y es la primera vez.** Máx 0,525 ms y
+  σ 0,030 ms contra una referencia de 0,158 y 0,013–0,014: CUMPLE el umbral con
+  4,3× de margen y triplica la referencia, reproducido en dos pasadas —60 BPM
+  limpio, 120 y 174 degradados—. Su NFR4 decía que una regresión bloquea el
+  cierre; se cerró igualmente por decisión del 2026-09-04, con el experimento que
+  lo habría zanjado —medir `main` el mismo día— propuesto y descartado. **La
+  referencia vigente del proyecto pasa a ser este número.**
 
 ---
 
