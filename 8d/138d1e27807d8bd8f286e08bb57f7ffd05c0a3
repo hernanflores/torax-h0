@@ -1,0 +1,21 @@
+Task: La E/S no toca el camino de tiempo real (Fase 5, persistence_20260904)
+
+Es una revisión, no código. Lo comprobado:
+
+  git diff e50a249..HEAD -- LookAheadScheduler.swift SchedulerThread.swift
+      TrackScheduler.swift PatternHandoff.swift PatternScheduler.swift
+  -> vacío. Cero líneas cambiadas en todo el track.
+
+De Packages/MIDI/Sources solo cambian dos ficheros:
+- ControlInput.swift: el marco opcional en el init y setPattern. Los dos
+  corren en el hilo principal, y setPattern publica por el PatternHandoff que
+  ya existía — no hay una segunda vía hacia el scheduler.
+- MuteMask.swift: una línea reflowada por 'swift format --recursive Packages',
+  sin cambio semántico. Queda anotado porque es un fichero fuera del alcance
+  del track y conviene que nadie lo lea como una edición deliberada.
+
+La escritura del Autosave va en una Task.detached de prioridad utility, fuera
+del hilo principal. El hilo del scheduler sigue sin saber que existe un disco.
+
+Quality Gates: sin asignaciones, locks ni await nuevos en el camino del
+scheduler; las marcas '/// Realtime:' intactas.
