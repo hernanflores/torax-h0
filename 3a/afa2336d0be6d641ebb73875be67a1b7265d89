@@ -1,0 +1,43 @@
+Task: El `Bank` y la versión de esquema (Fase 2, persistence_20260904)
+
+Rojo antes de verde en los dos paquetes: 'cannot find Bank in scope' (Engine) y
+'cannot find BankFormat in scope' (Persistence). Verde: Engine 478 tests,
+Persistence 37 tests, 0 fallos.
+
+Ficheros creados:
+- Packages/Engine/Sources/Engine/Bank.swift — dieciséis Patterns, tempo, cuál
+  está activo, y hasMaterial(at:) para la matriz de la pantalla 5.
+- Packages/Engine/Tests/EngineTests/BankTests.swift — once tests.
+- Packages/Persistence/Sources/Persistence/BankRecord.swift — el registro con
+  schemaVersion en la raíz, y BankFormat como frontera pública del paquete.
+- Packages/Persistence/Tests/PersistenceTests/BankRecordTests.swift y
+  InvalidValueTests.swift.
+
+Modificados:
+- MusicalTime.swift — Tempo.default (120 BPM). Bajó del literal de
+  TransportModel: desde que el tempo es del Bank, su valor por defecto es del
+  dominio.
+- Engine.swift y EngineTests.swift — EngineSchema se queda vacío; su
+  schemaVersion se fue a PersistenceSchema.version.
+
+Cuatro decisiones:
+1. Bank es el primer nivel del modelo que NO cruza al hilo del scheduler —lo
+   que se publica sigue siendo un Pattern—, así que puede llevar un Array donde
+   Pattern y Track llevan tuplas inline. Dieciséis Patterns son ~592 KB: en una
+   tupla se copiarían enteros cada vez que cambia una nota.
+2. La versión del esquema se muda al paquete que define el formato. Dejarla en
+   el Engine habría hecho que el motor gobernara un fichero que no escribe.
+3. BankRecord y los otros tres registros son internos: la frontera pública es
+   BankFormat, y fuera se habla de Bank y de Data.
+4. El fichero de oro comprueba la FORMA, no la legibilidad: claves exactas por
+   nivel, dieciséis Patterns, doce Tracks, dieciséis Cycles. Si falla y el
+   cambio es deliberado, se sube la versión y se decide qué pasa con los
+   ficheros viejos antes de tocarlo.
+
+Enmienda al plan anotada en plan.md: el tipo Bank se construye en esta fase y
+no en la 4, porque el registro necesita algo a lo que traducir. La Fase 4 se
+queda con el comportamiento, que es lo que siempre fue suyo.
+
+Cobertura: Persistence 100,00% de líneas tras cubrir las dieciocho ramas de
+rechazo por nombre de campo —estaba en 85,32% con solo el camino feliz—.
+Engine 98,51%.
