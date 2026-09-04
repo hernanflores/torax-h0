@@ -1,0 +1,23 @@
+Task: El paquete `Persistence` existe y no arrastra nada (Fase 2, persistence_20260904)
+
+Rojo antes de verde: con el manifiesto y los tests escritos pero sin fuentes,
+SwiftPM falla con "target 'Persistence' referenced in product 'Persistence' is
+empty". Verde tras añadir Persistence.swift: 2 tests, 0 fallos.
+
+Ficheros creados:
+- Packages/Persistence/Package.swift — dependencia de ../Engine, target y
+  testTarget. iOS 17 / macOS 14, como los otros dos.
+- Packages/Persistence/Sources/Persistence/Persistence.swift — el enum
+  PersistenceSchema, vacío por ahora. No se llama como el módulo, por la misma
+  razón que EngineSchema no se llama Engine.
+- Packages/Persistence/Tests/PersistenceTests/DependencyBoundaryTests.swift —
+  dos tests: las fuentes no importan plataforma, UI ni MIDI; y ni
+  Engine/Package.swift ni MIDI/Package.swift mencionan Persistence.
+
+El *why*: la frontera se pone al nacer el paquete, no después. Es lo que hizo
+Engine en el timing-spike y por lo que hoy sigue puro. Y la asimetría con
+Engine está anotada en el propio test: Foundation aquí no está prohibido
+—JSONEncoder, Data y URL viven ahí— y allí sí; lo que se conserva es la regla
+que importa, no su letra.
+
+Engine sigue en 467 tests, 0 fallos.
