@@ -347,6 +347,92 @@ escalón es el que se nota.
   guarda con el Project—, la pantalla `5 · Tracks` con su vista de conjunto, y
   el mute de Patterns y Banks.
 
+---
+
+- [~] **Track: Sincronía de reloj externo — el BeatStep Pro manda el tempo**
+  *Link: [conductor/tracks/external-clock_20260903/index.md](./tracks/external-clock_20260903/index.md)*
+
+  Planificado el 2026-09-03, en seis fases. La app deja de tener un tempo propio
+  y constante —hoy es un literal de 120 BPM en `TransportModel`— y pasa a seguir
+  el **Start**, el **Stop** y el **reloj a 24 ppqn** del controlador.
+
+  **El look-ahead se conserva, y esa es la decisión.** El jitter del proyecto es
+  bueno porque los eventos se sellan hacia el futuro y no dependen de cuándo
+  despierta el hilo; seguir a un maestro no cambia eso. El tempo se **estima**
+  con los ticks y la **fase se re-ancla una vez por negra** — corregir tick a
+  tick metería el jitter del cable en cada evento, que es la alternativa
+  descartada por escrito.
+
+  **Quién manda lo decide el usuario, no el cable:** un selector
+  `Internal / External` en la pantalla `3 · MIDI`. Con `Internal`, un Start
+  entrante no interrumpe nada. Con `External`, Play **arma** y el maestro
+  dispara.
+
+  **El corte de clock no para la música:** sigue al último tempo conocido y la
+  pantalla lo dice. Eso obliga a que el tempo interno sea editable, así que se
+  entrega aquí.
+
+  **Retoma la medición de jitter**, suspendida el 2026-09-02, como excepción
+  acotada: es el primer cambio desde entonces que toca la rejilla temporal misma
+  y no la carga. Se mide con reloj interno, como regresión contra máx 0,158 ms y
+  σ 0,013–0,014 ms. **El modo esclavizado queda sin número** —el arnés no sabe
+  medir contra un maestro externo— y se juzga tocando.
+
+  **Deja fuera** Continue y Song Position, la app como maestro de clock, y todo
+  el feedback visual, que es el track de abajo.
+
+---
+
+- [ ] **Track: Feedback visual en el controlador**
+
+  Por planificar. Sale de la misma petición que la sincronía —2026-09-03— y se
+  separa por el mismo criterio que partió la rebanada 7 del MVP en preset y MIDI
+  Learn: **no comparten nada**. La sincronía toca la rejilla temporal y lleva
+  medición; esto toca la salida y lleva descubrimiento de hardware.
+
+  Lo decidido, para que planificarlo no vuelva a discutirlo:
+
+  - **Los pads siguen a la nota** del Track **seleccionado** —con doce sonando,
+    una luz de otro Track no se sabe de quién es—: se encienden con el note-on y
+    se apagan con el note-off, así que Sustain se ve. Sin temporizador propio.
+  - **Los step buttons** muestran selección y mute/solo, y **cómo se reparten se
+    decide en dispositivo**: qué sabe hacer ese LED —brillo, parpadeo, color—
+    está sin verificar, y la rebanada 7 enseñó a no dar por sabido el hardware.
+  - **El destino se deriva de la fuente elegida**, sin lista nueva: hoy la salida
+    va a un solo destino, el sinte, y hablarle al controlador es una segunda
+    salida.
+  - **Se apaga al parar el transporte**, y no en segundo plano ni al cambiar de
+    fuente — decidido así a sabiendas de que el controlador puede quedar con
+    luces huérfanas.
+  - **Entrega también `preset/README.md` y el JSON**, que hoy describen solo la
+    entrada.
+
+  **No generaliza a otro hardware.** Eso es MIDI Learn, rebanada 8 de la v1.
+
+---
+
+- [ ] **Track: En pantalla no se puede elegir qué Cycle se edita**
+
+  Encontrado el 2026-09-03 verificando el reloj externo en iPad. **El cursor de
+  edición se queda siempre en el Cycle 1**, así que todo giro de knob cae ahí y
+  los otros quince parecen copias que no guardan nada — que es exactamente lo que
+  son: nacen iguales y nunca reciben una edición.
+
+  **La causa es un gesto que falta, no el modelo.** `Track` lleva sus dos
+  cursores —el de reproducción y el de edición— y `replacingEditing(_:)` escribe
+  en el que toca; lo que no existe es la forma táctil de mover el de edición.
+  Pulsar un número en la fila de Cycles llama a `onActiveCyclesChange`
+  (`App/TrackSelectorView.swift`), que cambia **cuántos** se recorren, no cuál se
+  edita. La única vía es el knob 10 del BeatStep, CC 79.
+
+  **El reparto de gestos está decidido** (2026-09-03): **pulsar elige** el Cycle
+  en edición y **mantener pulsado cambia cuántos** están activos. El gesto
+  frecuente es el simple y el raro pide mantener, que es el mismo criterio con el
+  que los step buttons 15 y 16 hacen de modificadores de solo y mute.
+
+  Es de `cycles_20260901`, no del track del reloj externo: se separa por el mismo
+  criterio que partió la rebanada 7 del MVP.
+
 ## Defectos conocidos
 
 Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres

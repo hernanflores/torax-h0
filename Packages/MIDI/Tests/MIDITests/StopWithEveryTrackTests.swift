@@ -46,7 +46,9 @@ final class StopWithEveryTrackTests: XCTestCase {
                 balance["\(channel.number)/\(note.value)", default: 0] += 1
             case .noteOn(let channel, let note, _), .noteOff(let channel, let note, _):
                 balance["\(channel.number)/\(note.value)", default: 0] -= 1
-            case .controlChange:
+            // Ni el control change ni los de sistema encienden notas; los de
+            // sistema, además, el emisor no los produce.
+            case .controlChange, .timingClock, .start, .stop:
                 continue
             }
         }

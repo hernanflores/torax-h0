@@ -16,6 +16,15 @@ public struct Tempo: Equatable, Sendable {
         guard Self.validRange.contains(beatsPerMinute) else { return nil }
         self.beatsPerMinute = beatsPerMinute
     }
+
+    /// El tempo como se enseña: un decimal.
+    ///
+    /// **Existe por el reloj externo.** Un tempo estimado se mueve en las
+    /// milésimas de una negra a otra, y un último decimal que baila es ilegible
+    /// a un metro — que es el requisito de lectura de `product-guidelines.md`, no
+    /// una preferencia. Lo que se redondea es lo que se enseña; lo que suena
+    /// sigue usando el valor entero.
+    public var displayBeatsPerMinute: Double { (beatsPerMinute * 10).rounded() / 10 }
 }
 
 /// Valor rítmico de cada Step, expresado como fracción de redonda.

@@ -115,7 +115,8 @@ public enum JitterHarness {
 
         let recorder = JitterRecorder(capacity: configuration.sampleCount)
 
-        let loopback = try VirtualLoopback(name: "Torax H-0 Jitter") { scheduled, actual in
+        let loopback = try VirtualLoopback(name: VirtualLoopback.measurementName) {
+            scheduled, actual in
             // Realtime: hilo de recepción de CoreMIDI. Resta y escritura en
             // buffer preasignado, nada más.
             let deviation =

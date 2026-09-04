@@ -36,6 +36,24 @@ public final class VirtualLoopback: @unchecked Sendable {
     /// entre los destinos elegibles como si fuera un sintetizador.
     public static let defaultName = "Torax H-0 Loopback"
 
+    /// Nombre del endpoint que crea el arnés de medición.
+    ///
+    /// **Vive aquí y no en el arnés** para que el filtro de destinos elegibles
+    /// pueda nombrarlo. Estaba escrito como literal en `JitterHarness` y el
+    /// filtro comparaba con `defaultName`, así que no lo excluía: durante una
+    /// medición el arnés aparecía entre los sintetizadores elegibles, que es
+    /// exactamente lo que el filtro existía para impedir. Encontrado el
+    /// 2026-09-03, preparando la medición del track `external-clock_20260903`.
+    public static let measurementName = "Torax H-0 Jitter"
+
+    /// Si un endpoint lo creó la propia app.
+    ///
+    /// Ninguno de los dos es un destino de producto: son instrumentación, y la
+    /// enmienda del 2026-08-26 de `tech-stack.md` los admite solo para medir.
+    public static func isOwn(_ displayName: String) -> Bool {
+        displayName == defaultName || displayName == measurementName
+    }
+
     /// Endpoint al que hay que enviar para cerrar el bucle.
     public var endpoint: MIDIEndpointRef { destination }
 

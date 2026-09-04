@@ -39,13 +39,18 @@ public enum MIDIEndpointRole: Equatable, Sendable {
 
     /// Si un endpoint puede elegirse para este papel.
     ///
-    /// El endpoint del arnés de medición se excluye **solo como destino**:
+    /// Los endpoints que crea la propia app se excluyen **solo como destino**:
     /// durante la medición de jitter el arnés y la app corren a la vez y
     /// aparecería entre los sintetizadores. Como fuente no hace falta filtrarlo,
-    /// porque es un destino virtual y nunca aparece en la lista de entradas.
+    /// porque son destinos virtuales y nunca aparecen en la lista de entradas.
+    ///
+    /// **Se pregunta por los dos nombres, no por uno.** El arnés crea el suyo
+    /// con un nombre distinto del de `VirtualLoopback.defaultName`, así que
+    /// comparar con ese solo dejaba pasar justo el que importa: elegirlo como
+    /// destino manda las notas de la app al arnés y ensucia la medición.
     func isEligible(_ endpoint: MIDIEndpointInfo) -> Bool {
         switch self {
-        case .destination: endpoint.displayName != VirtualLoopback.defaultName
+        case .destination: !VirtualLoopback.isOwn(endpoint.displayName)
         case .source: true
         }
     }

@@ -99,6 +99,24 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
   en la 8.
 - Pantalla de estado del Track.
 
+> **Nota del 2026-09-03 — el reloj puede ser de otro.** La línea de arriba dice
+> «transporte (play/stop) y **reloj interno**», y sigue siendo cierta: el reloj
+> interno existe, y ahora además es **editable** —el tempo estaba clavado en 120
+> BPM desde la rebanada 1— en lugar de una constante.
+>
+> Lo que se añade es que la app **puede seguir a un maestro externo**: el Start,
+> el Stop y el clock a 24 ppqn del controlador. Encaja con el Interaction Model
+> de arriba —el controlador es el instrumento— y hasta ahora el hardware y la app
+> no podían compartir pulso.
+>
+> **Quién manda lo decide el usuario, no el cable**: un selector
+> `Internal / External`. Con `Internal`, un Start entrante no interrumpe nada.
+>
+> **La app no emite clock.** La sincronía va en un solo sentido: nada externo
+> puede seguir a Torax H-0. Ser maestro es otra decisión y no está tomada.
+>
+> Track `external-clock_20260903`.
+
 > **Nota del 2026-08-31 — «Mapeo del controlador + MIDI Learn» es una línea y
 > son dos rebanadas.** Escrito como una sola entrega, el alcance mezcla dos
 > problemas que no comparten nada. El **preset** decide *qué significa cada
@@ -180,6 +198,21 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > nunca. Y **la cola de la rebanada 1 no se reprodujo**: sus 0,598 ms a 174 BPM
 > aquí son 0,141 ms, con cinco veces más muestras y más carga. Ver
 > [`device-verification.md`](./tracks/screen-handoff_20260901/device-verification.md).
+
+> **Reloj externo (2026-09-04): medido, CUMPLE, y peor que la referencia.** El
+> track `external-clock_20260903` retomó la medición como excepción acotada a la
+> suspensión de abajo, porque es el primer cambio desde entonces que toca la
+> rejilla temporal misma. Dos pasadas con reloj interno y 1000 eventos por tempo:
+> máximo **0,525 ms** y σ hasta **0,030 ms**, contra un umbral de 2 ms y 0,5 ms.
+>
+> **Es una regresión respecto a la referencia** —0,158 ms y 0,013–0,014 ms— que
+> **se reproduce**: 60 BPM queda limpio y los dos tempos rápidos no. La media no
+> se mueve, que es lo que impide llamarlo un coste sistemático sin más. Se cerró
+> con ella dentro por decisión del 2026-09-04, con el experimento que la habría
+> zanjado —medir `main` el mismo día en el mismo iPad— propuesto y descartado.
+>
+> **La referencia vigente pasa a ser esta.** Detalle y sospechosos en
+> [`device-verification.md`](./tracks/external-clock_20260903/device-verification.md).
 
 > **Suspendido (2026-09-02).** A partir de aquí **no se hacen más mediciones de
 > jitter**, por decisión tomada al cerrar la v2 rebanada 3 después de que la

@@ -21,11 +21,20 @@ public enum MIDIInputError: Error, Equatable {
 /// lectura, y el único estado mutable —los callbacks— vive tras un lock.
 public final class CoreMIDIInput: @unchecked Sendable {
 
-    /// Se invoca por cada mensaje que llega, ya parseado.
+    /// Se invoca por cada mensaje que llega, ya parseado y con el instante que
+    /// trae el paquete.
     ///
     /// **Corre en el hilo de recepción de CoreMIDI**, no en el principal ni en
     /// el del scheduler. Quien lo implemente debe hacer poco y no bloquear.
-    public typealias ReceiveHandler = @Sendable (MIDIMessage) -> Void
+    ///
+    /// **El instante es el del paquete, no el de ahora.** Para los knobs da
+    /// igual, pero el reloj de un maestro externo vive de cuándo llegó cada
+    /// tick: preguntar la hora aquí metería en la estimación el retraso de
+    /// llegar hasta aquí, y CoreMIDI ya trae el dato bueno.
+    ///
+    /// Un timestamp de cero significa «ahora» en CoreMIDI; se traduce antes de
+    /// entregarlo para que quien lo reciba no tenga que conocer esa convención.
+    public typealias ReceiveHandler = @Sendable (MIDIMessage, MIDITimeStamp) -> Void
 
     /// Contenedor del callback de notificaciones, igual que en la salida: el
     /// bloque llega desde el hilo de CoreMIDI, así que el acceso va con lock.
@@ -89,13 +98,14 @@ public final class CoreMIDIInput: @unchecked Sendable {
 
             for _ in 0..<numPackets {
                 let wordCount = Int(packet.pointee.wordCount)
+                let hostTime = HostClock.arrival(packet.pointee.timeStamp)
                 withUnsafeBytes(of: packet.pointee.words) { raw in
                     let words = raw.bindMemory(to: UInt32.self)
                     for index in 0..<min(wordCount, words.count) {
                         // Lo que no se entiende se descarta en silencio: por el
                         // cable llegan relojes y mensajes que no se usan.
                         if let message = MIDIMessage(universalPacketWord: words[index]) {
-                            handler(message)
+                            handler(message, hostTime)
                         }
                     }
                 }

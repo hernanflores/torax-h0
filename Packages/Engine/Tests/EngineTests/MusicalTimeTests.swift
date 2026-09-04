@@ -26,6 +26,25 @@ final class MusicalTimeTests: XCTestCase {
             accuracy: 1)
     }
 
+    // MARK: - El tempo que se enseña
+
+    /// **El número de la barra no puede bailar.** Un tempo estimado se mueve en
+    /// las milésimas de una negra a otra; redondeado a un decimal, la barra se
+    /// queda quieta mientras el maestro no cambie de verdad.
+    func testNearbyEstimatesDisplayTheSameValue() {
+        let estimates = [119.996, 120.0, 120.004, 120.031, 119.972]
+
+        for estimate in estimates {
+            XCTAssertEqual(Tempo(beatsPerMinute: estimate)!.displayBeatsPerMinute, 120)
+        }
+    }
+
+    /// Y un cambio real sí se ve.
+    func testARealChangeIsDisplayed() {
+        XCTAssertEqual(Tempo(beatsPerMinute: 120.06)!.displayBeatsPerMinute, 120.1)
+        XCTAssertEqual(Tempo(beatsPerMinute: 90)!.displayBeatsPerMinute, 90)
+    }
+
     // MARK: - Step duration
 
     /// A 120 BPM la negra dura 500 ms, así que la semicorchea dura 125 ms.

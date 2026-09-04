@@ -19,6 +19,28 @@ import SwiftUI
 /// la edición al ajustar el ruteo.
 struct ChannelMapView: View {
 
+    /// Estado del reloj, para pintarlo sin que la vista sepa de CoreMIDI.
+    ///
+    /// **Es una foto, no una referencia al transporte**: la vista dibuja lo que
+    /// le llega y no consulta nada.
+    struct Clock: Equatable {
+        /// Cambia con cada gesto sobre el reloj, para que la vista se repinte:
+        /// el tempo y el estado se calculan al preguntar y no son estado
+        /// observable.
+        var revision: UInt64
+        /// Quién manda el tempo.
+        var isExternal: Bool
+        /// El tempo vigente, venga de donde venga.
+        var beatsPerMinute: Double
+        /// Qué está pasando con el maestro, en una línea. `nil` con reloj
+        /// interno, que no tiene nada que contar.
+        var status: String?
+    }
+
+    let clock: Clock
+    let onClockSourceChange: (Bool) -> Void
+    let onTempoChange: (Double) -> Void
+
     /// El canal de cada Track, por posición.
     let channels: [Channel]
     /// Cuál se está editando en la pantalla Track.
@@ -32,15 +54,98 @@ struct ChannelMapView: View {
     let onChannelChange: (Int, Channel) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            header
-            VStack(spacing: 8) {
-                ForEach(0..<Pattern.trackCount, id: \.self) { index in
-                    row(for: index)
+        // **El reloj a la derecha y no encima.** Puesto arriba empujaba la fila
+        // del Track 12 fuera de pantalla, y ver los doce a la vez es la razón de
+        // que esta pantalla exista. La columna derecha estaba vacía.
+        HStack(alignment: .top, spacing: 24) {
+            VStack(alignment: .leading, spacing: 16) {
+                header
+                VStack(spacing: 8) {
+                    ForEach(0..<Pattern.trackCount, id: \.self) { index in
+                        row(for: index)
+                    }
                 }
             }
+
+            clockSection
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// El reloj: quién lo manda, a qué tempo y qué está pasando.
+    ///
+    /// **Va antes que los canales** porque decide algo de otro orden: los
+    /// canales dicen por dónde sale cada Track, y esto, a qué velocidad y a
+    /// quién obedece la app entera.
+    private var clockSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Clock")
+                    .font(Typography.captionStrong)
+                    .foregroundStyle(Palette.muted)
+
+                // **Estado, no explicación**, como el resto de la pantalla. Con
+                // reloj interno no hay nada que contar y la línea desaparece.
+                Text(clock.status ?? "App clock")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.muted)
+            }
+
+            HStack(spacing: 8) {
+                sourceButton("Internal", isExternal: false)
+                sourceButton("External", isExternal: true)
+            }
+
+            // **El tempo se lee siempre y se edita solo con Internal.**
+            // Siguiendo a un maestro, el número es suyo: ofrecer un control que
+            // no hace nada sería prometer algo que no existe.
+            Text(Self.tempoText(clock.beatsPerMinute))
+                .font(Typography.captionBold)
+                .monospacedDigit()
+                .foregroundStyle(clock.isExternal ? Palette.muted : Palette.mutedBright)
+
+            HStack(spacing: 8) {
+                tempoButton("−10", delta: -10)
+                tempoButton("−1", delta: -1)
+                tempoButton("+1", delta: 1)
+                tempoButton("+10", delta: 10)
+            }
+        }
+    }
+
+    /// El tempo, con un decimal y en formato fijo: la barra lo escribe igual.
+    static func tempoText(_ beatsPerMinute: Double) -> String {
+        String(
+            format: "%.1f BPM", locale: Locale(identifier: "en_US_POSIX"), beatsPerMinute)
+    }
+
+    private func sourceButton(_ title: String, isExternal: Bool) -> some View {
+        let isSelected = clock.isExternal == isExternal
+
+        return Button(title) { onClockSourceChange(isExternal) }
+            .font(isSelected ? Typography.captionBold : Typography.caption)
+            .foregroundStyle(isSelected ? Palette.toolbar : Palette.muted)
+            .frame(minWidth: 96, minHeight: 44)
+            .brutalistControl(
+                accent: accent,
+                isSelected: isSelected,
+                radius: Brutalist.radiusSmall
+            )
+    }
+
+    private func tempoButton(_ title: String, delta: Double) -> some View {
+        Button(title) { onTempoChange(clock.beatsPerMinute + delta) }
+            .font(Typography.caption)
+            .monospacedDigit()
+            .foregroundStyle(clock.isExternal ? Palette.muted : Palette.mutedBright)
+            .frame(minWidth: 52, minHeight: 44)
+            .brutalistControl(
+                accent: accent,
+                isSelected: false,
+                radius: Brutalist.radiusSmall
+            )
+            .disabled(clock.isExternal)
     }
 
     private var header: some View {

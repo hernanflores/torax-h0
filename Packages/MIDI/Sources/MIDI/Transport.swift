@@ -46,7 +46,124 @@ public final class Transport: @unchecked Sendable {
     /// para escribir.
     let mutes = MuteMask()
 
-    private let playheadClock = PlayheadClock()
+    /// Si se sigue a un maestro externo.
+    ///
+    /// **Atómica porque la escribe la pantalla y la lee el hilo de recepción de
+    /// CoreMIDI**, que atiende el reloj sin saltar al principal. Un `Bool`
+    /// desnudo sería una carrera de datos con el compilador de por medio.
+    private let followsExternalClock = AtomicFlag(false)
+
+    /// Quién manda el tempo. Por defecto, la app.
+    ///
+    /// Cambiarlo en caliente es lo que hace el selector de la pantalla `3 ·
+    /// MIDI`, y no toca lo que esté sonando: solo decide a quién se hace caso a
+    /// partir de ahora.
+    ///
+    /// **Volver a `Internal` republica el tempo de la app**, para que mande sin
+    /// tener que tocarlo otra vez.
+    public var clockSource: ClockSource {
+        get { followsExternalClock.value ? .external : .internal }
+        set {
+            followsExternalClock.value = newValue == .external
+            if newValue == .internal { publishInternalTempo() }
+        }
+    }
+
+    /// El tempo de la app.
+    ///
+    /// **Era una constante de 120 BPM** desde la rebanada 1 del MVP. Sigue
+    /// existiendo cuando manda un maestro externo: es a lo que se vuelve al
+    /// elegir `Internal`, y lo que suena si el maestro se corta antes de haber
+    /// dicho ninguno.
+    public private(set) var tempo: Tempo
+
+    /// Fija el tempo de la app. Devuelve si el valor era válido.
+    ///
+    /// **Fuera del rango del tipo `Tempo` se rechaza y no pasa nada más**: un
+    /// control que se pase no puede dejar el transporte sin tempo.
+    ///
+    /// Cambiarlo mientras suena no reinicia la rejilla ni pierde el paso en
+    /// curso: el cambio llega al scheduler por el mismo camino que el de un
+    /// maestro externo, y `TempoMap` rebasa conservando el instante musical.
+    @discardableResult
+    public func setTempo(beatsPerMinute: Double) -> Bool {
+        guard let updated = Tempo(beatsPerMinute: beatsPerMinute) else { return false }
+
+        tempo = updated
+        publishInternalTempo()
+        return true
+    }
+
+    /// El tempo que está sonando de verdad.
+    ///
+    /// Con reloj interno es el de la app; con reloj externo, el estimado del
+    /// maestro — y el de la app mientras el maestro no haya dicho ninguno, que
+    /// es también lo que sigue sonando si se corta.
+    ///
+    /// **Es lo que la barra enseña.** Existe para que la pantalla no tenga que
+    /// saber por dónde cruza el reloj ni cómo se empaqueta.
+    public var currentTempo: Tempo {
+        let reading = clockHandoff.reading
+        guard clockSource == .external, reading.isEstablished,
+            let followed = Tempo(
+                beatsPerMinute: 60.0 * 1_000_000_000.0 / Double(reading.quarterNoteNanoseconds))
+        else { return tempo }
+
+        return followed
+    }
+
+    /// Si se está siguiendo a un maestro que ya dijo su tempo.
+    public var isFollowingEstablishedClock: Bool {
+        clockSource == .external && clockHandoff.reading.isEstablished
+    }
+
+    /// Publica el tempo de la app, si es ella quien manda.
+    ///
+    /// **El tempo interno viaja por el mismo sitio que el del maestro.** El
+    /// scheduler no distingue de dónde viene el periodo de la negra, así que hay
+    /// un solo mecanismo que mantener en vez de dos caminos que hacen lo mismo.
+    private func publishInternalTempo() {
+        guard clockSource == .internal else { return }
+
+        clockHandoff.publish(
+            quarterNoteNanoseconds: UInt32(
+                (60.0 / tempo.beatsPerMinute * 1_000_000_000.0).rounded()),
+            accumulatedCorrectionNanoseconds: 0)
+    }
+
+    /// Interno y no privado para que los tests puedan comprobar **contra qué
+    /// instante nace la rejilla**, que es lo que el arranque por Start del
+    /// maestro cambia.
+    let playheadClock = PlayheadClock()
+
+    /// Lo que el scheduler sabe del maestro externo.
+    ///
+    /// Interno para que los tests puedan leer lo que cruza sin arrancar el
+    /// bucle.
+    let clockHandoff = ClockHandoff()
+
+    /// Estima el tempo del maestro con sus ticks.
+    ///
+    /// **Solo lo toca el hilo de recepción de CoreMIDI**, que es de donde llegan
+    /// los ticks, así que no necesita protección. La única excepción es
+    /// `startPlaying`, que lo reinicia: pasa por el hilo principal, y ahí no hay
+    /// reproducción en curso con la que competir.
+    private var clockFollower = ClockFollower()
+
+    /// Instante en que arrancó la rejilla, en nanosegundos de host.
+    ///
+    /// Es contra lo que se mide la fase del maestro. Cero mientras no suene.
+    private var gridOriginNanoseconds: Int64 = 0
+
+    /// Suma de las correcciones de fase publicadas desde el arranque.
+    private var accumulatedCorrectionNanoseconds: Int32 = 0
+
+    /// Instante del último tick recibido, en nanosegundos de host.
+    ///
+    /// Lo escribe el hilo de recepción y lo lee la interfaz al pintar el estado
+    /// del reloj, así que va en un atómico. Cero mientras no haya llegado
+    /// ninguno.
+    private let lastTickNanoseconds = AtomicCounter(0)
     private let cyclePlaybackClock = CyclePlaybackClock()
 
     private var scheduler: SchedulerThread?
@@ -147,6 +264,7 @@ public final class Transport: @unchecked Sendable {
         self.send = send
         self.handoff = PatternHandoff(pattern)
         self.lastPublishedPattern = pattern
+        self.tempo = configuration.timeline.tempo
     }
 
     /// Atajo para quien todavía piensa en un Track: lo pone en la primera
@@ -229,6 +347,131 @@ public final class Transport: @unchecked Sendable {
         publish(lastPublishedPattern.replacing(track, at: 0))
     }
 
+    /// Atiende un mensaje entrante del reloj del maestro.
+    ///
+    /// Devuelve si el mensaje **era suyo**: los que no lo son siguen su camino
+    /// hacia la entrada de control. Consumir de más dejaría los knobs mudos al
+    /// elegir `External`.
+    ///
+    /// **El filtro por fuente está aquí y en un solo sitio.** Con `Internal` no
+    /// se consume nada, así que un maestro puede estar mandando Start, Stop y
+    /// clock por el mismo puerto del que llegan los knobs sin que pase nada.
+    ///
+    /// **Lo llama el hilo de recepción de CoreMIDI, sin saltar al principal**, y
+    /// con el instante que trae el paquete: el reloj vive de cuándo llegó cada
+    /// tick, y una cola de por medio metería su propio retraso en la
+    /// estimación.
+    ///
+    /// Realtime: llamado desde el hilo de recepción de CoreMIDI.
+    /// Sin asignaciones, sin locks, sin await.
+    @discardableResult
+    public func receive(_ message: MIDIMessage, atHostTime hostTime: UInt64) -> Bool {
+        guard followsExternalClock.value else { return false }
+
+        switch message {
+        case .start:
+            // **El transporte del maestro manda sobre el de la app** (decisión
+            // del 2026-09-03, en dispositivo). Elegir `External` es decir que el
+            // hardware lleva el transporte: tener que pulsar Play en el iPad
+            // antes de darle a Play en el controlador no era intuitivo, y dejaba
+            // el gesto del hardware sin efecto la mitad de las veces.
+            //
+            // Un Start sobre un transporte que ya suena lo reinicia desde el
+            // paso 0, que es lo que hace el Start de cualquier secuenciador.
+            if isPlaying { stop() }
+            startPlaying(atHostTime: hostTime)
+            return true
+
+        case .stop:
+            // Simétrico al Start, y por el mismo camino que el botón de la
+            // pantalla: `stop()` desarma y hace el barrido de apagado. Parar de
+            // otra forma sería tener dos paradas que mantener iguales, y la que
+            // se olvidara del barrido dejaría notas colgadas.
+            stop()
+            return true
+
+        case .timingClock:
+            follow(tickAtHostTime: hostTime)
+            return true
+
+        case .noteOn, .noteOff, .controlChange:
+            return false
+        }
+    }
+
+    /// Alimenta el estimador con un tick y publica al cerrarse cada negra.
+    ///
+    /// **Publicar una vez por negra y no por tick es la decisión**: el reloj
+    /// entrante tiene su propio jitter, y empujar la rejilla con cada tick lo
+    /// trasladaría entero a la salida.
+    ///
+    /// Realtime: llamado desde el hilo de recepción de CoreMIDI.
+    /// Sin asignaciones, sin locks, sin await.
+    private func follow(tickAtHostTime hostTime: UInt64) {
+        let instant = Int64(HostClock.nanoseconds(fromHostTicks: hostTime))
+
+        // **Tras un corte se vuelve a anclar antes de medir.** El hueco entre el
+        // último tick de antes y el primero de después no es una negra, y
+        // medirlo daría un tempo inventado que además puede caer dentro del
+        // rango válido — así que ni siquiera se rechazaría.
+        if clockHasDropped(atHostTime: hostTime) { clockFollower.reanchor() }
+        lastTickNanoseconds.value = UInt64(instant)
+
+        guard case .quarterNote(let closing) = clockFollower.receive(tickAtNanoseconds: instant),
+            let tempo = clockFollower.tempo
+        else { return }
+
+        let quarterNote = 60.0 / tempo.beatsPerMinute * 1_000_000_000.0
+
+        // La fase se mide contra el origen vigente, que es el del arranque más
+        // lo ya corregido. Sin sumarlo, cada negra volvería a pedir la misma
+        // corrección y la rejilla se pasaría de largo.
+        if gridOriginNanoseconds != 0 {
+            let origin = gridOriginNanoseconds + Int64(accumulatedCorrectionNanoseconds)
+            let correction = PhaseCorrection.nanoseconds(
+                gridOriginNanoseconds: origin,
+                quarterNoteNanoseconds: quarterNote,
+                masterTickNanoseconds: closing,
+                limitNanoseconds: Self.phaseCorrectionLimitNanoseconds)
+            accumulatedCorrectionNanoseconds &+= Int32(correction)
+        }
+
+        clockHandoff.publish(
+            quarterNoteNanoseconds: UInt32(quarterNote.rounded()),
+            accumulatedCorrectionNanoseconds: accumulatedCorrectionNanoseconds)
+    }
+
+    /// Si el maestro dejó de mandar ticks.
+    ///
+    /// **Un corte no para la música**: lo que suena sigue al último tempo
+    /// conocido y la pantalla lo dice. Es el criterio de `product-guidelines.md`
+    /// —un dispositivo desconectado se comunica con un estado, no con una
+    /// disculpa— y evita que un cable flojo silencie una sesión.
+    ///
+    /// **El margen es una negra del tempo vigente, no un literal.** A 20 BPM
+    /// medio segundo es menos de un tick, así que un umbral fijo declararía
+    /// cortes falsos; y a 300 BPM sería tan largo que la desconexión tardaría en
+    /// notarse. Con el margen relativo, perder un tick —o unos cuantos— no saca
+    /// del modo esclavo, y una desconexión real se ve en menos de un segundo.
+    ///
+    /// Sin ningún tick recibido no hay corte: no se estaba siguiendo a nadie.
+    public func clockHasDropped(atHostTime now: UInt64 = HostClock.now()) -> Bool {
+        let last = lastTickNanoseconds.value
+        guard last != 0, let tempo = clockFollower.tempo else { return false }
+
+        let quarterNote = 60.0 / tempo.beatsPerMinute * 1_000_000_000.0
+        let elapsed = Double(HostClock.nanoseconds(fromHostTicks: now)) - Double(last)
+        return elapsed > quarterNote
+    }
+
+    /// Cuánto puede moverse el origen de una vez.
+    ///
+    /// **Cinco milisegundos por negra.** Acota lo que un tick desviado puede
+    /// hacerle a la rejilla —a 120 BPM son diez milisegundos por segundo, de
+    /// sobra para recuperar cualquier deriva real— y lo que sobra se corrige en
+    /// las negras siguientes en vez de en un salto.
+    static let phaseCorrectionLimitNanoseconds: Int64 = 5_000_000
+
     /// Publica los dieciséis Tracks. Se recogen en la ventana siguiente.
     public func publish(_ pattern: Pattern) {
         lastPublishedPattern = pattern
@@ -242,6 +485,30 @@ public final class Transport: @unchecked Sendable {
     /// Starts playback using the currently published track. Subsequent scheduler events are emitted as MIDI notes.
     public func play() {
         guard !isPlaying else { return }
+
+        startPlaying()
+    }
+
+    /// Arranca el bucle de verdad.
+    ///
+    /// **Es el camino único**, venga de `play()` con reloj interno o del Start
+    /// del maestro: dos caminos distintos serían dos formas de empezar a sonar
+    /// que habría que mantener iguales.
+    ///
+    /// El origen viene de fuera cuando lo dispara el maestro: la rejilla nace en
+    /// el instante de su Start y no cuando este hilo llegue a preguntar la hora.
+    ///
+    /// Realtime: puede llamarse desde el hilo de recepción de CoreMIDI.
+    private func startPlaying(atHostTime origin: UInt64? = nil) {
+        // **Arrancar olvida al maestro anterior.** Su tempo no dice nada del
+        // siguiente, y su fase mucho menos: la rejilla nace ahora.
+        clockFollower.reset()
+        clockHandoff.clear()
+        accumulatedCorrectionNanoseconds = 0
+        lastTickNanoseconds.value = 0
+        publishInternalTempo()
+        gridOriginNanoseconds = Int64(
+            HostClock.nanoseconds(fromHostTicks: origin ?? HostClock.now()))
 
         // Los dieciséis con los que se arranca, leídos una sola vez: el
         // scheduler construye con ellos **una rejilla por Track**, cada una con
@@ -257,9 +524,10 @@ public final class Transport: @unchecked Sendable {
             playhead: playheadClock,
             cyclePlaybackClock: cyclePlaybackClock,
             pattern: starting,
-            mutes: mutes
+            mutes: mutes,
+            clock: clockHandoff
         ) {
-            [emitter, send, tempo = configuration.timeline.tempo]
+            [emitter, send, tempo = configuration.timeline.tempo, clockHandoff]
             _, source, _, pitch, groove, hostTime in
             // El canal y la duración del Step son del Track que emite: dieciséis
             // Tracks pueden estar en dieciséis canales y en Divisions distintas.
@@ -275,15 +543,28 @@ public final class Transport: @unchecked Sendable {
                 pitch: pitch,
                 groove: groove,
                 on: MIDIChannel(source.channel),
-                stepDurationNanoseconds: Int64(
-                    MusicalTimeline(tempo: tempo, division: source.shape.division)
-                        .stepDurationNanoseconds),
+                // **La duración se escala con el maestro.** Se calcula contra
+                // el tempo de referencia, como los instantes, y se convierte a
+                // tiempo de reloj: sin esto, seguir a un maestro lento dejaría
+                // los gates con la longitud del tempo viejo y Sustain sonaría
+                // corto.
+                //
+                // Es una lectura atómica por nota y no una por ventana, a
+                // diferencia del resto. Se acepta: aquí lo que se decide es
+                // cuánto dura la nota, no cuándo cae, y un cambio de tempo a
+                // media ventana como mucho la alarga o acorta lo que el maestro
+                // acaba de pedir.
+                stepDurationNanoseconds: clockHandoff.reading.wallNanoseconds(
+                    forGridNanoseconds: Int64(
+                        MusicalTimeline(tempo: tempo, division: source.shape.division)
+                            .stepDurationNanoseconds),
+                    referenceQuarterNoteNanoseconds: 60.0 / tempo.beatsPerMinute * 1_000_000_000.0),
                 atHostTime: hostTime,
                 send: send
             )
         }
         scheduler = thread
-        thread.start()
+        thread.start(atHostTime: origin)
     }
 
     /// Para el reloj y apaga lo que estuviera sonando.
@@ -329,6 +610,8 @@ public final class Transport: @unchecked Sendable {
     /// - Sends an All Notes Off message and note-off messages for pitches in the last published track.
     /// - Does nothing when playback is already stopped.
     public func stop() {
+        gridOriginNanoseconds = 0
+
         guard let scheduler else { return }
         scheduler.stop()
         self.scheduler = nil

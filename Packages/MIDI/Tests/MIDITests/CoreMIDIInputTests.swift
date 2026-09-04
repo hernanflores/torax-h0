@@ -9,7 +9,7 @@ import XCTest
 final class CoreMIDIInputTests: XCTestCase {
 
     private func makeInput(_ name: String) throws -> CoreMIDIInput {
-        try CoreMIDIInput(clientName: name) { _ in }
+        try CoreMIDIInput(clientName: name) { _, _ in }
     }
 
     func testInputStartsOpen() throws {
