@@ -144,7 +144,18 @@ escritura atómica.
 acotada a la suspensión del 2026-09-02, justificada porque este es el primer
 cambio desde entonces que toca **la rejilla temporal misma** y no la carga.
 Referencia: v2 rebanada 2 — máx **0,158 ms**, σ **0,013–0,014 ms**, 1000 eventos
-por tempo. Una regresión bloquea el cierre.
+por tempo. ~~Una regresión bloquea el cierre.~~
+
+> **Enmendado el 2026-09-04: se cierra con la regresión dentro.** Dos pasadas de
+> 1000 eventos dan máx **0,525 ms** y σ hasta **0,030 ms** — CUMPLE el umbral del
+> proyecto con 4,3× y 16× de margen, y **triplica el máximo de la referencia**.
+> No es un episodio: se reproduce, y con un patrón claro —60 BPM limpio, 120 y
+> 174 degradados—.
+>
+> **Lo decidió el usuario** con los dos números delante, y con el experimento que
+> lo habría zanjado —medir `main` en el mismo iPad el mismo día— propuesto y
+> descartado. El detalle, los sospechosos y la referencia nueva están en
+> `device-verification.md`.
 
 **NFR5 — Las dos desviaciones se escriben antes de implementar.** Lo exige la
 regla 2 del workflow:
@@ -175,8 +186,9 @@ recibiendo.
    oye el cambio.
 9. Un maestro fuera de rango se ignora y se dice; no se acota en silencio ni se
    para la música.
-10. La medición de jitter con reloj interno no muestra regresión frente a máx
-    0,158 ms / σ 0,013–0,014 ms.
+10. La medición de jitter con reloj interno CUMPLE el umbral del proyecto.
+    *(Enmendado el 2026-09-04: pedía «sin regresión frente a la referencia» y hay
+    regresión — ver NFR4.)*
 
 ## Limitaciones conocidas
 
@@ -191,12 +203,16 @@ recibiendo.
    tiene mucho jitter propio.
 4. **El maestro tiene que ser el mismo dispositivo que manda el control** (FR10).
    Un reloj de otra fuente no se soporta.
-5. **El modo esclavizado se entrega sin número de jitter.** NFR4 mide con reloj
+5. **El timing empeoró respecto a la referencia y se entrega así.** Máx 0,525 ms
+   contra 0,158 ms, con σ 0,030 contra 0,013–0,014. Dentro del umbral y sin causa
+   identificada; los dos sospechosos y el experimento pendiente están en
+   `device-verification.md`.
+6. **El modo esclavizado se entrega sin número de jitter.** NFR4 mide con reloj
    interno, que responde si se degradó lo que ya funcionaba; el jitter *siguiendo
    a un maestro* queda sin medir, porque el arnés no sabe comparar contra un
    reloj externo y enseñarle es un track propio. Se juzga tocando, contra el
    criterio 4.
-6. **La fuente de reloj y el tempo no se guardan.** No hay persistencia todavía;
+7. **La fuente de reloj y el tempo no se guardan.** No hay persistencia todavía;
    al arrancar se vuelve a `Internal` y al tempo por defecto.
 
 ## Out of Scope

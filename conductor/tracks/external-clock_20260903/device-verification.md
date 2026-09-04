@@ -113,7 +113,57 @@ Es el mismo patrón que la v2 rebanada 1, cuya cola de 0,598 ms a 174 BPM no se
 reprodujo en la rebanada siguiente. **Se repite la pasada** antes de decidir
 (2026-09-03).
 
-### Pasada 2 — pendiente
+### Pasada 2 — 2026-09-04
+
+```
+60 BPM  · n=1000  máx=0,152 ms  media=+0,094 ms  σ=0,012 ms  → CUMPLE
+120 BPM · n=1000  máx=0,448 ms  media=+0,095 ms  σ=0,028 ms  → CUMPLE
+174 BPM · n=1000  máx=0,525 ms  media=+0,093 ms  σ=0,030 ms  → CUMPLE
+VEREDICTO: CUMPLE
+```
+
+**Se reproduce, así que la hipótesis del episodio era falsa.** Con dos muestras el
+patrón es nítido:
+
+| Tempo | Pasada 1 | Pasada 2 | Referencia |
+|---|---|---|---|
+| 60 BPM | 0,144 · 0,015 | 0,152 · 0,012 | indistinguible |
+| 120 BPM | 0,468 · 0,030 | 0,448 · 0,028 | 0,158 · 0,013–0,014 |
+| 174 BPM | 0,374 · 0,024 | 0,525 · 0,030 | ídem |
+
+**60 BPM está limpio y los dos tempos rápidos no.** Apunta a un coste que se nota
+cuando hay más eventos por ventana —la ventana de look-ahead dura lo mismo a
+cualquier tempo, pero a 174 BPM caben más eventos dentro—. Lo que no encaja con
+esa lectura es que **la media no se mueva**: un coste por evento debería subirla,
+y en las dos pasadas baja ligeramente respecto a las seis mediciones anteriores.
+
+**Sospechosos, por si alguien retoma esto**, los dos son trabajo por evento que
+este track añadió:
+
+1. `TempoMap.wallNanoseconds(forGridNanoseconds:)`, una división en coma flotante
+   y un redondeo por evento en el bucle del scheduler.
+2. La lectura atómica del `ClockHandoff` **por nota** en el cierre de emisión, que
+   escala la duración del gate. Está documentada en `Transport` como excepción
+   consciente a «una lectura por ventana»: sería lo primero que yo movería a la
+   ventana, pasando el factor con el evento.
+
+**El experimento que no se hizo**, y que es el que decide: medir `main` en el
+mismo iPad y el mismo día. La referencia de 0,158 ms se tomó el 2026-09-02, en
+otra sesión; sin repetirla no se puede separar «regresión del track» de
+«condiciones distintas». Se propuso y **se descartó**.
+
+### Decisión — 2026-09-04: se cierra con la regresión dentro
+
+**Lo decidió el usuario**, con los dos números delante. Qué significa:
+
+- El track **cumple el umbral del proyecto con margen**: 4,3× en el máximo (0,525
+  contra 2 ms) y 16× en la σ (0,030 contra 0,5 ms).
+- Y **empeora respecto a la referencia**: el máximo la triplica y la σ la dobla.
+- **Contradice el NFR4 de este track**, que dice que una regresión bloquea el
+  cierre. Se cierra igualmente, y queda escrito aquí para que la decisión se
+  pueda revisar con el coste delante.
+- **La referencia vigente pasa a ser esta**: máx 0,525 ms, σ hasta 0,030 ms. Quien
+  mida después compara contra este número, no contra el de la rebanada 2.
 
 ---
 
