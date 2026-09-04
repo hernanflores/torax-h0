@@ -1,0 +1,34 @@
+Task: Los DTO del Cycle, el Track y el Pattern (Fase 2, persistence_20260904)
+
+Rojo antes de verde: 'cannot find CycleRecord in scope' en los trece tests.
+Verde tras implementarlos: 13 tests, 0 fallos.
+
+Ficheros creados en Packages/Persistence/Sources/Persistence:
+- PersistenceError.swift — unsupportedSchemaVersion, invalidValue y wrongCount.
+  Todos los casos vienen de leer: escribir parte de un modelo que ya es válido.
+- CycleRecord.swift — plano, no anidado. Shape/Groove/TonalFrame agrupan para
+  organizar la edición y la pantalla; el fichero solo tiene que conservar
+  valores, y cada nivel de anidamiento es una decisión más que congelar.
+- PatternRecord.swift — TrackRecord y PatternRecord.
+
+Y RecordRoundTripTests.swift, con los límites de la Pre Spec como casos
+literales: Steps 1 y 16, Pulses 1..Steps, Probability 0 y 100, pool vacío y
+lleno, las cinco escalas por las doce fundamentales, las seis Divisions.
+
+Decisiones que el registro toma, todas documentadas en el sitio:
+- El pool sale como lista de alturas, no como el UInt64 de ocho bytes del
+  Engine. Ese empaquetado existe para no asignar en el hilo del scheduler; en
+  un fichero sería un número ilegible atado a un orden de bytes.
+- La escala se guarda por nombre. Un ordinal ataría el fichero al orden de
+  declaración del enum: añadir una escala en medio reinterpretaría lo guardado.
+- De los dos cursores del Track solo se guarda el de edición. El de
+  reproducción lo mueve el scheduler y Play lo devuelve al Cycle 1: guardarlo
+  sería guardar un instante ya pasado.
+- Se guardan los Pulses pretendidos, no effectivePulses. Es lo que la enmienda
+  del 2026-08-27 de tech-stack.md existe para conservar, y hay un test que lo
+  ejerce con Steps 4 y Pulses 12.
+
+Una trampa encontrada al implementar TrackRecord.track(): withActiveCount
+siembra los huecos que abre copiando el Cycle en edición, así que subirlo
+después de colocar los dieciséis machacaría los de arriba. Se sube primero,
+sobre un Track cuyos huecos son todavía el mismo valor. Está comentado ahí.
