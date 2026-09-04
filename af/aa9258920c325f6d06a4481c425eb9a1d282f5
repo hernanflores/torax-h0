@@ -1,0 +1,39 @@
+Task: La app restaura al arrancar (Fase 5, persistence_20260904)
+
+Un fallo encontrado por los tests antes de que llegara a dispositivo:
+ControlInput sembraba el marco tonal a los doce Tracks en su inicializador
+—existe para quien construye con un marco suelto, de cuando Scale y Root eran
+de la app— y aplicado a un Pattern restaurado del disco habría borrado en
+silencio la tonalidad de los doce. Un bajo en menor bajo un arpegio en mayor
+habría vuelto todo en Do menor. El parámetro pasa a ser opcional, y la app
+restaura con nil.
+
+Cambios en MIDI:
+- ControlInput.init gana frame opcional; nil deja el que cada Track traiga.
+- ControlInput.setPattern(_:) sustituye los doce y publica, sin mover el Track
+  seleccionado: cambiar de Pattern no cambia de qué Track se habla.
+- PatternReplacementTests.swift, cinco tests. MIDI pasa de 494 a 499.
+
+Cambios en App:
+- TransportModel abre la sesión en el init, ANTES de construir la entrada de
+  control y el transporte: lo que arranca es el Bank restaurado, no el inicial
+  con el Bank encima. La lectura bloquea el hilo principal a propósito (NFR6):
+  ocurre una vez y no hay nada que dibujar.
+- El tempo de la MusicalTimeline sale del Bank y no del literal de 120 BPM.
+- syncFromControlInput lleva la edición al Bank y marca el Autosave. Es el
+  único sitio por el que pasan los tres caminos —knob, pad y pantalla—, así que
+  ninguno puede olvidarse.
+- selectPattern, duplicatePattern, saveBank y reloadBank, que delegan en
+  BankSession; adoptActivePattern es el único camino por el que un Pattern
+  entra sin venir de un knob.
+- Timer de un segundo que pregunta, y AutosaveScheduler que decide. Con un
+  temporizador del tamaño del periodo, una edición justo después de un tic
+  esperaría hasta el doble.
+- La escritura va a una Task.detached: 7 ms son medio fotograma a 60 Hz.
+- ContentView observa scenePhase y avisa en 'inactive', no en 'background':
+  es la primera señal, y esperar deja una ventana en la que el sistema puede
+  terminar la app sin más aviso.
+- ToraxH0.xcodeproj: Packages/Persistence entra como paquete local.
+
+Y una nota sobre el init: las propiedades se leen en locales hasta que
+controlInput está asignado, porque Swift no deja tocar self antes.
