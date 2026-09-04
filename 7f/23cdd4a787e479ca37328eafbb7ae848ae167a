@@ -1,0 +1,33 @@
+Tasks: El almacén escribe y lee un Bank (FR8) + Un disco ilegible no impide
+arrancar (FR7) — Fase 3, persistence_20260904
+
+Van en un commit a propósito: la tolerancia no es una capa sobre la lectura,
+es la misma función. Separarlas habría dejado un commit intermedio con un read
+que aún no cumple lo que promete.
+
+Rojo antes de verde: 'cannot find type BankStore in scope'. Verde: 48 tests,
+0 fallos, Persistence al 100,00% de líneas.
+
+Fichero creado: Packages/Persistence/Sources/Persistence/BankStore.swift, con
+BankFile (working=autosave.json, saved=bank.json), PersistenceRecovery
+(none/unreadable/unsupportedVersion), BankReadOutcome y BankStore.
+Y BankStoreTests.swift, que corre contra un directorio temporal propio de cada
+test: un test que escribe donde escribe el usuario puede borrarle el trabajo.
+
+Decisiones:
+1. Dos ficheros y no uno. La diferencia es de intención: uno lo escribe la app
+   sola, el otro lo escribe el usuario cuando decide a dónde quiere poder
+   volver. Con uno solo, Reload no tendría destino.
+2. load estricta y read tolerante. La app usa read, que siempre devuelve un
+   Bank utilizable; load existe para los tests y para quien quiera la verdad.
+3. Un fichero malo se aparta, no se borra: el material puede seguir dentro.
+   Y apartar dos veces busca nombre libre en vez de machacar.
+4. unsupportedVersion se distingue de unreadable porque la pantalla tiene que
+   poder decir cuál de las dos cosas pasó.
+5. Application Support y no Documents: son ficheros que la app gestiona, no
+   documentos que el usuario abre.
+
+Lo que los tests NO prueban, y está escrito en el plan: la atomicidad frente a
+una interrupción real no se puede provocar desde un test —haría falta matar el
+proceso a mitad de escritura—. Se comprueba que no se escribe en sitio y que no
+queda basura; la garantía la da .atomic y se apoya en la plataforma.
