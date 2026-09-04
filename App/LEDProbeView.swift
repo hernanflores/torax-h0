@@ -122,7 +122,7 @@ struct LEDProbeView: View {
                 blockHeader(
                     label: "Primera nota",
                     value: probe.noteBase,
-                    onChange: { probe.noteBase = $0 }
+                    onMove: { probe.moveNoteBase(by: $0) }
                 )
 
                 labelled("Velocity") {
@@ -157,7 +157,7 @@ struct LEDProbeView: View {
                 blockHeader(
                     label: "Primer CC",
                     value: probe.controllerBase,
-                    onChange: { probe.controllerBase = $0 }
+                    onMove: { probe.moveControllerBase(by: $0) }
                 )
 
                 labelled("Valor") {
@@ -229,7 +229,7 @@ struct LEDProbeView: View {
     /// preset declara: si los pads no responden en 36, la siguiente pregunta es
     /// en cuál sí.
     private func blockHeader(
-        label: String, value: Int, onChange: @escaping (Int) -> Void
+        label: String, value: Int, onMove: @escaping (Int) -> Void
     ) -> some View {
         HStack(spacing: 8) {
             Text("\(label): \(value)")
@@ -237,7 +237,7 @@ struct LEDProbeView: View {
                 .frame(minWidth: 160, alignment: .leading)
             ForEach([-12, -1, 1, 12], id: \.self) { delta in
                 Button(delta > 0 ? "+\(delta)" : "\(delta)") {
-                    onChange(value + delta)
+                    onMove(delta)
                 }
                 .font(Typography.captionStrong)
                 .buttonStyle(.plain)
@@ -306,13 +306,26 @@ final class LEDProbeModel {
     var controllerValue = 127
 
     /// Primera nota del bloque de pads. Arranca en la que declara el preset.
-    var noteBase = Int(ControlMapping.beatStepPro.padBlock.value) {
-        didSet { noteBase = Self.clampBlock(noteBase) }
-    }
+    ///
+    /// **El acotado vive en `move(_:by:)` y no en un `didSet`.** Con
+    /// `@Observable`, la propiedad almacenada pasa a ser computada y el
+    /// observador se queda sobre el respaldo: asignarse a sí misma desde el
+    /// `didSet` vuelve a entrar por el setter y desborda la pila. Lo hizo, en
+    /// dispositivo — `EXC_BAD_ACCESS (code=2)` en la página de guarda — al
+    /// pulsar los botones que mueven el bloque.
+    private(set) var noteBase = Int(ControlMapping.beatStepPro.padBlock.value)
 
     /// Primer CC del bloque de step buttons. Arranca en el del preset.
-    var controllerBase = ControlMapping.beatStepPro.stepButtonBlock.number {
-        didSet { controllerBase = Self.clampBlock(controllerBase) }
+    private(set) var controllerBase = ControlMapping.beatStepPro.stepButtonBlock.number
+
+    /// Mueve el primer número del bloque de pads, sin salirse de 0–127.
+    func moveNoteBase(by delta: Int) {
+        noteBase = Self.clampBlock(noteBase + delta)
+    }
+
+    /// Mueve el primer número del bloque de step buttons.
+    func moveControllerBase(by delta: Int) {
+        controllerBase = Self.clampBlock(controllerBase + delta)
     }
 
     var noteNumbers: [Int] { block(from: noteBase) }
