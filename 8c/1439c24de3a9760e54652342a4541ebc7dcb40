@@ -1,0 +1,36 @@
+Corrección en vuelo (Fase 6): el endpoint del arnés se colaba entre los destinos
+
+Cómo apareció
+Preparando la medición de jitter con el usuario, que solo tiene un puerto libre
+en el iPad. Al explicar que el arnés mide por loopback virtual y no necesita
+hardware, se ve que `MIDIEndpointRole.isEligible` excluye
+`VirtualLoopback.defaultName` —"Torax H-0 Loopback"— y que `JitterHarness` crea el
+suyo con el literal "Torax H-0 Jitter".
+
+Consecuencia
+Durante una medición, el endpoint del arnés aparecía en la lista de destinos
+elegibles. Elegirlo manda las notas de la app al medidor: ni suenan en el sinte
+ni la medición queda limpia.
+
+Por qué los tests no lo vieron
+`MIDIDestinationSelectionTests` construía su endpoint de medición con
+`VirtualLoopback.defaultName` — el mismo nombre equivocado que el código. Test y
+código compartían la suposición, así que el verde no decía nada.
+
+Qué se arregla
+- `VirtualLoopback.measurementName` y `VirtualLoopback.isOwn(_:)`: los nombres
+  viven en un solo sitio y el filtro pregunta por los dos.
+- `JitterHarness` usa la constante en vez del literal.
+- Tests nuevos: el endpoint del arnés por su nombre propio no es elegible ni
+  seleccionable, y como **fuente** no se filtra —son destinos virtuales y nunca
+  aparecen entre las entradas—.
+
+Verificación
+- MIDI, partición de CI → 21 (1 omitido) + 494, 0 fallos
+- xcodebuild -destination 'generic/platform=iOS' → BUILD SUCCEEDED
+
+Ficheros
+- Packages/MIDI/Sources/MIDI/VirtualLoopback.swift (modificado)
+- Packages/MIDI/Sources/MIDI/JitterHarness.swift (modificado)
+- Packages/MIDI/Sources/MIDI/MIDIEndpointSelection.swift (modificado)
+- Packages/MIDI/Tests/MIDITests/MIDIDestinationSelectionTests.swift (modificado)
