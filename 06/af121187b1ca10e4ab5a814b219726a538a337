@@ -1,0 +1,23 @@
+Task: El paquete `Persistence` y el formato de disco, en `tech-stack.md` (Fase 1, persistence_20260904)
+
+Primera de las cuatro tareas de documentación que la Fase 1 exige antes de
+escribir una línea de Swift, por el paso 8 del Task Workflow: documentar la
+desviación *antes* de implementarla.
+
+Qué cambia en conductor/tech-stack.md:
+- Resumen: la fila de Persistencia nombra el paquete.
+- Estructura de módulos: aparece `Persistence`, dependiendo de `Engine` y
+  `Foundation`, y nadie depende de él salvo `App`.
+- Persistencia: enmienda fechada del 2026-09-04 con el porqué de no usar
+  Codable sintetizado sobre los tipos del Engine (su disposición POD la manda
+  el tiempo real y `_isPOD` la vigila; atarle el JSON haría que mover una
+  tupla rompiera ficheros guardados), el formato concretado (schemaVersion,
+  tuplas como listas, fichero de oro), los dos ficheros —autosave.json y
+  bank.json—, la escritura atómica, el arranque tolerante a un fichero
+  ilegible, y lo que la enmienda no promete: ni migraciones ni Backup Project.
+
+El *why*: las dos representaciones tienen dueños distintos. Una la manda el
+hilo del scheduler; la otra, la compatibilidad de ficheros. Unirlas significa
+que una de las dos manda sobre la otra, y ninguna de las dos debe.
+
+Ficheros: conductor/tech-stack.md (modificado), plan.md (estado).
