@@ -1,0 +1,35 @@
+Task: Pantalla de pruebas desechable (Fase 1)
+
+Qué cambia
+- App/LEDProbeView.swift (nuevo): la sonda entera —vista y modelo— en un
+  fichero, porque se borra completo al cerrar la fase.
+- App/ToraxH0App.swift: el flag --led-probe sustituye a ContentView por la
+  sonda. No cuelga de una pestaña: así no hay nada que desmontar después,
+  y no queda a un gesto de distancia de alguien tocando.
+
+El porqué
+El repertorio del hardware es una pregunta abierta y la Fase 1 puede
+cancelar el track (NFR1). La rebanada 7 enseñó a no dar por sabido el
+BeatStep: lo que el código dé por cierto tiene que haberse visto encender
+en el iPad.
+
+Decisiones
+- Un mensaje por gesto. Una ráfaga automática dejaría algo encendido sin
+  saber cuál de los mensajes lo hizo; descubrir esto es mirar el
+  controlador, no leer un log.
+- Destino elegido de la lista entera, sin derivarlo de la fuente: derivar
+  el hermano es FR11 y es de la Fase 3. Aquí hace falta poder apuntar
+  también a un sintetizador, para distinguir 'la sonda no envía' de 'el
+  controlador no responde'.
+- Los bloques de pads y de step buttons arrancan en los números que
+  declara ControlMapping.beatStepPro y se pueden mover ±1 y ±12: si no
+  responden en 36 o en 102, la siguiente pregunta es en cuál sí.
+- Timestamp cero (= 'ya' en CoreMIDI). Sellar con el reloj del scheduler
+  es FR6 y es de la Fase 4.
+- Sin tests, como dice el plan: es instrumentación con fecha de caducidad.
+
+Verificación
+- xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: OK
+- Simulador iPad Pro 11: la pantalla se pinta entera y la lista de destinos
+  sale vacía, que es lo correcto sin MIDI. El repertorio real solo se puede
+  averiguar en dispositivo — es la tarea siguiente.
