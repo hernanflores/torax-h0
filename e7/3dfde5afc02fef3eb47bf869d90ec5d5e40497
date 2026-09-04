@@ -1,0 +1,33 @@
+Tasks: El Pattern activo (FR2) + Duplicar (FR3) + Cambios sin guardar, Save y
+Reload (FR6) — Fase 4, persistence_20260904
+
+Van en un commit porque son un tipo: BankSession. Partirlo por operaciones
+habría dejado commits intermedios con un tipo que no cierra su invariante.
+
+Rojo antes de verde: 'cannot find BankSession in scope'. Verde: 70 tests,
+0 fallos, Persistence al 100,00% de líneas.
+
+Fichero creado: Packages/Persistence/Sources/Persistence/BankSession.swift, y
+BankSessionTests.swift con diecinueve tests.
+
+Cinco decisiones:
+1. Vive en Persistence. Tres de sus cuatro operaciones no tocan disco, pero la
+   cuarta sí, y partir el tipo dejaría 'elegir Pattern' en un paquete y
+   'guardar' en otro para lo que el usuario ve como un solo concepto: el Bank
+   con el que trabaja. Tampoco en App, que no se mide.
+2. No sabe si el transporte está corriendo: se lo dicen. Atarlo a MIDI por dos
+   booleanos habría sido caro para lo que aporta.
+3. hasUnsavedChanges es bank != savedBank, no una bandera. Deshacer un cambio a
+   mano devuelve el Bank a 'guardado' sin que nadie lo anuncie.
+4. El punto de retorno sale del fichero del Save, nunca del Autosave.
+   Confundirlos haría que una escritura automática convirtiera en 'guardado'
+   algo que el usuario nunca guardó, y Reload dejaría de significar nada.
+5. save() escribe LOS DOS ficheros. Dejar el de trabajo atrás haría que el
+   arranque siguiente restaurara un estado anterior al que se acaba de guardar.
+
+Y una regla que sale de FR2: elegir Pattern marca el Bank como modificado.
+Cuál está activo es parte del Bank, y reabrir en otro sitio del que se dejó
+sería perder el sitio.
+
+La tarea 'El nivel Bank en el modelo' de esta fase quedó entregada en la
+Fase 2 (3aafa23), por la enmienda anotada allí.
