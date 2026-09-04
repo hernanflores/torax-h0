@@ -409,6 +409,30 @@ escalón es el que se nota.
 
   **No generaliza a otro hardware.** Eso es MIDI Learn, rebanada 8 de la v1.
 
+---
+
+- [ ] **Track: En pantalla no se puede elegir qué Cycle se edita**
+
+  Encontrado el 2026-09-03 verificando el reloj externo en iPad. **El cursor de
+  edición se queda siempre en el Cycle 1**, así que todo giro de knob cae ahí y
+  los otros quince parecen copias que no guardan nada — que es exactamente lo que
+  son: nacen iguales y nunca reciben una edición.
+
+  **La causa es un gesto que falta, no el modelo.** `Track` lleva sus dos
+  cursores —el de reproducción y el de edición— y `replacingEditing(_:)` escribe
+  en el que toca; lo que no existe es la forma táctil de mover el de edición.
+  Pulsar un número en la fila de Cycles llama a `onActiveCyclesChange`
+  (`App/TrackSelectorView.swift`), que cambia **cuántos** se recorren, no cuál se
+  edita. La única vía es el knob 10 del BeatStep, CC 79.
+
+  **El reparto de gestos está decidido** (2026-09-03): **pulsar elige** el Cycle
+  en edición y **mantener pulsado cambia cuántos** están activos. El gesto
+  frecuente es el simple y el raro pide mantener, que es el mismo criterio con el
+  que los step buttons 15 y 16 hacen de modificadores de solo y mute.
+
+  Es de `cycles_20260901`, no del track del reloj externo: se separa por el mismo
+  criterio que partió la rebanada 7 del MVP.
+
 ## Defectos conocidos
 
 Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres
