@@ -1,0 +1,22 @@
+Task: El Autosave escribe cuando toca (Fase 5, persistence_20260904)
+
+Rojo antes de verde: 'cannot find AutosaveScheduler in scope'. Verde: 79 tests,
+0 fallos.
+
+Fichero creado:
+Packages/Persistence/Sources/Persistence/AutosaveScheduler.swift, y sus once
+tests.
+
+Decisiones:
+1. Es una decisión, no un temporizador. El instante entra como parámetro, así
+   que 'tras unos segundos sin ediciones' se afirma en un test en lugar de
+   comprobarse durmiendo. El Timer que lo conduce se queda en App, donde no
+   hace falta que sea testeable.
+2. La cuenta arranca en la ÚLTIMA edición, no en la primera: se escribe cuando
+   se para de tocar, no cada tres segundos mientras se toca. Girar un knob son
+   decenas de eventos.
+3. shouldWrite y shouldWriteOnLeaving CONSUMEN lo pendiente al decir que sí:
+   quien pregunta es quien escribe, y así no hay forma de escribir dos veces lo
+   mismo por preguntar dos veces.
+4. Tres segundos por defecto. Corto de más escribe durante el gesto; largo de
+   más deja de proteger nada.
