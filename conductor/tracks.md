@@ -412,8 +412,9 @@ escalón es el que se nota.
 ---
 
 - [ ] **Track: Feedback visual en el controlador**
+  *Link: [conductor/tracks/controller-feedback_20260904/index.md](./tracks/controller-feedback_20260904/index.md)*
 
-  Por planificar. Sale de la misma petición que la sincronía —2026-09-03— y se
+  **Planificado el 2026-09-04, en siete fases.** Sale de la misma petición que la sincronía —2026-09-03— y se
   separa por el mismo criterio que partió la rebanada 7 del MVP en preset y MIDI
   Learn: **no comparten nada**. La sincronía toca la rejilla temporal y lleva
   medición; esto toca la salida y lleva descubrimiento de hardware.
@@ -436,6 +437,18 @@ escalón es el que se nota.
     entrada.
 
   **No generaliza a otro hardware.** Eso es MIDI Learn, rebanada 8 de la v1.
+
+  **La Fase 1 puede cancelar el track**, y va primero y sola: si el BeatStep no
+  ilumina por MIDI in, no hay nada que entregar y se cierra ahí con el hallazgo
+  escrito. Averiguarlo cuesta una pantalla desechable; descubrirlo después de
+  construir el camino de salida cuesta el track entero.
+
+  **Las luces se sellan junto a la nota**, en el hilo del scheduler y con su mismo
+  timestamp: es la única forma de que la luz caiga con el sonido. Eso **duplica
+  los mensajes por nota en el camino de tiempo real y no se mide** —la medición
+  sigue suspendida—, justo detrás de una regresión sin causa identificada. Si el
+  timing se degrada, esta es la primera carga que mirar, y no habrá número con el
+  que compararla.
 
 ---
 
