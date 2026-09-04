@@ -1,0 +1,29 @@
+Fix en vuelo de la tarea 'Pantalla de pruebas desechable'
+
+El defecto
+En dispositivo, la sonda se quedaba sin responder y moría con
+EXC_BAD_ACCESS (code=2) en una direccion 0x16d..., que es la pagina de
+guarda de la pila: desbordamiento por recursion infinita.
+
+La causa
+    var noteBase = 36 { didSet { noteBase = clamp(noteBase) } }
+
+En una clase normal esto es correcto — el didSet no se re-dispara al
+asignarse dentro de si mismo. Con @Observable no: el macro convierte la
+propiedad almacenada en computada y deja el observador sobre el respaldo,
+asi que asignar a noteBase desde el didSet vuelve a entrar por el setter,
+que vuelve a tocar el respaldo, que vuelve a disparar el didSet.
+
+Reproducido fuera del proyecto con las dos formas compiladas contra
+Observation: la vieja termina en SIGSEGV (139), la nueva acota y sale 0.
+
+El arreglo
+El acotado sale del observador y pasa a moveNoteBase(by:) y
+moveControllerBase(by:), que es donde se puede acotar sin reentrar. Los
+botones mandan el delta en vez del valor ya sumado, asi que la vista no
+conoce el limite: lo conoce el modelo, en un solo sitio.
+
+Verificacion
+- Reproduccion minima: forma vieja 139, forma nueva 0.
+- xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: OK
+- Falta la vuelta al iPad, que es la tarea siguiente de todos modos.
