@@ -411,7 +411,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: Feedback visual en el controlador**
+- [x] **Track: Feedback visual en el controlador** — **cancelado en la Fase 1**: el BeatStep Pro no ilumina por MIDI in
   *Link: [conductor/tracks/controller-feedback_20260904/index.md](./tracks/controller-feedback_20260904/index.md)*
 
   **Planificado el 2026-09-04, en siete fases.** Sale de la misma petición que la sincronía —2026-09-03— y se
@@ -437,6 +437,30 @@ escalón es el que se nota.
     entrada.
 
   **No generaliza a otro hardware.** Eso es MIDI Learn, rebanada 8 de la v1.
+
+  **Cancelado el 2026-09-04, y la Fase 1 hizo justo lo que se le pidió.** La
+  sonda desechable mandó note-on al bloque de pads y control change al de step
+  buttons, con todas las velocities y valores previstos y por los dieciséis
+  canales: **no se encendió nada**, y la documentación del fabricante dice que
+  el controlador no expone sus LEDs por MIDI entrante. Sin eso no hay feature
+  que entregar. Las fases 2 a 7 no se ejecutaron y el repositorio queda como
+  estaba: la sonda se borró al cerrar, según NFR1.
+
+  **Coste real: dos commits y una sesión de iPad**, contra el track entero si el
+  camino de salida se hubiera construido primero. Es exactamente el ahorro que
+  justificaba poner la fase delante y sola.
+
+  **Lo que no se comprobó, escrito para poder revisarlo.** No se hizo la prueba
+  de control —apuntar la sonda a un sintetizador para confirmar que enviaba— ni
+  se barrieron las 128 notas y los 128 CC. El hallazgo descansa en la
+  documentación externa, no en un experimento que separe «el hardware no
+  escucha» de «la sonda no enviaba». Detalle en el `device-verification.md` del
+  track.
+
+  **Lo que sigue abierto.** El feedback visual por SysEx o protocolo
+  propietario es otra investigación y otro track, y nadie lo ha pedido. Las
+  luces huérfanas, el interruptor de `3 · MIDI` y el resto de la spec mueren con
+  el track.
 
   **La Fase 1 puede cancelar el track**, y va primero y sola: si el BeatStep no
   ilumina por MIDI in, no hay nada que entregar y se cierra ahí con el hallazgo

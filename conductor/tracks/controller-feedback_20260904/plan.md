@@ -17,6 +17,13 @@ buttons, que son estado y no eventos; y la pantalla al final.
 **Ninguna fase mide jitter** (NFR4). La limitación 1 de la spec dice lo que eso
 cuesta aquí.
 
+> **El track se canceló en la Fase 1, el 2026-09-04.** El BeatStep Pro no
+> ilumina por MIDI in: la sonda le mandó note-on y control change por los
+> dieciséis canales y no se encendió nada, y la documentación del fabricante lo
+> respalda. Sin eso no hay feature que entregar, así que **las fases 2 a 7 no se
+> ejecutan** y quedan como estaban. El hallazgo, con lo que no se comprobó, está
+> en `device-verification.md`.
+
 ## FASE 1: QUÉ SABE HACER EL HARDWARE
 
 - [x] Task: Pantalla de pruebas desechable — `1ab9273`
@@ -28,24 +35,23 @@ cuesta aquí.
         como el panel del arnés antes de que FR12 lo quitara.
   - [x] Que se pueda mandar **un** mensaje a la vez y verlo: descubrir esto es
         mirar el controlador, no leer un log.
-- [ ] Task: Averiguar y escribir el repertorio real (NFR1)
-  - [ ] ¿Se encienden los pads con note-on? ¿Con qué canal? ¿Importa la velocity
-        —color, brillo— o es binario?
-  - [ ] ¿Se encienden los step buttons con CC? ¿Qué valores? ¿Hay más de dos
-        estados?
-  - [ ] ¿Hay que poner el BeatStep en algún modo concreto para que escuche?
-  - [ ] Escribir lo aprendido en `device-verification.md` del track, **incluido lo
+- [x] Task: Averiguar y escribir el repertorio real (NFR1) — **el punto de cancelación se activó**
+  - [x] ¿Se encienden los pads con note-on? **No**, con ningún canal ni velocity.
+  - [x] ¿Se encienden los step buttons con CC? **No**, con ningún valor.
+  - [x] ¿Hay que poner el BeatStep en algún modo concreto para que escuche? No se
+        encontró ninguno; la documentación dice que no expone sus LEDs por MIDI in.
+  - [x] Escribir lo aprendido en `device-verification.md` del track, **incluido lo
         que no funcione**: es la mitad del valor de esta fase.
-  - [ ] **Punto de cancelación.** Si no ilumina nada por MIDI in, se cierra el
+  - [x] **Punto de cancelación.** Si no ilumina nada por MIDI in, se cierra el
         track aquí con el hallazgo escrito y se registra en `tracks.md`. No se
         busca SysEx ni protocolo propietario: eso es otra investigación y otro
         track.
-- [ ] Task: Fijar el reparto de los step buttons (FR7)
+- [x] Task: Fijar el reparto de los step buttons (FR7) — **no procede**: sin LEDs que repartir, no hay decisión que tomar
   - [ ] Con el repertorio delante, decidir cómo conviven selección y mute/solo, y
         escribirlo en el `spec.md` como enmienda fechada.
   - [ ] Si el LED es binario, manda el Track seleccionado — ya está decidido y no
         hay que volver a discutirlo.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: QUÉ ENCENDER, COMO FUNCIÓN PURA
 
