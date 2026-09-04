@@ -1,0 +1,20 @@
+Task: El umbral de cobertura de `Persistence`, en `workflow.md` (Fase 1, persistence_20260904)
+
+Segunda de las cuatro tareas de documentación de la Fase 1.
+
+Qué cambia en conductor/workflow.md:
+- Coverage Requirements: fila `Persistence` con umbral >=90%.
+- Nota fechada del 2026-09-04 con el porqué del nivel: el >=80% de MIDI existe
+  porque parte de ese paquete no se puede cubrir en host —la entrega real de
+  CoreMIDI se valida con el arnés—, y Persistence no tiene esa parte.
+- Development Commands: el paquete entra en 'Daily Development' y en
+  'Before Committing'.
+- Los tres sitios que repiten el umbral: principio rector 4, Quality Gates y
+  Definition of Done.
+
+El *why*: un fallo del motor se oye en el Step siguiente; un fallo del formato
+aparece la próxima vez que alguien abre la app, sobre material que ya no se
+recupera. Lo que hay que cubrir no es el caso feliz: es el fichero truncado, el
+de versión desconocida y el que no está.
+
+Ficheros: conductor/workflow.md (modificado), plan.md (estado).
