@@ -13,19 +13,9 @@ struct ToraxH0App: App {
         }
     }
 
-    /// **La sonda de LEDs sustituye a la app entera, no se añade a ella.**
-    /// Es instrumentación de la Fase 1 del track `controller-feedback_20260904`
-    /// y se borra al cerrarla; colgarla de una pestaña la habría dejado a un
-    /// gesto de distancia de alguien tocando, y encima habría que desmontar la
-    /// pestaña después. Con el flag no hay nada que desmontar: se quita el
-    /// fichero y esta rama.
     var body: some Scene {
         WindowGroup {
-            if LEDProbeView.isRequested {
-                LEDProbeView()
-            } else {
-                ContentView()
-            }
+            ContentView()
         }
     }
 }

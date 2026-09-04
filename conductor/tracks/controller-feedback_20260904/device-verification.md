@@ -1,4 +1,4 @@
-# Verificación en dispositivo — Fase 1
+# Verificación en dispositivo — Fase 1, y cierre del track
 
 **2026-09-04.** iPad con el BeatStep Pro conectado, sonda de LEDs
 (`--led-probe`) enviando al controlador. Es la fase que podía cancelar el track
@@ -33,7 +33,17 @@ entre absoluto y relativo—. Que la subdirección `10` de los pads exista tambi
 en el Pro es **plausible, no probable y desde luego no seguro**: nadie lo ha
 publicado ni a favor ni en contra.
 
-La sonda vuelve con SysEx en crudo para resolverlo. Pendiente de dispositivo.
+**Resultado: tampoco responde.** El frame del MiniLab MkII no encendió nada en
+el BeatStep Pro, ni con el pad 0 ni con los otros quince, ni cambiando el color.
+
+Con eso la conjetura queda descartada **con un experimento y no con
+documentación ajena**, que era la debilidad del primer cierre. El track se cierra
+aquí.
+
+*(Pendiente de confirmar por separado: la variante de poner el pad en modo Note
+en MIDI Control Center y repetir el note-on, que es la condición que pone el
+BeatStep de primera generación. Si no llegó a probarse, es lo único del alcance
+de esta fase que queda sin tocar.)*
 
 ## Qué se probó en la primera vuelta
 
@@ -82,6 +92,18 @@ preset. Borrarla no deja rastro.
 
 Historial: `1ab9273` la sonda, `b753a5e` el desbordamiento de pila que la tumbó
 en el primer intento —un `didSet` autoasignante bajo `@Observable`—.
+
+## Conclusión
+
+**El BeatStep Pro no ilumina desde el host, ni por MIDI de canal ni por el SysEx
+de color de Arturia.** Las dos vías que estaban al alcance de esta fase se
+probaron en dispositivo y ninguna encendió nada. El track se cierra sin entregar
+nada: todo lo que prometía —los pads siguiendo la nota, los step buttons
+diciendo qué Track se edita— depende de que el hardware responda.
+
+Lo que queda fuera, y sigue sin explorarse: el resto del espacio de direcciones
+SysEx del Pro, que no está documentado y cuya exploración a ciegas es otra
+investigación y otro track. Nadie la ha pedido.
 
 ## Fuentes
 

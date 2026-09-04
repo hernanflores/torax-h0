@@ -411,7 +411,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: Feedback visual en el controlador** — cancelado en la Fase 1 y **reabierto el mismo día** para probar SysEx
+- [x] **Track: Feedback visual en el controlador** — **cancelado en la Fase 1**: el BeatStep Pro no ilumina desde el host, ni por MIDI de canal ni por SysEx
   *Link: [conductor/tracks/controller-feedback_20260904/index.md](./tracks/controller-feedback_20260904/index.md)*
 
   **Planificado el 2026-09-04, en siete fases.** Sale de la misma petición que la sincronía —2026-09-03— y se
@@ -444,8 +444,9 @@ escalón es el que se nota.
   LEDs, el segundo por SysEx; y el Pro **sí** acepta esa misma cabecera y
   dirección para configurar sus knobs. Eso convierte «¿y por SysEx?» en un frame
   concreto que probar, que es distinto de la investigación abierta que el plan
-  excluía. La Fase 1 sigue abierta con una tarea más y un segundo punto de
-  cancelación.
+  excluía. **Tampoco enciende nada**, así que el track se cierra con el
+  experimento hecho y no con documentación ajena — que era la debilidad del
+  primer cierre y por eso mereció la segunda vuelta.
 
   **Lo de la primera vuelta, que sigue siendo cierto.** La
   sonda desechable mandó note-on al bloque de pads y control change al de step
@@ -466,9 +467,11 @@ escalón es el que se nota.
   escucha» de «la sonda no enviaba». Detalle en el `device-verification.md` del
   track.
 
-  **Lo que decide el track.** Si el frame del MiniLab no hace nada en el Pro, se
-  cierra con el experimento hecho en vez de con documentación ajena —que era la
-  debilidad del primer cierre— y el resto de la spec muere con él.
+  **Lo que queda fuera y sin explorar.** El resto del espacio de direcciones
+  SysEx del Pro, que no está documentado; barrerlo a ciegas es otra
+  investigación y otro track, y nadie la ha pedido. El resto de la spec —las
+  luces huérfanas, el interruptor de `3 · MIDI`, el reparto de los step
+  buttons— muere con el track.
 
   **La Fase 1 puede cancelar el track**, y va primero y sola: si el BeatStep no
   ilumina por MIDI in, no hay nada que entregar y se cierra ahí con el hallazgo
