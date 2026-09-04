@@ -86,9 +86,34 @@ xcrun devicectl device process launch --device <ID> --console \
 |---|---|---|
 | Referencia vigente (v2 rebanada 2, 2026-09-02) | 0,158 ms | 0,013–0,014 ms |
 | Umbral del proyecto | 2 ms | 0,5 ms |
-| **Esta pasada** | | |
 
 **Una regresión bloquea el cierre** (NFR4).
+
+### Pasada 1 — 2026-09-03
+
+```
+60 BPM  · n=1000  máx=0,144 ms  media=+0,097 ms  σ=0,015 ms  → CUMPLE
+120 BPM · n=1000  máx=0,468 ms  media=+0,097 ms  σ=0,030 ms  → CUMPLE
+174 BPM · n=1000  máx=0,374 ms  media=+0,091 ms  σ=0,024 ms  → CUMPLE
+VEREDICTO: CUMPLE
+```
+
+**CUMPLE con margen —4,3× en el máximo y 16× en la σ— pero es peor que la
+referencia**: el máximo la triplica y la σ la dobla. Dos cosas apuntan a un
+episodio y no a un coste del cambio:
+
+- **La media no se mueve**, y de hecho baja: +0,091 a +0,097 ms contra los
+  +0,105–0,121 de las seis mediciones anteriores. Estimar el tempo y corregir la
+  fase por negra costarían tiempo de forma sistemática, y eso subiría la media y
+  degradaría los tres tempos a la vez. Lo que se ensanchó es la cola.
+- **El pico está a 120 BPM, no a 174.** Si el coste fuera del trabajo por
+  ventana, el tempo más rápido sería el peor.
+
+Es el mismo patrón que la v2 rebanada 1, cuya cola de 0,598 ms a 174 BPM no se
+reprodujo en la rebanada siguiente. **Se repite la pasada** antes de decidir
+(2026-09-03).
+
+### Pasada 2 — pendiente
 
 ---
 
