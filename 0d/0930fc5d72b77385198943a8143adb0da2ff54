@@ -1,0 +1,32 @@
+Task: Probar el SysEx de color de pad — segunda vuelta de la Fase 1
+
+Por que se reabrio
+El track se cerro con MIDI de canal descartado y documentacion ajena como
+respaldo. La busqueda posterior encontro que el feedback de LED por SysEx
+existe en otros aparatos de Arturia y que el Pro comparte cabecera y
+direccion para configurarse, asi que la pregunta paso de investigacion
+abierta —lo que el plan excluia— a un frame concreto que probar.
+
+Lo que dice la documentacion
+- BeatStep 1a gen: note-on enciende, note-off apaga; solo rojo, y solo con
+  el pad en modo Note.
+- MiniLab MkII: F0 00 20 6B 7F 42 02 00 10 7n cc F7, confirmado por Arturia.
+- BeatStep Pro: sin documentar. Los scripts de Bitwig no encienden nada.
+- El Pro si usa 02 00 06 [knob] [val] para absoluto/relativo, que es la misma
+  direccion 02 00. De ahi la conjetura, que es plausible y nada mas.
+
+Que cambia
+- App/LEDProbeView.swift recuperado de b753a5e, mas: seccion SysEx con el
+  frame del MiniLab por pad y por color, y un campo de bytes en crudo con
+  validacion (F0 al principio, F7 al final, hex con o sin espacios).
+- La sonda pasa a tener un solo cliente de CoreMIDI, propio, y manda todo
+  por la API de paquetes clasica. Antes usaba CoreMIDIOutput para las notas
+  y abria un segundo cliente para el SysEx: con los dos en el proceso el
+  primero fallaba con clientCreationFailed(-304). Visto en simulador; con un
+  cliente arranca limpio.
+
+Verificacion
+- xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: OK
+- Simulador iPad Pro 11: la pantalla se pinta entera con la seccion nueva y
+  el estado dice 'Sin destino elegido' — el -304 desaparecio.
+- Falta el dispositivo, que es lo unico que responde la pregunta.
