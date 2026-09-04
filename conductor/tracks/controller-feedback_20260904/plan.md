@@ -19,14 +19,14 @@ cuesta aquí.
 
 ## FASE 1: QUÉ SABE HACER EL HARDWARE
 
-- [ ] Task: Pantalla de pruebas desechable
-  - [ ] Una vista temporal tras un flag de lanzamiento —`--led-probe`—, que mande
+- [x] Task: Pantalla de pruebas desechable — `1ab9273`
+  - [x] Una vista temporal tras un flag de lanzamiento —`--led-probe`—, que mande
         a la fuente elegida: note-on por cada nota del bloque de pads, con
         velocities distintas; CC del bloque de step buttons con valores 0, 1, 64 y
         127; y los mismos por varios canales.
-  - [ ] **No lleva tests**: es instrumentación que se borra al cerrar la fase,
+  - [x] **No lleva tests**: es instrumentación que se borra al cerrar la fase,
         como el panel del arnés antes de que FR12 lo quitara.
-  - [ ] Que se pueda mandar **un** mensaje a la vez y verlo: descubrir esto es
+  - [x] Que se pueda mandar **un** mensaje a la vez y verlo: descubrir esto es
         mirar el controlador, no leer un log.
 - [ ] Task: Averiguar y escribir el repertorio real (NFR1)
   - [ ] ¿Se encienden los pads con note-on? ¿Con qué canal? ¿Importa la velocity
