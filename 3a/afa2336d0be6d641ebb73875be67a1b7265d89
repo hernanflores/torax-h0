@@ -41,3 +41,33 @@ queda con el comportamiento, que es lo que siempre fue suyo.
 Cobertura: Persistence 100,00% de líneas tras cubrir las dieciocho ramas de
 rechazo por nombre de campo —estaba en 85,32% con solo el camino feliz—.
 Engine 98,51%.
+
+--- Phase Verification & Checkpoint: Fase 2 (Un Bank sabe convertirse en bytes y volver) ---
+
+Cobertura de tests de la fase: cada fichero de código nuevo tiene el suyo.
+Bank.swift -> BankTests; CycleRecord/PatternRecord/BankRecord ->
+RecordRoundTripTests, BankRecordTests, InvalidValueTests; el manifiesto y la
+frontera -> DependencyBoundaryTests.
+
+Tests ejecutados:
+  swift test --package-path Packages/Engine        -> 478 tests, 0 fallos
+  swift test --package-path Packages/Persistence   ->  37 tests, 0 fallos
+  swift test --package-path Packages/MIDI (partición de CI, dos pasadas)
+                                                   ->  21 + 494 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+                                                   -> BUILD SUCCEEDED
+
+Cobertura: Engine 98,51% (>=90%), Persistence 100,00% (>=90%).
+
+Verificación manual propuesta al usuario — tres decisiones que el formato
+congela, no una pantalla:
+1. El fichero de oro fija las claves de cada nivel; a partir de aquí cambiar la
+   forma del JSON rompe ese test a propósito.
+2. De los dos cursores del Track solo se guarda el de edición.
+3. Una escala desconocida rechaza el fichero entero en vez de caer a Do menor.
+
+Y tres cosas fuera del plan, anotadas: el tipo Bank se adelantó de la Fase 4;
+Bank lleva Array porque no cruza al hilo del scheduler; y la versión del
+esquema se mudó de EngineSchema a PersistenceSchema.
+
+Confirmación del usuario: 'Si' (2026-09-04).
