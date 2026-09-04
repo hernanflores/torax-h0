@@ -31,3 +31,26 @@ sería perder el sitio.
 
 La tarea 'El nivel Bank en el modelo' de esta fase quedó entregada en la
 Fase 2 (3aafa23), por la enmienda anotada allí.
+
+--- Phase Verification & Checkpoint: Fase 4 (La app tiene un Bank con dieciséis Patterns) ---
+
+Cobertura de tests de la fase: BankSession.swift -> BankSessionTests.swift, con
+diecinueve tests. El tipo Bank del Engine, entregado en la Fase 2, ya tenía
+BankTests.
+
+Tests ejecutados:
+  swift test --package-path Packages/Persistence -> 70 tests, 0 fallos
+  Cobertura: 100,00% de líneas (>=90%). BankSession.swift al 100%.
+  Engine sin cambios en esta fase: 478 tests.
+
+Verificación manual propuesta al usuario — cuatro reglas fijadas, sin pantalla
+todavía:
+1. El punto de retorno es el último Save, nunca el último Autosave.
+2. Save escribe los dos ficheros.
+3. Cambiar de Pattern marca el Bank como modificado.
+4. Reload sin Save previo devuelve el Bank por defecto.
+
+Y se ofreció cambiar una: duplicar copia el Pattern activo aunque no tenga
+material. El usuario lo dejó como está.
+
+Confirmación del usuario: 'OK' (2026-09-04).
