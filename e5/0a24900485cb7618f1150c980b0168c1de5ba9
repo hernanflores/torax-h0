@@ -21,3 +21,26 @@ Workflow exige. Un handoff que no dice en qué se divergió obliga a deducirlo
 comparando capturas.
 
 Ficheros: design_handoff/README.md (modificado), plan.md (estado).
+
+--- Phase Verification & Checkpoint: Fase 1 (Las decisiones escritas antes de tocar código) ---
+
+Diff de la fase contra main: diez ficheros, ninguno de código —nueve .md y un
+.json—, que el protocolo excluye. No hay tests que escribir: la fase existe
+para no escribir Swift todavía.
+
+Tests: swift test --package-path Packages/Engine
+  → 467 tests, 0 fallos. Línea base intacta.
+
+Verificación manual propuesta al usuario:
+1. tech-stack.md, Persistencia → la enmienda del 2026-09-04: por qué no Codable
+   sobre los tipos del Engine, y los dos ficheros (autosave.json, bank.json).
+2. workflow.md, Coverage Requirements → Persistence >=90%, al nivel de Engine.
+3. product.md y Pre Spec → mute/solo no se guardan, el tempo sí con el Bank, y
+   qué sale de 'Fuera de v1'.
+4. design_handoff/README.md → el bloque de la rebanada 4 con las cinco
+   divergencias y la corrección del 'no aquí' del 2026-09-02.
+
+Se señaló que el punto 1 es el reversible barato: cambiar de opinión sobre el
+paquete cuesta un párrafo antes de la Fase 2 y el paquete entero después.
+
+Confirmación del usuario: 'Go' (2026-09-04).
