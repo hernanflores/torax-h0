@@ -1,0 +1,23 @@
+Task: Las divergencias del handoff, en su README (Fase 1, persistence_20260904)
+
+Cuarta y última tarea de documentación de la Fase 1.
+
+Qué cambia en design_handoff/README.md:
+- Bloque nuevo 'Planificado — v2 rebanada 4 (2026-09-04)', junto al de la
+  rebanada 2: qué construyen las pantallas 4 y 5, el reparto entre ellas —la 4
+  el disco, la 5 los Patterns— y cinco divergencias numeradas.
+- La nota del 2026-09-02 al pie de la pantalla 5 se corrige: su 'no aquí' era
+  cierto mientras la pantalla no existía. Se conserva el resto, incluida la
+  frase que anticipaba exactamente esto: 'dos vistas de lo mismo, no dos
+  estados que sincronizar'.
+
+Las divergencias: la 4 lista un Bank y no varios y no lleva Export/Import
+—Backup Project está fuera—; la 5 tiene dieciséis columnas y no ocho, doce
+filas y no dieciséis sin scroll, y con el transporte corriendo su celda cambia
+solo el Track, porque el Pattern no se puede cambiar en vuelo.
+
+El *why*: se escribe antes de implementar, que es lo que el paso 8 del Task
+Workflow exige. Un handoff que no dice en qué se divergió obliga a deducirlo
+comparando capturas.
+
+Ficheros: design_handoff/README.md (modificado), plan.md (estado).
