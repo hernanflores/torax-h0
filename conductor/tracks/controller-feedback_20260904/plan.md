@@ -17,12 +17,14 @@ buttons, que son estado y no eventos; y la pantalla al final.
 **Ninguna fase mide jitter** (NFR4). La limitación 1 de la spec dice lo que eso
 cuesta aquí.
 
-> **El track se canceló en la Fase 1, el 2026-09-04.** El BeatStep Pro no
-> ilumina por MIDI in: la sonda le mandó note-on y control change por los
-> dieciséis canales y no se encendió nada, y la documentación del fabricante lo
-> respalda. Sin eso no hay feature que entregar, así que **las fases 2 a 7 no se
-> ejecutan** y quedan como estaban. El hallazgo, con lo que no se comprobó, está
-> en `device-verification.md`.
+> **El track se canceló en la Fase 1 el 2026-09-04, y se reabrió el mismo día.**
+> Con MIDI de canal —note-on a los pads, control change a los step buttons, por
+> los dieciséis— no se encendió nada. Al revisar la documentación pública
+> apareció que otros aparatos de Arturia sí encienden sus LEDs por SysEx, y que
+> el Pro acepta la misma cabecera y dirección para configurarse: hay un frame
+> concreto que probar en vez de una investigación abierta, que es lo que el plan
+> excluía. **La Fase 1 sigue abierta con una tarea más**; las fases 2 a 7 siguen
+> sin ejecutarse. El detalle y las fuentes, en `device-verification.md`.
 
 ## FASE 1: QUÉ SABE HACER EL HARDWARE
 
@@ -46,12 +48,22 @@ cuesta aquí.
         track aquí con el hallazgo escrito y se registra en `tracks.md`. No se
         busca SysEx ni protocolo propietario: eso es otra investigación y otro
         track.
-- [x] Task: Fijar el reparto de los step buttons (FR7) — **no procede**: sin LEDs que repartir, no hay decisión que tomar
+- [~] Task: Probar el SysEx de color de pad (segunda vuelta)
+  - [x] Devolver la sonda con envío de SysEx en crudo y el frame del MiniLab MkII
+        precargado, por pad y por color.
+  - [ ] En dispositivo: `F0 00 20 6B 7F 42 02 00 10 70 01 F7` y sus variantes de
+        pad y color.
+  - [ ] En dispositivo: el pad en modo Note, que es la condición que pone el
+        BeatStep de primera generación para aceptar note-on como feedback.
+  - [ ] **Segundo punto de cancelación.** Si tampoco responde, se cierra con el
+        experimento hecho en vez de con documentación ajena, que era la debilidad
+        del primer cierre.
+- [ ] Task: Fijar el reparto de los step buttons (FR7) — pendiente de que haya LEDs que repartir
   - [ ] Con el repertorio delante, decidir cómo conviven selección y mute/solo, y
         escribirlo en el `spec.md` como enmienda fechada.
   - [ ] Si el LED es binario, manda el Track seleccionado — ya está decidido y no
         hay que volver a discutirlo.
-- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: QUÉ ENCENDER, COMO FUNCIÓN PURA
 

@@ -1,20 +1,41 @@
-# Verificación en dispositivo — Fase 1, y cierre del track
+# Verificación en dispositivo — Fase 1
 
 **2026-09-04.** iPad con el BeatStep Pro conectado, sonda de LEDs
 (`--led-probe`) enviando al controlador. Es la fase que podía cancelar el track
-(NFR1), y lo hizo.
+(NFR1).
 
-## Resultado: el BeatStep Pro no ilumina por MIDI in
+## Primera vuelta: no ilumina con MIDI de canal
 
 **No se encendió nada.** Ni los pads con note-on ni los step buttons con control
-change, con la sonda apuntando al controlador. Una búsqueda de documentación lo
-respalda: el BeatStep Pro no expone control de sus LEDs por MIDI entrante.
+change, con la sonda apuntando al controlador.
 
-Con eso, **no hay feature que entregar**. Todo lo que el track prometía —los pads
-siguiendo la nota, los step buttons diciendo qué Track se edita— depende de que el
-hardware encienda algo cuando se le manda, y no lo hace.
+Con eso el track se cerró el mismo día. **Se reabrió unas horas después**, por lo
+que sigue.
 
-## Qué se probó
+## Segunda vuelta: SysEx, reabierta el 2026-09-04
+
+**El cierre duró unas horas.** Al revisar la documentación pública apareció que
+el feedback de LED por SysEx existe en otros aparatos de Arturia, así que la
+pregunta «¿y por SysEx?» —que el plan había puesto fuera de alcance— pasó a
+tener candidatos concretos que probar en vez de ser una investigación abierta.
+
+Lo que dice la documentación pública:
+
+| Aparato | Feedback de LED | Cómo |
+|---|---|---|
+| BeatStep (1ª generación) | **Sí** | note-on enciende, note-off apaga. Solo rojo, y **solo con el pad en modo Note, no en Control** |
+| MiniLab MkII | **Sí** | `F0 00 20 6B 7F 42 02 00 10 7n cc F7` — `7n` el pad, `cc` el color. Confirmado por un administrador de Arturia |
+| BeatStep **Pro** | **Sin documentar** | El repositorio del SysEx del Pro solo cubre la configuración del preset. Los scripts de Bitwig para el Pro no encienden nada, y uno lo dice: «you cannot control the lights of the pads and steps» |
+
+**La conjetura que se prueba.** El Pro sí acepta la cabecera de Arturia y la
+dirección `02 00` para configurarse — `02 00 06 [knob] [val]` cambia los knobs
+entre absoluto y relativo—. Que la subdirección `10` de los pads exista también
+en el Pro es **plausible, no probable y desde luego no seguro**: nadie lo ha
+publicado ni a favor ni en contra.
+
+La sonda vuelve con SysEx en crudo para resolverlo. Pendiente de dispositivo.
+
+## Qué se probó en la primera vuelta
 
 | Qué | Cómo |
 |---|---|
@@ -41,12 +62,32 @@ separe las dos causas.
 **Tampoco se barrieron las 128 notas y los 128 CC** por los dieciséis canales.
 Se probaron los bloques del preset y su vecindad, no el espacio entero.
 
-**No se buscó SysEx ni protocolo propietario.** Estaba fuera de alcance por el
-plan desde el principio: es otra investigación y otro track.
+**El SysEx no se probó en la primera vuelta.** Estaba fuera de alcance por el
+plan; la segunda vuelta lo mete dentro, con candidatos concretos en vez de una
+investigación abierta.
 
 ## La sonda
 
-`App/LEDProbeView.swift`, borrada al cerrar la fase como declaraba NFR1. Vive en
-el historial, en los commits `1ab9273` —la sonda— y `b753a5e` —el desbordamiento
-de pila que la tumbó en el primer intento, un `didSet` autoasignante bajo
-`@Observable`—. Si el asunto se reabre, recuperarla es un `git show`.
+`App/LEDProbeView.swift`. Se borró al cerrar la fase, como declaraba NFR1, y se
+recuperó al reabrirla: es exactamente el uso que justificaba dejarla en el
+historial.
+
+**Un solo cliente de CoreMIDI, y crudo.** La primera versión usaba
+`CoreMIDIOutput` para las notas; al añadir el SysEx —que necesita la API de
+paquetes clásica, porque el camino de la app manda un word dentro de un
+`MIDIEventList`— abrió un segundo cliente, y el primero empezó a fallar con
+`clientCreationFailed(-304)`. Ahora la sonda tiene su propio cliente y manda
+todo por él, sin depender del paquete `MIDI` más que para leer los números del
+preset. Borrarla no deja rastro.
+
+Historial: `1ab9273` la sonda, `b753a5e` el desbordamiento de pila que la tumbó
+en el primer intento —un `didSet` autoasignante bajo `@Observable`—.
+
+## Fuentes
+
+- [Bome — control and color led in arturia beatstep](https://forum.bome.com/t/control-and-color-led-in-arturia-beatstep/3604)
+- [Remotify — LED feedback on Arturia controllers](https://community.remotify.io/questions/question/led-feedback-on-arturia-controllers/)
+- [Foro Arturia — LED color via SysEx en MiniLab MkII](https://legacy-forum.arturia.com/index.php?topic=93116.0)
+- [Pl0p/Beatstep-pro-Sysex](https://github.com/Pl0p/Beatstep-pro-Sysex) — solo configuración del preset
+- [benschmaus — Beatstep Pro and Bitwig](https://benschmaus.github.io/2016/01/beatstep-pro-and-bitwig/)
+- [cyhex/BeatstepProController](https://github.com/cyhex/BeatstepProController) — `02 00 06` para los knobs, nada de luces

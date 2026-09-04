@@ -411,7 +411,7 @@ escalón es el que se nota.
 
 ---
 
-- [x] **Track: Feedback visual en el controlador** — **cancelado en la Fase 1**: el BeatStep Pro no ilumina por MIDI in
+- [~] **Track: Feedback visual en el controlador** — cancelado en la Fase 1 y **reabierto el mismo día** para probar SysEx
   *Link: [conductor/tracks/controller-feedback_20260904/index.md](./tracks/controller-feedback_20260904/index.md)*
 
   **Planificado el 2026-09-04, en siete fases.** Sale de la misma petición que la sincronía —2026-09-03— y se
@@ -438,7 +438,16 @@ escalón es el que se nota.
 
   **No generaliza a otro hardware.** Eso es MIDI Learn, rebanada 8 de la v1.
 
-  **Cancelado el 2026-09-04, y la Fase 1 hizo justo lo que se le pidió.** La
+  **Cancelado el 2026-09-04 y reabierto el mismo día.** Con MIDI de canal no se
+  enciende nada, pero la documentación pública dice que otros aparatos de
+  Arturia —el BeatStep de primera generación y el MiniLab MkII— sí encienden sus
+  LEDs, el segundo por SysEx; y el Pro **sí** acepta esa misma cabecera y
+  dirección para configurar sus knobs. Eso convierte «¿y por SysEx?» en un frame
+  concreto que probar, que es distinto de la investigación abierta que el plan
+  excluía. La Fase 1 sigue abierta con una tarea más y un segundo punto de
+  cancelación.
+
+  **Lo de la primera vuelta, que sigue siendo cierto.** La
   sonda desechable mandó note-on al bloque de pads y control change al de step
   buttons, con todas las velocities y valores previstos y por los dieciséis
   canales: **no se encendió nada**, y la documentación del fabricante dice que
@@ -457,10 +466,9 @@ escalón es el que se nota.
   escucha» de «la sonda no enviaba». Detalle en el `device-verification.md` del
   track.
 
-  **Lo que sigue abierto.** El feedback visual por SysEx o protocolo
-  propietario es otra investigación y otro track, y nadie lo ha pedido. Las
-  luces huérfanas, el interruptor de `3 · MIDI` y el resto de la spec mueren con
-  el track.
+  **Lo que decide el track.** Si el frame del MiniLab no hace nada en el Pro, se
+  cierra con el experimento hecho en vez de con documentación ajena —que era la
+  debilidad del primer cierre— y el resto de la spec muere con él.
 
   **La Fase 1 puede cancelar el track**, y va primero y sola: si el BeatStep no
   ilumina por MIDI in, no hay nada que entregar y se cierra ahí con el hallazgo
