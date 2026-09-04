@@ -1,0 +1,42 @@
+Task: Cuánto ocupa y cuánto tarda un Bank (Fase 3, persistence_20260904)
+
+La tarea era medir y decidir. Midió, y la medida cambió el formato antes de
+llegar a la decisión.
+
+Primera medida, con los dieciséis Cycles guardados uno a uno:
+  vacío = 1 601 407 bytes (1563 KB), guardar ~21 ms, cargar ~57 ms
+Un Bank VACÍO ocupando 1,5 MB: 16 Patterns x 12 Tracks x 16 Cycles = 3072
+Cycles, casi todos idénticos entre sí.
+
+Un intento descartado, y merece quedar escrito porque parecía correcto:
+guardar solo los activeCount Cycles que se recorren, con el razonamiento de que
+los de arriba se sobrescriben al subir el rango (Track.withActiveCount siembra
+copiando el Cycle en edición). Los tests lo tumbaron: Track.== compara los
+dieciséis A PROPÓSITO —su documentación dice que dejar fuera 'los huecos que
+nadie mira' es justo lo que no quiere hacer—, así que un Bank guardado y
+releído dejaba de ser igual al original. En la Fase 4 eso habría marcado el
+Bank como modificado nada más cargarlo.
+
+Lo que se hizo en su lugar: CycleRun, series de Cycles idénticos. No pierde
+nada — lo que vuelve del disco es exactamente lo que se guardó.
+
+Segunda medida, con series:
+  vacío           =   139 951 bytes (136 KB), guardar ~7 ms,  cargar ~7 ms
+  el peor posible = 2 449 855 bytes (2392 KB), guardar ~26 ms, cargar ~58 ms
+
+El 'peor posible' se corrigió a mitad: con Cycles repetidos las series lo
+colapsaban y medía lo mismo que el vacío, así que ahora cada Cycle lleva su
+propio Rotate y ninguna serie agrupa nada. Son 3072 Cycles distintos, que nadie
+va a editar.
+
+Decisión NFR6, con el número delante: la ESCRITURA sale del hilo principal
+—7 ms son medio fotograma a 60 Hz y el Autosave escribe solo, sin que nadie lo
+pida—; la LECTURA se queda, porque ocurre una vez al arrancar y no hay nada que
+dibujar todavía. Escrito en la documentación de BankStore.save, con la tabla.
+
+Un hallazgo del fichero de oro, anotado en el test: el Track 1 del Bank por
+defecto tiene DOS series, no una. Pattern.replacing(_:at:) sustituye el Cycle
+en edición, así que el Pattern inicial deja su Cycle en el hueco 0 y los otros
+quince siguen siendo el vacío.
+
+51 tests, 0 fallos. Persistence al 100,00% de líneas.
