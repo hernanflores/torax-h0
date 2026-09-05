@@ -511,7 +511,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: Temp — parámetros temporales**
+- [~] **Track: Temp — parámetros temporales**
   *Link: [conductor/tracks/temp-parameters_20260904/index.md](./tracks/temp-parameters_20260904/index.md)*
 
   Girar un knob escribe, siempre: para hacer un fill hay que gastar un Cycle o un
