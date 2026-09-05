@@ -535,7 +535,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: Ctrl All — un knob mueve los doce Tracks**
+- [~] **Track: Ctrl All — un knob mueve los doce Tracks**
   *Link: [conductor/tracks/ctrl-all_20260905/index.md](./tracks/ctrl-all_20260905/index.md)*
 
   Subir el Velocity de la mezcla entera no se puede hacer hoy: con dieciséis knobs
