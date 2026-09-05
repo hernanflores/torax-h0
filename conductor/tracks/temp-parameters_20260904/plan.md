@@ -18,7 +18,7 @@ tareas que tocan Timing y Delay.
 el overlay se está filtrando al camino de timing: parar y revisar el diseño antes
 de seguir.
 
-## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
+## FASE 1: LA DESVIACIÓN QUEDA ESCRITA [checkpoint: f5185ad]
 
 - [x] Task: Anotar Temp en la Pre Spec y actualizar el preset (FR11, NFR6) — `f5185ad`
   - [x] Nota fechada 2026-09-04 en `Pre Spec Torax H-0.md`: qué es Temp, que se
@@ -32,7 +32,7 @@ de seguir.
         **corregir el knob 10 (CC 79)**, que sigue marcado libre desde
         `cycles_20260901`. Actualizar `preset/README.md` y subir
         `version`/`updated`.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: EL OVERLAY COMO VALOR DE DOMINIO
 
