@@ -51,3 +51,41 @@ VERIFICACIÓN
 PENDIENTE
 La Fase 3 acciona el gesto en ControlInput: step 13 mantenido, corte de los
 controles que Temp silencia y releaseModifiers().
+
+---
+
+VERIFICACIÓN DE FASE 2 — EL OVERLAY COMO VALOR DE DOMINIO (2026-09-05)
+
+Cobertura de tests de los cambios de la fase (diff f5185ad..HEAD):
+  ParameterOverlay.swift -> ParameterOverlayTests.swift + ParameterOverlayApplyTests.swift
+  TrackParameter.swift   -> TrackParameterTests.swift (existente) + los dos de arriba
+  Ningún fichero de código sin test correspondiente.
+
+Tests automáticos:
+  swift test --package-path Packages/Engine
+    -> 491 tests, 0 fallos (467 al abrir la fase: +24)
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    -> 21 tests (1 omitido), 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    -> 494 tests, 0 fallos
+  Sin regresión en MIDI; el flake clientCreationFailed(-50) no apareció.
+
+Cobertura: Engine 98,60% de líneas (umbral >=90%).
+  ParameterOverlay.swift por sí solo: 98,44%.
+Sin medición de jitter (NFR5). NFR2 se mantiene: el overlay vive en el hilo de
+control y lo que cruza sigue siendo un Pattern normal por el PatternHandoff.
+
+Verificación manual propuesta (lectura: la fase es motor puro, sin gesto ni
+pantalla, así que no hay nada que tocar en el iPad):
+  1. La nota de ParameterOverlay.swift explica por qué la base va por Cycle.
+  2. apply(_:to:in:) calcula el absoluto desde el Cycle en edición y lo escribe
+     igual en todos los activos; los inactivos no se tocan.
+  3. restored(into:) devuelve solo los parámetros guardados; cursores,
+     activeCount, pool, marco tonal, canal y padOctaveShift intactos.
+  4. La suite de Engine en verde.
+
+Se señaló al usuario la decisión tomada durante la tarea —igualar sigue al
+Cycle en edición, con su coste: con 16/7/9 y el cursor de edición en el
+primero, seguir girando arriba no sube los otros dos— y la confirmó.
+
+Confirmación del usuario: «go» (2026-09-05). Fase cerrada.
