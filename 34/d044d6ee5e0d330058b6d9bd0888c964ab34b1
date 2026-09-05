@@ -1,0 +1,41 @@
+Task: Con Temp hundido, Temp manda (Fase 3, FR6)
+
+QUÉ CAMBIA
+- 'ControlInput.swift', en receive(_:) — un solo punto de corte, tres guardas:
+  * step buttons: con Temp hundido solo pasa el propio tempModifierIndex. Corta
+    a la vez la selección de Track y los modificadores de mute y solo, porque
+    los tres entran por stepButton(_:value:).
+  * el knob del Cycle en edición: se corta antes de turn(_:by:).
+  * los pads: se cortan tras el filtro de velocity cero, para que un note-off
+    siga siendo un note-off.
+- NUEVO 'Packages/MIDI/Tests/MIDITests/TempTakesOverInputTests.swift': 9 tests
+  — selección, mute, solo, knob del Cycle, los dieciséis pads, los dos de
+  octava, que ninguno publica, que al soltar los cuatro vuelven, y que los
+  knobs de parámetro sí responden durante el hold.
+
+POR QUÉ
+El corte va en receive(_:) y no repartido por cada rama, como pide el plan.
+stepButton(_:value:) tiene cuatro caminos —Temp, mute, solo, selección— y
+comprobar en cada uno dejaría cuatro sitios donde olvidarlo; el que se olvidara
+sería además el que nadie probaría.
+
+El del knob del Cycle es el que más importa de los cuatro, y no por el gesto
+sino por la corrección del overlay: apply(_:to:in:) calcula el valor absoluto
+desde el Cycle en edición. Moverlo a media superposición cambiaría el punto de
+partida con el fill ya puesto, y lo que se restaurara al soltar no sería lo que
+había. Los otros tres protegen del roce; éste protege la reversión.
+
+Los pads se cortan DESPUÉS del filtro de velocity cero y no antes: un note-off
+tiene que seguir devolviendo false por ser note-off, no por Temp.
+
+VERIFICACIÓN
+  swift test --package-path Packages/MIDI --filter 'TempTakesOverInputTests|TempModifierInputTests'
+    -> 23 tests, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    -> 517 tests, 0 fallos (508 antes: +9)
+  swift format limpio sobre ControlInput.swift.
+  Sin medición de jitter (NFR5).
+
+PENDIENTE
+La última tarea de la fase: releaseModifiers() suelta también Temp y restaura
+(FR8), notas en vuelo sin all-notes-off (FR13), y la cobertura de MIDI.
