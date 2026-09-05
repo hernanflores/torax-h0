@@ -40,7 +40,7 @@ seguir.
         2026-09-04, en la sección *Interaction Model*.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: EL PRESET SE REESCRIBE ENTERO
+## FASE 2: EL PRESET SE REESCRIBE ENTERO [checkpoint: 3240033]
 
 - [x] Task: Delay al 76 y Probability al 78 (FR20) — `60f0063`
   - [x] Tests (Red): CC 76 mueve Delay y CC 78 mueve Probability; ningún otro
@@ -68,7 +68,7 @@ seguir.
         cuál era la regla de verdad.
   - [x] Anotar que el preset declara Ctrl All antes de que la app lo haga: la
         Fase 4 cierra esa ventana.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: EL OFFSET COMO VALOR DE DOMINIO
 
