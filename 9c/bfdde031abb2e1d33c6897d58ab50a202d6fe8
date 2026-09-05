@@ -1,0 +1,53 @@
+Task: Aplicar y restaurar sobre el Track (Fase 2, FR2, FR3, FR4)
+
+QUÉ CAMBIA
+- 'ParameterOverlay.swift': nuevo 'mutating func apply(_:to:in:) -> Track'.
+  Resuelve el delta contra el Cycle en edición, obtiene un valor absoluto y lo
+  escribe con 'Cycle.setting(_:to:)' en todos los Cycles activos, guardando la
+  base la primera vez (via capturing, que es idempotente).
+- NUEVO 'Packages/Engine/Tests/EngineTests/ParameterOverlayApplyTests.swift':
+  15 tests — igualación, origen en el Cycle en edición, Cycles inactivos
+  intactos, parámetro no tocado durante y después del hold, acumulación sobre
+  el valor superpuesto, base conservada, delta nulo, delta contra extremo,
+  igualación en cuanto el Cycle en edición se mueve, restauración por Cycle,
+  hold completo sin rastro, cursores y material intactos, y barrido del ciclo
+  completo sobre TrackParameter.allCases.
+
+POR QUÉ
+Iguala en vez de desplazar (FR2) porque el fill tiene que oírse aunque el
+cursor de reproducción cruce de Cycle a media vuelta. Con Pulses 5, 7 y 9 y un
+clic, aplicar el delta a cada Cycle los dejaría en 6, 8 y 10: tres fills
+distintos, que es lo que Temp existe para no hacer.
+
+Acumula sobre el valor superpuesto porque el Track que entra ya lo lleva
+puesto. Sobre el base, seguir girando no movería nada tras el primer clic.
+
+Restaurar toca los parámetros guardados y nada más (FR4). Un snapshot literal
+del Track sería más simple y estaría mal: el cursor de reproducción avanzó
+durante el hold y no puede retroceder sin rebobinar la música. Hay un test que
+avanza el cursor a propósito entre superponer y restaurar.
+
+DECISIÓN TOMADA DURANTE LA TAREA — igualar sigue al Cycle en edición
+La primera implementación igualaba siempre, y un test lo cazó: con delta 0 los
+Cycles 2 y 3 se aplanaban al valor del Cycle 1 sin que nadie hubiera girado
+nada. Se cambió a devolver el Track intacto —y no guardar base— cuando el
+Cycle en edición no se mueve.
+
+Es lo que hace verdad a FR9 ('un giro nulo o contra un extremo no publica,
+igual que hoy') con el overlay puesto: si igualara de todas formas, un giro
+contra el tope cambiaría el Track y tendría que publicar. No se pierde nada
+del gesto: la igualación ya ocurrió en el giro que sí movió el Cycle en
+edición. Dos tests lo fijan por los dos lados —16/7/9 con +1 no mueve nada;
+15/7/9 con +1 los lleva a los tres a 16—.
+
+VERIFICACIÓN
+  swift test --package-path Packages/Engine
+    -> 491 tests, 0 fallos (476 antes: +15)
+  Cobertura Engine: 98,60% de líneas (umbral >=90%).
+  ParameterOverlay.swift: 98,44% de líneas.
+  swift format limpio sobre los ficheros tocados.
+  Sin medición de jitter (NFR5): nada de esto cruza al hilo del scheduler.
+
+PENDIENTE
+La Fase 3 acciona el gesto en ControlInput: step 13 mantenido, corte de los
+controles que Temp silencia y releaseModifiers().
