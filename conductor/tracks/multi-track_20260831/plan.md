@@ -135,7 +135,7 @@ regresión la bloquea.
   - [x] `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'` en verde
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 6: La medición y el dispositivo
+## Phase 6: La medición y el dispositivo [checkpoint: e9551a5]
 
 > La fase que decide si la rebanada vale. **El riesgo que la v1 existió para
 > acotar se cobra aquí**: dieciséis voces sobre un hilo, medidas contra el mismo
@@ -154,12 +154,12 @@ regresión la bloquea.
   - [x] Dos Tracks en tonalidades distintas: la Scale de uno no mueve al otro
   - [x] `Stop` con los dieciséis sonando y con Delay positivo: nada queda colgado
   - [x] Se registra en un `device-verification.md` del track y en la git note
-- [~] Task: Cerrar la rebanada
+- [x] Task: Cerrar la rebanada
   - [x] Cobertura de `Engine` ≥90% y de `MIDI` ≥80%, medidas como dice `workflow.md` — **99,42%** y **92,08%** de líneas. La de `MIDI` es conservadora: `VirtualLoopbackTests` excluido por el `-50`, que **falla igual en `main`**
   - [x] `product.md` refleja que múltiples Tracks dejan de estar fuera de alcance, y qué queda de la v2
   - [x] `tracks.md` deja descrita la rebanada siguiente —la UI del handoff—
-  - [ ] Pull Request contra `main`, con los checks en verde
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Pull Request contra `main`, con los checks en verde — PR #23, merge `e9551a5`, `build` en verde
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Notas de riesgo
 
