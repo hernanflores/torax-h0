@@ -42,7 +42,7 @@ seguir.
 
 ## FASE 2: EL PRESET SE REESCRIBE ENTERO
 
-- [ ] Task: Delay al 76 y Probability al 78 (FR20)
+- [~] Task: Delay al 76 y Probability al 78 (FR20)
   - [ ] Tests (Red): CC 76 mueve Delay y CC 78 mueve Probability; ningún otro
         parámetro cambia de CC.
   - [ ] Implementación (Green): el intercambio en `assignments` de

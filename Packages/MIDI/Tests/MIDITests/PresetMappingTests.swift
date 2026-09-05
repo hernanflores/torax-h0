@@ -43,13 +43,50 @@ final class PresetMappingTests: XCTestCase {
 
     // MARK: - Los knobs
 
-    /// Los nueve primeros knobs son los nueve parámetros, en el orden de
-    /// `TrackParameter` — que es el de la pantalla.
-    func testTheFirstNineKnobsAreTheNineParametersInOrder() {
-        let knobs = mapping.declaredNumbers.knobs
-        for (offset, parameter) in TrackParameter.allCases.enumerated() {
+    /// Los nueve primeros knobs son los nueve parámetros, en la tabla que
+    /// declara el preset.
+    ///
+    /// > **El orden dejó de seguir a `TrackParameter` el 2026-09-05.** Este test
+    /// > se llamaba `…AreTheNineParametersInOrder` y recorría `allCases`
+    /// > confiando en que el knob N fuera el parámetro N. Con Delay en el 76 y
+    /// > Probability en el 78 eso ya no es cierto, así que la tabla se escribe
+    /// > entera: un test que deduce lo que debería comprobar no protege nada, y
+    /// > éste habría seguido pasando con los dos knobs intercambiados si el
+    /// > intercambio hubiera sido un error de dedo.
+    ///
+    /// La pantalla **sí** conserva el orden de `TrackParameter`
+    /// —`Velocity · Sustain · Probability · Timing · Delay`—: el orden de lectura
+    /// es del dominio y el de los knobs es de la mano, y desde esta fecha son dos
+    /// cosas distintas.
+    func testTheFirstNineKnobsCarryTheDeclaredParameters() {
+        let expected: [Int: TrackParameter] = [
+            70: .steps, 71: .pulses, 72: .rotate, 73: .division,
+            74: .velocity, 75: .sustain, 76: .delay, 77: .timing, 78: .probability,
+        ]
+        for (number, parameter) in expected {
+            XCTAssertEqual(mapping.controller(for: parameter)?.number, number, "\(parameter)")
+        }
+        XCTAssertEqual(expected.count, TrackParameter.allCases.count, "falta algún parámetro")
+    }
+
+    /// El intercambio del 2026-09-05, escrito aparte porque es lo que se pidió.
+    func testDelayIsOnSeventySixAndProbabilityOnSeventyEight() throws {
+        XCTAssertEqual(
+            mapping.parameter(for: try XCTUnwrap(MIDIController(76))), .delay)
+        XCTAssertEqual(
+            mapping.parameter(for: try XCTUnwrap(MIDIController(78))), .probability)
+    }
+
+    /// Y ningún otro parámetro se movió de sitio con el intercambio.
+    func testNoOtherParameterChangedController() throws {
+        let untouched: [Int: TrackParameter] = [
+            70: .steps, 71: .pulses, 72: .rotate, 73: .division,
+            74: .velocity, 75: .sustain, 77: .timing,
+        ]
+        for (number, parameter) in untouched {
             XCTAssertEqual(
-                mapping.controller(for: parameter)?.number, knobs[offset], "\(parameter)")
+                mapping.parameter(for: try XCTUnwrap(MIDIController(number))), parameter,
+                "CC \(number)")
         }
     }
 
