@@ -32,3 +32,30 @@ Decisiones:
 Verificado en simulador (iPad Pro 11-inch): captura en
 build/verificacion/matriz.png. Para capturarla hubo que apuntar el estado
 inicial de navegación a .tracks temporalmente y se revirtió acto seguido.
+
+--- Phase Verification & Checkpoint: Fase 7 (La pantalla 5 · Tracks) ---
+
+Cobertura de tests de la fase: ninguna, y es lo correcto. PatternMatrixView y
+el caso .tracks de ContentView son App, que no se mide; lo que la matriz
+sostiene —Bank.hasMaterial y BankSession— está cubierto en los paquetes.
+
+Verificado:
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    -> BUILD SUCCEEDED
+  Simulador iPad Pro 11-inch: doce filas por dieciséis columnas A–P, celda del
+  Track 1 en Pattern A rellena, navegación sin ningún borde discontinuo.
+  Captura en build/verificacion/matriz.png.
+
+Las dieciséis columnas caben y se leen: era la divergencia que la Fase 1 anotó
+contra las ocho del handoff, y la que podía no salir.
+
+Verificación manual propuesta al usuario — cinco decisiones:
+1. La celda llama a selectTrack siempre y a selectPattern después.
+2. El borde discontinuo de una celda significa 'no hay nada', no 'no se puede'
+   — el único uso del signo en la app que no quiere decir 'no disponible'. Se
+   ofreció cambiarlo y el usuario lo dejó.
+3. El par M/S lee model.mix: dos vistas del mismo estado.
+4. Los colores del par son los del handoff, no los de la familia activa.
+5. La cabecera dice 'Pattern A · Track 1'.
+
+Confirmación del usuario: 'GO' (2026-09-04).
