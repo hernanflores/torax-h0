@@ -1,0 +1,58 @@
+Task: Distintivo de Temp y valores superpuestos (Fase 4, FR10, NFR1)
+
+QUÉ CAMBIA
+- 'Packages/Engine/Sources/Engine/FamilyReadout.swift': nuevo 'marker: String?'
+  e 'isTemporary: Bool = false' en el init. Devuelve «Temp» con el overlay
+  puesto y nil en reposo, en las tres familias.
+- NUEVO 'Packages/Engine/Tests/EngineTests/FamilyReadoutTempTests.swift':
+  5 tests — sin overlay no hay distintivo; con overlay sale en las tres
+  familias; el término es «Temp»; el distintivo no toca headline ni detail; la
+  lectura es siempre la del Cycle que se le pasa.
+- 'Packages/MIDI/Sources/MIDI/ControlInput.swift': 'isTempActive' público, solo
+  lectura.
+- 'App/TransportModel.swift': 'isTempActive' observable, refrescado en
+  syncFromControlInput() — el único sitio por el que pasan todos los caminos de
+  edición.
+- 'App/ContentView.swift': 'temporaryMarker(_:)' y el paso de isTemporary a los
+  dos FamilyReadout del panel.
+
+POR QUÉ
+Los valores superpuestos NO necesitaron camino nuevo, y conviene que quede
+escrito: el overlay se escribe en el Pattern publicado, así que model.track ya
+los lleva, FamilyReadout los lee, ParameterChange los anuncia y el anillo
+—Ring(shape: track.shape)— redistribuye durante el hold y vuelve solo al
+soltar. Esa mitad de FR10 sale de cómo se diseñó la Fase 3, no de esta tarea.
+
+Lo que sí faltaba es el distintivo: sin él, un fill temporal y una edición
+permanente se leen exactamente igual, y esa ambigüedad es peor aquí que en
+cualquier otro sitio de la app porque no hay deshacer.
+
+El distintivo va ENCIMA de los dos estados del panel y no dentro de ninguno. Lo
+que Temp cambia no es el valor —se lee igual girando o en reposo— sino si va a
+sobrevivir a soltar, y eso es cierto durante todo el hold. Meterlo en la rama
+del valor grande lo haría desvanecerse con él a los 1,6 segundos, con el fill
+todavía puesto: justo cuando más falta hace.
+
+Lleva el acento de Tonal, el único de los tres que no pertenece a ningún knob,
+para que no se confunda con la familia del parámetro que se esté girando — que
+es lo que colorea el valor grande.
+
+NFR1 se respeta: la palabra vive en Engine con tests, App solo dibuja. No hay
+lógica nueva en la vista.
+
+VERIFICACIÓN
+  swift test --package-path Packages/Engine
+    -> 496 tests, 0 fallos (491 antes: +5)
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    -> 525 tests, 0 fallos
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    -> 21 tests (1 omitido), 0 fallos
+  swift format --in-place --recursive App Packages -> limpio
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    -> BUILD SUCCEEDED
+  Sin medición de jitter (NFR5). App no se mide (workflow.md).
+
+PENDIENTE
+Verificación en dispositivo, común a las Fases 3 y 4: el usuario no tenía el
+iPad delante el 2026-09-05. Incluye confirmar que el step 13 es momentary y no
+toggle, que es el riesgo declarado en el spec.
