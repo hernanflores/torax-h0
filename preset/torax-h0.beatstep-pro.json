@@ -1,8 +1,8 @@
 {
   "name": "Torax H-0",
   "device": "Arturia BeatStep Pro",
-  "version": 1,
-  "updated": "2026-08-31",
+  "version": 2,
+  "updated": "2026-09-04",
   "channel": "cualquiera; la app no filtra por canal",
   "encoders": {
     "mode": "Relative #2",
@@ -58,14 +58,15 @@
         "knob": 9,
         "cc": 78,
         "parameter": "Delay"
-      }
-    ],
-    "free": [
+      },
       {
         "knob": 10,
         "cc": 79,
-        "parameter": null
-      },
+        "parameter": "Cycle en edicion",
+        "note": "Mueve el cursor de edicion del Track seleccionado (cycles_20260901). Cuantos Cycles estan activos se ajusta en pantalla."
+      }
+    ],
+    "free": [
       {
         "knob": 11,
         "cc": 80,
@@ -192,7 +193,7 @@
       "first_cc": 102,
       "count": 16
     },
-    "semantics": "El step button N selecciona el Track N. En v1 solo existe el Track 1.",
+    "semantics": "El step button N selecciona el Track N, del 1 al 12. Del 13 al 16 no hay Track detras desde que el Pattern bajo a doce: el 13 es el modificador de Temp, el 15 el de solo y el 16 el de mute. Los modificadores son mantenidos: 127 al pulsar, 0 al soltar.",
     "layout": [
       {
         "step_button": 1,
@@ -257,22 +258,22 @@
       {
         "step_button": 13,
         "cc": 114,
-        "meaning": "seleccionar Track 13"
+        "meaning": "modificador de Temp - mantenido: superpone parametros sin escribir en el Pattern"
       },
       {
         "step_button": 14,
         "cc": 115,
-        "meaning": "seleccionar Track 14"
+        "meaning": "nada: el Pattern tiene doce Tracks"
       },
       {
         "step_button": 15,
         "cc": 116,
-        "meaning": "seleccionar Track 15"
+        "meaning": "modificador de solo - mantenido"
       },
       {
         "step_button": 16,
         "cc": 117,
-        "meaning": "seleccionar Track 16"
+        "meaning": "modificador de mute - mantenido"
       }
     ]
   }

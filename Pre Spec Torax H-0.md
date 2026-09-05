@@ -258,6 +258,42 @@ En la práctica: Steps largos contra una Phrase de 16 posiciones generan desfase
 | Scale | Set de notas permitido (presets o escala de usuario). |
 | Root | Fundamental que transpone la Scale. |
 
+> **Nota del 2026-09-04 — Temp: los parámetros se pueden mover sin escribirlos.**
+> La Pre Spec no lo tiene en absoluto: todo giro de knob de esta sección escribe
+> en el Pattern, siempre. Temp añade el gesto que faltaba —el track
+> `temp-parameters_20260904`—: **mantener [step 13]** y girar superpone el cambio
+> sobre el Track seleccionado, y **soltar lo devuelve**. En el Pattern no queda
+> rastro.
+>
+> Es lo que hace posible un fill, un build o un breakdown sin gastar un Cycle ni
+> un Pattern. Sin él, la única forma de volver atrás es deshacer a mano lo que se
+> acaba de tocar, y no hay deshacer.
+>
+> **El overlay iguala, no aplana** — que es justo lo contrario de lo que se daría
+> por supuesto. El parámetro girado toma **el mismo valor absoluto en todos los
+> Cycles activos**, partiendo del que tenía el Cycle en edición, para que el fill
+> se oiga aunque el cursor cruce de Cycle a media vuelta. Los parámetros que la
+> mano no toca conservan su valor distinto en cada Cycle, y al soltar **cada
+> Cycle recupera el suyo**: por eso lo que se guarda es la base por Cycle y no un
+> valor único.
+>
+> **Con Temp hundido, Temp manda.** Se ignoran en silencio la selección de
+> Track, los modificadores de mute y solo, el knob del Cycle en edición y los
+> pads. El hold acota qué controles están vivos: un roce de dedo no puede
+> deshacer el fill.
+>
+> **Es el tercer modificador mantenido y no inventa mecánica.** Los step buttons
+> 15 y 16 ya son solo y mute desde la nota del 2026-09-02, con el mismo 127 al
+> pulsar y 0 al soltar; del 13 al 16 no hay Track detrás desde que el Pattern
+> bajó a doce.
+>
+> **El término es «Temp».** No «momentary», no «override», no «latch»: un
+> concepto, un nombre.
+>
+> **Lo que Temp no toca:** pool, Scale, Root, canal y número de Cycles activos
+> quedan fuera. El overlay es de parámetros; material y configuración no se
+> superponen.
+
 ## 6. Random Modulation: comportamiento por destino
 
 La dirección importa: clockwise y counter-clockwise tienen semánticas distintas. Sólo se modula la función primaria del knob.

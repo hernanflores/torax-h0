@@ -17,7 +17,7 @@
 ///
 /// Lo que falta: el pool de Pitch no está aquí porque no se ajusta con un delta
 /// sino con pads, que es otra superficie.
-public enum TrackParameter: Equatable, Sendable, CaseIterable {
+public enum TrackParameter: Hashable, Sendable, CaseIterable {
 
     // Shape — cuándo y con qué densidad ocurren los eventos.
     case steps

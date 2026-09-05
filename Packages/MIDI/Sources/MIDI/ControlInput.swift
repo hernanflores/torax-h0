@@ -97,6 +97,14 @@ public final class ControlInput: @unchecked Sendable {
     static let muteModifierIndex = ControlMapping.controlsPerFamily - 1
     static let soloModifierIndex = ControlMapping.controlsPerFamily - 2
 
+    /// **El 13 es el modificador de Temp.** Tercero de la serie, y por el mismo
+    /// motivo que los otros dos: del 13 al 16 no hay Track detrás desde que el
+    /// Pattern bajó a doce, así que el gesto no le quita nada a la selección.
+    ///
+    /// Vive aquí y no en `ControlMapping` por la razón de arriba: la tabla
+    /// describe el hardware y el consumidor acota el significado.
+    static let tempModifierIndex = ControlMapping.controlsPerFamily - 4
+
     /// Si los modificadores están hundidos ahora mismo.
     ///
     /// **Es estado de mensajes, no un temporizador.** El controlador manda 127
@@ -104,6 +112,22 @@ public final class ControlInput: @unchecked Sendable {
     /// medir cuánto duró una pulsación.
     private var holdingMuteModifier = false
     private var holdingSoloModifier = false
+    private var holdingTempModifier = false
+
+    /// Si Temp está puesto ahora mismo.
+    ///
+    /// **Lo consume la pantalla** (FR10), que sin esto no puede distinguir un
+    /// fill temporal de una edición permanente: los valores que enseña son los
+    /// mismos en los dos casos. Es lectura y no una vía para accionar el gesto —
+    /// la táctil está fuera de alcance en este track.
+    public var isTempActive: Bool { holdingTempModifier }
+
+    /// Qué se superpuso durante el Temp en curso, y qué había debajo.
+    ///
+    /// **Vacío es el estado de reposo**, no un caso aparte: mientras nadie
+    /// mantiene el step 13 no hay nada que devolver, y soltar sin haber girado
+    /// se queda en nada.
+    private var overlay = ParameterOverlay()
 
     /// - Parameter publish: dónde van los dieciséis Tracks resultantes de cada
     ///   giro.
@@ -219,7 +243,21 @@ public final class ControlInput: @unchecked Sendable {
             // Un step button no es un knob: se despacha antes, y su soltada
             // —valor cero— no hace nada, igual que el note-off de un pad.
             if let index = mapping.stepButtonIndex(for: controller) {
+                // **El corte de Temp, en un solo sitio** (FR6). Con el step 13
+                // hundido, el único step button que sigue vivo es él mismo: ni
+                // la selección de Track ni los modificadores de mute y solo
+                // responden. Repartir la comprobación por cada rama de
+                // `stepButton(_:value:)` dejaría cuatro sitios donde olvidarla.
+                guard !holdingTempModifier || index == Self.tempModifierIndex else {
+                    return false
+                }
                 return stepButton(index, value: value)
+            }
+            // El knob del Cycle en edición también calla: el overlay calcula su
+            // valor absoluto desde el Cycle en edición, y moverlo a media
+            // superposición cambiaría el punto de partida con el fill puesto.
+            if holdingTempModifier, controller == mapping.editingCycleController {
+                return false
             }
             return turn(controller, by: value)
         case .noteOn(_, let note, let velocity):
@@ -227,6 +265,10 @@ public final class ControlInput: @unchecked Sendable {
             // controladores. Alternar en la pulsación **y** en la soltada sería
             // no alternar: cada pad dejaría el pool como estaba.
             guard velocity.value > 0 else { return false }
+            // Los dieciséis pads callan con Temp hundido: el fill se hace con
+            // una mano en el step 13 y la otra en los knobs, y un roce que
+            // metiera una nota en el pool no se desharía al soltar.
+            guard !holdingTempModifier else { return false }
             return press(note)
         case .noteOff:
             return false
@@ -254,6 +296,11 @@ public final class ControlInput: @unchecked Sendable {
     /// el note-off de un pad: alternar en la pulsación *y* en la soltada sería
     /// no alternar.
     private func stepButton(_ index: Int, value: UInt8) -> Bool {
+        // Temp va el primero de los tres porque es el único cuya soltada hace
+        // algo: devolver lo que se superpuso.
+        if index == Self.tempModifierIndex {
+            return value > 0 ? holdTemp() : releaseTemp()
+        }
         if index == Self.muteModifierIndex {
             holdingMuteModifier = value > 0
             return false
@@ -281,14 +328,56 @@ public final class ControlInput: @unchecked Sendable {
         return selectTrack(index)
     }
 
-    /// Da por soltados los modificadores.
+    /// Entra en Temp: a partir de aquí los giros no escriben en el Pattern.
+    ///
+    /// **No publica por sí solo** (FR9), como los otros dos modificadores: nada
+    /// ha cambiado todavía. Un modificador que además actúa se dispara sin
+    /// querer.
+    private func holdTemp() -> Bool {
+        holdingTempModifier = true
+        return false
+    }
+
+    /// Sale de Temp y devuelve lo que se superpuso.
+    ///
+    /// **Publica una sola vez el snapshot restaurado** (FR9), y solo si había
+    /// algo que devolver: soltar sin haber girado nada —o tras giros que no
+    /// movieron nada— no publica, con el mismo criterio que un giro nulo.
+    ///
+    /// El overlay se vacía siempre, hubiera o no algo dentro: el hold terminó.
+    private func releaseTemp() -> Bool {
+        holdingTempModifier = false
+        guard !overlay.isEmpty, let track = pattern.track(at: selectedTrackIndex) else {
+            overlay = ParameterOverlay()
+            return false
+        }
+
+        pattern = pattern.replacing(overlay.restored(into: track), at: selectedTrackIndex)
+        overlay = ParameterOverlay()
+        publish(pattern)
+        return true
+    }
+
+    /// Da por soltados los tres modificadores.
     ///
     /// **Lo llama quien reconecta la entrada** (FR8): un cable desenchufado con
     /// el botón hundido dejaría el modificador pegado para siempre, porque la
     /// soltada que lo levantaría ya no va a llegar por ningún sitio.
+    ///
+    /// > **Con Temp, además, restaura y publica** — y por eso la restauración va
+    /// > aquí y no en un método aparte. Con mute y solo, un modificador atascado
+    /// > era un gesto que no responde; con Temp es un fill que no se va, encima
+    /// > de un Pattern que ya no se puede editar de verdad, porque todo giro
+    /// > seguiría superponiéndose. Dejar la restauración fuera obligaría a
+    /// > acordarse de llamarla, y el sitio donde hay que acordarse es
+    /// > precisamente el de la reconexión, que nadie prueba a mano.
+    ///
+    /// Sin nada superpuesto no publica: reconectar sin modificadores hundidos es
+    /// el caso normal y un snapshot idéntico sería ruido.
     public func releaseModifiers() {
         holdingMuteModifier = false
         holdingSoloModifier = false
+        _ = releaseTemp()
     }
 
     /// Un giro de knob mueve un parámetro del Track, sea de la familia que sea.
@@ -314,6 +403,13 @@ public final class ControlInput: @unchecked Sendable {
         let delta = encoding.delta(from: value)
         guard delta != 0 else { return false }
 
+        // Con Temp hundido el giro se superpone en vez de escribir. Se despacha
+        // aquí y no antes de resolver el parámetro porque Temp no cambia *qué*
+        // knob mueve *qué*: solo dónde va a parar el resultado.
+        if holdingTempModifier {
+            return overlayTurn(delta, to: parameter)
+        }
+
         // **El resto del Track se conserva.** Shape, pool y Groove son partes
         // del mismo valor: reconstruirlo sin alguna de ellas borraría material
         // al girar un knob, que es exactamente la destrucción que
@@ -324,6 +420,26 @@ public final class ControlInput: @unchecked Sendable {
         guard adjusted != track else { return false }
 
         pattern = pattern.replacing(adjusted, at: selectedTrackIndex)
+        publish(pattern)
+        return true
+    }
+
+    /// Un giro con Temp hundido: se superpone sobre el Track y no se escribe.
+    ///
+    /// **El overlay va sobre el `Track` entero y no sobre el Cycle en edición**,
+    /// que es la diferencia con `turn(_:by:)`: el valor se iguala en todos los
+    /// Cycles activos para que el fill se oiga aunque el cursor cruce de Cycle a
+    /// media vuelta. La regla entera vive en `ParameterOverlay`, en `Engine`;
+    /// aquí solo se traduce el gesto.
+    ///
+    /// Un giro que no mueve nada no publica, igual que sin Temp.
+    private func overlayTurn(_ delta: Int, to parameter: TrackParameter) -> Bool {
+        guard let track = pattern.track(at: selectedTrackIndex) else { return false }
+
+        let overlaid = overlay.apply(delta, to: parameter, in: track)
+        guard overlaid != track else { return false }
+
+        pattern = pattern.replacing(overlaid, at: selectedTrackIndex)
         publish(pattern)
         return true
     }
