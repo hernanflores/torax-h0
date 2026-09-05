@@ -1,0 +1,38 @@
+Task: El Cycle en edición pasa al knob 13, CC 82 (Fase 2, ctrl-all_20260905)
+
+QUE SE HIZO
+El knob del Cycle en edicion se mueve del 10 (CC 79) al 13 (CC 82), y su CC deja
+de ser un desplazamiento fijo escondido en una propiedad calculada.
+
+FICHEROS
+- ControlMapping.swift: nueva constante `editingCycleKnobOffset = 12`;
+  `editingCycleController` la usa en lugar del `+ 9` literal. Nota fechada
+  retirando la defensa del 79.
+- PresetMappingTests.swift: tres tests nuevos — el knob es el 13, el CC 79 esta
+  libre y no publica, y el numero SIGUE AL BLOQUE (con knobBlock en 20 da 32).
+- EditingCycleInputTests.swift: el CC pasa a leerse del mapeo en las tres clases
+  del fichero.
+
+EL PORQUE
+Dos razones, y la segunda es la que importa.
+
+1. Ergonomica: pegado a los nueve parametros, el knob 10 parecia el decimo
+   parametro. No lo es — mueve *a cual* de los nueve se apunta, que es una
+   operacion de otro orden. Separarlo dice con la mano lo que el modelo decia.
+
+2. De diseno: `knobBlock.number + 9` hacia que mover un knob fuera un cambio de
+   aritmetica. Un mapeo existe justamente para que no lo sea. El test
+   testTheEditingCycleKnobFollowsItsBlock fija que el numero no queda clavado al
+   82: con otro bloque, el knob se mueve con el.
+
+LO QUE SE ROMPIO Y POR QUE ESTA BIEN QUE SE ROMPIERA
+Ocho tests de EditingCycleInputTests fallaron con el 79 escrito a mano, por un
+comportamiento que no habia cambiado. Es literalmente la leccion que
+ControlMappingTests dejo anotada cuando la rebanada 6 le dio el 77 a Timing: lo
+que cambia es el preset, y el test tiene que leerlo de ahi. Ahora lo lee.
+
+TESTS
+  swift test --package-path Packages/Engine  -> 496 tests, 0 fallos
+  swift test --package-path Packages/MIDI    -> 7 fallos, todos VirtualLoopback,
+  el flake midi-test-flake_20260826 aplazado a despues de la v2. Aisladas pasan.
+swift format limpio.
