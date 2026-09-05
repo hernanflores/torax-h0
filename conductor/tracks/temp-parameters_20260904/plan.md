@@ -20,15 +20,15 @@ de seguir.
 
 ## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
 
-- [ ] Task: Anotar Temp en la Pre Spec y actualizar el preset (FR11, NFR6)
-  - [ ] Nota fechada 2026-09-04 en `Pre Spec Torax H-0.md`: qué es Temp, que se
+- [x] Task: Anotar Temp en la Pre Spec y actualizar el preset (FR11, NFR6) — `f5185ad`
+  - [x] Nota fechada 2026-09-04 en `Pre Spec Torax H-0.md`: qué es Temp, que se
         mantiene [step 13] y que **no escribe en el Pattern**. La Pre Spec no lo
         tiene en absoluto.
-  - [ ] Dejar dicho en la nota lo que un lector daría por supuesto al revés: el
+  - [x] Dejar dicho en la nota lo que un lector daría por supuesto al revés: el
         overlay **iguala** el parámetro girado en todos los Cycles activos, y
         cada uno recupera el suyo al soltar.
-  - [ ] Fijar el vocabulario: «Temp», no «momentary», «override» ni «latch».
-  - [ ] `preset/torax-h0.beatstep-pro.json`: declarar el step 13 como Temp y
+  - [x] Fijar el vocabulario: «Temp», no «momentary», «override» ni «latch».
+  - [x] `preset/torax-h0.beatstep-pro.json`: declarar el step 13 como Temp y
         **corregir el knob 10 (CC 79)**, que sigue marcado libre desde
         `cycles_20260901`. Actualizar `preset/README.md` y subir
         `version`/`updated`.
