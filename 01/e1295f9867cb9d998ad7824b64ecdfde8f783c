@@ -1,0 +1,17 @@
+Cierre administrativo — rebanadas 1 y 2 de la v2
+
+Qué cambia:
+- multi-track_20260831 y screen-handoff_20260901: 'Cerrar la rebanada' de [~] a
+  [x]; el ítem del Pull Request queda anotado con su número y su merge.
+- La Fase 6 de ambas recibe el [checkpoint:] que le faltaba, el del merge.
+- screen-handoff, Fase 5: el sub-ítem de las notas fuera de escala pasa de [~] a
+  [x] reescrito como desviación aceptada.
+
+Por qué: los PR existen y están merged con los checks en verde —#23 e9551a5
+(build) y #26 46ba23d (build, CodeRabbit)—; lo único que faltaba era marcarlos.
+La desviación se reescribe en vez de marcarse tal cual porque el criterio
+original —notas fuera de escala no interactivas— se descartó a propósito en la
+Fase 5, con razón y test (Key.canBecomeRoot); darlo por cumplido sería falso.
+
+Verificación: sin cambios de código, solo documentos de conductor/.
+Ficheros: conductor/tracks/{multi-track_20260831,screen-handoff_20260901}/{plan.md,metadata.json}
