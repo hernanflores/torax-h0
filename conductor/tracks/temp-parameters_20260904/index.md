@@ -1,6 +1,6 @@
 # Track: Temp — parámetros temporales
 
-**ID:** `temp-parameters_20260904` · **Type:** Feature · **Status:** new
+**ID:** `temp-parameters_20260904` · **Type:** Feature · **Status:** complete
 
 Girar un knob escribe. Siempre. Para hacer un fill hay que gastar un Cycle o un
 Pattern, o deshacer a mano lo que se acaba de tocar — y no hay deshacer. Temp

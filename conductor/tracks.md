@@ -511,7 +511,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: Temp — parámetros temporales**
+- [x] **Track: Temp — parámetros temporales** — mantener [step 13] superpone y soltar devuelve; verificado en iPad con BeatStep Pro
   *Link: [conductor/tracks/temp-parameters_20260904/index.md](./tracks/temp-parameters_20260904/index.md)*
 
   Girar un knob escribe, siempre: para hacer un fill hay que gastar un Cycle o un
