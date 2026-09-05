@@ -1,0 +1,34 @@
+Tasks: La pantalla 4 · Banks (FR9) + Save, Reload y su confirmación (FR6) +
+Verificación en simulador — Fase 6, persistence_20260904
+
+Las tres en un commit: es una vista, y partirla habría dejado commits con una
+pantalla a medio dibujar.
+
+Ficheros: App/BankView.swift (nuevo) y App/ContentView.swift, donde Screen gana
+el caso .banks y unavailableScreens baja a ['5 · Tracks'].
+
+No lleva tests: es App, que no se mide. La lógica que sostiene —BankSession—
+está en Persistence al 100%.
+
+Decisiones:
+1. Solo el disco. Los Patterns no están aquí sino en la matriz de 5 · Tracks.
+   Esta pantalla contesta '¿está mi trabajo a salvo?' y aquella '¿qué hay y
+   dónde?'; mezclarlas haría que ninguna se leyera de un vistazo.
+2. Save sigue disponible con el transporte corriendo —escribir no toca lo que
+   suena— y Reload y Duplicate no, porque sustituyen los doce Tracks. La
+   pantalla dice por qué en vez de dejar botones muertos.
+3. isConfirmingReload vive en la vista: es estado de pantalla y nadie más tiene
+   que saber que hay un diálogo abierto.
+4. Reload es la única operación de la app que destruye trabajo, y por eso la
+   única que pregunta. El resto se deshace girando el knob al revés.
+
+Verificación en simulador (iPad Pro 11-inch), y la primera pasada no valió: la
+fila del Bank estaba en tamaño de leyenda y ocupaba un rincón de la pantalla,
+que incumple el requisito de leerse a un metro de product-guidelines.md.
+Segunda pasada con 'Bank 1' en tamaño de transporte, la marca de estado en
+tamaño de lectura, botones de 140x52 y el panel a todo el ancho. Capturas en
+build/verificacion/ (ignorado por git).
+
+Para capturar la pantalla hubo que apuntar el estado inicial de navegación a
+.banks temporalmente —simctl no sabe tocar la pantalla— y se revirtió acto
+seguido.
