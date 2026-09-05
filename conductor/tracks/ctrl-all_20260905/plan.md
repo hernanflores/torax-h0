@@ -25,7 +25,7 @@ seguir.
 
 ## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
 
-- [ ] Task: Anotar Ctrl All en la Pre Spec y en `product.md` (NFR7)
+- [~] Task: Anotar Ctrl All en la Pre Spec y en `product.md` (NFR7)
   - [ ] Nota fechada 2026-09-05 en `Pre Spec Torax H-0.md`: qué es Ctrl All, que
         se mantiene [step 14] y que **no escribe en el Pattern**.
   - [ ] Dejar dicho lo que un lector daría por supuesto al revés, que es lo que

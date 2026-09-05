@@ -105,6 +105,35 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 >
 > Track `temp-parameters_20260904`.
 
+> **Nota del 2026-09-05 — Ctrl All: un knob mueve los doce Tracks.** Mantener el
+> **step button 14** y girar un knob desplaza ese parámetro en **los doce Tracks
+> a la vez**, sin escribirlo en el Pattern; al soltar, todo vuelve solo.
+>
+> **Es la operación de mezcla que faltaba sobre el material.** Subir el Velocity
+> del conjunto, abrir el Sustain de todo o desfasar el Pattern con Rotate pedía
+> hasta ciento ocho vueltas de knob —nueve parámetros por doce Tracks—, y ninguna
+> se podía deshacer.
+>
+> **Ctrl All desplaza; Temp iguala.** Es la diferencia entera entre los dos
+> gestos, y se lee al revés con facilidad. Temp hace que un parámetro suene igual
+> en todos los Cycles del Track seleccionado; Ctrl All mueve el Pattern entero
+> **conservando** lo que lo hace un Pattern y no doce copias — el Track lento
+> sigue siendo el lento.
+>
+> **Alcanza a los doce, muteados incluidos**, porque mute es mezcla y la rejilla
+> del Track muteado sigue avanzando: dejarlo fuera lo devolvería desalineado al
+> desmutearlo.
+>
+> **Con Ctrl All hundido, Ctrl All manda** — y a diferencia de Temp, callan
+> también las vías táctiles que escriben: un cambio de Scale a media
+> superposición reencuadra el pool y no se deshace al soltar. Con [13] y [14]
+> hundidos a la vez gana Temp.
+>
+> **Tampoco se guarda:** existe mientras el dedo está encima, y por eso no
+> aparece en el Core Model.
+>
+> Track `ctrl-all_20260905`.
+
 - **Mapeo:** preset listo para BeatStep Pro + **MIDI Learn** para reasignar a otro hardware.
 
 ## MVP Scope — v1
