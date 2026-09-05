@@ -32,3 +32,30 @@ build/verificacion/ (ignorado por git).
 Para capturar la pantalla hubo que apuntar el estado inicial de navegación a
 .banks temporalmente —simctl no sabe tocar la pantalla— y se revirtió acto
 seguido.
+
+--- Phase Verification & Checkpoint: Fase 6 (La pantalla 4 · Banks) ---
+
+Cobertura de tests de la fase: ninguna, y es lo correcto. BankView.swift y el
+caso .banks de ContentView son App, que no se mide (workflow.md); la lógica que
+sostienen —BankSession— está en Persistence al 100%.
+
+Verificado:
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    -> BUILD SUCCEEDED
+  Simulador iPad Pro 11-inch: la pantalla se dibuja, '4 · Banks' sale del borde
+  discontinuo y '5 · Tracks' sigue dentro. Capturas en build/verificacion/.
+
+La primera pasada NO valió: la fila del Bank en tamaño de leyenda y en un
+rincón, que incumple el requisito de leerse a un metro. Rehecha.
+
+Verificación manual propuesta al usuario:
+1. Save disponible sonando; Reload y Duplicate no, y la pantalla dice por qué.
+2. Reload pregunta, y es lo único que lo hace.
+3. Los tres estados del Autosave tienen texto propio, los dos malos incluidos.
+4. Sin Export/Import: Backup Project está fuera.
+
+Y se dijo lo que no queda probado: para capturar hubo que apuntar el estado
+inicial de navegación a .banks —simctl no sabe tocar la pantalla—, así que la
+pulsación real de los botones no está probada hasta la Fase 8.
+
+Confirmación del usuario: 'OK' (2026-09-04).
