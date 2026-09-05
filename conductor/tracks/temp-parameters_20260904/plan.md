@@ -50,23 +50,23 @@ de seguir.
         iguala, así que la base es distinta en cada Cycle y un solo valor no
         podría devolverla.
   - [x] `Engine` sigue sin importar nada más allá de la stdlib.
-- [ ] Task: Aplicar y restaurar sobre el Track (FR2, FR3, FR4)
-  - [ ] Tests (Red): aplicar un delta escribe el **mismo valor absoluto** en
+- [x] Task: Aplicar y restaurar sobre el Track (FR2, FR3, FR4) — `9cbfdde`
+  - [x] Tests (Red): aplicar un delta escribe el **mismo valor absoluto** en
         todos los Cycles activos, calculado desde el Cycle en edición; los Cycles
         inactivos no se tocan.
-  - [ ] Tests (Red): girar dos veces acumula sobre el valor superpuesto, no sobre
+  - [x] Tests (Red): girar dos veces acumula sobre el valor superpuesto, no sobre
         el base.
-  - [ ] Tests (Red): restaurar devuelve **cada** Cycle a su valor propio; un
+  - [x] Tests (Red): restaurar devuelve **cada** Cycle a su valor propio; un
         parámetro no tocado conserva su valor distinto por Cycle antes, durante y
         después.
-  - [ ] Tests (Red): restaurar **no toca** `cursor`, `editing`, `activeCount`,
+  - [x] Tests (Red): restaurar **no toca** `cursor`, `editing`, `activeCount`,
         pool, marco tonal, canal ni `padOctaveShift` — aunque el cursor haya
         avanzado durante el hold.
-  - [ ] Tests (Red): un delta que choca contra un extremo no cambia el Track y se
+  - [x] Tests (Red): un delta que choca contra un extremo no cambia el Track y se
         puede detectar sin publicar.
-  - [ ] Implementación (Green): apoyarse en `Cycle.applying(_:to:)` y en
+  - [x] Implementación (Green): apoyarse en `Cycle.applying(_:to:)` y en
         `Track.replacing(_:at:)`; no duplicar la aritmética de parámetros.
-  - [ ] Cobertura `Engine` ≥90%.
+  - [x] Cobertura `Engine` ≥90%.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: EL GESTO EN EL CONTROLADOR
