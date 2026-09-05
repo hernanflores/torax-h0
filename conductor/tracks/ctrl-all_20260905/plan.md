@@ -47,14 +47,14 @@ seguir.
         parámetro cambia de CC.
   - [x] Implementación (Green): el intercambio en `assignments` de
         `beatStepPro`. Es un diccionario explícito: no hay aritmética que tocar.
-- [~] Task: El Cycle en edición pasa al knob 13, CC 82 (FR20)
-  - [ ] Tests (Red): CC 82 mueve el Cycle en edición; **CC 79 se ignora en
+- [x] Task: El Cycle en edición pasa al knob 13, CC 82 (FR20) — `01e6549`
+  - [x] Tests (Red): CC 82 mueve el Cycle en edición; **CC 79 se ignora en
         silencio**, con el mismo criterio que un CC sin asignar.
-  - [ ] Tests (Red): con un `knobBlock` distinto del por defecto, el Cycle sigue
+  - [x] Tests (Red): con un `knobBlock` distinto del por defecto, el Cycle sigue
         al bloque — el número no queda clavado al 82.
-  - [ ] Implementación (Green): `editingCycleController` deja de ser
+  - [x] Implementación (Green): `editingCycleController` deja de ser
         `knobBlock.number + 9` y pasa a ser un dato del mapeo, como `padBlock`.
-  - [ ] Documentar el porqué: un desplazamiento fijo escondido en una propiedad
+  - [x] Documentar el porqué: un desplazamiento fijo escondido en una propiedad
         calculada es lo que hacía que mover un knob fuera un cambio de aritmética
         en vez de un cambio de tabla.
 - [ ] Task: El preset y su justificación (FR17, FR20)
