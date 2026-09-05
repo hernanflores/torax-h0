@@ -1,0 +1,39 @@
+Task: Anotar Ctrl All en la Pre Spec y en product.md (Fase 1, ctrl-all_20260905)
+
+QUE SE HIZO
+Dos notas fechadas 2026-09-05, una por documento, antes de escribir codigo:
+el Task Workflow §8 las exige porque Ctrl All no aparece en la Pre Spec.
+
+FICHEROS
+- Pre Spec Torax H-0.md (modificado): nota larga tras la de Temp del 2026-09-04,
+  en la seccion Tonal, que es donde vive la tabla de parametros que el gesto
+  mueve.
+- conductor/product.md (modificado): nota corta en Interaction Model, junto a la
+  de Temp.
+
+EL PORQUE
+La nota existe para fijar lo que un lector daria por supuesto al reves. "Afecta
+a todos los Tracks" se lee como "los iguala", y es justo lo contrario: Ctrl All
+DESPLAZA y Temp IGUALA. De ahi que la frase aparezca en los dos documentos y
+que la Pre Spec la desarrolle con el ejemplo del Track lento que sigue siendo el
+lento.
+
+Lo demas que la nota fija, y que tampoco se deduce del gesto:
+- Alcanza a los doce Tracks, MUTEADOS INCLUIDOS. Mute es mezcla y la rejilla del
+  muteado sigue avanzando: dejarlo fuera lo devolveria desalineado al
+  desmutearlo.
+- Se guarda base y offset POR SEPARADO. Es lo unico que hace exacta la ida y
+  vuelta cuando un Track topa: el topado no arrastra a los demas.
+- El acumulado se acota al ancho del recorrido, salvo Rotate, que envuelve y por
+  tanto nunca queda muerto. La razon del tope se escribe con el sintoma delante,
+  el de la nota del 2026-08-28 sobre los encoders.
+- Congela tambien las vias tactiles que escriben, requisito que Temp no tiene:
+  un cambio de Scale a media superposicion no se deshace al soltar.
+- Con [13] y [14] hundidos gana Temp, y ninguno hereda el estado del otro.
+
+VOCABULARIO
+"Ctrl All", literal. No "global", no "all tracks", no "macro" (NFR7).
+
+NOTA DE PROCESO
+El plan.md con la tarea marcada [~] entro en este commit en vez de en el commit
+de plan siguiente. Sin consecuencia: el commit de plan registra el [x] y el SHA.
