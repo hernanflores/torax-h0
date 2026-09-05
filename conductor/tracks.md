@@ -509,6 +509,30 @@ escalón es el que se nota.
   Es de `cycles_20260901`, no del track del reloj externo: se separa por el mismo
   criterio que partió la rebanada 7 del MVP.
 
+---
+
+- [ ] **Track: Temp — parámetros temporales**
+  *Link: [conductor/tracks/temp-parameters_20260904/index.md](./tracks/temp-parameters_20260904/index.md)*
+
+  Girar un knob escribe, siempre: para hacer un fill hay que gastar un Cycle o un
+  Pattern, o deshacer a mano lo que se acaba de tocar — y no hay deshacer.
+  **Mantener [step 13]** superpone el cambio sobre el Track seleccionado y
+  soltarlo lo devuelve, sin dejar rastro en el Pattern.
+
+  **Es el tercer modificador y no inventa mecánica:** los step buttons 15 y 16 ya
+  son mute y solo con el mismo 127/0, y del 13 al 16 no hay Track detrás desde
+  que el Pattern bajó a doce. El «mantener» es estado de mensajes, así que el
+  gesto entero se prueba sin temporizadores.
+
+  **El overlay iguala el parámetro girado en todos los Cycles activos** —para que
+  el fill se oiga aunque el cursor cruce de Cycle— y al soltar cada uno recupera
+  **el suyo**: la base se guarda por Cycle. Restaurar devuelve los parámetros
+  tocados y nada más; el cursor de reproducción avanzó durante el hold y no puede
+  retroceder.
+
+  Toca Timing y Delay, que la regla del 2026-08-28 habría marcado como medibles,
+  pero **no lleva medición**: sigue suspendida desde el 2026-09-02.
+
 ## Defectos conocidos
 
 Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres

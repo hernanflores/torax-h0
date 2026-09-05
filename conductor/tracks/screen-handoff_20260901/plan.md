@@ -193,7 +193,7 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   - [x] Tocar una escala reencuadra el pool y **nunca lo vacía**, como hoy y como manda la guía
 - [x] Task: El gráfico de notas y la raíz — `35bd402`
   - [x] Tests (Red) en `Engine`: qué notas están en la escala y cuál es la raíz salen del marco tonal, no de la vista — `TonalKeyboard`, 10 tests, 100% de cobertura
-  - [~] Las notas de la escala, altas e interactivas; las de fuera, cortas, oscuras y no interactivas — **cortas y oscuras sí; no interactivas no.** Ver abajo
+  - [x] Las notas de la escala, altas e interactivas; las de fuera, cortas y oscuras — **desviación aceptada:** las doce siguen siendo tocables. Ver abajo
   - [x] La raíz elegida con borde de 3px y etiqueta destacada: **distinta de «está en la escala»**, que es la confusión que el handoff se molesta en señalar
   - [x] Línea de estado `Scale · <nombre>  Root · <nota>`, con la raíz en color
 
@@ -211,7 +211,7 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   - [x] La superficie de pads y el registro se siguen viendo, como hoy
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## Phase 6: La medición y el dispositivo
+## Phase 6: La medición y el dispositivo [checkpoint: 46ba23d]
 
 > La fase que decide si la pantalla vale. Se juzgan dos cosas que solo el iPad
 > puede responder: si el jitter aguanta la carga visual nueva, y si esto se lee a
@@ -255,13 +255,13 @@ que redibuja al ritmo del reloj», el caso que la nota del 2026-08-28 de
   > La verificación anterior, el 2026-09-01, sí encontró dos defectos —la lectura
   > truncándose y la barra MIDI empujando las columnas—, corregidos y verificados
   > de nuevo.
-- [~] Task: Cerrar la rebanada
+- [x] Task: Cerrar la rebanada
   - [x] Cobertura de `Engine` ≥90% y de `MIDI` ≥80%, medidas como dice `workflow.md` — **99,26%** y **91,59%** de líneas
   - [x] `product-guidelines.md` recoge lo que esta rebanada cierra: el lenguaje visual deja de ser ilustrativo
   - [x] El handoff queda anotado con lo que se implementó y lo que no, y con cualquier desviación decidida en dispositivo
   - [x] `tracks.md` deja descrita la rebanada siguiente, y `cycles_20260901` deja de estar bloqueado por ésta
-  - [ ] Pull Request contra `main`, con los checks en verde
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Pull Request contra `main`, con los checks en verde — PR #26, merge `46ba23d`, `build` y `CodeRabbit` en verde
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Notas de riesgo
 
