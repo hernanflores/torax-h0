@@ -23,7 +23,7 @@ de control** (NFR4, decidido sin número).
 offset se está filtrando al camino de timing: parar y revisar el diseño antes de
 seguir.
 
-## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
+## FASE 1: LA DESVIACIÓN QUEDA ESCRITA [checkpoint: 7255180]
 
 - [x] Task: Anotar Ctrl All en la Pre Spec y en `product.md` (NFR7) — `7255180`
   - [x] Nota fechada 2026-09-05 en `Pre Spec Torax H-0.md`: qué es Ctrl All, que
@@ -38,7 +38,7 @@ seguir.
   - [x] Fijar el vocabulario: «Ctrl All», no «global», «all tracks» ni «macro».
   - [x] Nota fechada en `conductor/product.md`, junto a la de Temp del
         2026-09-04, en la sección *Interaction Model*.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: EL PRESET SE REESCRIBE ENTERO
 
