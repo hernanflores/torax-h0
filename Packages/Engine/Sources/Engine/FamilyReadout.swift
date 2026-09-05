@@ -32,7 +32,27 @@ public struct FamilyReadout: Equatable, Sendable {
     /// El resto de la familia, en una línea pequeña.
     public let detail: String
 
-    public init(track: Cycle, family: ParameterFamily) {
+    /// El distintivo de que lo que se lee es **temporal**, o `nil` en reposo.
+    ///
+    /// > **Por qué hace falta.** Con Temp puesto, la lectura, el anillo y el
+    /// > valor grande ya enseñan los valores superpuestos sin ningún camino
+    /// > aparte: el overlay se escribe en el `Pattern` publicado y llega por el
+    /// > de siempre. Eso resuelve *qué* se ve y deja sin resolver lo otro — un
+    /// > fill puesto y una edición permanente se leen **exactamente igual**, así
+    /// > que nadie puede saber si lo que tiene delante sobrevivirá a soltar el
+    /// > botón. El distintivo es lo único que los separa.
+    ///
+    /// **Sale en las tres familias**, porque Temp alcanza a los nueve
+    /// parámetros: depender del tab que se esté mirando dejaría el fill sin
+    /// marcar en dos de cada tres pantallas.
+    ///
+    /// El término es «Temp», el que la Pre Spec ancla (NFR6). No se inventa un
+    /// sinónimo para pantalla: lo que se lee es lo que el usuario usará para
+    /// pensarlo.
+    public let marker: String?
+
+    public init(track: Cycle, family: ParameterFamily, isTemporary: Bool = false) {
+        marker = isTemporary ? "Temp" : nil
         switch family {
         case .shape:
             let shape = track.shape

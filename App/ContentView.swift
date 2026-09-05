@@ -492,6 +492,18 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             Spacer(minLength: 0)
 
+            // **El distintivo va encima de los dos estados y no dentro de
+            // ninguno** (FR10). Lo que Temp cambia no es el valor —que se lee
+            // igual, girando o en reposo— sino si va a sobrevivir a soltar el
+            // botón, y eso es cierto durante todo el hold: meterlo en la rama
+            // del valor grande lo haría desaparecer con él, a los 1,6 segundos,
+            // con el fill todavía puesto.
+            if let marker = FamilyReadout(
+                track: model.track, family: family, isTemporary: model.isTempActive
+            ).marker {
+                temporaryMarker(marker)
+            }
+
             // **El valor grande sustituye al estado en reposo, no lo tapa**, y
             // sobre todo no tapa los anillos: viven en otra columna (FR14). Con
             // esto la regla de `product-guidelines.md` —el patrón permanece
@@ -515,7 +527,10 @@ struct ContentView: View {
     /// El texto lo decide `FamilyReadout`, en `Engine` y con tests. Aquí solo se
     /// compone y se le pone el acento de la familia.
     private var resting: some View {
-        let readout = FamilyReadout(track: model.track, family: family)
+        // Los valores son los superpuestos cuando Temp está puesto, y llegan por
+        // el camino de siempre: el overlay se escribe en el `Pattern` publicado.
+        let readout = FamilyReadout(
+            track: model.track, family: family, isTemporary: model.isTempActive)
         return VStack(alignment: .leading, spacing: 8) {
             // **Dos líneas antes que cortarse.** En la columna estrecha
             // `Probability 100` no cabe en una, y truncar una lectura que existe
@@ -602,6 +617,27 @@ struct ContentView: View {
     /// Displays the description of a parameter change with its family-specific accent color.
     /// - Parameter change: The parameter change to display.
     /// - Returns: A view showing the change description.
+    /// El distintivo de que lo que se lee es temporal.
+    ///
+    /// **La palabra la decide `FamilyReadout`**, en `Engine` y con tests; aquí
+    /// solo se dibuja. Es la regla de `workflow.md`: si algo en `App` mereciera
+    /// un test, está en el sitio equivocado.
+    ///
+    /// Lleva el acento de Tonal a propósito, que es el único de los tres que no
+    /// pertenece a ningún knob: así no se confunde con la familia del parámetro
+    /// que se esté girando, que es lo que colorea el valor grande.
+    private func temporaryMarker(_ marker: String) -> some View {
+        Text(marker.uppercased())
+            .font(Typography.captionBold)
+            .foregroundStyle(Palette.background)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Palette.tonal, in: RoundedRectangle(cornerRadius: Brutalist.radiusSmall))
+            .padding(.horizontal, 24)
+            .transition(.opacity)
+            .animation(.easeOut(duration: 0.18), value: marker)
+    }
+
     private func transient(_ change: ParameterChange) -> some View {
         Text(change.description)
             .font(Typography.readout)

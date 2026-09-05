@@ -114,6 +114,14 @@ public final class ControlInput: @unchecked Sendable {
     private var holdingSoloModifier = false
     private var holdingTempModifier = false
 
+    /// Si Temp está puesto ahora mismo.
+    ///
+    /// **Lo consume la pantalla** (FR10), que sin esto no puede distinguir un
+    /// fill temporal de una edición permanente: los valores que enseña son los
+    /// mismos en los dos casos. Es lectura y no una vía para accionar el gesto —
+    /// la táctil está fuera de alcance en este track.
+    public var isTempActive: Bool { holdingTempModifier }
+
     /// Qué se superpuso durante el Temp en curso, y qué había debajo.
     ///
     /// **Vacío es el estado de reposo**, no un caso aparte: mientras nadie

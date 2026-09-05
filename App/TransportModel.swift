@@ -133,6 +133,7 @@ final class TransportModel {
     private func syncFromControlInput() {
         pattern = controlInput.pattern
         selectedTrackIndex = controlInput.selectedTrackIndex
+        isTempActive = controlInput.isTempActive
     }
 
     /// Con qué material arranca la app.
@@ -283,6 +284,14 @@ final class TransportModel {
     /// (`product-guidelines.md`). Es un estado, no una carencia: no se abre
     /// ninguna vía táctil para suplirlo.
     var isReadOnly: Bool { !sourceSelection.hasEndpoint }
+
+    /// Si lo que la pantalla enseña es un Temp y no una edición permanente.
+    ///
+    /// **Los valores no cambian de camino: cambia lo que significan.** El
+    /// overlay se escribe en el `Pattern` publicado, así que la lectura, el
+    /// anillo y el valor grande ya recogen los superpuestos solos; sin esto, un
+    /// fill puesto y una edición permanente se leerían exactamente igual (FR10).
+    private(set) var isTempActive = false
 
     /// Cuánto se queda el valor grande tras el último giro.
     ///
