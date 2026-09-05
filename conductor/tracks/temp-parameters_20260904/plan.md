@@ -36,20 +36,20 @@ de seguir.
 
 ## FASE 2: EL OVERLAY COMO VALOR DE DOMINIO
 
-- [ ] Task: `ParameterOverlay` — qué se superpuso y qué había debajo (FR2, FR3, FR12, NFR3)
-  - [ ] Tests (Red): superponer un parámetro guarda el valor base **de cada Cycle
+- [x] Task: `ParameterOverlay` — qué se superpuso y qué había debajo (FR2, FR3, FR12, NFR3) — `8c600f0`
+  - [x] Tests (Red): superponer un parámetro guarda el valor base **de cada Cycle
         activo**; superponer el mismo dos veces no re-guarda la base; un
         parámetro no tocado no aparece en el snapshot.
-  - [ ] Tests (Red): el tipo acepta cualquier caso de `TrackParameter` — barrido
+  - [x] Tests (Red): el tipo acepta cualquier caso de `TrackParameter` — barrido
         sobre `allCases`, sin enumerar los nueve.
-  - [ ] Tests (Red): el snapshot vacío es el estado de reposo y restaurar desde
+  - [x] Tests (Red): el snapshot vacío es el estado de reposo y restaurar desde
         él no cambia nada.
-  - [ ] Implementación (Green): `ParameterOverlay` en `Packages/Engine`, valor
+  - [x] Implementación (Green): `ParameterOverlay` en `Packages/Engine`, valor
         puro con el juego base por (Cycle, parámetro).
-  - [ ] Documentar **por qué guarda por Cycle y no un valor único**: el overlay
+  - [x] Documentar **por qué guarda por Cycle y no un valor único**: el overlay
         iguala, así que la base es distinta en cada Cycle y un solo valor no
         podría devolverla.
-  - [ ] `Engine` sigue sin importar nada más allá de la stdlib.
+  - [x] `Engine` sigue sin importar nada más allá de la stdlib.
 - [ ] Task: Aplicar y restaurar sobre el Track (FR2, FR3, FR4)
   - [ ] Tests (Red): aplicar un delta escribe el **mismo valor absoluto** en
         todos los Cycles activos, calculado desde el Cycle en edición; los Cycles
