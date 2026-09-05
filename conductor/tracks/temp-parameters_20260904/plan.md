@@ -34,7 +34,7 @@ de seguir.
         `version`/`updated`.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: EL OVERLAY COMO VALOR DE DOMINIO
+## FASE 2: EL OVERLAY COMO VALOR DE DOMINIO [checkpoint: 9cbfdde]
 
 - [x] Task: `ParameterOverlay` — qué se superpuso y qué había debajo (FR2, FR3, FR12, NFR3) — `8c600f0`
   - [x] Tests (Red): superponer un parámetro guarda el valor base **de cada Cycle
@@ -67,11 +67,11 @@ de seguir.
   - [x] Implementación (Green): apoyarse en `Cycle.applying(_:to:)` y en
         `Track.replacing(_:at:)`; no duplicar la aritmética de parámetros.
   - [x] Cobertura `Engine` ≥90%.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: EL GESTO EN EL CONTROLADOR
 
-- [ ] Task: [step 13] mantiene y suelta (FR1, FR7, FR9)
+- [~] Task: [step 13] mantiene y suelta (FR1, FR7, FR9)
   - [ ] Tests (Red): CC 114 con 127 entra en Temp y **no publica por sí solo**;
         con 0 sale y publica una vez el snapshot restaurado.
   - [ ] Tests (Red): con Temp activo, girar Pulses publica un Pattern con el
