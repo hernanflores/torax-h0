@@ -138,6 +138,11 @@ de seguir.
   - [x] `swift format --in-place --recursive App Packages` y
         `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Tests automáticos: `Engine` 496 · `MIDI` 21 + 525, sin fallos.
+        `swift format` limpio y la app compila para `generic/platform=iOS`.
+  - [ ] **Verificación en dispositivo pendiente (2026-09-05)**, la misma que
+        deja abierta la Fase 3. **El simulador no sirve**: no tiene fuentes MIDI,
+        así que no hay knob que girar y el distintivo no se puede disparar.
   - [ ] Verificación manual en iPad con BeatStep Pro: mantener [step 13], girar
         Pulses y Velocity, comprobar que el fill entra y que soltar lo deshace
         sin notas colgadas; repetir con dos Cycles activos y confirmar que cada
