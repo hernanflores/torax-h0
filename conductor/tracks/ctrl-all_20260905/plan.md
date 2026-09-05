@@ -25,18 +25,18 @@ seguir.
 
 ## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
 
-- [~] Task: Anotar Ctrl All en la Pre Spec y en `product.md` (NFR7)
-  - [ ] Nota fechada 2026-09-05 en `Pre Spec Torax H-0.md`: qué es Ctrl All, que
+- [x] Task: Anotar Ctrl All en la Pre Spec y en `product.md` (NFR7) — `7255180`
+  - [x] Nota fechada 2026-09-05 en `Pre Spec Torax H-0.md`: qué es Ctrl All, que
         se mantiene [step 14] y que **no escribe en el Pattern**.
-  - [ ] Dejar dicho lo que un lector daría por supuesto al revés, que es lo que
+  - [x] Dejar dicho lo que un lector daría por supuesto al revés, que es lo que
         separa este gesto de Temp: **desplaza, no iguala**. Las diferencias entre
         Tracks y entre Cycles sobreviven, y por eso la base se guarda por Track
         *y* por Cycle.
-  - [ ] Anotar el alcance completo: los doce Tracks, muteados incluidos (FR3), y
+  - [x] Anotar el alcance completo: los doce Tracks, muteados incluidos (FR3), y
         las vías táctiles congeladas (FR11), que es un requisito que Temp no
         tiene.
-  - [ ] Fijar el vocabulario: «Ctrl All», no «global», «all tracks» ni «macro».
-  - [ ] Nota fechada en `conductor/product.md`, junto a la de Temp del
+  - [x] Fijar el vocabulario: «Ctrl All», no «global», «all tracks» ni «macro».
+  - [x] Nota fechada en `conductor/product.md`, junto a la de Temp del
         2026-09-04, en la sección *Interaction Model*.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
