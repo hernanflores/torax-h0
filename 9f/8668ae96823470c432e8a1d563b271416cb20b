@@ -56,3 +56,42 @@ PENDIENTE
 Verificación en dispositivo, común a las Fases 3 y 4: el usuario no tenía el
 iPad delante el 2026-09-05. Incluye confirmar que el step 13 es momentary y no
 toggle, que es el riesgo declarado en el spec.
+
+---
+
+VERIFICACIÓN DE FASE 4 — LA PANTALLA ENSEÑA LO QUE SUENA (2026-09-05)
+
+Cobertura de tests de los cambios de la fase (diff 0d0ab2c..HEAD):
+  FamilyReadout.swift -> FamilyReadoutTests + FamilyReadoutTempTests
+  ControlInput.swift  -> los tres ficheros de Temp de la Fase 3
+  ContentView.swift, TransportModel.swift -> App no se mide (workflow.md); la
+  palabra del distintivo vive en Engine y allí sí tiene tests.
+
+Tests automáticos:
+  swift test --package-path Packages/Engine
+    -> 496 tests, 0 fallos (491 al abrir la fase: +5)
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    -> 525 tests, 0 fallos
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    -> 21 tests (1 omitido), 0 fallos
+  swift format --in-place --recursive App Packages -> limpio
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    -> BUILD SUCCEEDED
+  Sin medición de jitter (NFR5).
+
+Verificación manual propuesta, en el mismo pase que la Fase 3:
+  - El distintivo «Temp» aparece al hundir el step 13 y desaparece al soltarlo.
+  - Los valores que se leen durante el hold son los superpuestos.
+  - El anillo redistribuye con ellos mientras dura el hold y vuelve solo al
+    soltar, sin acción de nadie.
+
+EL SIMULADOR NO SIRVE para esto y se descartó: no tiene fuentes MIDI, así que no
+hay knob que girar y el distintivo no se puede disparar. Es la misma limitación
+que ya recoge workflow.md en «Notas del entorno».
+
+La fase se dejó ABIERTA el 2026-09-05 junto con la 3, y se cerró en la misma
+sesión al conseguir el iPad.
+
+Confirmación del usuario: «Validado con el ipad» (2026-09-05), que cubre el pase
+de las dos fases. Es la confirmación tal cual se dio, sin desglose por paso.
+Fase cerrada.
