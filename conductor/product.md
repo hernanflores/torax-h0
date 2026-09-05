@@ -81,6 +81,30 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 >
 > Track `mute-solo_20260902`.
 
+> **Nota del 2026-09-04 — Temp: interpretar sin escribir.** Mantener el **step
+> button 13** y girar un knob cambia lo que suena en el Track seleccionado **sin
+> escribirlo en el Pattern**; al soltar, los valores anteriores vuelven solos. Es
+> lo que permite un fill, un build o un breakdown sin gastar un Cycle ni un
+> Pattern.
+>
+> **Es lo que le faltaba al instrumento para tocarse y no solo programarse.**
+> Hasta aquí, girar un knob escribía siempre: la única forma de volver atrás era
+> deshacer a mano lo que se acababa de tocar, y no hay deshacer.
+>
+> **A diferencia de mute y solo, sí es del material** —son los nueve parámetros
+> del Track— pero **no se guarda**: existe mientras el dedo está encima. Por eso
+> tampoco aparece en el Core Model.
+>
+> **El overlay iguala, no aplana.** El parámetro girado toma el mismo valor en
+> todos los Cycles activos, para que el fill se oiga aunque el cursor cruce de
+> Cycle a media vuelta; al soltar, cada uno recupera **el suyo**.
+>
+> **Con Temp hundido, Temp manda:** callan la selección de Track, los
+> modificadores de mezcla, el knob del Cycle en edición y los pads. Un roce no
+> puede deshacer el fill.
+>
+> Track `temp-parameters_20260904`.
+
 - **Mapeo:** preset listo para BeatStep Pro + **MIDI Learn** para reasignar a otro hardware.
 
 ## MVP Scope — v1
