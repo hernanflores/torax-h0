@@ -41,3 +41,32 @@ TESTS
   (flake midi-test-flake_20260826, aplazado a despues de la v2)
   xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS -> SUCCEEDED
 swift format limpio.
+
+--- VERIFICACION DE FASE 2 (checkpoint) ---
+
+TESTS AUTOMATICOS
+  swift test --package-path Packages/Engine  -> 496 tests, 0 fallos
+  swift test --package-path Packages/MIDI    -> 7 fallos, todos en
+    VirtualLoopbackTests. Aisladas con --filter pasan las 4: firma exacta del
+    flake midi-test-flake_20260826, aplazado a despues de la v2.
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS -> SUCCEEDED
+  swift format limpio.
+
+COBERTURA DE TESTS PARA LOS CAMBIOS DE LA FASE
+Diff 7255180..HEAD: un solo fichero de codigo, ControlMapping.swift, con tests en
+ControlMappingTests, PresetMappingTests, EditingCycleInputTests y el nuevo
+PresetFileTests. Los otros ficheros del diff son datos (JSON) y documentacion.
+
+VERIFICACION MANUAL PROPUESTA
+1. Reimportar el preset (version 3) en MIDI Control Center; encoders en Relative #2.
+2. Compilar y ejecutar en iPad con el controlador conectado.
+3. Knob 7 mueve Delay y knob 9 mueve Probability; los knobs 1-6 y el 8 no se
+   movieron de sitio.
+4. Knob 13 mueve el Cycle en edicion; knob 10 no hace absolutamente nada.
+5. La linea de Groove en pantalla sigue en orden de dominio (Velocity, Sustain,
+   Probability, Timing, Delay) aunque la fila de knobs vaya en otro orden — la
+   decision del 2026-09-05, confirmada con el hardware delante.
+6. El step 14 todavia no hace nada: mantenerlo y girar escribe como siempre.
+
+CONFIRMACION DEL USUARIO
+Confirmado ("OK!") el 2026-09-05.
