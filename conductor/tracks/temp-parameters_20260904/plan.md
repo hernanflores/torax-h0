@@ -97,16 +97,16 @@ de seguir.
   - [x] Tests (Red): al soltar Temp, los cuatro vuelven a responder.
   - [x] Implementación (Green): un solo punto de corte en `receive(_:)`, no una
         comprobación repartida por cada rama.
-- [~] Task: Soltar sin soltada — reconexión y notas en vuelo (FR8, FR13)
-  - [ ] Tests (Red): `releaseModifiers()` con Temp hundido restaura, publica y
+- [x] Task: Soltar sin soltada — reconexión y notas en vuelo (FR8, FR13) — `0d0ab2c`
+  - [x] Tests (Red): `releaseModifiers()` con Temp hundido restaura, publica y
         deja el estado en reposo.
-  - [ ] Tests (Red): tras un hold completo, el Pattern es igual al de partida
+  - [x] Tests (Red): tras un hold completo, el Pattern es igual al de partida
         salvo lo que avanzó el cursor de reproducción (FR5).
-  - [ ] Tests (Red): entrar y salir del overlay no emite ningún mensaje de
+  - [x] Tests (Red): entrar y salir del overlay no emite ningún mensaje de
         apagado — el camino de emisión no gana un all-notes-off.
-  - [ ] Implementación (Green): extender `releaseModifiers()`, documentando que
+  - [x] Implementación (Green): extender `releaseModifiers()`, documentando que
         ahora suelta tres modificadores y por qué la restauración va con ella.
-  - [ ] Cobertura `MIDI` ≥80%.
+  - [x] Cobertura `MIDI` ≥80%.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: LA PANTALLA ENSEÑA LO QUE SUENA
