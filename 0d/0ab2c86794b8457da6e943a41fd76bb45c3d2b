@@ -45,3 +45,45 @@ PENDIENTE
 La Fase 4: el distintivo de Temp y los valores superpuestos en pantalla. Al
 cerrar esta fase, Temp ya funciona de verdad con el controlador aunque la
 pantalla todavía no lo distinga.
+
+---
+
+VERIFICACIÓN DE FASE 3 — EL GESTO EN EL CONTROLADOR (2026-09-05)
+
+Cobertura de tests de los cambios de la fase (diff 9cbfdde..HEAD):
+  ControlInput.swift -> TempModifierInputTests, TempTakesOverInputTests y
+  TempReleaseModifiersTests (más los ficheros de ControlInput ya existentes).
+  Ningún fichero de código sin test correspondiente.
+
+Tests automáticos:
+  swift test --package-path Packages/Engine
+    -> 491 tests, 0 fallos (sin regresión)
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    -> 525 tests, 0 fallos (494 al abrir la fase: +31)
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    -> 21 tests (1 omitido), 0 fallos
+  Cobertura MIDI: 92,26% de líneas (umbral >=80%); ControlInput.swift 100%.
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    -> BUILD SUCCEEDED
+  Sin medición de jitter (NFR5).
+
+Verificación manual propuesta, en iPad con BeatStep Pro:
+  1. Mantener [step 13] y girar el knob 2 (Pulses): el ritmo cambia mientras se
+     mantiene.
+  2. Soltar: el patrón anterior vuelve solo, sin notas colgadas. Girar sin
+     mantener nada vuelve a escribir permanente.
+  3. Con el 13 hundido: los step buttons 1-12 no cambian de Track, el 15 y el 16
+     no mutean ni solean, el knob 10 no mueve el Cycle en edición y los pads no
+     tocan el pool.
+  4. Con dos o más Cycles activos de valores distintos: durante el hold suenan
+     igual; al soltar cada uno recupera el suyo.
+  5. Confirmar que el step 13 es momentary (127/0) y no toggle — riesgo
+     declarado en el spec.
+
+La fase se dejó ABIERTA el 2026-09-05 por no tener el usuario el iPad delante, y
+se cerró en la misma sesión al conseguirlo.
+
+Confirmación del usuario: «Validado con el ipad» (2026-09-05). Es la
+confirmación tal cual se dio, sin desglose por paso; el supuesto de que el step
+13 es momentary queda validado por ella, ya que un toggle habría dejado el fill
+puesto al soltar en el paso 2. Fase cerrada.
