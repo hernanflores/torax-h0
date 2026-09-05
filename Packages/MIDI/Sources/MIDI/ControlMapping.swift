@@ -115,16 +115,31 @@ public struct ControlMapping: Equatable, Sendable {
         )
     }
 
-    /// CC del knob que mueve el Cycle en edición: el décimo del bloque.
+    /// Posición del knob del Cycle en edición dentro del bloque, contando desde
+    /// cero: el decimotercero.
+    ///
+    /// **Es un dato del mapeo y no un desplazamiento escondido en el código.**
+    /// Hasta el 2026-09-05 el CC se calculaba como `knobBlock.number + 9` dentro
+    /// de la propiedad de abajo, y eso hacía que mover un knob fuera un cambio de
+    /// aritmética en vez de un cambio de tabla — que es exactamente lo que un
+    /// mapeo existe para evitar.
+    public static let editingCycleKnobOffset = 12
+
+    /// CC del knob que mueve el Cycle en edición: el decimotercero del bloque.
     ///
     /// **No es un `TrackParameter`, y por eso no está en `assignments`.** Los
     /// nueve primeros knobs mueven parámetros del Cycle; este mueve *a cuál* de
     /// ellos se está apuntando, que es una operación de otro orden. Meterlo en
     /// la tabla obligaría a inventarle un caso al enum que el modelo no tiene.
     ///
-    /// El número cae en el 79 con el bloque por defecto, que es el último del
-    /// rango de propósito general de la especificación MIDI: el sitio sigue
-    /// siendo el correcto.
+    /// > **Nota del 2026-09-05 — se movió del knob 10 al 13.** Estaba en el 79,
+    /// > pegado a los nueve parámetros, y este comentario decía que «el sitio
+    /// > sigue siendo el correcto» porque el 79 cerraba el rango de propósito
+    /// > general. Ninguna de las dos cosas se sostiene: el rango no era la regla
+    /// > —ver la nota de `beatStepPro`— y estar pegado a los nueve era
+    /// > precisamente lo que confundía la fila. Separarlo dice con la mano lo que
+    /// > el modelo ya decía. **El CC 79 queda libre**, declarado a propósito
+    /// > como los otros cinco.
     ///
     /// > **Desviación de la Pre Spec, anotada el 2026-09-02.** La tabla de Shape
     /// > dice «Cycles: selecciona/edita el Cycle actual; **con CTRL** ajusta 1–16
@@ -133,7 +148,7 @@ public struct ControlMapping: Equatable, Sendable {
     /// > se ajusta táctilmente, que es donde `product-guidelines.md` pone la
     /// > configuración. La nota fechada está en la Pre Spec.
     public var editingCycleController: MIDIController? {
-        MIDIController(knobBlock.number + 9)
+        MIDIController(knobBlock.number + Self.editingCycleKnobOffset)
     }
 
     /// Índice 0–15 del step button que envió ese CC, o `nil` fuera del bloque.

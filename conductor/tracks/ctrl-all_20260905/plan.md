@@ -47,7 +47,7 @@ seguir.
         parámetro cambia de CC.
   - [x] Implementación (Green): el intercambio en `assignments` de
         `beatStepPro`. Es un diccionario explícito: no hay aritmética que tocar.
-- [ ] Task: El Cycle en edición pasa al knob 13, CC 82 (FR20)
+- [~] Task: El Cycle en edición pasa al knob 13, CC 82 (FR20)
   - [ ] Tests (Red): CC 82 mueve el Cycle en edición; **CC 79 se ignora en
         silencio**, con el mismo criterio que un CC sin asignar.
   - [ ] Tests (Red): con un `knobBlock` distinto del por defecto, el Cycle sigue

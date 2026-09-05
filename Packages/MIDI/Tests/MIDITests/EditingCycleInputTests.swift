@@ -9,15 +9,20 @@ private typealias Pattern = Engine.Pattern
 /// Tests del knob que mueve el Cycle en edición.
 ///
 /// **Dos cursores conviviendo.** El que suena lo mueve el scheduler en el límite
-/// de vuelta; el que se edita lo mueve el knob 10, y no se tocan. Es la
+/// de vuelta; el que se edita lo mueve el knob del Cycle, y no se tocan. Es la
 /// separación que permite construir el Cycle B mientras suena el A (FR7), y es
 /// también donde alguien se va a confundir: por eso lo que se fija aquí es que
 /// mover uno no mueve al otro.
 final class EditingCycleInputTests: XCTestCase {
 
-    /// CC del knob 10 del preset: el bloque empieza en el 70 y los dieciséis van
-    /// seguidos.
-    private let cycleKnob = MIDIController(79)!
+    /// CC del knob del Cycle en edición, **leído del mapeo y no escrito**.
+    ///
+    /// > **Nota del 2026-09-05.** Estaba escrito como 79 —el knob 10— y el knob
+    /// > se fue al 13, así que ocho tests fallaron por un comportamiento que no
+    /// > había cambiado. Es la misma lección que `ControlMappingTests` dejó
+    /// > anotada cuando la rebanada 6 le dio el 77 a Timing: lo que cambia es el
+    /// > preset, y el test tiene que leerlo de ahí.
+    private let cycleKnob = ControlMapping.beatStepPro.editingCycleController!
 
     private func cycle(pitch: Int = 48) -> Cycle {
         Cycle(
@@ -354,6 +359,10 @@ final class EditingTargetsTheEditingCycleTests: XCTestCase {
 /// hardware sino la que `product-guidelines.md` ya tenía trazada.
 final class ActiveCycleCountInputTests: XCTestCase {
 
+    /// CC del knob del Cycle en edición, leído del mapeo — ver la nota de
+    /// `EditingCycleInputTests`.
+    private let cycleKnob = ControlMapping.beatStepPro.editingCycleController!
+
     private func cycle(pulses: Int = 5) -> Cycle {
         Cycle(
             shape: Shape(steps: Steps(16)!, pulses: Pulses(pulses)!),
@@ -431,7 +440,7 @@ final class ActiveCycleCountInputTests: XCTestCase {
         // Se edita el Cycle 2 y se sube a tres.
         input.receive(
             .controlChange(
-                channel: MIDIChannel(1)!, controller: MIDIController(79)!, value: 0x01))
+                channel: MIDIChannel(1)!, controller: cycleKnob, value: 0x01))
         input.receive(
             .controlChange(
                 channel: MIDIChannel(1)!, controller: MIDIController(71)!, value: 0x01))

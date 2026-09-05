@@ -115,6 +115,47 @@ final class PresetMappingTests: XCTestCase {
         }
     }
 
+    // MARK: - El knob del Cycle en edición
+
+    /// **El Cycle en edición vive en el knob 13, CC 82** desde el 2026-09-05.
+    ///
+    /// Estaba en el knob 10 (CC 79), contiguo a los nueve parámetros. Separarlo
+    /// de la fila dice con la mano lo que ya decía el modelo: los nueve mueven
+    /// un parámetro del Cycle y éste mueve *a cuál* de ellos se apunta, que es
+    /// una operación de otro orden.
+    func testTheEditingCycleKnobIsTheThirteenth() throws {
+        XCTAssertEqual(mapping.editingCycleController?.number, 82)
+        XCTAssertEqual(mapping.declaredNumbers.knobs[12], 82)
+    }
+
+    /// **El CC 79 quedó libre y se ignora en silencio**, con el mismo criterio
+    /// que los otros cinco: no es un olvido, y girarlo no es un error.
+    func testTheTenthKnobIsNowFree() throws {
+        let seventyNine = try XCTUnwrap(MIDIController(79))
+        XCTAssertNil(mapping.parameter(for: seventyNine))
+        XCTAssertNotEqual(mapping.editingCycleController, seventyNine)
+
+        let input = ControlInput(
+            track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
+            publish: { _ in }
+        )
+        XCTAssertFalse(
+            input.receive(
+                .controlChange(channel: MIDIChannel(1)!, controller: seventyNine, value: 1)),
+            "el knob 10 movió algo")
+    }
+
+    /// **El número sigue al bloque, no está clavado al 82.** Es lo que separa un
+    /// dato del mapeo de una constante repartida por el código: mover
+    /// `knobBlock` mueve los dieciséis knobs a la vez, éste incluido.
+    func testTheEditingCycleKnobFollowsItsBlock() throws {
+        let moved = ControlMapping(
+            assignments: [.steps: 20],
+            knobBlock: try XCTUnwrap(MIDIController(20))
+        )
+        XCTAssertEqual(moved.editingCycleController?.number, 32)
+    }
+
     // MARK: - Los step buttons
 
     func testTheStepButtonBlockResolvesToItsIndices() throws {
