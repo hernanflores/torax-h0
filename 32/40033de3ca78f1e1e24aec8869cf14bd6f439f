@@ -1,0 +1,43 @@
+Task: El preset y su justificación (Fase 2, ctrl-all_20260905)
+
+QUE SE HIZO
+El preset del repositorio se pone al dia con el remapeo y con el step 14, y por
+primera vez hay un test que lo obliga.
+
+FICHEROS
+- preset/torax-h0.beatstep-pro.json: version 2 -> 3, updated 2026-09-05. Knobs
+  reasignados con `note` en los tres que se movieron; el 79 pasa a `free`; el
+  step 14 deja de decir "nada" y dice Ctrl All; `semantics` menciona los cuatro
+  modificadores y que con 13 y 14 manda Temp.
+- preset/README.md: tabla de knobs rehecha, tabla de step buttons con el 14, y
+  dos bloques de nota fechada.
+- Packages/MIDI/Tests/MIDITests/PresetFileTests.swift (nuevo): seis tests.
+
+EL PORQUE — EL TEST ES LO NUEVO
+El README abre diciendo "los mismos numeros que declara ControlMapping: si uno
+de los dos cambia, el otro esta mal". Hasta hoy eso era una promesa sin nadie
+que la cobrara, y el riesgo dejo de ser teorico en cuanto tres knobs cambiaron
+de sitio: el preset es lo que se carga en MIDI Control Center y la app es lo que
+escucha. Separados, los knobs mueven lo que no dice la etiqueta y el sintoma no
+se parece a la causa — la misma averia que la nota del 2026-08-28.
+
+El test lee el JSON y el README DEL REPOSITORIO via #filePath, no una copia en
+el bundle de recursos. Una copia que se quedara atras pasaria el test y rompería
+el controlador, que es justo el fallo que el test existe para impedir.
+
+Cubre: cada knob asignado, cada knob libre, que los dieciseis esten declarados
+(sin esto, borrar una entrada no romperia nada), el bloque de step buttons, que
+el step 14 diga Ctrl All, y que el README lleve los mismos numeros.
+
+LO QUE NO SE ADELANTO
+La primera version del test comparaba contra ControlInput.ctrlAllModifierIndex,
+que es de la fase del gesto y no existe. Se cambio por el indice literal 13. La
+ventana en la que el preset promete algo que la app no hace queda anotada en el
+README y en el plan.
+
+TESTS
+  swift test --package-path Packages/Engine  -> 496 tests, 0 fallos
+  swift test --package-path Packages/MIDI    -> 7 fallos, todos VirtualLoopback
+  (flake midi-test-flake_20260826, aplazado a despues de la v2)
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS -> SUCCEEDED
+swift format limpio.
