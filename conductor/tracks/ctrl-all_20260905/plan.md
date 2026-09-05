@@ -57,7 +57,7 @@ seguir.
   - [x] Documentar el porqué: un desplazamiento fijo escondido en una propiedad
         calculada es lo que hacía que mover un knob fuera un cambio de aritmética
         en vez de un cambio de tabla.
-- [ ] Task: El preset y su justificación (FR17, FR20)
+- [~] Task: El preset y su justificación (FR17, FR20)
   - [ ] Tests (Red): `PresetMappingTests` compara JSON, README y `ControlMapping`
         con los números nuevos, y falla si uno de los tres se queda atrás.
   - [ ] `torax-h0.beatstep-pro.json`: los tres knobs, el CC 79 libre y el **step
