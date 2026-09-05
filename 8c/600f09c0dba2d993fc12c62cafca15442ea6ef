@@ -1,0 +1,63 @@
+Task: ParameterOverlay — qué se superpuso y qué había debajo (Fase 2, FR2, FR3, FR12, NFR3)
+
+QUÉ CAMBIA
+- NUEVO 'Packages/Engine/Sources/Engine/ParameterOverlay.swift':
+  * struct ParameterOverlay (Equatable, Sendable). Almacena
+    [TrackParameter: [Int: Int]] — por parámetro tocado, el valor base de cada
+    Cycle activo. API: init() (reposo), isEmpty, parameters, base(of:inCycle:),
+    capturing(_:from:), restored(into:).
+  * extension Cycle: value(of:) -> Int (lectura genérica) y
+    setting(_:to:) -> Cycle (escritura absoluta).
+- NUEVO 'Packages/Engine/Tests/EngineTests/ParameterOverlayTests.swift':
+  9 tests — reposo, restaurar desde vacío, base por Cycle activo, Cycles
+  inactivos fuera, idempotencia de la captura, parámetro no tocado ausente,
+  dos parámetros conviviendo, barrido sobre TrackParameter.allCases, y la
+  lectura genérica como posición de knob.
+- 'TrackParameter.swift': Equatable -> Hashable (aditivo). Lo pide la clave del
+  diccionario; Hashable implica Equatable, así que no se pierde nada.
+
+POR QUÉ
+La base va por Cycle porque el overlay IGUALA en vez de aplanar. El parámetro
+girado toma el mismo valor absoluto en todos los Cycles activos —para que el
+fill se oiga aunque el cursor cruce de Cycle a media vuelta— luego lo que había
+debajo era distinto en cada uno. Con un valor único, soltar dejaría los
+dieciséis con el valor del Cycle en edición: el desarrollo A/B/C destruido de
+forma permanente, que es justo lo que Temp existe para no hacer (FR4).
+
+capturing(_:from:) es idempotente por el mismo motivo. Un giro durante el hold
+produce un mensaje tras otro y el segundo llega con el Track ya superpuesto; si
+reescribiera la base, guardaría el valor del overlay y soltar dejaría el fill
+puesto para siempre.
+
+value(of:) devuelve la POSICIÓN DEL KNOB y no siempre el número en pantalla:
+Division es una fracción cuyo knob recorre Division.ordered, así que su lectura
+es el índice. Devolver el denominador haría que superponer Division saltara de
+1/16 a 1/1 con un clic.
+
+setting(_:to:) se apoya en applying(_:to:) en vez de repetir la aritmética.
+Cada parámetro ya sabe frenarse en su extremo —o envolver, en Rotate— y
+duplicarlo daría dos sitios donde equivocarse.
+
+DESVIACIONES / DECISIONES
+- ParameterOverlay usa Dictionary y NO es POD, a diferencia de Track, Cycle y
+  Pattern. Es deliberado y cumple NFR2: el overlay no cruza al hilo del
+  scheduler. Lo que cruza sigue siendo un Pattern normal por el PatternHandoff
+  de siempre; el snapshot se queda en el hilo de control.
+- Engine sigue sin importar nada más allá de la stdlib
+  (DependencyBoundaryTests pasa).
+- Corregido en los tests durante la fase Red: Timing recto es 50%, no 0
+  (validRange 50...75). El test de la lectura genérica lo deja fijado.
+
+VERIFICACIÓN
+  swift test --package-path Packages/Engine
+    -> 476 tests, 0 fallos (467 antes: +9)
+  Cobertura Engine: 98,00% de líneas (umbral >=90%).
+  ParameterOverlay.swift por sí solo: 84,31% — restored(into:) con overlay no
+  vacío y setting(_:to:) los ejercita la tarea siguiente, que es su alcance en
+  el plan.
+  Sin medición de jitter (NFR5).
+
+PENDIENTE
+La tarea siguiente aplica el overlay sobre el Track: valor absoluto igual en
+todos los Cycles activos calculado desde el Cycle en edición, acumulación sobre
+el valor superpuesto y la restauración completa.
