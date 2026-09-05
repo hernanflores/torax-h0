@@ -84,6 +84,49 @@ public struct ParameterOverlay: Equatable, Sendable {
         return updated
     }
 
+    /// El Track con ese parámetro superpuesto, guardando la base si aún no lo
+    /// estaba.
+    ///
+    /// **Iguala en vez de desplazar** (FR2). El delta se resuelve contra el
+    /// **Cycle en edición** —donde está la mano— y el valor absoluto resultante
+    /// se escribe igual en todos los Cycles activos. Aplicar el delta a cada uno
+    /// por separado sería lo natural y estaría mal: con Pulses 5, 7 y 9 y un
+    /// clic, seguirían siendo tres valores distintos y el fill sonaría distinto
+    /// según por dónde fuera el cursor, que es justo lo que Temp evita.
+    ///
+    /// **Girar dos veces acumula sobre el valor superpuesto**, no sobre el base,
+    /// porque el Track que entra ya lo lleva puesto. Si acumulara sobre el base,
+    /// seguir girando no movería nada después del primer clic.
+    ///
+    /// Los Cycles inactivos no se tocan: el overlay alcanza a lo que se recorre.
+    ///
+    /// > **Igualar sigue al Cycle en edición: si él no se mueve, no se mueve
+    /// > nadie** (FR9). Un giro nulo o contra un extremo devuelve el Track tal
+    /// > cual y ni siquiera guarda la base, para que quien publica lo detecte
+    /// > comparando, como hoy. La alternativa —igualar de todas formas— aplanaría
+    /// > los otros Cycles sin que nadie hubiera girado nada, que es un cambio que
+    /// > el usuario no pidió y no vería venir. Y no le quita nada al gesto: la
+    /// > igualación ya ocurrió en el giro que sí movió el Cycle en edición.
+    ///
+    /// Es `mutating` porque el primer giro de cada parámetro guarda su base, y
+    /// eso es estado del hold. Lo que devuelve es el Track, no el overlay: son
+    /// dos cosas distintas y quien las junta es `ControlInput`.
+    public mutating func apply(_ delta: Int, to parameter: TrackParameter, in track: Track)
+        -> Track
+    {
+        let target = track.editingCycle.applying(delta, to: parameter).value(of: parameter)
+        guard target != track.editingCycle.value(of: parameter) else { return track }
+
+        self = capturing(parameter, from: track)
+
+        var overlaid = track
+        for index in 0..<track.activeCount {
+            guard let cycle = overlaid.cycle(at: index) else { continue }
+            overlaid = overlaid.replacing(cycle.setting(parameter, to: target), at: index)
+        }
+        return overlaid
+    }
+
     /// El Track con cada parámetro tocado devuelto a **su** valor en **cada**
     /// Cycle.
     ///
