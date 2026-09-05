@@ -66,7 +66,7 @@ regresión la bloquea.
   El diseño se queda como estaba —FR5 intacto, se publica el Pattern entero— y
   las dos alternativas quedan descartadas por escrito, para no reabrirlas a
   mitad de la Fase 3. Enmienda fechada en el NFR2 del `spec.md`.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 2: El Cycle es el valor, el Track lo contiene [checkpoint: 9fb8bbb]
 
@@ -123,7 +123,7 @@ regresión la bloquea.
 
   FR9 no necesitó caso aparte: si el cursor ya está fuera del rango, sumarle uno
   lo deja igual de fuera y la comparación lo devuelve a 0.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: El scheduler avanza en el límite de vuelta [checkpoint: 0802798]
 
@@ -180,7 +180,7 @@ regresión la bloquea.
   el Cycle vigente de cada Track y dejaba sonando los otros quince por sus
   canales; ahora barre los dieciséis —no solo los activos, porque FR9 deja el
   cursor fuera del rango a propósito— deduplicando pares canal+altura.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 4: La entrada edita el Cycle en edición [checkpoint: b4ba89b]
 
@@ -217,7 +217,7 @@ regresión la bloquea.
   El test de la frontera barre **los 128 controladores** con cuatro valores cada
   uno sobre los dieciséis Tracks: asignar un CC por descuido rompería la
   frontera de `product-guidelines.md` sin que nadie lo viera.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 5: La pantalla muestra el desarrollo [checkpoint: c9f5b2a]
 
@@ -246,7 +246,7 @@ regresión la bloquea.
   **El simulador no puede enseñar el Cycle sonando**: sin destinos MIDI no hay
   transporte ni reloj del que deducir. Las capturas están en `captures/`; el
   relleno se verifica en dispositivo, en la Fase 6.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 6: La medición y el dispositivo [checkpoint: 74c9b44]
 
