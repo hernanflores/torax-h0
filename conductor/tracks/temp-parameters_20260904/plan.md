@@ -108,6 +108,21 @@ de seguir.
         ahora suelta tres modificadores y por qué la restauración va con ella.
   - [x] Cobertura `MIDI` ≥80%.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Tests automáticos: `Engine` 491 · `MIDI` 21 + 525, sin fallos. Cobertura
+        `MIDI` 92,26% de líneas (`ControlInput.swift` al 100%). La app compila
+        para `generic/platform=iOS`.
+  - [ ] **Verificación en dispositivo pendiente (2026-09-05).** El usuario no
+        tiene el iPad delante y la fase se deja abierta a propósito, sin
+        checkpoint: el código está entero y probado, pero **el gesto no se ha
+        tocado nunca en hardware**.
+  - [ ] Con el iPad delante: mantener [step 13] y girar Pulses; soltar y
+        comprobar que vuelve sin notas colgadas; comprobar que con el 13 hundido
+        callan los step buttons 1–12, los modificadores 15 y 16, el knob 10 y los
+        pads; y repetir con dos Cycles activos de valores distintos, confirmando
+        que cada uno recupera el suyo.
+  - [ ] **Confirmar que el step 13 es *momentary* (127/0) y no toggle.** Es el
+        riesgo declarado en el spec. Si el hardware lo desmiente, parar: cambia
+        el gesto, no la implementación.
 
 ## FASE 4: LA PANTALLA ENSEÑA LO QUE SUENA
 
