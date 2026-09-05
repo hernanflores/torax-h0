@@ -37,3 +37,27 @@ VOCABULARIO
 NOTA DE PROCESO
 El plan.md con la tarea marcada [~] entro en este commit en vez de en el commit
 de plan siguiente. Sin consecuencia: el commit de plan registra el [x] y el SHA.
+
+--- VERIFICACION DE FASE 1 (checkpoint) ---
+
+TESTS AUTOMATICOS
+  swift test --package-path Packages/Engine  -> 496 tests, 0 fallos
+  swift test --package-path Packages/MIDI    -> 546 tests, 0 fallos
+Sin flake de clientCreationFailed(-50) en esta pasada.
+
+COBERTURA DE TESTS PARA LOS CAMBIOS DE LA FASE
+No aplica: el diff de la fase son dos ficheros .md (Pre Spec Torax H-0.md y
+conductor/product.md), excluidos por el protocolo. Ningun .swift tocado.
+
+VERIFICACION MANUAL PROPUESTA
+1. Nota del 2026-09-05 en la Pre Spec, tras la de Temp, en la seccion Tonal; la
+   frase "Ctrl All desplaza; Temp iguala" aparece pronto y sin ambiguedad.
+2. La nota fija las cinco cosas que no se deducen del gesto: alcance a los doce
+   con muteados incluidos, base y offset por separado, tope del acumulado con su
+   sintoma, Rotate fuera del tope, y congelado de las vias tactiles.
+3. Nota corta en conductor/product.md, seccion Interaction Model, tras la de Temp.
+4. Vocabulario: "Ctrl All" literal, sin "global"/"all tracks"/"macro".
+5. Sin cambios en .swift ni en preset/ — eso es la Fase 2.
+
+CONFIRMACION DEL USUARIO
+Confirmado ("go") el 2026-09-05.
