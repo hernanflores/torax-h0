@@ -37,3 +37,35 @@ Cambios en App:
 
 Y una nota sobre el init: las propiedades se leen en locales hasta que
 controlInput está asignado, porque Swift no deja tocar self antes.
+
+--- Phase Verification & Checkpoint: Fase 5 (Autosave) ---
+
+Cobertura de tests de la fase: AutosaveScheduler.swift ->
+AutosaveSchedulerTests.swift (11 tests); ControlInput.swift ->
+PatternReplacementTests.swift (5 tests, en MIDI). El cableado de
+TransportModel y ContentView es App, que no se mide (workflow.md).
+
+Tests ejecutados:
+  Engine       -> 478 tests, 0 fallos
+  MIDI         -> 499 tests, 0 fallos
+  Persistence  ->  79 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+               -> BUILD SUCCEEDED
+  Simulador (iPad Pro 11-inch): arranca y dibuja con el camino de restauración
+  dentro. Captura en build/verificacion/fase5.png (ignorado por git).
+
+NFR1 verificado: LookAheadScheduler, SchedulerThread, TrackScheduler,
+PatternScheduler y PatternHandoff con cero líneas cambiadas en todo el track.
+
+Verificación manual propuesta al usuario — cuatro decisiones de cableado:
+1. El disco se lee lo primero en el init, y el tempo sale del Bank.
+2. La escena avisa en 'inactive', no en 'background'.
+3. El temporizador pregunta cada segundo; el scheduler decide.
+4. syncFromControlInput es el único sitio por el que el Bank se entera.
+
+Y dos cosas dichas como pendientes en vez de darlas por buenas: cerrar y
+reabrir con material dentro exige dispositivo (Fase 8), y swift format reflowó
+una línea de MuteMask.swift, fuera del alcance del track y sin cambio
+semántico.
+
+Confirmación del usuario: 'OK' (2026-09-04).
