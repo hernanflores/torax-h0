@@ -42,10 +42,10 @@ seguir.
 
 ## FASE 2: EL PRESET SE REESCRIBE ENTERO
 
-- [~] Task: Delay al 76 y Probability al 78 (FR20)
-  - [ ] Tests (Red): CC 76 mueve Delay y CC 78 mueve Probability; ningún otro
+- [x] Task: Delay al 76 y Probability al 78 (FR20) — `60f0063`
+  - [x] Tests (Red): CC 76 mueve Delay y CC 78 mueve Probability; ningún otro
         parámetro cambia de CC.
-  - [ ] Implementación (Green): el intercambio en `assignments` de
+  - [x] Implementación (Green): el intercambio en `assignments` de
         `beatStepPro`. Es un diccionario explícito: no hay aritmética que tocar.
 - [ ] Task: El Cycle en edición pasa al knob 13, CC 82 (FR20)
   - [ ] Tests (Red): CC 82 mueve el Cycle en edición; **CC 79 se ignora en
