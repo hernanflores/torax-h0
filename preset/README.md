@@ -36,10 +36,16 @@ aparecen en la pantalla.
 | 7 | 76 | Probability |
 | 8 | 77 | Timing |
 | 9 | 78 | Delay |
-| 10–16 | 79–85 | **Sin asignar.** Se ignoran en silencio |
+| 10 | 79 | **Cycle en edición** del Track seleccionado |
+| 11–16 | 80–85 | **Sin asignar.** Se ignoran en silencio |
 
-Los siete libres están declarados a propósito, no olvidados: su sitio es de v2
-—Cycles, Accent, Repeats, Time, Voicing, Range—. Girarlos no hace nada y no es un
+El knob 10 dejó de estar libre en `cycles_20260901`: mueve el cursor de edición
+del Track seleccionado. **Cuántos Cycles están activos no se toca aquí**, sino en
+la pantalla — la nota del 2026-09-02 en la Pre Spec explica por qué el gesto de
+CTRL se partió en dos.
+
+Los seis libres están declarados a propósito, no olvidados: su sitio es de v2
+—Accent, Repeats, Time, Voicing, Range—. Girarlos no hace nada y no es un
 error.
 
 **Scale y Root no están aquí**: son configuración táctil y se tocan en la
@@ -73,7 +79,8 @@ la nota 48. Son dos numeraciones distintas y no hay que confundirlas.
 | Step button | CC | Significado |
 |---|---|---|
 | 1–12 | 102–113 | Seleccionar Track 1–12 |
-| 13, 14 | 114, 115 | Nada: el Pattern tiene doce Tracks |
+| 13 | 114 | **Modificador de Temp** — mantenido |
+| 14 | 115 | Nada: el Pattern tiene doce Tracks |
 | 15 | 116 | **Modificador de solo** — mantenido |
 | 16 | 117 | **Modificador de mute** — mantenido |
 
@@ -96,6 +103,23 @@ el controlador.
 > modificador que además actúa se dispara sin querer.
 >
 > Con los dos mantenidos a la vez manda el de mute.
+
+> **Temp, del 2026-09-04.** Mantener el 13 y girar un knob de parámetro cambia
+> lo que suena en el Track seleccionado **sin escribirlo en el Pattern**; al
+> soltar, los valores anteriores vuelven solos (track
+> `temp-parameters_20260904`). Es lo que hace un fill sin gastar un Cycle.
+>
+> **Con el 13 hundido, Temp manda.** Los step buttons 1–12 no cambian de Track,
+> el 15 y el 16 no publican mute ni solo, el knob 10 no mueve el Cycle en edición
+> y los pads no tocan el pool. Solo responden los nueve knobs de parámetro: el
+> hold acota qué está vivo para que un roce no deshaga el fill.
+>
+> Con varios Cycles activos, el parámetro girado **suena igual en todos** durante
+> el hold —para que el fill se oiga aunque el cursor cruce de Cycle— y al soltar
+> cada uno recupera **el suyo**.
+>
+> Mantenido de verdad, como el 15 y el 16: 127 al pulsar y 0 al soltar, sin
+> temporizador. Pulsado y soltado solo, no hace nada.
 
 ## El canal no importa
 
