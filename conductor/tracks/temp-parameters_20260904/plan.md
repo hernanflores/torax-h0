@@ -69,7 +69,7 @@ de seguir.
   - [x] Cobertura `Engine` ≥90%.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: EL GESTO EN EL CONTROLADOR
+## FASE 3: EL GESTO EN EL CONTROLADOR [checkpoint: 0d0ab2c]
 
 - [x] Task: [step 13] mantiene y suelta (FR1, FR7, FR9) — `793080a`
   - [x] Tests (Red): CC 114 con 127 entra en Temp y **no publica por sí solo**;
@@ -107,24 +107,23 @@ de seguir.
   - [x] Implementación (Green): extender `releaseModifiers()`, documentando que
         ahora suelta tres modificadores y por qué la restauración va con ella.
   - [x] Cobertura `MIDI` ≥80%.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [x] Tests automáticos: `Engine` 491 · `MIDI` 21 + 525, sin fallos. Cobertura
         `MIDI` 92,26% de líneas (`ControlInput.swift` al 100%). La app compila
         para `generic/platform=iOS`.
-  - [ ] **Verificación en dispositivo pendiente (2026-09-05).** El usuario no
-        tiene el iPad delante y la fase se deja abierta a propósito, sin
-        checkpoint: el código está entero y probado, pero **el gesto no se ha
-        tocado nunca en hardware**.
-  - [ ] Con el iPad delante: mantener [step 13] y girar Pulses; soltar y
+  - [x] **Verificado en dispositivo el 2026-09-05.** La fase se dejó abierta a
+        propósito unas horas —el usuario no tenía el iPad delante— y se cerró en
+        la misma sesión al conseguirlo.
+  - [x] Con el iPad delante: mantener [step 13] y girar Pulses; soltar y
         comprobar que vuelve sin notas colgadas; comprobar que con el 13 hundido
         callan los step buttons 1–12, los modificadores 15 y 16, el knob 10 y los
         pads; y repetir con dos Cycles activos de valores distintos, confirmando
         que cada uno recupera el suyo.
-  - [ ] **Confirmar que el step 13 es *momentary* (127/0) y no toggle.** Es el
+  - [x] **Confirmado que el step 13 es *momentary* (127/0) y no toggle.** Es el
         riesgo declarado en el spec. Si el hardware lo desmiente, parar: cambia
         el gesto, no la implementación.
 
-## FASE 4: LA PANTALLA ENSEÑA LO QUE SUENA
+## FASE 4: LA PANTALLA ENSEÑA LO QUE SUENA [checkpoint: 9f8668a]
 
 - [x] Task: Distintivo de Temp y valores superpuestos (FR10, NFR1) — `9f8668a`
   - [x] Tests (Red) en `Engine`: el estado de lectura que la vista consume
@@ -137,16 +136,16 @@ de seguir.
         y vuelve solo al soltar, sin acción de nadie.
   - [x] `swift format --in-place --recursive App Packages` y
         `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [x] Tests automáticos: `Engine` 496 · `MIDI` 21 + 525, sin fallos.
         `swift format` limpio y la app compila para `generic/platform=iOS`.
-  - [ ] **Verificación en dispositivo pendiente (2026-09-05)**, la misma que
-        deja abierta la Fase 3. **El simulador no sirve**: no tiene fuentes MIDI,
-        así que no hay knob que girar y el distintivo no se puede disparar.
-  - [ ] Verificación manual en iPad con BeatStep Pro: mantener [step 13], girar
+  - [x] **Verificado en dispositivo el 2026-09-05**, en el mismo pase que la
+        Fase 3. **El simulador no sirve**: no tiene fuentes MIDI, así que no hay
+        knob que girar y el distintivo no se puede disparar.
+  - [x] Verificación manual en iPad con BeatStep Pro: mantener [step 13], girar
         Pulses y Velocity, comprobar que el fill entra y que soltar lo deshace
         sin notas colgadas; repetir con dos Cycles activos y confirmar que cada
         uno recupera su valor.
-  - [ ] Confirmar en el mismo pase que el step 13 es **momentary** (127/0) y no
+  - [x] Confirmado en el mismo pase que el step 13 es **momentary** (127/0) y no
         toggle. Si el hardware lo desmiente, parar: es el riesgo declarado en el
         spec y cambia el gesto, no la implementación.
