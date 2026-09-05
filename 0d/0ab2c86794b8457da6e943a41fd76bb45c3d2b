@@ -1,0 +1,47 @@
+Task: Soltar sin soltada — reconexión y notas en vuelo (Fase 3, FR8, FR13)
+
+QUÉ CAMBIA
+- 'ControlInput.swift': releaseModifiers() suelta también Temp llamando a
+  releaseTemp(), que restaura el overlay y publica si había algo dentro.
+  Documentado por qué la restauración va con ella.
+- NUEVO 'Packages/MIDI/Tests/MIDITests/TempReleaseModifiersTests.swift':
+  8 tests — restaura y publica una vez; deja el estado en reposo (el giro
+  siguiente escribe permanente); sin nada superpuesto no publica; sigue
+  soltando mute y solo; en reposo no hace nada; tras un hold completo el
+  Pattern es el de partida y el cursor de reproducción no retrocede; y entrar
+  y salir del overlay no emite ningún mensaje.
+
+POR QUÉ
+La restauración va DENTRO de releaseModifiers() y no en un método aparte. Con
+mute y solo, un modificador atascado era un gesto que no responde y se arregla
+pulsando el botón. Con Temp es un fill que no se va, y además deja el Pattern
+inservible para editar: mientras holdingTempModifier siga en true, todo giro se
+superpone en vez de escribir. Un método aparte obligaría a acordarse de
+llamarlo exactamente en el camino de reconexión, que es el que nadie prueba a
+mano.
+
+FR13 no necesita código, y el test existe para dejarlo escrito: ControlInput no
+tiene por dónde emitir —solo publica snapshots por el cierre publish— así que
+entrar o salir del overlay no puede introducir un all-notes-off ni tocar el
+note-off de un evento ya programado. Lo que sale del hold son dos Patterns: el
+del giro y el de la restauración.
+
+VERIFICACIÓN
+  swift test --package-path Packages/MIDI --filter Temp
+    -> 49 tests, 0 fallos (los tres ficheros de Temp)
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    -> 525 tests, 0 fallos (517 antes: +8)
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    -> 21 tests (1 omitido), 0 fallos
+  Cobertura MIDI: 92,26% de líneas (umbral >=80%), medida en un proceso con
+  fusion manual del .profdata e ignorando Engine/Sources, según workflow.md.
+  ControlInput.swift: 100,00% de líneas.
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    -> BUILD SUCCEEDED
+  swift format limpio sobre ControlInput.swift.
+  Sin medición de jitter (NFR5).
+
+PENDIENTE
+La Fase 4: el distintivo de Temp y los valores superpuestos en pantalla. Al
+cerrar esta fase, Temp ya funciona de verdad con el controlador aunque la
+pantalla todavía no lo distinga.
