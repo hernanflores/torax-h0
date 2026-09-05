@@ -57,16 +57,16 @@ seguir.
   - [x] Documentar el porqué: un desplazamiento fijo escondido en una propiedad
         calculada es lo que hacía que mover un knob fuera un cambio de aritmética
         en vez de un cambio de tabla.
-- [~] Task: El preset y su justificación (FR17, FR20)
-  - [ ] Tests (Red): `PresetMappingTests` compara JSON, README y `ControlMapping`
+- [x] Task: El preset y su justificación (FR17, FR20) — `3240033`
+  - [x] Tests (Red): `PresetMappingTests` compara JSON, README y `ControlMapping`
         con los números nuevos, y falla si uno de los tres se queda atrás.
-  - [ ] `torax-h0.beatstep-pro.json`: los tres knobs, el CC 79 libre y el **step
+  - [x] `torax-h0.beatstep-pro.json`: los tres knobs, el CC 79 libre y el **step
         14 (CC 115) como Ctrl All**. Subir `version`/`updated`.
-  - [ ] `preset/README.md`: la tabla de knobs, la de step buttons, y **reescribir
+  - [x] `preset/README.md`: la tabla de knobs, la de step buttons, y **reescribir
         el párrafo del rango 70–79** en los dos sitios donde aparece la
         justificación, con nota fechada 2026-09-05 que diga por qué decía 70–79 y
         cuál era la regla de verdad.
-  - [ ] Anotar que el preset declara Ctrl All antes de que la app lo haga: la
+  - [x] Anotar que el preset declara Ctrl All antes de que la app lo haga: la
         Fase 4 cierra esa ventana.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
