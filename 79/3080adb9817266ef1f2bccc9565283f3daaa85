@@ -1,0 +1,52 @@
+Task: [step 13] mantiene y suelta (Fase 3, FR1, FR7, FR9)
+
+QUÉ CAMBIA
+- 'ControlInput.swift':
+  * tempModifierIndex = ControlMapping.controlsPerFamily - 4 (el step 13, CC
+    114 con el bloque por defecto), junto a muteModifierIndex y
+    soloModifierIndex.
+  * holdingTempModifier: estado de mensajes, como los otros dos.
+  * overlay: ParameterOverlay — qué se superpuso durante el hold en curso.
+  * stepButton(_:value:) despacha Temp el PRIMERO de los tres, porque es el
+    único cuya soltada hace algo.
+  * holdTemp() / releaseTemp(): entrar no publica; salir publica una vez el
+    snapshot restaurado, y solo si el overlay tenía algo. El overlay se vacía
+    siempre, hubiera o no algo dentro.
+  * turn(_:by:) desvía a overlayTurn(_:to:) cuando Temp está hundido.
+  * overlayTurn(_:to:): trabaja sobre el Track entero via pattern.track(at:),
+    no sobre el Cycle en edición.
+- NUEVO 'Packages/MIDI/Tests/MIDITests/TempModifierInputTests.swift': 14 tests.
+
+POR QUÉ
+El desvío va DESPUÉS de resolver el parámetro y no antes: Temp no cambia qué
+knob mueve qué, solo dónde va a parar el resultado. Ponerlo antes obligaría a
+duplicar la resolución del mapeo.
+
+overlayTurn trabaja sobre Track y no sobre Cycle —que es lo que hace turn—
+porque ahí está la diferencia entera del gesto: el valor se iguala en todos los
+Cycles activos. La regla vive en ParameterOverlay (Engine, >=90%); aquí solo se
+traduce el gesto.
+
+releaseTemp no publica si el overlay está vacío. Cubre dos casos que parecen
+distintos y son el mismo: soltar sin haber girado, y soltar tras giros que no
+movieron nada —contra un extremo—. En los dos no hay nada que restaurar y
+publicar sería ruido, con el criterio de FR9.
+
+FR7 (corriendo y parado) sale gratis y el test lo deja escrito: ControlInput no
+conoce el transporte, así que el gesto no puede consultarlo.
+
+VERIFICACIÓN
+  swift test --package-path Packages/MIDI --filter TempModifierInputTests
+    -> 14 tests, 0 fallos
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    -> 21 tests (1 omitido), 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    -> 508 tests, 0 fallos (494 antes: +14)
+  swift format limpio sobre ControlInput.swift.
+  Sin medición de jitter (NFR5). Nada nuevo cruza al hilo del scheduler: el
+  overlay vive en ControlInput, que corre en el hilo de control.
+
+PENDIENTE
+Las dos tareas siguientes de la fase: el corte de los controles que Temp
+silencia (FR6) y releaseModifiers() soltando también Temp (FR8, FR13), donde se
+mide la cobertura de MIDI.
