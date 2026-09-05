@@ -87,17 +87,17 @@ de seguir.
   - [x] Documentar por qué el índice vive en `ControlInput` y no en
         `ControlMapping`: la tabla describe el hardware, el consumidor acota el
         significado.
-- [~] Task: Con Temp hundido, Temp manda (FR6)
-  - [ ] Tests (Red): con Temp activo, un step button 1–12 **no** cambia
+- [x] Task: Con Temp hundido, Temp manda (FR6) — `34d044d`
+  - [x] Tests (Red): con Temp activo, un step button 1–12 **no** cambia
         `selectedTrackIndex`; los modificadores 15 y 16 no publican `MixGesture`;
         el knob 10 no mueve el Cycle en edición; ningún pad toca el pool ni el
         registro.
-  - [ ] Tests (Red): ninguno de esos mensajes ignorados publica ni devuelve
+  - [x] Tests (Red): ninguno de esos mensajes ignorados publica ni devuelve
         `true` — se ignoran como un CC sin asignar, no como un error.
-  - [ ] Tests (Red): al soltar Temp, los cuatro vuelven a responder.
-  - [ ] Implementación (Green): un solo punto de corte en `receive(_:)`, no una
+  - [x] Tests (Red): al soltar Temp, los cuatro vuelven a responder.
+  - [x] Implementación (Green): un solo punto de corte en `receive(_:)`, no una
         comprobación repartida por cada rama.
-- [ ] Task: Soltar sin soltada — reconexión y notas en vuelo (FR8, FR13)
+- [~] Task: Soltar sin soltada — reconexión y notas en vuelo (FR8, FR13)
   - [ ] Tests (Red): `releaseModifiers()` con Temp hundido restaura, publica y
         deja el estado en reposo.
   - [ ] Tests (Red): tras un hold completo, el Pattern es igual al de partida
