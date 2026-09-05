@@ -126,16 +126,16 @@ de seguir.
 
 ## FASE 4: LA PANTALLA ENSEÑA LO QUE SUENA
 
-- [ ] Task: Distintivo de Temp y valores superpuestos (FR10, NFR1)
-  - [ ] Tests (Red) en `Engine`: el estado de lectura que la vista consume
+- [x] Task: Distintivo de Temp y valores superpuestos (FR10, NFR1) — `9f8668a`
+  - [x] Tests (Red) en `Engine`: el estado de lectura que la vista consume
         distingue «con overlay» de «sin overlay» y devuelve los valores
         superpuestos — la lógica va donde sí se mide (`FamilyReadout` y vecinos).
-  - [ ] Implementación (Green): cableado en `App` —`ContentView`, `RingView`,
+  - [x] Implementación (Green): cableado en `App` —`ContentView`, `RingView`,
         `TrackSelectorView` según toque— reutilizando el valor grande transitorio
         de `mvp-ring-feedback`. Sin lógica nueva en la vista.
-  - [ ] El anillo redistribuye con los valores superpuestos mientras dura el hold
+  - [x] El anillo redistribuye con los valores superpuestos mientras dura el hold
         y vuelve solo al soltar, sin acción de nadie.
-  - [ ] `swift format --in-place --recursive App Packages` y
+  - [x] `swift format --in-place --recursive App Packages` y
         `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [ ] Verificación manual en iPad con BeatStep Pro: mantener [step 13], girar
