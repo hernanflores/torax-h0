@@ -350,14 +350,26 @@ public final class ControlInput: @unchecked Sendable {
         return true
     }
 
-    /// Da por soltados los modificadores.
+    /// Da por soltados los tres modificadores.
     ///
     /// **Lo llama quien reconecta la entrada** (FR8): un cable desenchufado con
     /// el botón hundido dejaría el modificador pegado para siempre, porque la
     /// soltada que lo levantaría ya no va a llegar por ningún sitio.
+    ///
+    /// > **Con Temp, además, restaura y publica** — y por eso la restauración va
+    /// > aquí y no en un método aparte. Con mute y solo, un modificador atascado
+    /// > era un gesto que no responde; con Temp es un fill que no se va, encima
+    /// > de un Pattern que ya no se puede editar de verdad, porque todo giro
+    /// > seguiría superponiéndose. Dejar la restauración fuera obligaría a
+    /// > acordarse de llamarla, y el sitio donde hay que acordarse es
+    /// > precisamente el de la reconexión, que nadie prueba a mano.
+    ///
+    /// Sin nada superpuesto no publica: reconectar sin modificadores hundidos es
+    /// el caso normal y un snapshot idéntico sería ruido.
     public func releaseModifiers() {
         holdingMuteModifier = false
         holdingSoloModifier = false
+        _ = releaseTemp()
     }
 
     /// Un giro de knob mueve un parámetro del Track, sea de la familia que sea.
