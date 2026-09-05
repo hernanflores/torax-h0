@@ -71,23 +71,23 @@ de seguir.
 
 ## FASE 3: EL GESTO EN EL CONTROLADOR
 
-- [~] Task: [step 13] mantiene y suelta (FR1, FR7, FR9)
-  - [ ] Tests (Red): CC 114 con 127 entra en Temp y **no publica por sí solo**;
+- [x] Task: [step 13] mantiene y suelta (FR1, FR7, FR9) — `793080a`
+  - [x] Tests (Red): CC 114 con 127 entra en Temp y **no publica por sí solo**;
         con 0 sale y publica una vez el snapshot restaurado.
-  - [ ] Tests (Red): con Temp activo, girar Pulses publica un Pattern con el
+  - [x] Tests (Red): con Temp activo, girar Pulses publica un Pattern con el
         overlay; soltar publica el Pattern base. Girar sin Temp sigue escribiendo
         permanente.
-  - [ ] Tests (Red): un giro nulo o contra un extremo no publica, con Temp activo
+  - [x] Tests (Red): un giro nulo o contra un extremo no publica, con Temp activo
         igual que sin él.
-  - [ ] Tests (Red): el comportamiento es idéntico con el transporte parado — el
+  - [x] Tests (Red): el comportamiento es idéntico con el transporte parado — el
         gesto no consulta el transporte.
-  - [ ] Implementación (Green): `tempModifierIndex = ControlMapping.controlsPerFamily - 4`
+  - [x] Implementación (Green): `tempModifierIndex = ControlMapping.controlsPerFamily - 4`
         junto a `muteModifierIndex` y `soloModifierIndex`, despachado en
         `stepButton(_:value:)` antes de la selección.
-  - [ ] Documentar por qué el índice vive en `ControlInput` y no en
+  - [x] Documentar por qué el índice vive en `ControlInput` y no en
         `ControlMapping`: la tabla describe el hardware, el consumidor acota el
         significado.
-- [ ] Task: Con Temp hundido, Temp manda (FR6)
+- [~] Task: Con Temp hundido, Temp manda (FR6)
   - [ ] Tests (Red): con Temp activo, un step button 1–12 **no** cambia
         `selectedTrackIndex`; los modificadores 15 y 16 no publican `MixGesture`;
         el knob 10 no mueve el Cycle en edición; ningún pad toca el pool ni el
