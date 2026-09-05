@@ -31,3 +31,33 @@ suspendida desde el 2026-09-02).
 PENDIENTE
 'preset/Torax.beatsteppro' no se toca: es la exportación de MIDI Control Center
 y describe el hardware —los CC no cambian—, no lo que la app hace con ellos.
+
+---
+
+VERIFICACIÓN DE FASE 1 — LA DESVIACIÓN QUEDA ESCRITA (2026-09-05)
+
+Tests automáticos (línea base: la fase no cambió código):
+  swift test --package-path Packages/Engine
+    -> 467 tests, 0 fallos
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    -> 21 tests (1 omitido), 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    -> 494 tests, 0 fallos
+Partición de CI según workflow.md; el flake clientCreationFailed(-50) no apareció.
+Sin medición de jitter (NFR5, suspendida desde el 2026-09-02).
+
+Verificación manual propuesta (lectura, por ser fase de documentación):
+  1. Nota del 2026-09-04 al final de §5 de la Pre Spec: qué es Temp, [step 13]
+     mantenido, no escribe en el Pattern, el overlay iguala y cada Cycle
+     recupera el suyo, vocabulario «Temp» sin sinónimos.
+  2. preset/README.md: knob 10 como Cycle en edición, step 13 como modificador
+     de Temp, nota «Temp, del 2026-09-04».
+  3. preset/torax-h0.beatstep-pro.json: version 2, updated 2026-09-04, knob 10
+     en 'assigned', step buttons 13-16 sin «seleccionar Track N».
+  4. preset/Torax.beatsteppro sin tocar.
+
+Se señaló al usuario una decisión tomada sin preguntar: corregir los cuatro
+step buttons 13-16 del JSON y no solo el 13, por estar desincronizados con su
+propio README desde mute-solo_20260902.
+
+Confirmación del usuario: «OK» (2026-09-05). Fase cerrada.
