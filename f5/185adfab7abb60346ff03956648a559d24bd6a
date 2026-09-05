@@ -1,0 +1,33 @@
+Task: Anotar Temp en la Pre Spec y actualizar el preset (Fase 1, FR11, NFR6)
+
+QUÉ CAMBIA
+- 'Pre Spec Torax H-0.md': nota fechada 2026-09-04 al final de §5 (Referencia
+  de parámetros), antes de §6. Declara Temp, el gesto [step 13] mantenido, que
+  no escribe en el Pattern, que el overlay IGUALA el parámetro girado en todos
+  los Cycles activos y que cada uno recupera el suyo al soltar. Fija el término
+  «Temp» y lista lo que queda fuera (pool, Scale, Root, canal, nº de Cycles).
+- 'preset/torax-h0.beatstep-pro.json': version 1 -> 2, updated 2026-09-04.
+  Knob 10 (CC 79) pasa de 'free' a 'assigned' como Cycle en edición. Step
+  buttons 13-16 dejan de decir «seleccionar Track N»: 13 = modificador de Temp,
+  14 = nada, 15 = solo, 16 = mute.
+- 'preset/README.md': tabla de knobs con el 10 asignado y 11-16 libres; tabla de
+  step buttons con el 13; nota «Temp, del 2026-09-04» junto a la de los
+  modificadores del 2026-09-02.
+
+POR QUÉ
+El Task Workflow §8 exige documentar la desviación antes de implementar, y Temp
+no aparece en la Pre Spec en absoluto: el documento describe un instrumento en
+el que girar un knob escribe siempre. La fase va primera por eso.
+
+El JSON estaba desincronizado con su propio README desde mute-solo_20260902:
+declaraba dieciséis Tracks seleccionables cuando el Pattern bajó a doce. Se
+corrige aquí porque el step 13 es justamente uno de los que mentía.
+
+VERIFICACIÓN
+Cambio solo de documentación: sin tests, sin código. Ningún test lee el preset
+(comprobado con grep sobre Packages/*/Tests). Sin medición de jitter (NFR5,
+suspendida desde el 2026-09-02).
+
+PENDIENTE
+'preset/Torax.beatsteppro' no se toca: es la exportación de MIDI Control Center
+y describe el hardware —los CC no cambian—, no lo que la app hace con ellos.
