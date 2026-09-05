@@ -1,0 +1,34 @@
+Tasks: La matriz (FR10) + La celda selecciona Pattern y Track + El par M/S +
+Verificación en simulador — Fase 7, persistence_20260904
+
+Las cuatro en un commit: es una vista.
+
+Ficheros: App/PatternMatrixView.swift (nuevo) y App/ContentView.swift, donde
+Screen gana .tracks y unavailableScreens queda VACÍA — las cinco pantallas del
+handoff existen por primera vez.
+
+No lleva tests: es App, que no se mide. Lo que sostiene la matriz
+—Bank.hasMaterial y BankSession— está en los paquetes, cubierto.
+
+Decisiones:
+1. Dieciséis columnas A–P y no las ocho A–H del handoff: un Bank tiene
+   dieciséis Patterns, y enseñar la mitad escondería lo que esta pantalla
+   existe para enseñar. Caben y se leen — verificado en simulador.
+2. Doce filas sin scroll, que es el recorte de ui-declutter_20260902.
+3. El borde discontinuo de una celda significa 'no hay nada', no 'no se
+   puede': la celda vacía se toca y lleva a un Pattern vacío, que es un sitio
+   legítimo donde empezar algo. Es el único uso del signo en la app que no
+   quiere decir 'no disponible', y por eso está documentado en la vista.
+4. La celda llama a selectTrack SIEMPRE y a selectPattern después. Con el
+   transporte corriendo el segundo no hace nada (FR2) y el gesto hace la mitad
+   de su trabajo en vez de quedarse muerto; la pantalla dice por qué.
+5. El par M/S lee model.mix y llama a los mismos métodos que la fila de
+   1 · Track. La nota del 2026-09-02 en design_handoff/README.md lo anticipó
+   cuando esta pantalla no existía —'dos vistas de lo mismo, no dos estados que
+   sincronizar'— y su 'no aquí' se corrigió el 2026-09-04.
+6. Los colores del par son los del handoff —M en mauve, S en púrpura— y no los
+   de la familia activa: la mezcla no pertenece a ninguna de las tres.
+
+Verificado en simulador (iPad Pro 11-inch): captura en
+build/verificacion/matriz.png. Para capturarla hubo que apuntar el estado
+inicial de navegación a .tracks temporalmente y se revirtió acto seguido.
