@@ -1,0 +1,47 @@
+Task: Delay al 76 y Probability al 78 (Fase 2, ctrl-all_20260905)
+
+QUE SE HIZO
+Intercambio de los CC de Delay y Probability en ControlMapping.beatStepPro, con
+los tests reescritos primero (Red confirmado: 4 fallos, exactamente los dos
+knobs).
+
+FICHEROS
+- Packages/MIDI/Sources/MIDI/ControlMapping.swift (modificado): la tabla, y dos
+  notas fechadas donde antes habia dos justificaciones que el cambio invalida.
+- Packages/MIDI/Tests/MIDITests/PresetMappingTests.swift (modificado):
+  testTheFirstNineKnobsAreTheNineParametersInOrder -> ...CarryTheDeclaredParameters,
+  mas dos tests nuevos para el intercambio y para lo que NO se movio.
+- Packages/MIDI/Tests/MIDITests/ControlMappingTests.swift (modificado): la tabla
+  de Groove escrita a mano, y su docblock con la misma justificacion del 70-79.
+
+EL PORQUE, Y LO QUE COSTO
+El cambio en `assignments` es de una linea. Lo que costo son las dos
+afirmaciones que dejaron de ser ciertas y que estaban escritas en tres sitios:
+
+1. "El orden de los CC sigue al de TrackParameter, asi que la fila de knobs se
+   lee igual que la lista de parametros". Con Delay en el 76 y Probability en el
+   78, no. Decision del usuario: la PANTALLA SE QUEDA como esta —FamilyReadout
+   sigue imprimiendo Velocity · Sustain · Probability · Timing · Delay— y lo que
+   se retira es la afirmacion. El orden de lectura es del dominio y el de los
+   knobs es de la mano; desde hoy son dos cosas distintas y la correspondencia
+   vive en preset/README.md, que es donde debia estar.
+
+2. "Los nueve caben sin salir del rango de proposito general (70-79)". El 79 no
+   era una frontera: la regla siempre fue no pisar CC con significado asignado,
+   y 80-85 tampoco lo tienen. Se reescribe ahora porque la tarea siguiente lleva
+   el knob del Cycle al 82, que con el texto viejo habria parecido una excepcion.
+
+EL TEST QUE NO PROTEGIA NADA
+testTheFirstNineKnobsAreTheNineParametersInOrder recorria TrackParameter.allCases
+dando por hecho que el knob N era el parametro N. Un test que deduce lo que
+deberia comprobar habria seguido pasando con los dos knobs intercambiados por
+error de dedo. Ahora la tabla se escribe entera. Es la misma leccion que
+testAnUnassignedControllerIsStillIgnored dejo anotada en la rebanada 6.
+
+TESTS
+  swift test --package-path Packages/Engine  -> 496 tests, 0 fallos
+  swift test --package-path Packages/MIDI    -> 548 tests, 7 fallos, todos en
+  VirtualLoopbackTests. Aisladas con --filter pasan las 4: es la firma exacta del
+  flake midi-test-flake_20260826, aplazado a despues de la v2. No atribuible a
+  este cambio.
+swift format limpio.
