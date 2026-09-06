@@ -1,0 +1,36 @@
+Task: Bloquear landscape (Fase 1, FR30)
+
+Track: screens-redesign_20260906
+
+Qué se hizo
+- INFOPLIST_KEY_UIRequiresFullScreen = YES en Debug y Release del pbxproj.
+- Comentario en los dos Config/Info-*.plist diciendo dónde vive la orientación.
+
+Ficheros
+- ToraxH0.xcodeproj/project.pbxproj
+- Config/Info-Debug.plist, Config/Info-Release.plist
+
+El porqué
+UISupportedInterfaceOrientations_iPad ya acotaba a las dos horizontales, pero
+sin UIRequiresFullScreen el sistema pide todas las orientaciones para poder
+ofrecer Split View, y el build lo avisaba en cada compilación.
+
+Verificación
+- xcodebuild clean build en Debug y en Release: BUILD SUCCEEDED, y el warning
+  'All interface orientations must be supported' desaparece.
+- PlistBuddy sobre el Info.plist del .app construido en las dos
+  configuraciones: RequiresFullScreen true, orientaciones solo landscape,
+  UIAppFonts con las tres caras, UIDeviceFamily 2, y UIBackgroundModes presente
+  solo en Debug.
+
+Se comprueba en el .app y no en el fuente porque este proyecto ya se quemó con
+eso: Xcode reconoce una lista cerrada de claves INFOPLIST_KEY_* y descarta el
+resto sin avisar, que es por lo que UIAppFonts y UIBackgroundModes viven en un
+plist explícito.
+
+Lo que queda abierto
+UIRequiresFullScreen está obsoleta en iPadOS 26 y el binario se compila contra
+ese SDK (iPhoneOS26.2), con deployment target 17.0. No se puede comprobar aquí
+si el sistema la sigue honrando. Si no lo hace, la app será redimensionable y
+el retrato llegará por la ventana aunque el giro siga acotado. Se mira en la
+verificación en dispositivo.
