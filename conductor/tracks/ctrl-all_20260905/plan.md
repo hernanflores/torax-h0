@@ -126,17 +126,17 @@ seguir.
   - [x] Documentar el porqué con el síntoma delante: sin tope, un knob queda
         muerto durante decenas de clics, que es lo que la nota del 2026-08-28
         enseñó a reconocer como avería.
-- [~] Task: Restaurar el Pattern entero (FR8, FR9)
-  - [ ] Tests (Red): restaurar devuelve **cada** Cycle de **cada** Track a su
+- [x] Task: Restaurar el Pattern entero (FR8, FR9) — `cfeb5a6`
+  - [x] Tests (Red): restaurar devuelve **cada** Cycle de **cada** Track a su
         valor propio.
-  - [ ] Tests (Red): un parámetro no girado conserva su valor distinto por Track
+  - [x] Tests (Red): un parámetro no girado conserva su valor distinto por Track
         y por Cycle antes, durante y después.
-  - [ ] Tests (Red): restaurar **no toca** `cursor`, `editing`, `activeCount`,
+  - [x] Tests (Red): restaurar **no toca** `cursor`, `editing`, `activeCount`,
         pool, marco tonal, canal, `padOctaveShift` ni mute/solo — aunque los
         cursores hayan avanzado durante el hold.
-  - [ ] Tests (Red): el Pattern completo antes y después de un hold es igual salvo
+  - [x] Tests (Red): el Pattern completo antes y después de un hold es igual salvo
         los cursores (AC7) — comparación del valor entero, no campo a campo.
-  - [ ] Cobertura `Engine` ≥90%.
+  - [x] Cobertura `Engine` ≥90%.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: EL GESTO EN EL CONTROLADOR
