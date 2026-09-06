@@ -1,0 +1,39 @@
+Task: cycleStrip y la lectura grande (Fase 2, FR12)
+
+Track: screens-redesign_20260906
+
+Cambios en Engine, con tests en rojo primero
+- FamilyReadout.label / .value
+- ParameterChange.label / .value; description pasa a computed de los dos.
+Ocho tests nuevos. Engine: 554, 0 fallos (eran 546).
+
+Dos tests existentes fallaron, y tenían razón
+Al partir Tonal escribí headline = 'Scale Minor C', y dos tests fijaban
+'C Minor'. Ese texto es comportamiento establecido con una razón documentada
+—TONAL no tiene knob detrás, así que el marco es el valor y no hay nombre de
+parámetro que extraer—. Se revirtió el headline y la etiqueta pasa a ser una
+adición, no una extracción. La consecuencia, escrita en el tipo: en Tonal
+label + value no reconstruye headline, y el test de esa identidad excluye la
+familia a propósito.
+
+Vistas
+- App/TrackReadout.swift: TrackReadout y CycleStrip.
+- ContentView monta la columna derecha y guarda lastChange.
+- TrackSelectorView pierde la fila de Cycles y cinco parámetros.
+
+Detalle que salió de leer el código que sustituía
+cycleInCourse era un cierre releído en un TimelineView de 0,1 s porque deriva
+del reloj. Lo escribí primero como valor, lo que lo habría congelado en el
+instante de componer la vista. CycleStrip lo toma como cierre y conserva el
+TimelineView, con la misma razón documentada.
+
+Sobre FR14 y las celdas de Cycle
+Se comprobó antes de decidir: preset/*.json dice que el knob 82 mueve el cursor
+de edición y que 'cuantos Cycles estan activos se ajusta en pantalla'. Quitar el
+toque habría dejado el parámetro sin ninguna vía. FR14 enumera parámetros
+generativos —steps, pulses, rotate, division, groove, tonal— y éste no lo es.
+El icono sí queda como indicador puro, que es la decisión del 2026-09-06.
+
+Verificación
+- Engine 554/0. xcodebuild iOS y simulador: BUILD SUCCEEDED.
+- Captura: 'pulses' / '5 / 16' en off-white, card cycle con sus ocho celdas.
