@@ -170,7 +170,7 @@ struct CycleStrip: View {
                 }
             }
         }
-        .padding(10)
+        .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .brutalistPanel()
     }
@@ -188,7 +188,7 @@ struct CycleStrip: View {
             .font(isSounding || isEditing ? Typography.captionBold : Typography.caption)
             .monospacedDigit()
             .foregroundStyle(foreground(isActive: isActive, isSounding: isSounding))
-            .frame(minHeight: 30)
+            .frame(minHeight: 28)
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
             .brutalistControl(accent: accent, isSelected: isSounding, radius: Brutalist.radiusSmall)
@@ -264,7 +264,7 @@ struct ParameterFamilyCard: View {
                 }
             }
         }
-        .padding(10)
+        .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Palette.inset, in: RoundedRectangle(cornerRadius: Brutalist.radiusLarge))
         .overlay {
@@ -330,7 +330,7 @@ struct TonalCard: View {
                         Text(display: name)
                             .font(Typography.captionStrong)
                             .foregroundStyle(Palette.mutedBright)
-                            .frame(minWidth: 38, minHeight: 30)
+                            .frame(minWidth: 38, minHeight: 28)
                             .background(
                                 Palette.surface,
                                 in: RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
@@ -344,7 +344,7 @@ struct TonalCard: View {
                 }
             }
         }
-        .padding(10)
+        .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Palette.inset, in: RoundedRectangle(cornerRadius: Brutalist.radiusLarge))
         .overlay {

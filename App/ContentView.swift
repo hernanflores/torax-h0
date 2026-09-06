@@ -59,30 +59,39 @@ struct ContentView: View {
     /// que separa «se apagó el acento» de «se borró el valor».
     @State private var lastChange: ParameterChange?
 
-    var body: some View {
-        // **El ancho se lee una vez, arriba.** La altura del escenario depende
-        // del ancho —el anillo es cuadrado y llena su columna— y un
-        // `GeometryReader` dentro del `ScrollView` no puede dar las dos cosas
-        // sin quedar circular: el `ScrollView` pregunta la altura al contenido y
-        // el contenido la sacaría del `ScrollView`.
-        GeometryReader { screen in
-            content(width: screen.size.width - 64, height: screen.size.height - 64)
-        }
-    }
+    var body: some View { content }
 
-    private func content(width: CGFloat, height: CGFloat) -> some View {
+    private var content: some View {
         VStack(spacing: 0) {
             AppChrome(model: model, module: module)
 
             ModuleNavigation(module: $module)
 
-            ScrollView {
-                screen(width: width, height: height)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
+            // **El hueco se mide aquí, debajo del chrome, y no en la pantalla
+            // entera.**
+            //
+            // > **Estuvo arriba del todo restando 64 puntos a ojo**, y ese número
+            // > venía de cuando el chrome era una sola fila dentro del mismo
+            // > relleno. Con la barra y la navegación fuera, restaba de menos y el
+            // > anillo se calculaba contra una altura que no tenía: el usuario lo
+            // > vio antes que el código —«el anillo no creció»— porque el efecto
+            // > era un anillo pequeño, no un error.
+            //
+            // Va **fuera** del `ScrollView` a propósito. Dentro no serviría: el
+            // `ScrollView` propone altura infinita a su contenido, que es justo
+            // lo que el anillo no puede usar para decidir su lado.
+            GeometryReader { area in
+                ScrollView {
+                    screen(
+                        width: area.size.width - Self.screenPadding.horizontal * 2,
+                        height: area.size.height - Self.screenPadding.vertical * 2
+                    )
+                    .padding(.horizontal, Self.screenPadding.horizontal)
+                    .padding(.vertical, Self.screenPadding.vertical)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .scrollBounceBehavior(.basedOnSize)
             }
-            .scrollBounceBehavior(.basedOnSize)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Palette.background)
@@ -163,8 +172,16 @@ struct ContentView: View {
     /// > El simulador no tiene MIDI ninguno, así que todo lo que se ha verificado
     /// > en él es exactamente el estado sin hardware — y se ve completo.
     private func trackScreen(width: CGFloat, height: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: 24) {
-            stage(width: width, height: height)
+        // **El escenario recibe una altura, no la deduce.** Antes cada columna
+        // se medía por su cuenta y el alto total salía de la más alta de las
+        // dos, así que la franja de Tracks caía fuera de la pantalla cada vez
+        // que la columna derecha crecía un card. Ahora el reparto es explícito:
+        // esto es lo que queda al quitar la franja, y las dos columnas se atan a
+        // ello.
+        let stageHeight = max(height - Self.reservedBelowStage, Self.minimumStageHeight)
+
+        return VStack(alignment: .leading, spacing: Self.trackScreenSpacing) {
+            stage(width: width, height: stageHeight)
             TrackSelectorView(
                 selected: model.selectedTrackIndex,
                 hasMaterial: model.tracksWithMaterial,
@@ -325,10 +342,13 @@ struct ContentView: View {
     private func stage(width: CGFloat, height: CGFloat) -> some View {
         let columns = Self.columns(in: width)
         // **El anillo es cuadrado, así que lo acota la dimensión más corta.**
-        // Con solo el ancho crecía hasta empujar el selector y la fila de Cycles
-        // fuera de la pantalla, y las dos son controles: quedarse sin verlos es
-        // peor que un anillo algo menor.
-        let side = min(columns.rings, height - Self.reservedBelowStage)
+        // Con solo el ancho crecía hasta empujar el selector fuera de la
+        // pantalla, y es un control: quedarse sin verlo es peor que un anillo
+        // algo menor.
+        //
+        // `height` ya es la altura del escenario, no la de la pantalla: quien la
+        // calcula es `trackScreen`, restando una sola vez lo que va debajo.
+        let side = min(columns.rings, height)
         // **Lo que el anillo no usa no se queda muerto.** Cuando manda la altura,
         // el anillo sale más estrecho que su columna y esa diferencia era un
         // hueco vacío a la izquierda de la lectura. Se la queda la lectura, que
@@ -346,33 +366,42 @@ struct ContentView: View {
             // por encima de la navegación y por debajo de la franja de Tracks.
             // Con altura natural, el escenario mide lo que mida el más alto de
             // los dos y el `ScrollView` que ya lo envuelve se ocupa del resto.
+            // **Atada a la altura del escenario, con su `Spacer` absorbiendo la
+            // holgura.** Sin marco crecía por su cuenta y arrastraba la franja
+            // de Tracks fuera de la pantalla; con marco, lo que sobra queda
+            // debajo del último card y lo que falta se ve, en vez de empujar.
             readout
-                .frame(width: columns.readout + slack)
+                .frame(width: columns.readout + slack, height: height, alignment: .top)
         }
     }
 
-    /// Lo que hay que dejar libre debajo del escenario: la fila de navegación,
-    /// el selector de Tracks y la de Cycles, con sus separaciones.
+    /// **Solo lo que va debajo del escenario, y nada más.**
     ///
-    /// **Es una suma escrita como suma, y no un número.** Antes era un literal —
-    /// 260, luego 324— y eso lo dejó mintiendo dos veces el mismo día: la fila de
-    /// canal se fue a la pantalla MIDI y la pastilla bajó de 56 puntos a 44, pero
-    /// el 324 seguía reservándolos. El anillo pagaba la diferencia, unos 108
-    /// puntos de lado que no usaba nadie. Escrito así, cambiar el alto de una
-    /// fila cambia la reserva sola.
+    /// > **Restaba de más en dos sitios, y el anillo lo pagaba.** Corregido el
+    /// > 2026-09-06, con el usuario señalando que el anillo no había crecido:
+    /// >
+    /// > - Descontaba el chrome, que ya no está dentro de este hueco. El
+    /// >   `GeometryReader` mide ahora lo que queda **debajo** de la barra y la
+    /// >   navegación, así que restarlo otra vez eran 116 puntos contados dos
+    /// >   veces.
+    /// > - Y descontaba la fila de Cycles —68 puntos— que se mudó a la columna
+    /// >   derecha en esta misma fase y ya no va debajo del escenario.
+    /// >
+    /// > Entre las dos le quitaban al anillo unos 184 puntos de lado que no
+    /// > usaba nadie.
+    ///
+    /// **Es una suma escrita como suma, y no un número.** Antes fue un literal
+    /// —260, luego 324— y eso lo dejó mintiendo dos veces el mismo día. Ahora ha
+    /// vuelto a mentir siendo una suma, por sumar de más: la lección no es
+    /// escribirla como suma, es **restar solo lo que de verdad está debajo**.
     static let reservedBelowStage: CGFloat =
-        chromeHeight + contentSpacing + trackScreenSpacing
-        + selectorRowHeight + mixRowSpacing + mixRowHeight + rowSpacing + cyclesRowHeight
+        trackScreenSpacing + selectorRowHeight + mixRowSpacing + mixRowHeight
 
-    /// El chrome compartido: la barra y la navegación, las dos de alto fijo.
-    ///
-    /// **Sale de las propias vistas y no de un literal.** Era un 44 escrito aquí
-    /// cuando las pestañas, el estado y el transporte compartían una fila; ahora
-    /// son dos filas con altura declarada, y copiar sus números los dejaría
-    /// mintiendo en cuanto una de las dos cambie.
-    static let chromeHeight: CGFloat = AppChrome.height + ModuleNavigation.height
-    /// Entre la navegación y la pantalla.
-    static let contentSpacing: CGFloat = 20
+    /// El relleno de la pantalla dentro del hueco.
+    static let screenPadding: (horizontal: CGFloat, vertical: CGFloat) = (20, 16)
+    /// Por debajo de esto el anillo deja de poder contarse, así que antes de
+    /// encogerlo más se prefiere que la pantalla haga scroll.
+    static let minimumStageHeight: CGFloat = 320
     /// Entre el escenario y el selector.
     static let trackScreenSpacing: CGFloat = 24
     /// Una pastilla de Track: solo su número desde el 2026-09-02.
@@ -381,10 +410,6 @@ struct ContentView: View {
     static let mixRowSpacing: CGFloat = 6
     /// El par M/S debajo de cada pastilla, desde el 2026-09-02.
     static let mixRowHeight: CGFloat = 32
-    /// Entre el selector y la fila de Cycles.
-    static let rowSpacing: CGFloat = 16
-    /// La fila de Cycles: su etiqueta, su separación y sus botones.
-    static let cyclesRowHeight: CGFloat = 16 + 8 + 44
 
     /// El hueco entre columnas.
     static let gutter: CGFloat = 24
@@ -465,7 +490,12 @@ struct ContentView: View {
     /// **Sin panel envolvente.** Cada card lleva el suyo; encuadrar además el
     /// conjunto pondría un borde alrededor de tres bordes.
     private var readout: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        // **El espaciado de esta columna es lo que decide el tamaño del
+        // anillo**, y conviene saberlo antes de tocarlo. El escenario mide lo
+        // que mida el más alto de los dos lados; con la columna más alta que el
+        // cuadrado del anillo, cada punto que se le quita aquí es un punto que
+        // el anillo puede crecer, y cada punto que se le añade sale de él.
+        VStack(alignment: .leading, spacing: 6) {
             TrackReadout(
                 change: model.transientChange,
                 lastChange: lastChange,
