@@ -63,29 +63,17 @@ struct AppChrome: View {
         // > pisándose. Centrar contra la pantalla y no contra los vecinos sigue
         // > siendo lo correcto —si no, el título bailaría al enchufar un cable—
         // > pero se consigue repartiendo el espacio, no superponiendo.
-        // **El sondeo del hardware vive aquí, y es un `task` y no un
-        // `TimelineView`.**
+        // **El sondeo del hardware no vive aquí.** Lo tuvo puesto un rato, como
+        // un `.task` colgado de esta vista, y fue un error con una forma
+        // reconocible: el `task` provocaba la invalidación que recreaba la vista
+        // de la que colgaba, así que cada latido podía dejar otro `task` vivo.
+        // Se multiplicaban, saturaban el hilo principal y la app dejó de atender
+        // al MIDI entrante.
         //
-        // > **El `TimelineView` no invalidaba.** Se probó primero: envolver la
-        // > barra en `.periodic(by: 0.25)` parecía lo natural —el tempo ya lo
-        // > usaba— y en dispositivo no refrescaba nada. Volver a evaluar el
-        // > closure no basta cuando lo que cambia no es observable: SwiftUI no
-        // > tiene motivo para redibujar el resultado.
-        // >
-        // > Un `task` que toca una propiedad observable del modelo sí lo tiene.
-        // > Es la misma cadencia y la misma justificación; lo que cambia es que
-        // > el aviso llega por donde SwiftUI escucha.
-        //
-        // **No contradice la regla del playhead.** Lo que `product-guidelines.md`
-        // llama antipatrón es animar con un temporizador algo que debería derivar
-        // del reloj musical; esto no anima nada: relee unos cuantos valores.
+        // Ahora lo hace el propio `TransportModel`, con un solo temporizador que
+        // vive lo que vive el modelo. Una vista no es sitio para un reloj que la
+        // invalida a ella misma.
         bar
-            .task {
-                while !Task.isCancelled {
-                    try? await Task.sleep(for: .milliseconds(250))
-                    model.refresh()
-                }
-            }
     }
 
     private var bar: some View {

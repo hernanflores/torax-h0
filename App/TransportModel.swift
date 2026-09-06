@@ -542,9 +542,62 @@ final class TransportModel {
     /// **No contradice la regla del playhead.** Lo que `product-guidelines.md`
     /// llama antipatrón es animar con un temporizador algo que debería derivar
     /// del reloj musical; esto no anima nada: relee un puñado de valores.
+    ///
+    /// **Solo avisa si algo cambió de verdad.** Sin esta comparación, invalidaría
+    /// la pantalla entera cuatro veces por segundo con el transporte parado y
+    /// nada que enseñar: trabajo constante en el hilo principal, que es el mismo
+    /// hilo al que la entrada de control salta para publicar un giro.
     func refresh() {
+        let current = Snapshot(
+            isPlaying: transport?.isPlaying ?? false,
+            isExternal: transport?.clockSource == .external,
+            beatsPerMinute: transport?.currentTempo.displayBeatsPerMinute ?? 0,
+            cycleInCourse: transport?.cyclesInCourse?[selectedTrackIndex].cycle
+        )
+        guard current != observed else { return }
+        observed = current
         clockRevision &+= 1
     }
+
+    /// Lo último que se vio del transporte.
+    ///
+    /// Son los cuatro valores que la pantalla saca de él; si los cuatro siguen
+    /// igual, no hay nada que repintar.
+    private struct Snapshot: Equatable {
+        let isPlaying: Bool
+        let isExternal: Bool
+        let beatsPerMinute: Double
+        let cycleInCourse: Int?
+    }
+
+    private var observed: Snapshot?
+
+    /// El temporizador que mira si el hardware movió el transporte.
+    ///
+    /// **Vive en el modelo y no en una vista.** Estuvo un rato como un `.task`
+    /// del chrome y fue un error con consecuencia grave: el `task` causaba la
+    /// invalidación que recreaba la vista de la que colgaba, así que se
+    /// multiplicaban, saturaban el hilo principal y la app dejó de atender al
+    /// MIDI entrante. Un reloj que invalida una vista no puede depender del ciclo
+    /// de vida de esa vista.
+    ///
+    /// Uno solo, y dura lo que dura el modelo.
+    private var poll: Task<Void, Never>?
+
+    private func startPolling() {
+        poll = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(250))
+                self?.refresh()
+            }
+        }
+    }
+
+    // **Sin `deinit` que lo cancele**, y no por descuido: `deinit` no está
+    // aislado al actor principal y `poll` sí, así que no se puede tocar desde
+    // ahí. No hace falta: la tarea captura `self` de forma débil, y cuando el
+    // modelo muere su siguiente vuelta encuentra `nil` y no hace nada. Este
+    // modelo vive lo que vive la app, así que ni siquiera llega a ocurrir.
 
     init() {
         // La entrada de control se construye primero y publica por el relevo:
@@ -591,6 +644,7 @@ final class TransportModel {
         }
 
         connectControlInput()
+        startPolling()
     }
 
     /// Cablea la entrada de control: los giros publican por el transporte, que
