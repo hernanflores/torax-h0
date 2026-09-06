@@ -1,0 +1,45 @@
+Task: [step 14] mantiene y suelta (Fase 4, ctrl-all_20260905)
+
+QUE SE HIZO
+El gesto en ControlInput, con 12 tests escritos primero (Red confirmado: "type
+'ControlInput' has no member 'ctrlAllModifierIndex'").
+
+FICHEROS
+- Packages/MIDI/Sources/MIDI/ControlInput.swift: ctrlAllModifierIndex,
+  holdingCtrlAllModifier, isCtrlAllActive, el snapshot ctrlAll, holdCtrlAll(),
+  releaseCtrlAll() y ctrlAllTurn(_:to:).
+- Packages/MIDI/Tests/MIDITests/CtrlAllModifierInputTests.swift (nuevo).
+
+DONDE SE APARTA DE TEMP, Y POR QUE (FR12)
+Temp no publica si el Cycle en edicion no se movio, y esa regla NO se hereda.
+Existia porque la igualacion aplanaba a los otros Cycles: igualar cuando el de
+referencia no se ha movido seria aplanar sin que nadie haya girado nada. Con un
+desplazamiento no hay nada que aplanar. Si el Track seleccionado esta topado y
+otros se mueven, el gesto ESTA sonando y callar lo silenciaria. Dos tests, uno
+por mitad:
+  - testItPublishesWhenOnlyOtherTracksMove (Track 0 en Pulses 16, los demas en 5)
+  - testItDoesNotPublishWhenNobodyCanMove (los doce en 16)
+
+DONDE SI SIGUE A TEMP
+- El modificador solo no publica.
+- Soltarlo sin haber girado no publica.
+- Soltar publica UNA vez el Pattern restaurado.
+- El snapshot se vacia siempre al soltar, hubiera algo o no.
+
+UN TEST QUE MENTIA POR EL SEMBRADO
+Los primeros asertos fallaban por como se construia el Pattern de prueba, no por
+el gesto. ControlInput(track:) siembra con ese Cycle SOLO el Track 1; los otros
+once arrancan con el Pulses por defecto. El helper calculaba el delta como
+"pulses - 5" dando por hecho que los doce partian de 5, y sembraba
+max(1, i - 4) en vez de i. Se comprobo imprimiendo el Pattern inicial en vez de
+seguir razonando sobre el. Ahora el delta se calcula del valor real de cada
+Track.
+
+El sembrado va por la via real —selectTrack + giro de knob— y no por una puerta
+trasera: un Pattern de partida que el controlador no pueda producir no prueba
+nada sobre el controlador.
+
+TESTS
+  swift test --package-path Packages/MIDI -> 569 tests, 7 fallos, todos
+  VirtualLoopback (flake midi-test-flake_20260826).
+swift format limpio.
