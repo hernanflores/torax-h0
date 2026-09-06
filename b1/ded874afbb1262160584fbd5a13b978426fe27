@@ -1,0 +1,51 @@
+Verificación de la Fase 4 — Pantalla midi
+
+Track: screens-redesign_20260906
+Commit de cierre: b1ded87
+
+Tests automáticos
+- Engine: 578 tests, 0 fallos.
+- MIDI: 615 tests, 7 fallos, todos en VirtualLoopbackTests. Flake conocido.
+  Los 9 nuevos cubren ClockStatus y ClockSource.name.
+- xcodebuild Debug para iOS y para simulador: BUILD SUCCEEDED.
+
+Verificación manual, en iPad con BeatStep Pro
+Confirmada por el usuario tras encontrar dos defectos y tres regresiones mías.
+
+Los dos defectos que encontró
+1. El segmentado de clock source no reaccionaba al tocarlo; el cambio solo se
+   veía al navegar a otra pantalla y volver.
+2. El botón de play parecía tener precedencia sobre el transporte del BeatStep.
+
+Las tres regresiones que introduje intentando arreglarlos
+- Convertir isPlaying en calculado dejó a los botones de la app sin invalidar
+  nada, porque era la única propiedad observable que quedaba en ese camino.
+- Envolver la barra en un TimelineView no invalidaba: volver a evaluar el closure
+  no basta cuando lo que cambia no es observable.
+- Colgar el sondeo de un .task en el chrome creó un ciclo — el task provocaba la
+  invalidación que recreaba la vista de la que colgaba— que saturó el hilo
+  principal y dejó la app sin atender el MIDI entrante.
+
+Se revirtieron los tres.
+
+Cómo se encontró la causa de verdad
+Instrumentando. Cuatro contadores atómicos en el hilo de recepción y un card
+temporal en la pantalla midi. Con el track respondiendo a los knobs quedó claro
+que el MIDI nunca dejó de llegar y que lo roto era solo lo que la pantalla
+enseñaba, lo que descartó de golpe todas mis hipótesis sobre la recepción.
+
+La causa real
+clockRevision existía sin que lo leyera nadie. Su única consumidora era
+ChannelMapView, que lo recibía dentro de un struct; al reescribirla en esta fase
+el contador se quedó sin suscriptores mientras seguía incrementándose. El
+arreglo son tres lecturas.
+
+La lección de método
+Los tres síntomas viven en el hilo de recepción de CoreMIDI y en el hardware, y
+el simulador no tiene ninguno de los dos. Un cambio en esa zona no se valida con
+una captura ni con un porcentaje de CPU. Yo lo hice tres veces seguidas.
+
+Lo que queda abierto, registrado como defecto propio en conductor/tracks.md
+'La pantalla no ve lo que cambia el hardware': el transporte y el tempo que
+vienen del controlador siguen sin invalidar la pantalla. Necesita un aviso desde
+el hilo de recepción y no se toma de paso.
