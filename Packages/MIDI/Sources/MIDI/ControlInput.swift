@@ -263,20 +263,34 @@ public final class ControlInput: @unchecked Sendable {
             // Un step button no es un knob: se despacha antes, y su soltada
             // —valor cero— no hace nada, igual que el note-off de un pad.
             if let index = mapping.stepButtonIndex(for: controller) {
-                // **El corte de Temp, en un solo sitio** (FR6). Con el step 13
-                // hundido, el único step button que sigue vivo es él mismo: ni
-                // la selección de Track ni los modificadores de mute y solo
-                // responden. Repartir la comprobación por cada rama de
+                // **El corte de los modificadores que se apoderan de la entrada,
+                // en un solo sitio** (FR6 de Temp, FR10 de Ctrl All). Con uno de
+                // los dos hundido, el único step button que sigue vivo es él
+                // mismo: ni la selección de Track ni los modificadores de mute y
+                // solo responden. Repartir la comprobación por cada rama de
                 // `stepButton(_:value:)` dejaría cuatro sitios donde olvidarla.
+                //
+                // **El otro de los dos tampoco pasa**, y por eso la condición no
+                // es «el modificador que está al mando». Con Temp hundido, el 14
+                // se ignora entero: no se registra como hundido, así que soltar
+                // el 13 no deja un Ctrl All armado que nadie pidió. Con Ctrl All
+                // hundido, el 13 se ignora igual (FR13).
                 guard !holdingTempModifier || index == Self.tempModifierIndex else {
+                    return false
+                }
+                guard !holdingCtrlAllModifier || index == Self.ctrlAllModifierIndex else {
                     return false
                 }
                 return stepButton(index, value: value)
             }
-            // El knob del Cycle en edición también calla: el overlay calcula su
-            // valor absoluto desde el Cycle en edición, y moverlo a media
-            // superposición cambiaría el punto de partida con el fill puesto.
-            if holdingTempModifier, controller == mapping.editingCycleController {
+            // El knob del Cycle en edición también calla, con los dos. Con Temp,
+            // porque el overlay calcula su valor absoluto desde el Cycle en
+            // edición y moverlo cambiaría el punto de partida con el fill puesto;
+            // con Ctrl All, porque movería el Cycle sobre el que la pantalla
+            // enseña el desplazamiento mientras está puesto en los doce Tracks.
+            if holdingTempModifier || holdingCtrlAllModifier,
+                controller == mapping.editingCycleController
+            {
                 return false
             }
             return turn(controller, by: value)
@@ -285,10 +299,11 @@ public final class ControlInput: @unchecked Sendable {
             // controladores. Alternar en la pulsación **y** en la soltada sería
             // no alternar: cada pad dejaría el pool como estaba.
             guard velocity.value > 0 else { return false }
-            // Los dieciséis pads callan con Temp hundido: el fill se hace con
-            // una mano en el step 13 y la otra en los knobs, y un roce que
-            // metiera una nota en el pool no se desharía al soltar.
-            guard !holdingTempModifier else { return false }
+            // Los dieciséis pads callan con cualquiera de los dos hundido: el
+            // gesto se hace con una mano en el step button y la otra en los
+            // knobs, y un roce que metiera una nota en el pool no se desharía al
+            // soltar — ni el snapshot de Temp ni el de Ctrl All guardan el pool.
+            guard !holdingTempModifier, !holdingCtrlAllModifier else { return false }
             return press(note)
         case .noteOff:
             return false

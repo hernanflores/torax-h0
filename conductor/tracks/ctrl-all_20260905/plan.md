@@ -155,7 +155,7 @@ seguir.
   - [x] Implementación (Green): `ctrlAllModifierIndex = ControlMapping.controlsPerFamily - 3`
         junto a los otros tres, despachado en `stepButton(_:value:)` antes de la
         selección.
-- [ ] Task: Con Ctrl All hundido, Ctrl All manda (FR10)
+- [~] Task: Con Ctrl All hundido, Ctrl All manda (FR10)
   - [ ] Tests (Red): step buttons 1–12 no cambian de Track; los modificadores 15 y
         16 no publican gesto de mezcla; el knob del Cycle no lo mueve; los
         dieciséis pads no tocan el pool.
