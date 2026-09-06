@@ -3,41 +3,52 @@ import Engine
 import MIDI
 import SwiftUI
 
-/// La pantalla del Track.
+/// El contenedor de la app: chrome compartido más el módulo que se esté mirando.
+///
+/// **Ya no es una pantalla.** Hasta el 2026-09-06 este tipo era la pantalla del
+/// Track y, de paso, la barra, las pestañas y el conmutador. El rediseño reparte
+/// esos papeles: la barra es `AppChrome`, la navegación es `ModuleNavigation`, y
+/// cada módulo es su propia vista. Aquí queda lo único que no puede vivir en
+/// ninguno de los tres — **el estado que todos comparten**.
 ///
 /// **El controlador es el instrumento; la pantalla es el espejo**
-/// (`product-guidelines.md`). Nada de lo que hay aquí se edita tocando: el
-/// anillo, el playhead y el valor grande informan, y los parámetros
-/// generativos se mueven con knobs. Lo táctil se limita a lo que la guía
-/// asigna a la pantalla — transporte y selección de dispositivo.
+/// (`product-guidelines.md`). Sin controlador conectado la app es de solo
+/// lectura y transporte: los anillos y el playhead siguen viéndose, porque son
+/// estado y no edición, y no se abre ninguna vía táctil para suplir un knob
+/// ausente.
 ///
-/// **Sin controlador conectado la app es de solo lectura y transporte.** El
-/// anillo y el playhead siguen viéndose, porque son estado y no edición; lo que
-/// no aparece es el valor grande, porque nadie gira nada. No se abre ninguna
-/// vía táctil para suplirlo: un slider provisional para Steps o Pulses sería el
-/// antipatrón que la guía nombra.
-///
-/// El panel de medición de jitter sigue debajo porque la Fase 4 del track exige
-/// medir con la interfaz corriendo: el anillo redibujándose es justamente la
-/// carga visual que faltaba por medir.
+/// > **La medición de jitter ya no tiene panel**, y lleva sin tenerlo desde
+/// > antes de este track: quedaba solo el enganche por argumento de lanzamiento.
+/// > La documentación de este tipo decía que «el panel sigue debajo», que era
+/// > falso. El modelo se conserva —la medición está suspendida, no retirada
+/// > (`workflow.md`, 2026-09-02)— y su única puerta es el argumento.
 struct ContentView: View {
 
+    /// **El modelo lo posee el contenedor, y ahí está FR8.** Cambiar de módulo
+    /// recompone el cuerpo, pero este objeto no se vuelve a crear: el transporte
+    /// sigue corriendo y el playhead está donde tiene que estar al volver.
+    /// Navegar no toca el reloj porque navegar no llega hasta aquí.
     @State private var model = TransportModel()
+
+    /// Conservado sin puerta en la interfaz. Ver la nota del tipo.
     @State private var jitter = JitterMeasurementModel()
 
-    /// Qué familia muestra el panel en reposo.
+    /// Qué familia lleva el acento de la lectura grande.
     ///
-    /// **Es navegación, no edición** (FR4): elegir un tab cambia lo que se mira,
-    /// nunca lo que suena. Por eso funciona sin controlador conectado — mirar no
-    /// es editar — y por eso vive en la vista y no en el modelo.
+    /// > **Ya no hay tabs que elegirla.** El handoff enseña los tres cards de
+    /// > familia a la vez, así que la regla «el giro cambia el tab» se queda sin
+    /// > tab que cambiar. Lo que sobrevive de ella es lo que valía la pena: la
+    /// > lectura sigue a la mano, no al revés. Con los tres cards visibles esto
+    /// > pasa a decidir solo el acento de la lectura grande, y en la Fase 2
+    /// > pasará también a resaltar el card correspondiente (FR12).
+    ///
+    /// **Empieza en `shape` y no vacío** porque la lectura grande persiste el
+    /// último parámetro tocado (FR12): al arrancar todavía no hay ninguno, y un
+    /// hueco en el bloque más grande de la pantalla es peor que un valor cierto.
     @State private var family: ParameterFamily = .shape
 
-    /// En qué pantalla está.
-    ///
-    /// **El estado vive aquí y las pantallas no se destruyen** al cambiar: el
-    /// modelo del transporte es el mismo, así que el playhead sigue donde tiene
-    /// que estar al volver, no reiniciado. Navegar no toca el reloj.
-    @State private var screen: Screen = .track
+    /// Qué módulo se está mirando.
+    @State private var module: Module = .track
 
     var body: some View {
         // **El ancho se lee una vez, arriba.** La altura del escenario depende
@@ -51,107 +62,57 @@ struct ContentView: View {
     }
 
     private func content(width: CGFloat, height: CGFloat) -> some View {
-        VStack(alignment: .leading, spacing: 20) {
-            navigation
+        VStack(spacing: 0) {
+            AppChrome(model: model, module: module)
+
+            ModuleNavigation(module: $module)
+
             ScrollView {
-                switch screen {
-                case .track: trackScreen(width: width, height: height)
-                case .scale: scaleScreen
-                case .midi: midiScreen
-                }
+                screen(width: width, height: height)
+                    .padding(24)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             .scrollBounceBehavior(.basedOnSize)
         }
-        .padding(32)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Palette.background)
         .foregroundStyle(Palette.text)
         .onAppear { jitter.startIfRequestedByLaunchArguments() }
-        // **El giro manda sobre el tab.** Mover un knob de otra familia cambia
-        // el tab activo en vez de mostrar el valor con un acento que no
-        // corresponde al panel: la pantalla es el espejo del controlador, así
-        // que sigue a la mano y no al revés.
+        // **La lectura sigue a la mano.** Mover un knob de otra familia cambia
+        // el acento de la lectura grande en vez de enseñar el valor con un color
+        // que no le corresponde: la pantalla es el espejo del controlador.
+        //
+        // > Esto era «el giro manda sobre el tab», cuando había tabs. Los tabs
+        // > se fueron con el rediseño —el handoff enseña las tres familias a la
+        // > vez— y la regla se queda con lo que valía de ella.
         .onChange(of: model.transientChange) { _, change in
             if let change { family = change.parameter.family }
         }
     }
 
-    // MARK: - Las cinco pestañas
-
-    /// Las cinco pantallas del handoff.
-    ///
-    /// **Las tres que no existen se ven igualmente** (FR8). No es un adorno: el
-    /// borde discontinuo es el signo que el propio handoff define para «no
-    /// disponible todavía», y enseñar la forma completa de la app es más honesto
-    /// que fingir que tiene dos pantallas.
-    private enum Screen: CaseIterable {
-        case track
-        case scale
-        case midi
-
-        var label: String {
-            switch self {
-            case .track: "1 · Track"
-            case .scale: "2 · Scale"
-            case .midi: "3 · MIDI"
-            }
+    @ViewBuilder
+    private func screen(width: CGFloat, height: CGFloat) -> some View {
+        switch module {
+        case .track: trackScreen(width: width, height: height)
+        case .scale: scaleScreen
+        case .midi: midiScreen
+        case .banks: banksScreen
         }
     }
 
-    /// Las que el handoff dibuja y todavía no existen.
+    /// **Provisional, y marcada como tal.** La construye la Fase 5; hasta
+    /// entonces la entrada de navegación lleva a un módulo que existe y todavía
+    /// no se puede usar, que es exactamente lo que el borde discontinuo del
+    /// lenguaje visual significa.
     ///
-    /// Banks necesita persistencia y Track × Pattern necesita Patterns, y
-    /// ninguna de las dos existe.
-    ///
-    /// > **`3 · MIDI` salió de esta lista el 2026-09-02.** Existe, y lleva
-    /// > dentro la asignación de canal por Track. Sigue incompleta —MIDI Learn es
-    /// > la rebanada 8 de la v1 y va en esta misma pantalla— pero el borde
-    /// > discontinuo significa «no se puede usar», y esta ya se puede.
-    private static let unavailableScreens = ["4 · Banks", "5 · Tracks"]
-
-    /// **Una sola fila arriba, no dos.**
-    ///
-    /// El handoff dibuja las pestañas y debajo una barra con el tempo y el
-    /// transporte. Son dos renglones y esta pantalla tiene uno de más: con los
-    /// anillos ocupando el ancho grande (FR14), esos ~64 puntos eran justo los
-    /// que le faltaban al selector de Tracks y de canal para caber sin cortarse.
-    /// Decidido con el usuario el 2026-09-01, viendo la pantalla.
-    private var navigation: some View {
-        HStack(spacing: 8) {
-            ForEach(Screen.allCases, id: \.self) { candidate in
-                Button {
-                    screen = candidate
-                } label: {
-                    Text(candidate.label)
-                        .font(
-                            screen == candidate ? Typography.captionBold : Typography.captionStrong
-                        )
-                        .foregroundStyle(
-                            screen == candidate ? Palette.onAccent : Palette.mutedBright
-                        )
-                        .padding(.horizontal, 20)
-                        .frame(height: 44)
-                }
-                .buttonStyle(.plain)
-                .brutalistControl(accent: Palette.shape, isSelected: screen == candidate)
-            }
-
-            ForEach(Self.unavailableScreens, id: \.self) { label in
-                Text(label)
-                    .font(Typography.captionStrong)
-                    .padding(.horizontal, 20)
-                    .frame(height: 44)
-                    .brutalistUnavailable()
-            }
-
-            Spacer(minLength: 16)
-
-            midiStatus
-
-            clockReadout
-
-            transport
-        }
+    /// El signo está aquí y no en la navegación a propósito: FR7 pide que las
+    /// cuatro entradas se vean iguales porque las cuatro pantallas existen. Lo
+    /// que falta es el contenido de una, y se dice donde falta.
+    private var banksScreen: some View {
+        Text(display: "banks")
+            .font(Typography.sectionTitle)
+            .frame(maxWidth: .infinity, minHeight: 240)
+            .brutalistUnavailable(radius: Brutalist.radiusLarge)
     }
 
     // MARK: - Las dos pantallas
@@ -199,8 +160,86 @@ struct ContentView: View {
         // Mismo motivo que en la barra: el tempo y el estado del maestro los
         // escribe el hilo de recepción, así que hay que repreguntar.
         TimelineView(.periodic(from: .now, by: 0.25)) { _ in
-            channelMap
+            VStack(alignment: .leading, spacing: 20) {
+                endpoints
+                channelMap
+            }
         }
+    }
+
+    /// La elección de dispositivo, provisional y en su sitio definitivo.
+    ///
+    /// **Baja aquí desde la barra en la misma tarea que la vacía** (FR6), y no
+    /// una fase más tarde. Al retirar el estado MIDI del chrome, estos dos
+    /// selectores se quedaban sin ningún sitio hasta la Fase 4: con un solo
+    /// dispositivo por lado no se nota —`MIDIEndpointSelection.refreshed` cae al
+    /// primero disponible, para que la app funcione sin pasar por un selector—
+    /// pero con dos sintetizadores enchufados no habría forma de cambiar de uno
+    /// a otro durante cuatro fases. Eso es una regresión, no una fase
+    /// intermedia.
+    ///
+    /// La Fase 4 los sustituye por los cards `midi input` y `midi output` del
+    /// handoff. Lo que aquí hay es la función, sin su forma.
+    private var endpoints: some View {
+        HStack(spacing: 24) {
+            endpointPicker(
+                label: "midi output",
+                status: model.outputUnavailable ?? model.destinationStatus,
+                isConnected: model.selection.hasEndpoint,
+                choices: model.selection.available,
+                selection: destinationBinding
+            )
+            endpointPicker(
+                label: "midi input",
+                status: model.sourceStatus,
+                isConnected: !model.isReadOnly,
+                choices: model.sourceSelection.available,
+                selection: sourceBinding
+            )
+        }
+    }
+
+    private func endpointPicker(
+        label: String,
+        status: String,
+        isConnected: Bool,
+        choices: [MIDIEndpointInfo],
+        selection: Binding<MIDIEndpointRef>
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(display: label)
+                .font(Typography.caption)
+                .foregroundStyle(Palette.muted)
+
+            HStack(spacing: 8) {
+                Text(display: status)
+                    .font(Typography.bodyMedium)
+                    .foregroundStyle(isConnected ? Palette.text : Palette.muted)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+
+                // **Solo si hay más de uno.** Con un único dispositivo, un menú
+                // de un elemento sería una decisión que no existe.
+                if choices.count > 1 {
+                    Menu {
+                        Picker("", selection: selection) {
+                            ForEach(choices, id: \.endpoint) { choice in
+                                Text(display: choice.displayName).tag(choice.endpoint)
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .font(Typography.caption)
+                            .foregroundStyle(Palette.mutedBright)
+                            .frame(width: 28, height: 28)
+                    }
+                    .fixedSize()
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .brutalistPanel()
     }
 
     private var channelMap: some View {
@@ -260,11 +299,17 @@ struct ContentView: View {
             rings
                 .frame(width: side, height: side)
 
+            // **Dos columnas, no tres.** La tercera eran los tabs de familia,
+            // que el rediseño retira porque el handoff enseña las tres a la vez.
+            // Su ancho se lo queda la lectura, que es donde van a caber los tres
+            // cards.
+            //
+            // > **El reparto 68 / 32 de FR9 llega en la Fase 2**, con los cards.
+            // > Aquí solo se cierra el hueco que dejaron los tabs: repartir de
+            // > nuevo la pantalla antes de saber qué va dentro sería medir dos
+            // > veces.
             readout
-                .frame(width: columns.readout + slack, height: side)
-
-            families
-                .frame(width: columns.families, height: side)
+                .frame(width: columns.readout + columns.families + Self.gutter + slack, height: side)
         }
     }
 
@@ -278,11 +323,16 @@ struct ContentView: View {
     /// puntos de lado que no usaba nadie. Escrito así, cambiar el alto de una
     /// fila cambia la reserva sola.
     static let reservedBelowStage: CGFloat =
-        navigationRowHeight + contentSpacing + trackScreenSpacing
+        chromeHeight + contentSpacing + trackScreenSpacing
         + selectorRowHeight + mixRowSpacing + mixRowHeight + rowSpacing + cyclesRowHeight
 
-    /// La fila de pestañas y el transporte, arriba del todo.
-    static let navigationRowHeight: CGFloat = 44
+    /// El chrome compartido: la barra y la navegación, las dos de alto fijo.
+    ///
+    /// **Sale de las propias vistas y no de un literal.** Era un 44 escrito aquí
+    /// cuando las pestañas, el estado y el transporte compartían una fila; ahora
+    /// son dos filas con altura declarada, y copiar sus números los dejaría
+    /// mintiendo en cuanto una de las dos cambie.
+    static let chromeHeight: CGFloat = AppChrome.height + ModuleNavigation.height
     /// Entre la navegación y la pantalla.
     static let contentSpacing: CGFloat = 20
     /// Entre el escenario y el selector.
@@ -360,129 +410,6 @@ struct ContentView: View {
         .brutalistPanel()
     }
 
-    /// El tempo vigente y quién lo manda.
-    ///
-    /// **Se repregunta cuatro veces por segundo, y por eso hay un
-    /// `TimelineView`.** El tempo de un maestro externo lo escribe el hilo de
-    /// recepción de CoreMIDI, que no puede saltar al principal a avisar —eso
-    /// metería la cola del principal en la estimación—, así que no hay estado
-    /// observable que cambie y SwiftUI no tendría motivo para repintar. Sin
-    /// esto, el número se queda con el valor de cuando se dibujó.
-    ///
-    /// **No contradice la regla del playhead.** Lo que `product-guidelines.md`
-    /// llama antipatrón es animar con un temporizador algo que debería derivar
-    /// del reloj musical; esto no anima nada: relee un valor de estado. Cuatro
-    /// veces por segundo es lento para el ojo y sobra para un número.
-    private var clockReadout: some View {
-        TimelineView(.periodic(from: .now, by: 0.25)) { _ in
-            HStack(spacing: 8) {
-                // **El punto decimal no depende del locale.** La interfaz va en
-                // inglés y sin traducir (NFR7), y el handoff escribe `120.0 BPM`;
-                // interpolar un `Double` daba `120,0` en un iPad en español, que
-                // es la mitad del texto en un idioma y la otra mitad en otro.
-                Text(
-                    String(
-                        format: "%.1f BPM", locale: Locale(identifier: "en_US_POSIX"),
-                        model.beatsPerMinute)
-                )
-                .font(Typography.captionStrong)
-                .monospacedDigit()
-                .foregroundStyle(Palette.mutedBright)
-
-                // **Quién manda el tempo, en dos letras.** Sin esto, el mismo
-                // número puede venir de la app o del maestro y no hay forma de
-                // saberlo — que es justo lo que hay que ver de un vistazo cuando
-                // el tempo no es el que esperabas.
-                Text(model.clockSourceMark)
-                    .font(Typography.caption)
-                    .foregroundStyle(model.followsExternalClock ? Palette.groove : Palette.muted)
-            }
-        }
-    }
-
-    // MARK: - Estado MIDI
-
-    /// **Estado, nunca disculpa** (`product-guidelines.md`).
-    ///
-    /// Dice qué hay conectado a cada lado con los textos exactos de la guía. Sin
-    /// controlador, `read-only` explica por qué los knobs no hacen nada, que es
-    /// información y no una excusa.
-    private var midiStatus: some View {
-        HStack(spacing: 14) {
-            // **A dónde salen las notas.**
-            endpoint(
-                label: model.outputUnavailable ?? model.destinationStatus,
-                isConnected: model.selection.hasEndpoint,
-                choices: model.selection.available,
-                selection: destinationBinding
-            )
-
-            // **De dónde llegan los giros.**
-            endpoint(
-                label: model.sourceStatus,
-                isConnected: !model.isReadOnly,
-                choices: model.sourceSelection.available,
-                selection: sourceBinding
-            )
-
-            // **Sin controlador no se ofrece ninguna vía táctil para suplirlo**:
-            // la app es de solo lectura y transporte, y `read-only` explica por
-            // qué los knobs no hacen nada. Es información, no una excusa.
-            if model.isReadOnly {
-                Text("read-only")
-                    .font(Typography.caption)
-                    .foregroundStyle(Palette.muted)
-                    .fixedSize()
-            }
-        }
-        .lineLimit(1)
-        // **La barra no puede crecer.** Sin un techo, el nombre largo de un
-        // endpoint —los de CoreMIDI lo son— empujaba las tres columnas hacia
-        // abajo y cortaba la interfaz por el borde inferior. El estado cede
-        // primero: es lo único de esta fila que se puede acortar sin perder una
-        // función.
-        .frame(maxWidth: 420, alignment: .leading)
-    }
-
-    /// El estado de un endpoint, y su selector si hay algo que elegir.
-    ///
-    /// **El nombre se escribe una sola vez.** El `Picker` de menú repetía el
-    /// nombre completo del dispositivo elegido junto al texto que ya lo decía,
-    /// así que la barra lo mostraba dos veces y encima crecía. El estado es el
-    /// texto; el selector es solo la vía para cambiarlo, y con una flecha basta.
-    ///
-    /// **Aparece solo si hay más de uno.** Con un único destino, un menú de un
-    /// elemento sería una decisión que no existe.
-    private func endpoint(
-        label: String,
-        isConnected: Bool,
-        choices: [MIDIEndpointInfo],
-        selection: Binding<MIDIEndpointRef>
-    ) -> some View {
-        HStack(spacing: 4) {
-            Text(label)
-                .font(Typography.captionStrong)
-                .foregroundStyle(isConnected ? Palette.shape : Palette.muted)
-                .truncationMode(.tail)
-
-            if choices.count > 1 {
-                Menu {
-                    Picker("", selection: selection) {
-                        ForEach(choices, id: \.endpoint) { choice in
-                            Text(choice.displayName).tag(choice.endpoint)
-                        }
-                    }
-                } label: {
-                    Image(systemName: "chevron.down")
-                        .font(Typography.caption)
-                        .foregroundStyle(Palette.mutedBright)
-                        .frame(width: 28, height: 28)
-                }
-                .fixedSize()
-            }
-        }
-    }
-
     /// La columna central: la lectura grande.
     ///
     /// En reposo muestra el estado; al girar un knob, el valor transitorio con
@@ -550,65 +477,6 @@ struct ContentView: View {
         .padding(.horizontal, 24)
     }
 
-    /// La columna derecha: los tres tabs de familia.
-    ///
-    /// **Los construye la tercera tarea de la Fase 3.** Aquí están como las tres
-    /// etiquetas que el handoff dibuja, para que la composición se pueda ver y
-    /// medir antes de que sean interactivas.
-    private var families: some View {
-        VStack(spacing: 12) {
-            ForEach(ParameterFamily.allCases, id: \.self) { candidate in
-                tab(candidate)
-            }
-            Spacer(minLength: 0)
-        }
-    }
-
-    /// Un tab de familia, con el tratamiento del handoff: **borde izquierdo
-    /// acentuado**, contorno y sombra dura en el activo.
-    ///
-    /// **Sigue funcionando sin controlador conectado.** La app es de solo
-    /// lectura sin knobs, pero mirar no es editar: los tabs cambian qué se mira.
-    private func tab(_ candidate: ParameterFamily) -> some View {
-        let accent = Palette.accent(for: candidate)
-        let isActive = candidate == family
-
-        return Button {
-            family = candidate
-        } label: {
-            HStack(spacing: 12) {
-                // El borde izquierdo acentuado: es lo que identifica la familia
-                // incluso cuando el tab no está activo.
-                Rectangle()
-                    .fill(accent)
-                    .frame(width: Brutalist.stroke * 2)
-                Text(Self.name(of: candidate))
-                    .font(isActive ? Typography.captionBold : Typography.captionStrong)
-                    .foregroundStyle(isActive ? Palette.onAccent : accent)
-                Spacer(minLength: 0)
-            }
-            // Alto fijo: sin él, el `VStack` reparte entre los tres el alto de
-            // la columna y los tabs quedan del tamaño del anillo.
-            .frame(height: 64)
-            .padding(.trailing, 16)
-        }
-        .buttonStyle(.plain)
-        .brutalistControl(accent: accent, isSelected: isActive)
-    }
-
-    /// El vocabulario de la Pre Spec, en inglés y sin traducir (NFR7).
-    ///
-    /// No sale de `String(describing:)`: el nombre del caso de Swift es un
-    /// detalle del lenguaje, y que hoy coincida con el término del dominio no lo
-    /// convierte en la fuente de la que copiarlo.
-    private static func name(of family: ParameterFamily) -> String {
-        switch family {
-        case .shape: "SHAPE"
-        case .groove: "GROOVE"
-        case .tonal: "TONAL"
-        }
-    }
-
     // MARK: - El patrón
 
     /// El valor grande.
@@ -663,39 +531,6 @@ struct ContentView: View {
             .padding(.horizontal, 24)
             .transition(.opacity)
             .animation(.easeOut(duration: 0.18), value: change)
-    }
-
-    // MARK: - Transporte
-
-    /// Si el botón de transporte hace algo ahora mismo.
-    ///
-    /// Se puede parar siempre que esté sonando, y arrancar solo si hay destino.
-    private var canTransport: Bool { model.canPlay || model.isPlaying }
-
-    /// **Sin el nombre de la app.** Estaba desde la rebanada 1 y no lo pide
-    /// ningún requisito: el handoff no lo dibuja en ninguna de sus cinco
-    /// pantallas, y `product-guidelines.md` dice que la app informa —el usuario
-    /// ya sabe qué app abrió—. Quitado el 2026-09-01, a petición del usuario.
-    private var transport: some View {
-        // **Era `.borderedProminent`, que dibuja una pastilla completa**, y FR9
-        // lo prohíbe: el radio pequeño y constante es lo que hace que la
-        // pantalla se lea como un aparato y no como un formulario. Es primario,
-        // así que lleva relleno de acento y sombra dura siempre que se pueda
-        // pulsar.
-        Button(model.isPlaying ? "Stop" : "Play") {
-            model.isPlaying ? model.stop() : model.play()
-        }
-        .font(Typography.bodyStrong)
-        .buttonStyle(.plain)
-        .foregroundStyle(canTransport ? Palette.onAccent : Palette.muted)
-        .disabled(!canTransport)
-        // Objetivo táctil holgado: se toca de pie, delante del sintetizador.
-        .frame(minWidth: 130, minHeight: 44)
-        .brutalistControl(
-            accent: Palette.shape,
-            isSelected: canTransport,
-            radius: Brutalist.radiusLarge
-        )
     }
 
     private var sourceBinding: Binding<MIDIEndpointRef> {

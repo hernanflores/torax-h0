@@ -53,21 +53,32 @@ struct AppChrome: View {
     static let height: CGFloat = 56
 
     var body: some View {
-        ZStack {
-            // **El módulo activo se centra contra la pantalla, no contra sus
-            // vecinos.** Puesto dentro del `HStack` quedaría empujado por el
-            // ancho del bloque de estado, que cambia con el nombre del
-            // dispositivo: el título bailaría al enchufar un cable.
-            Text(display: module.title)
-                .font(Typography.moduleTitle)
-                .foregroundStyle(Palette.text)
-
-            HStack(spacing: 20) {
+        // **Tres columnas, y las dos de fuera se reparten el sobrante a
+        // partes iguales.** Así el módulo activo cae en el centro de la pantalla
+        // sin que el título y el estado puedan solaparse.
+        //
+        // > **Era un `ZStack` y se veía mal en la primera captura.** El título
+        // > flotaba centrado sobre un `HStack` que ocupaba el ancho entero, así
+        // > que `track` se dibujaba encima de `midi: no midi input`: dos textos
+        // > pisándose. Centrar contra la pantalla y no contra los vecinos sigue
+        // > siendo lo correcto —si no, el título bailaría al enchufar un cable—
+        // > pero se consigue repartiendo el espacio, no superponiendo.
+        HStack(spacing: 20) {
+            HStack {
                 Text(display: "torax h-0")
                     .font(Typography.moduleTitle)
                     .foregroundStyle(Palette.text)
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-                Spacer(minLength: 12)
+            Text(display: module.title)
+                .font(Typography.moduleTitle)
+                .foregroundStyle(Palette.text)
+                .fixedSize()
+
+            HStack(spacing: 20) {
+                Spacer(minLength: 0)
 
                 inputStatus
 
@@ -79,6 +90,7 @@ struct AppChrome: View {
 
                 transport
             }
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .frame(height: Self.height)
         .padding(.horizontal, 24)
@@ -345,18 +357,27 @@ struct ModuleNavigation: View {
             Text(display: candidate.title)
                 .font(isActive ? Typography.navigationItemActive : Typography.navigationItem)
                 .foregroundStyle(isActive ? Palette.text : Palette.muted)
-                .frame(maxWidth: .infinity)
                 .frame(height: Self.height)
+                .padding(.horizontal, 28)
                 .overlay(alignment: .bottom) {
                     // **El subrayado se dibuja siempre y se pinta o no.**
                     // Meterlo en un `if` cambiaría la altura del texto al
                     // conmutar —SwiftUI recompone el overlay— y las cuatro
                     // etiquetas darían un salto de un par de puntos cada vez que
                     // se navega. Así solo cambia el color.
+                    //
+                    // > **Mide la etiqueta, no la columna.** En la primera
+                    // > captura el subrayado cruzaba un cuarto de la pantalla
+                    // > porque el `frame(maxWidth: .infinity)` estaba debajo de
+                    // > él; el handoff lo dibuja algo más ancho que la palabra y
+                    // > nada más. La columna sigue siendo el objetivo táctil —eso
+                    // > lo da el `contentShape` de fuera—, pero el trazo mide el
+                    // > texto.
                     Rectangle()
                         .fill(isActive ? Palette.offWhite : .clear)
                         .frame(height: Brutalist.strokeEmphasis)
                 }
+                .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
         // **El objetivo táctil es toda la columna**, no la palabra. Se navega de
