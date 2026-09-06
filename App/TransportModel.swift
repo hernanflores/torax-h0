@@ -413,6 +413,9 @@ final class TransportModel {
     /// antipatrón que `product-guidelines.md` nombra y que el playhead ya evita.
     /// Leerlo es una lectura atómica.
     var beatsPerMinute: Double {
+        // Misma suscripción que `followsExternalClock`: `setTempo` incrementa el
+        // contador y así el número de la barra se ve al instante.
+        _ = clockRevision
         guard let transport else { return 120 }
         return transport.currentTempo.displayBeatsPerMinute
     }
@@ -427,13 +430,36 @@ final class TransportModel {
     }
 
     /// Si la app sigue a un maestro externo.
-    var followsExternalClock: Bool { transport?.clockSource == .external }
+    ///
+    /// **Lee `clockRevision` antes de responder, y en eso consiste el arreglo.**
+    ///
+    /// > **El segmentado de la pantalla `midi` no reaccionaba al tocarlo**, y el
+    /// > cambio solo se veía al navegar a otra pantalla y volver. La causa es que
+    /// > esto sale del `Transport`, que no es observable: `setFollowsExternalClock`
+    /// > incrementaba `clockRevision` religiosamente y **no lo leía nadie**. Su
+    /// > única consumidora era `ChannelMapView`, que lo recibía dentro de un
+    /// > struct; al reescribirla, el contador se quedó sin suscriptores.
+    /// >
+    /// > Leerlo aquí hace que **usar el valor sea suscribirse**, sin que ninguna
+    /// > vista tenga que acordarse de nada. Un contador de invalidación que hay
+    /// > que recordar leer es un contador que alguien va a olvidar.
+    ///
+    /// **Lo que esto no arregla, y conviene que esté escrito:** un cambio que
+    /// venga del hardware —el tempo de un maestro externo, un Start del
+    /// BeatStep— sigue sin invalidar nada, porque nadie incrementa el contador
+    /// desde el hilo de recepción. Eso necesita un aviso desde ese hilo y es otro
+    /// trabajo; tres intentos de resolverlo de paso dejaron la app peor.
+    var followsExternalClock: Bool {
+        _ = clockRevision
+        return transport?.clockSource == .external
+    }
 
     /// Qué está pasando con el reloj externo, en una línea. `nil` con reloj
     /// interno, que no tiene nada que contar.
     ///
     /// En inglés y sin traducir, como el resto del vocabulario de interfaz.
     var clockStatus: String? {
+        _ = clockRevision
         guard let transport else { return nil }
 
         // **La tabla la decide `MIDI`, con tests.** Aquí solo se leen los tres
@@ -528,48 +554,16 @@ final class TransportModel {
 
     /// Cablea la entrada de control: los giros publican por el transporte, que
     /// es quien tiene el handoff que lee el scheduler.
-    // MARK: - Diagnóstico temporal
-    //
-    // **Esto es instrumentación, no producto, y se retira en cuanto se sepa qué
-    // pasa.** Tres intentos de arreglar el refresco del reloj dejaron la app sin
-    // recibir MIDI, y los tres se «verificaron» en un simulador que no tiene
-    // MIDI ninguno. Contar lo que llega convierte «es como si no estuviera
-    // conectado» en un número.
-    //
-    // Los contadores son atómicos y se incrementan **en el hilo de recepción**,
-    // sin saltar al principal: un salto por tick de reloj sería meter cuarenta y
-    // ocho hops por segundo en el camino que se está diagnosticando.
-
-    /// Cuántos mensajes han entrado por el puerto, de cualquier tipo.
-    let diagnosticMessages = AtomicCounter(0)
-
-    /// Cuántos de ellos se los quedó el transporte: reloj, start y stop.
-    let diagnosticTransportMessages = AtomicCounter(0)
-
-    /// Cuántos llegaron a la entrada de control: knobs, pads y step buttons.
-    let diagnosticControlMessages = AtomicCounter(0)
-
-    /// Cuántos de ésos la entrada de control aceptó y publicó.
-    let diagnosticAcceptedMessages = AtomicCounter(0)
-
-    /// Si hay un puerto conectado a una fuente ahora mismo.
-    private(set) var diagnosticConnectedSource: String?
-
     private func connectControlInput() {
         let relay = self.relay
         do {
             let input = try CoreMIDIInput { [weak self, relay] message, hostTime in
-                self?.diagnosticMessages.value &+= 1
                 // **El reloj se atiende aquí mismo, sin saltar al principal.**
                 // Un tick vive de cuándo llegó, y la cola del hilo principal
                 // metería su propio retraso en la estimación del tempo. El
                 // transporte dice si el mensaje era suyo; si lo era, no hay nada
                 // más que hacer con él.
-                if relay.receive(message, atHostTime: hostTime) {
-                    self?.diagnosticTransportMessages.value &+= 1
-                    return
-                }
-                self?.diagnosticControlMessages.value &+= 1
+                if relay.receive(message, atHostTime: hostTime) { return }
 
                 // El resto llega desde el hilo de recepción de CoreMIDI. El
                 // salto al principal es obligado: aquí se muta estado observable
@@ -608,11 +602,7 @@ final class TransportModel {
     }
 
     private func connectToSelectedSource() {
-        guard let endpoint = sourceSelection.selected?.endpoint else {
-            diagnosticConnectedSource = nil
-            return
-        }
-        diagnosticConnectedSource = sourceSelection.selected?.displayName
+        guard let endpoint = sourceSelection.selected?.endpoint else { return }
         // **Reconectar suelta los modificadores** (FR8). Si el cable se fue con
         // un step button hundido, la soltada que lo levantaría ya no va a llegar
         // por ningún sitio y el modificador se quedaría pegado para siempre.
@@ -627,7 +617,6 @@ final class TransportModel {
         // anunciarse.
         let previous = track
         guard controlInput.receive(message) else { return }
-        diagnosticAcceptedMessages.value &+= 1
         syncFromControlInput()
         // El gesto de mezcla ya llegó al transporte por el relevo; lo que falta
         // es traerse la foto nueva para que la pantalla la dibuje.
