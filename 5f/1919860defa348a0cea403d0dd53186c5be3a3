@@ -49,3 +49,32 @@ TESTS
   VirtualLoopback (flake midi-test-flake_20260826)
   xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS -> SUCCEEDED
 swift format limpio.
+
+--- VERIFICACION DE FASE 5 (checkpoint) ---
+
+TESTS AUTOMATICOS
+  swift test --package-path Packages/Engine  -> 541 tests, 0 fallos
+  swift test --package-path Packages/MIDI    -> 599 tests, 7 fallos, todos
+    VirtualLoopback (flake midi-test-flake_20260826)
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS -> SUCCEEDED
+  swift format limpio.
+
+COBERTURA DE TESTS PARA LOS CAMBIOS DE LA FASE
+FamilyReadout.swift cubierto por FamilyReadoutCtrlAllTests (7) y
+FamilyReadoutTempTests migrado. ControlInput por dos tests del lector.
+App/TransportModel.swift y App/ContentView.swift son cableado y presentacion:
+App no se mide (workflow.md).
+
+VERIFICACION MANUAL PROPUESTA
+1. Step 13 -> pastilla TEMP compacta.
+2. Step 14 -> banda CTRL ALL cruzando el panel.
+3. A un metro y de reojo, se distinguen POR EL ANCHO sin leer la palabra.
+4. Sale igual en las tres pestañas (Shape, Groove, Tonal).
+5. Al soltar desaparece sola y la lectura vuelve a los valores base.
+
+Se propuso con la advertencia de que el simulador no pudo verificarlo (sin
+fuentes MIDI la app arranca read-only y el gesto no se acciona), asi que esta
+verificacion es la primera vez que los dos distintivos se ven juntos.
+
+CONFIRMACION DEL USUARIO
+Confirmado ("si") el 2026-09-05.
