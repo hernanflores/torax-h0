@@ -51,7 +51,7 @@ struct TrackReadout: View {
                 .foregroundStyle(Palette.muted)
 
             Text(display: value)
-                .font(Typography.readout)
+                .font(Typography.readoutCompact)
                 .monospacedDigit()
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
@@ -170,7 +170,7 @@ struct CycleStrip: View {
                 }
             }
         }
-        .padding(16)
+        .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .brutalistPanel()
     }
@@ -192,7 +192,7 @@ struct CycleStrip: View {
             .font(isSounding || isEditing ? Typography.captionBold : Typography.caption)
             .monospacedDigit()
             .foregroundStyle(foreground(isActive: isActive, isSounding: isSounding))
-            .frame(minHeight: 40)
+            .frame(minHeight: 30)
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
             .brutalistControl(accent: accent, isSelected: isSounding, radius: Brutalist.radiusSmall)
@@ -211,4 +211,171 @@ struct CycleStrip: View {
         guard isActive else { return Palette.muted }
         return isSounding ? Palette.onAccent : Palette.mutedBright
     }
+}
+
+/// El card de una familia de parámetros: `shape`, `groove` o `tonal`.
+///
+/// **Los tres se ven a la vez** (FR12). Antes había tabs y solo uno estaba
+/// visible; el handoff los apila, y con ellos desaparece la única razón por la
+/// que el tab existía. Lo que sobrevive de aquella regla es que **la pantalla
+/// sigue a la mano**: girar un knob no cambia de card, lo resalta.
+///
+/// **El resalte es el trazo, no el relleno.** Un card relleno del acento de su
+/// familia sería un bloque de color del tamaño de un cuarto de pantalla
+/// compitiendo con el patrón, que es el protagonista. El trazo dice lo mismo y
+/// no se lleva la mirada; es la misma decisión que el subrayado de la
+/// navegación.
+///
+/// **Ninguno de sus valores se toca** (FR14). Es la pantalla del espejo: los
+/// nueve parámetros se mueven con knobs, y aquí solo se leen.
+struct ParameterFamilyCard: View {
+
+    let family: ParameterFamily
+
+    /// Los parámetros de la familia con su valor, ya escritos por `Engine`.
+    let entries: [(label: String, value: String)]
+
+    /// Si es la familia que se está girando ahora mismo.
+    let isActive: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(display: title)
+                .font(Typography.parameterLine)
+                .foregroundStyle(isActive ? Palette.accent(for: family) : Palette.muted)
+
+            // **Una columna por parámetro, no una lista de renglones.** Con el
+            // nombre encima del valor los nueve caben en dos filas cortas y se
+            // comparan de un vistazo; en renglones `nombre valor` habría que
+            // leerlos en orden para encontrar uno.
+            HStack(alignment: .top, spacing: 12) {
+                ForEach(entries, id: \.label) { entry in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(display: entry.label)
+                            .font(Typography.caption)
+                            .foregroundStyle(Palette.muted)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+
+                        Text(display: entry.value)
+                            .font(Typography.bodyMedium)
+                            .monospacedDigit()
+                            .foregroundStyle(Palette.text)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Palette.inset, in: RoundedRectangle(cornerRadius: Brutalist.radiusLarge))
+        .overlay {
+            RoundedRectangle(cornerRadius: Brutalist.radiusLarge)
+                .stroke(
+                    isActive ? Palette.accent(for: family) : Palette.border,
+                    lineWidth: isActive ? Brutalist.strokeEmphasis : Brutalist.stroke
+                )
+        }
+    }
+
+    private var title: String {
+        switch family {
+        case .shape: "shape"
+        case .groove: "groove"
+        case .tonal: "tonal"
+        }
+    }
+}
+
+/// El card `tonal`, que no es una lista de parámetros como los otros dos.
+///
+/// **Tonal no tiene knobs detrás**, así que no hay nueve columnas que enseñar:
+/// hay un marco —`scale` y `root`— y el material que ese marco deja disponible.
+///
+/// **El pool se enseña y las alturas no se mapean a steps** (FR12, y la sección
+/// «Representación tonal: pool, no melodía» de `product-guidelines.md`). PITCH
+/// define un pool, no un piano-roll: una nota por paso sugeriría que las alturas
+/// están fijadas a posiciones, que es exactamente el modelo mental que la app
+/// rechaza.
+struct TonalCard: View {
+
+    let frame: TonalFrame
+
+    /// Las alturas del pool, ya nombradas.
+    let pool: [String]
+
+    let isActive: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(display: "tonal")
+                .font(Typography.parameterLine)
+                .foregroundStyle(isActive ? Palette.tonal : Palette.muted)
+
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                labelled("scale", scaleName)
+                Spacer(minLength: 8)
+                labelled("root", "\(frame.root)")
+            }
+
+            if pool.isEmpty {
+                // **El pool vacío se dice, no se disimula.** Es el estado de
+                // once Tracks al arrancar: disparan sus Pulses y no tienen
+                // material que emitir.
+                Text(display: "pool empty")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.muted)
+            } else {
+                // **Celdas de ancho propio, no repartidas.** Con
+                // `maxWidth: .infinity` un pool de una sola altura dibujaba una
+                // celda del ancho del card: parecía un campo de texto vacío en
+                // vez de una nota. El pool tiene de cero a ocho elementos y lo
+                // que hay que ver es cuántos, así que cada uno mide lo suyo y
+                // sobra sitio a la derecha cuando hay pocos.
+                HStack(spacing: 6) {
+                    ForEach(Array(pool.enumerated()), id: \.offset) { _, name in
+                        Text(display: name)
+                            .font(Typography.captionStrong)
+                            .foregroundStyle(Palette.mutedBright)
+                            .frame(minWidth: 38, minHeight: 30)
+                            .background(
+                                Palette.surface,
+                                in: RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+                            )
+                            .overlay {
+                                RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+                                    .stroke(Palette.border, lineWidth: Brutalist.stroke)
+                            }
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Palette.inset, in: RoundedRectangle(cornerRadius: Brutalist.radiusLarge))
+        .overlay {
+            RoundedRectangle(cornerRadius: Brutalist.radiusLarge)
+                .stroke(
+                    isActive ? Palette.tonal : Palette.border,
+                    lineWidth: isActive ? Brutalist.strokeEmphasis : Brutalist.stroke
+                )
+        }
+    }
+
+    private func labelled(_ label: String, _ value: String) -> some View {
+        HStack(spacing: 8) {
+            Text(display: label)
+                .font(Typography.caption)
+                .foregroundStyle(Palette.muted)
+            Text(display: value)
+                .font(Typography.parameterLineStrong)
+                .foregroundStyle(Palette.text)
+        }
+    }
+
+    /// El nombre lo pone `Engine`; la minúscula, `Text(display:)`.
+    private var scaleName: String { frame.scale.name }
 }

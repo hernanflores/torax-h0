@@ -257,15 +257,11 @@ struct TonalView: View {
             )
     }
 
-    /// Los nombres van en inglés y sin traducir, como el resto del vocabulario
-    /// de interfaz (`product-guidelines.md`).
-    private func name(of scale: Scale) -> String {
-        switch scale {
-        case .minor: "Minor"
-        case .major: "Major"
-        case .dorian: "Dorian"
-        case .phrygian: "Phrygian"
-        case .pentatonic: "Pentatonic"
-        }
-    }
+    /// El nombre lo pone `Engine` desde el 2026-09-06.
+    ///
+    /// Esta vista tenía su propio `switch` y `FamilyReadout` otro; el card tonal
+    /// del rediseño habría sido el tercero. Se corrige aunque esta vista
+    /// desaparezca en la Fase 3: una duplicación conocida que se deja para más
+    /// tarde es la que sobrevive al «más tarde».
+    private func name(of scale: Scale) -> String { scale.name }
 }

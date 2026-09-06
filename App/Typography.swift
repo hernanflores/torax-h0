@@ -84,6 +84,15 @@ extension Typography {
     /// legibilidad a un metro pide de él.
     static var readout: Font { bold(44) }
 
+    /// La misma lectura cuando comparte columna con los cards.
+    ///
+    /// **38 y no 44 desde el 2026-09-06.** Con los tres cards de familia y el de
+    /// Cycle apilados debajo, los 44 dejaban la franja de Tracks fuera de la
+    /// pantalla: se vio en captura, con la fila M/S cortada por el borde. Sigue
+    /// siendo con diferencia el texto más grande de la pantalla, que es lo que la
+    /// legibilidad a un metro le pide.
+    static var readoutCompact: Font { bold(38) }
+
     /// El botón de transporte, que es el control más grande de la pantalla.
     ///
     /// **Se llamaba `appTitle`** y lo usaba el nombre de la app, que se quitó de

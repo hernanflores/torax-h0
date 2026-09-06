@@ -276,6 +276,15 @@ final class TransportModel {
 
     var destinationStatus: String { selection.statusDescription }
     var sourceStatus: String { sourceSelection.statusDescription }
+    /// Las alturas del pool del Track seleccionado, ya nombradas.
+    ///
+    /// **`Pitch` sabe decir su nombre** y el pool sabe cuántas tiene; juntarlas
+    /// es cableado, no una regla.
+    var poolNames: [String] {
+        let pool = track.pool
+        return (0..<pool.count).compactMap { pool.pitch(at: $0).map { "\($0)" } }
+    }
+
     var shapeSummary: String { track.shape.description }
 
     /// Los cinco parámetros de Groove, en reposo, partidos en dos renglones.

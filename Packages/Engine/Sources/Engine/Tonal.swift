@@ -96,6 +96,28 @@ public enum Scale: Equatable, Sendable, CaseIterable {
     /// pantalla no discrepen.
     public static let ordered: [Scale] = [.minor, .major, .dorian, .phrygian, .pentatonic]
 
+    /// El nombre, en el vocabulario de la Pre Spec y sin traducir
+    /// (`product-guidelines.md`, NFR7).
+    ///
+    /// **Vive aquí desde el 2026-09-06.** Se escribía en dos sitios de `App`
+    /// —`FamilyReadout` y `TonalView`, cada uno con su `switch` privado— y el
+    /// card tonal del rediseño habría sido el tercero. Es texto de dominio: una
+    /// escala mal nombrada se sigue dibujando, y `workflow.md` manda que lo que
+    /// se rompe en silencio esté donde hay tests.
+    ///
+    /// **Capitalizado, como el resto del vocabulario.** Que la interfaz lo
+    /// dibuje en minúsculas es cosa de la capa de presentación, y cambia la
+    /// caja, no el término (enmienda del 2026-09-06 en `product-guidelines.md`).
+    public var name: String {
+        switch self {
+        case .minor: "Minor"
+        case .major: "Major"
+        case .dorian: "Dorian"
+        case .phrygian: "Phrygian"
+        case .pentatonic: "Pentatonic"
+        }
+    }
+
     /// Un bit por clase de altura: el bit *i* está a uno si el semitono *i* por
     /// encima de la fundamental pertenece a la escala.
     ///
@@ -210,4 +232,9 @@ public struct TonalFrame: Equatable, Sendable {
         }
         return pitch
     }
+}
+
+extension Scale: CustomStringConvertible {
+
+    public var description: String { name }
 }

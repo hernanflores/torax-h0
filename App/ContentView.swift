@@ -78,7 +78,8 @@ struct ContentView: View {
 
             ScrollView {
                 screen(width: width, height: height)
-                    .padding(24)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .scrollBounceBehavior(.basedOnSize)
@@ -306,8 +307,14 @@ struct ContentView: View {
             rings
                 .frame(width: side, height: side)
 
+            // **La lectura no se ata al lado del anillo.** Lo estuvo, y con los
+            // tres cards dentro el contenido pasó a ser más alto que el cuadrado
+            // del anillo: el `VStack` desbordaba su marco y los cards se dibujaban
+            // por encima de la navegación y por debajo de la franja de Tracks.
+            // Con altura natural, el escenario mide lo que mida el más alto de
+            // los dos y el `ScrollView` que ya lo envuelve se ocupa del resto.
             readout
-                .frame(width: columns.readout + slack, height: side)
+                .frame(width: columns.readout + slack)
         }
     }
 
@@ -425,13 +432,31 @@ struct ContentView: View {
     /// **Sin panel envolvente.** Cada card lleva el suyo; encuadrar además el
     /// conjunto pondría un borde alrededor de tres bordes.
     private var readout: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 8) {
             TrackReadout(
                 change: model.transientChange,
                 lastChange: lastChange,
                 resting: FamilyReadout(
                     track: model.track, family: family, gesture: model.gesture),
                 family: family
+            )
+
+            ParameterFamilyCard(
+                family: .shape,
+                entries: entries(for: .shape),
+                isActive: family == .shape
+            )
+
+            ParameterFamilyCard(
+                family: .groove,
+                entries: entries(for: .groove),
+                isActive: family == .groove
+            )
+
+            TonalCard(
+                frame: model.frame,
+                pool: model.poolNames,
+                isActive: family == .tonal
             )
 
             CycleStrip(
@@ -445,6 +470,18 @@ struct ContentView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Los parámetros de una familia con su valor.
+    ///
+    /// **La lista y el orden los da `Engine`**, no la vista: `TrackParameter`
+    /// declara los nueve y en qué orden se leen, que es el del dominio y no el de
+    /// los knobs — el preset los reordenó el 2026-09-05 y la pantalla no siguió,
+    /// a propósito.
+    private func entries(for candidate: ParameterFamily) -> [(label: String, value: String)] {
+        TrackParameter.allCases
+            .filter { $0.family == candidate }
+            .map { ($0.description, $0.value(in: model.track)) }
     }
 
     // MARK: - El patrón

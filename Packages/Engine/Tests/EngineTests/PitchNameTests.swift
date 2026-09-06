@@ -49,4 +49,31 @@ final class PitchNameTests: XCTestCase {
             )
         }
     }
+
+    // MARK: - El nombre de una escala
+
+    // **Bajó aquí el 2026-09-06, en la Fase 2 de screens-redesign.** El nombre
+    // de cada Scale se escribía en dos sitios de `App` —`FamilyReadout` lo tenía
+    // privado y `TonalView` tenía el suyo— y el card tonal habría sido el
+    // tercero. Es texto de dominio, y `workflow.md` manda que eso no viva donde
+    // no hay tests.
+
+    func testEveryScaleHasAName() {
+        for scale in Scale.allCases {
+            XCTAssertFalse("\(scale)".isEmpty, "\(scale)")
+        }
+    }
+
+    func testScaleNamesAreTheVocabularyOfThePreSpec() {
+        XCTAssertEqual("\(Scale.minor)", "Minor")
+        XCTAssertEqual("\(Scale.major)", "Major")
+        XCTAssertEqual("\(Scale.dorian)", "Dorian")
+        XCTAssertEqual("\(Scale.phrygian)", "Phrygian")
+        XCTAssertEqual("\(Scale.pentatonic)", "Pentatonic")
+    }
+
+    func testScaleNamesAreAllDistinct() {
+        let names = Set(Scale.allCases.map { "\($0)" })
+        XCTAssertEqual(names.count, Scale.allCases.count)
+    }
 }

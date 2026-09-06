@@ -150,8 +150,8 @@ public struct FamilyReadout: Equatable, Sendable {
             // Tonal `label + value` **no** reconstruye el `headline`, y el test
             // que comprueba esa identidad excluye la familia a propósito.
             label = "Scale"
-            value = "\(track.frame.root) \(Self.name(of: track.frame.scale))"
-            headline = "\(track.frame.root) \(Self.name(of: track.frame.scale))"
+            value = "\(track.frame.root) \(track.frame.scale.name)"
+            headline = "\(track.frame.root) \(track.frame.scale.name)"
             detail = "Pool · \(Self.pool(track.pool.count))"
         }
     }
@@ -171,15 +171,4 @@ public struct FamilyReadout: Equatable, Sendable {
         }
     }
 
-    /// Los nombres van en inglés y sin traducir, como el resto del vocabulario de
-    /// interfaz (`product-guidelines.md`, NFR7).
-    private static func name(of scale: Scale) -> String {
-        switch scale {
-        case .minor: "Minor"
-        case .major: "Major"
-        case .dorian: "Dorian"
-        case .phrygian: "Phrygian"
-        case .pentatonic: "Pentatonic"
-        }
-    }
 }
