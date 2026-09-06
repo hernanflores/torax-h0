@@ -179,7 +179,23 @@ final class CtrlAllOffsetTests: XCTestCase {
     /// enumerar los nueve: Accent, Repeats y los demás quedan cubiertos el día
     /// que se mapeen, sin volver aquí.
     func testEveryTrackParameterCanBeCapturedAndAdvanced() {
-        let source = pattern(pulsesPerTrack: twelve)
+        // **Un Cycle con los nueve parámetros en el interior de su rango.** El
+        // helper de esta clase deja Timing en 50 y Probability en 100, que son
+        // sus extremos, y contra un extremo el tope del acumulado no deja
+        // avanzar: el test estaría comprobando la saturación en vez de la
+        // acumulación, y falló por eso mientras se escribía.
+        let interior = Cycle(
+            shape: Shape(steps: Steps(8)!, pulses: Pulses(5)!, rotate: Rotate(2)),
+            pool: PitchPool().inserting(Pitch(48)!),
+            groove: Groove(
+                velocity: Velocity(64)!,
+                sustain: Sustain(percent: 100)!,
+                probability: Probability(percent: 50)!,
+                timing: Timing(percent: 60)!,
+                delay: Delay(percent: 0)!
+            )
+        )
+        let source = Pattern().replacing(Track(interior), at: 0)
 
         for parameter in TrackParameter.allCases {
             let offset = CtrlAllOffset().capturing(parameter, from: source)
@@ -371,9 +387,33 @@ final class CtrlAllApplyTests: XCTestCase {
         XCTAssertEqual(offset.amount(of: .pulses), 0)
     }
 
-    /// La ida y vuelta completa devuelve exactamente los valores de partida,
-    /// aunque por el camino todos hayan topado.
-    func testAFullSweepUpAndDownIsLossless() {
+    /// **Dentro del tope, la ida y vuelta es exacta** aunque por el camino algún
+    /// Track haya topado contra su extremo.
+    func testASweepUpAndDownWithinTheLimitIsLossless() {
+        var offset = CtrlAllOffset()
+        let source = pattern(pulsesPerTrack: twelve)
+
+        var moved = source
+        for _ in 0..<8 { moved = offset.apply(1, to: .pulses, in: moved) }
+        for _ in 0..<8 { moved = offset.apply(-1, to: .pulses, in: moved) }
+
+        XCTAssertEqual(offset.amount(of: .pulses), 0)
+        for index in 0..<Pattern.trackCount {
+            XCTAssertEqual(pulses(moved, track: index), index + 1, "Track \(index + 1)")
+        }
+    }
+
+    /// **Pasado el tope ya no lo es, y no puede serlo.** Cuarenta clics arriba
+    /// saturan el desplazamiento en +15; los cuarenta de vuelta parten de ahí y
+    /// saturan en −11, así que el Pattern no queda donde empezó.
+    ///
+    /// > **No es un defecto del tope: es el tope.** Cualquier acotado del
+    /// > acumulado tiene este efecto, y a cambio evita que el knob quede muerto
+    /// > durante decenas de clics (FR5). **La garantía de no perder nada no vive
+    /// > aquí sino en `restored(into:)`**: soltar el step 14 devuelve la base
+    /// > exacta por muchas vueltas que se hayan dado, que es lo que el gesto
+    /// > promete de verdad.
+    func testBeyondTheLimitTheSweepDoesNotReturnButReleasingDoes() {
         var offset = CtrlAllOffset()
         let source = pattern(pulsesPerTrack: twelve)
 
@@ -381,9 +421,8 @@ final class CtrlAllApplyTests: XCTestCase {
         for _ in 0..<40 { moved = offset.apply(1, to: .pulses, in: moved) }
         for _ in 0..<40 { moved = offset.apply(-1, to: .pulses, in: moved) }
 
-        for index in 0..<Pattern.trackCount {
-            XCTAssertEqual(pulses(moved, track: index), index + 1, "Track \(index + 1)")
-        }
+        XCTAssertNotEqual(moved, source, "el tope no llegó a saturar")
+        XCTAssertEqual(offset.restored(into: moved), source, "soltar no devolvió la base")
     }
 
     // MARK: - Rotate envuelve
@@ -425,5 +464,136 @@ final class CtrlAllApplyTests: XCTestCase {
         let source = pattern(pulsesPerTrack: twelve)
 
         XCTAssertEqual(offset.apply(0, to: .pulses, in: source), source)
+    }
+}
+
+/// Tests del tope del desplazamiento acumulado.
+///
+/// **Un knob que deja de responder se lee como una avería.** Sin tope, cuarenta
+/// clics contra el límite exigen cuarenta clics de vuelta antes de que algo se
+/// mueva, y el síntoma —el knob no hace nada— es el mismo que produce un encoder
+/// mal configurado (nota del 2026-08-28). El tope existe para que el gesto no se
+/// parezca a un fallo.
+final class CtrlAllOffsetLimitTests: XCTestCase {
+
+    private func cycle(pulses: Int = 5, steps: Int = 16, rotate: Int = 0) -> Cycle {
+        Cycle(
+            shape: Shape(
+                steps: Steps(steps)!, pulses: Pulses(pulses)!, rotate: Rotate(rotate)),
+            pool: PitchPool().inserting(Pitch(48)!)
+        )
+    }
+
+    private func pattern(pulsesPerTrack: [Int]) -> Pattern {
+        var pattern = Pattern()
+        for (index, pulses) in pulsesPerTrack.enumerated() {
+            pattern = pattern.replacing(Track(cycle(pulses: pulses)), at: index)
+        }
+        return pattern
+    }
+
+    private func pulses(_ pattern: Pattern, track: Int) -> Int? {
+        pattern.track(at: track)?.cycle(at: 0)?.shape.pulses.count
+    }
+
+    // MARK: - El recorrido de cada parámetro
+
+    /// Cada parámetro acotado declara sus extremos; **Rotate no**, porque
+    /// envuelve (FR6).
+    func testEveryClampedParameterDeclaresItsRange() {
+        XCTAssertEqual(TrackParameter.steps.displacementRange, 1...16)
+        XCTAssertEqual(TrackParameter.pulses.displacementRange, 1...16)
+        XCTAssertEqual(TrackParameter.velocity.displacementRange, 1...127)
+        XCTAssertEqual(TrackParameter.probability.displacementRange, 0...100)
+        XCTAssertEqual(TrackParameter.timing.displacementRange, 50...75)
+        XCTAssertEqual(TrackParameter.delay.displacementRange, -100...100)
+        XCTAssertNil(TrackParameter.rotate.displacementRange, "Rotate no tiene extremos")
+    }
+
+    /// Y ninguno se queda sin declararlos por olvido: si algún día se añade un
+    /// parámetro, este test obliga a decidir si envuelve o se acota.
+    func testEveryParameterEitherHasARangeOrWraps() {
+        for parameter in TrackParameter.allCases {
+            if parameter == .rotate {
+                XCTAssertNil(parameter.displacementRange)
+            } else {
+                XCTAssertNotNil(parameter.displacementRange, "\(parameter) no declara extremos")
+            }
+        }
+    }
+
+    // MARK: - El tope
+
+    /// **Cuarenta clics contra el tope y uno de vuelta mueven algo.** Es el
+    /// requisito entero (FR5).
+    func testFortyClicksAgainstTheLimitAndOneBackMovesSomething() {
+        var offset = CtrlAllOffset()
+        var moved = pattern(pulsesPerTrack: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+
+        for _ in 0..<40 { moved = offset.apply(1, to: .pulses, in: moved) }
+        XCTAssertEqual(
+            offset.amount(of: .pulses), 15,
+            "el tope no es el recorrido real: al Track de base 1 le quedaban 15")
+
+        let before = moved
+        moved = offset.apply(-1, to: .pulses, in: moved)
+
+        XCTAssertNotEqual(moved, before, "un clic de vuelta no movió nada: el knob quedó muerto")
+    }
+
+    /// El tope es simétrico: también hacia abajo.
+    func testTheLimitIsSymmetric() {
+        var offset = CtrlAllOffset()
+        var moved = pattern(pulsesPerTrack: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+
+        for _ in 0..<40 { moved = offset.apply(-1, to: .pulses, in: moved) }
+        XCTAssertEqual(
+            offset.amount(of: .pulses), -11,
+            "el tope se calculó con el ancho del parámetro y no con las bases: al "
+                + "Track de base 12 solo le quedaban 11 hacia abajo")
+
+        let before = moved
+        moved = offset.apply(1, to: .pulses, in: moved)
+        XCTAssertNotEqual(moved, before)
+    }
+
+    /// **El tope es el ancho del parámetro, no el del Track que se está
+    /// mirando.** Un Track con recorrido restante sigue moviéndose mientras otro
+    /// está topado.
+    func testATrackWithHeadroomKeepsMovingWhileAnotherIsClamped() {
+        var offset = CtrlAllOffset()
+        var source = Pattern()
+        source = source.replacing(Track(cycle(pulses: 16)), at: 0)
+        source = source.replacing(Track(cycle(pulses: 1)), at: 1)
+
+        var moved = source
+        for _ in 0..<5 { moved = offset.apply(1, to: .pulses, in: moved) }
+
+        XCTAssertEqual(pulses(moved, track: 0), 16, "el topado se movió")
+        XCTAssertEqual(pulses(moved, track: 1), 6, "el que tenía recorrido se quedó parado")
+    }
+
+    /// **Rotate no se acota**: su desplazamiento crece libre y sigue produciendo
+    /// movimiento indefinidamente, porque envuelve.
+    func testRotateIsNotLimited() {
+        var offset = CtrlAllOffset()
+        var moved = Pattern().replacing(Track(cycle(steps: 16, rotate: 0)), at: 0)
+
+        for _ in 0..<40 { moved = offset.apply(1, to: .rotate, in: moved) }
+
+        XCTAssertEqual(offset.amount(of: .rotate), 40, "se acotó un parámetro que envuelve")
+        XCTAssertEqual(moved.track(at: 0)?.cycle(at: 0)?.shape.rotate.amount, 40 % 16)
+    }
+
+    /// **El tope no rompe la restauración.** Con el desplazamiento saturado,
+    /// soltar devuelve exactamente la base.
+    func testTheLimitDoesNotBreakRestoration() {
+        var offset = CtrlAllOffset()
+        let source = pattern(pulsesPerTrack: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+
+        var moved = source
+        for _ in 0..<40 { moved = offset.apply(1, to: .pulses, in: moved) }
+
+        XCTAssertEqual(offset.restored(into: moved), source)
     }
 }

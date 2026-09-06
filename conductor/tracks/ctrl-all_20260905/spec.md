@@ -65,12 +65,29 @@ es el offset pedido y no el valor acotado.
 > debía decir. Es la regla de `product-guidelines.md` —«cambiar un
 parámetro nunca destruye material»— aplicada al gesto global.
 
-**FR5 — El offset acumulado se acota al recorrido más ancho en juego.** Para los
-ocho parámetros con extremos, el acumulado se frena donde ningún Track puede ya
-moverse (el ancho del rango del parámetro). Sin ese tope, cuarenta clics contra
-el límite dejarían el knob muerto durante cuarenta clics de vuelta — el mismo
-síntoma que la nota del 2026-08-28 sobre encoders mal configurados, y que un
-usuario leería como que el gesto se rompió.
+**FR5 — El offset acumulado se acota al recorrido real de los Tracks
+capturados.** Para los ocho parámetros con extremos, el acumulado se frena donde
+ningún Track puede ya moverse: cuánto le queda por subir al que más margen tiene
+hacia arriba, y cuánto por bajar al que más tiene hacia abajo. Sin ese tope,
+cuarenta clics contra el límite dejarían el knob muerto durante cuarenta clics de
+vuelta — el mismo síntoma que la nota del 2026-08-28 sobre encoders mal
+configurados, y que un usuario leería como que el gesto se rompió.
+
+> **Corrección del 2026-09-05, encontrada implementando.** Este requisito decía
+> «el ancho del rango del parámetro», y **no cumple lo que promete**: con Pulses
+> 1…12 y el ancho en 15, cuarenta clics abajo dejan el acumulado en −15 y los doce
+> Tracks en 1; un clic arriba lo deja en −14 y el Track de base 12 sigue dando −2,
+> así que hacen falta cuatro clics para que algo se mueva. El tope tiene que
+> salir de las **bases capturadas**, no del parámetro. Lo destapó el test del
+> sentido descendente al fallar mientras el ascendente pasaba: la asimetría es del
+> reparto de las bases, no del signo.
+
+**FR5b — Topar tiene un precio, y no es la reversibilidad.** Con el acumulado
+saturado, una ida y vuelta simétrica **no** devuelve el Pattern a su sitio: la
+subida satura y la bajada parte de ahí. Es inherente a cualquier acotado y se
+acepta a cambio de que el knob no quede muerto. **La garantía de no perder nada
+vive en la restauración**, no en el recorrido: soltar el step 14 devuelve la base
+exacta por muchas vueltas que se hayan dado.
 
 **FR6 — Rotate envuelve y por eso no se acota.** Rotate no tiene extremos: gira
 módulo el `steps.count` de **cada** Cycle. Su offset acumulado crece libre y el
@@ -211,8 +228,10 @@ Pre Spec y en la pantalla — como se ancló «Temp». No se inventan sinónimos
 4. Un Track topado contra su extremo no arrastra a los demás, retoma su valor
    exacto en cuanto el desplazamiento reentra en su rango, y una ida y vuelta
    completa lo devuelve a su base sin pérdida.
-5. Cuarenta clics contra el tope y un clic de vuelta mueven algo: el offset
-   acumulado está acotado al ancho del rango (FR5).
+5. Cuarenta clics contra el tope y un clic de vuelta mueven algo, **en los dos
+   sentidos**: el acumulado está acotado al recorrido real de las bases
+   capturadas (FR5). Pasado el tope, una ida y vuelta simétrica no devuelve el
+   Pattern, y soltar sí (FR5b).
 6. Rotate desplaza los doce envolviendo cada Cycle con su propio Steps, y su
    offset no se acota.
 7. Tras un hold completo, el Pattern es igual al de partida salvo los cursores

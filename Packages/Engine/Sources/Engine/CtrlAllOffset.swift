@@ -132,8 +132,45 @@ public struct CtrlAllOffset: Equatable, Sendable {
     /// topado contra su extremo.
     public func advancing(_ parameter: TrackParameter, by delta: Int) -> CtrlAllOffset {
         var updated = self
-        updated.amounts[parameter] = amount(of: parameter) + delta
+        let advanced = amount(of: parameter) + delta
+        let room = headroom(for: parameter)
+        updated.amounts[parameter] = min(max(advanced, room.lowerBound), room.upperBound)
         return updated
+    }
+
+    /// Hasta dónde tiene sentido acumular desplazamiento para ese parámetro.
+    ///
+    /// **Es el recorrido real que le queda a los Tracks capturados**, no el ancho
+    /// del parámetro: cuánto puede subir todavía el Track que más margen tiene
+    /// hacia arriba, y cuánto bajar el que más tiene hacia abajo.
+    ///
+    /// > **Por qué el ancho del parámetro no basta, aunque lo pareciera.** El
+    /// > tope existe para que un clic de vuelta desde la saturación mueva algo
+    /// > (FR5): sin él, cuarenta clics contra el límite exigen cuarenta de
+    /// > vuelta, y un knob que deja de responder se lee como una avería — el
+    /// > mismo síntoma que un encoder mal configurado (nota del 2026-08-28).
+    /// > Acotar a ±ancho **no lo consigue**, y el caso que lo rompe es corriente:
+    /// > con Pulses 1…12 y el ancho en 15, cuarenta clics abajo dejan el
+    /// > desplazamiento en −15 y los doce Tracks en 1; un clic arriba lo deja en
+    /// > −14, y el Track de base 12 sigue dando −2. Hacen falta cuatro clics para
+    /// > que algo se mueva. Con el recorrido real el tope habría sido −11, y el
+    /// > primer clic mueve. Se descubrió con el test del sentido descendente, que
+    /// > falló mientras el ascendente pasaba: la asimetría es del reparto de las
+    /// > bases, no del signo.
+    ///
+    /// Un parámetro que envuelve —Rotate— no tiene extremos contra los que
+    /// saturar, así que crece libre. Y un parámetro aún sin capturar tampoco
+    /// acota: la base llega con el primer giro, y hasta entonces no hay Tracks
+    /// contra los que medir.
+    private func headroom(for parameter: TrackParameter) -> ClosedRange<Int> {
+        guard let range = parameter.displacementRange, let bases = bases[parameter],
+            !bases.isEmpty
+        else { return Int.min...Int.max }
+
+        let values = bases.values
+        let up = values.map { range.upperBound - $0 }.max() ?? 0
+        let down = values.map { range.lowerBound - $0 }.min() ?? 0
+        return down...up
     }
 
     /// El Pattern con ese parámetro desplazado `delta` posiciones más, guardando
