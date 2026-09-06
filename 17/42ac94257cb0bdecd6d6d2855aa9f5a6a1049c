@@ -1,0 +1,36 @@
+Task: Las vias tactiles que escriben callan (Fase 4, ctrl-all_20260905)
+
+QUE SE HIZO
+FR11, con 8 tests escritos primero (Red: 5 tests fallando).
+
+FICHEROS
+- Packages/MIDI/Sources/MIDI/ControlInput.swift: isTouchFrozen y un guard en las
+  cinco vias.
+- Packages/MIDI/Tests/MIDITests/CtrlAllTouchPathTests.swift (nuevo).
+
+POR QUE ES DE CTRL ALL Y NO DE LOS MODIFICADORES EN GENERAL
+La asimetria con Temp esta escrita en isTouchFrozen porque es lo primero que
+alguien querria "arreglar". Los dos gestos prometen no escribir en el Pattern,
+pero la promesa de Temp esta acotada a un Track y a los parametros que la mano
+toca, y convive con la pantalla desde temp-parameters_20260904. La de Ctrl All
+alcanza a los doce, y hay dos escrituras que su snapshot no puede deshacer:
+  - setFrame reencuadra el pool del Track, y el pool no esta en el snapshot.
+  - setActiveCycleCount activa Cycles que no tienen base guardada; se quedarian
+    con el desplazamiento puesto para siempre.
+Hay un test para el segundo caso completo —girar, subir Cycles, soltar— que
+comprueba que el Pattern vuelve entero.
+
+isTouchFrozen se lee de holdingCtrlAllModifier y no de isTakenOver a proposito:
+son dos preguntas distintas y confundirlas congelaria la pantalla durante Temp,
+que es un cambio que nadie pidio. testTempDoesNotFreezeTheTouchPath lo fija.
+
+UN NO-OP LEIDO COMO UN BLOQUEO
+testAllFiveWorkAgainAfterReleasing fallaba en setChannel(Channel(4), forTrack: 3).
+Cada Track arranca en el canal de su numero, asi que pedirle al Track 4 el canal
+4 devuelve false por no cambiar nada. El test leia "sigue bloqueado" donde decia
+"ya estaba ahi". Se cambio a canal 11 y queda anotado.
+
+TESTS
+  swift test --package-path Packages/MIDI -> 591 tests, 7 fallos, todos
+  VirtualLoopback (flake midi-test-flake_20260826).
+swift format limpio.
