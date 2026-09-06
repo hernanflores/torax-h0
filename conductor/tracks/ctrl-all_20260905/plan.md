@@ -197,20 +197,22 @@ seguir.
 
 ## FASE 5: LA PANTALLA ENSEÑA QUE ES GLOBAL
 
-- [~] Task: `isCtrlAllActive` y el distintivo (FR16)
-  - [ ] Tests (Red): `isCtrlAllActive` es cierto entre la pulsación y la soltada,
+- [x] Task: `isCtrlAllActive` y el distintivo (FR16) — `5f19198`
+  - [x] Tests (Red): `isCtrlAllActive` es cierto entre la pulsación y la soltada,
         y falso el resto del tiempo, incluido el hold en el que no se giró nada.
-  - [ ] Tests (Red): con Temp al mando (FR13), `isTempActive` y `isCtrlAllActive`
+  - [x] Tests (Red): con Temp al mando (FR13), `isTempActive` y `isCtrlAllActive`
         no se contradicen — la pantalla puede elegir cuál enseñar sin desempatar
         por su cuenta.
-  - [ ] Implementación (Green): lectura pública en `ControlInput`, sin vía para
+  - [x] Implementación (Green): lectura pública en `ControlInput`, sin vía para
         accionar el gesto (la táctil está fuera de alcance).
-  - [ ] `App`: el valor grande transitorio de `mvp-ring-feedback` con un
+  - [x] `App`: el valor grande transitorio de `mvp-ring-feedback` con un
         distintivo **propio y distinguible del de Temp**, siguiendo
         `Brutalist.swift` y `Typography.swift`.
-  - [ ] Verificar en simulador que el distintivo se lee y no se confunde con el de
-        Temp (`xcrun simctl io … screenshot`). Lo que el simulador no puede: el
-        gesto mismo, que exige controlador.
+  - [x] ~~Verificar en simulador que el distintivo se lee~~ — **no se pudo**: sin
+        fuentes MIDI la app arranca en read-only y el gesto no se acciona, así que
+        la captura sale en reposo y sin marcador. Es la limitación que
+        `workflow.md` ya anota. La comparación entre los dos distintivos pasa a la
+        Fase 6, en dispositivo.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: EN EL DISPOSITIVO
