@@ -170,7 +170,7 @@ animaciones derivan del reloj musical.
 - [x] Task: Estado sin hardware en `midi` (FR29) `2bd1202`
     - [x] Lista de entrada vacía, salida en gris, estructura intacta
 
-- [ ] Task: Auditar que no se escapó lógica a las vistas
+- [x] Task: Auditar que no se escapó lógica a las vistas `9b6d058`
 
 - [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `midi.png`
 
