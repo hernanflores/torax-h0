@@ -1,0 +1,41 @@
+Task: Auditar que no se escapó lógica a las vistas (Fase 1)
+
+Track: screens-redesign_20260906
+
+Qué buscaba
+Reglas que no son dibujo dentro de las vistas escritas en esta fase. Es la
+contrapartida de que 'App no se mide': si algo ahí mereciera un test, está en
+el sitio equivocado.
+
+Qué encontró
+Una, y era mía: el formato del tempo. Lo escribí dos veces en AppChrome y ya
+existía una tercera copia en ChannelMapView. Las tres llevaban el mismo
+String(format:locale:) y el mismo comentario defendiéndose del separador
+decimal del locale español.
+
+Qué se hizo
+- Tests primero, en rojo confirmado: 'value of type Tempo has no member
+  displayDescription' en cinco sitios.
+- Tempo.displayDescription en Engine, donde ya vive Tempo y ya vive
+  displayBeatsPerMinute con la misma clase de razón documentada.
+- Las tres copias sustituidas. TransportModel expone tempoDescription para que
+  la vista no tenga que saber ni decimales ni locale.
+
+Qué NO se movió, y por qué
+- canTransport (model.canPlay || model.isPlaying): es una condición de dos
+  términos sobre estado que ya vive en el modelo. Moverla no añadiría cobertura,
+  porque TransportModel tampoco se mide.
+- La aritmética de reparto de columnas y reservedBelowStage: son medidas de
+  layout, que es precisamente lo que una vista sí debe saber.
+- Los literales 'BPM' de JitterMeasurementModel: son trazas de consola, no
+  interfaz, y ese modelo no tiene puerta en la UI.
+
+Verificación
+- Engine: 546 tests, 0 fallos. Eran 542 antes de esta tarea.
+- MIDI: 600 tests, 7 fallos, TODOS en VirtualLoopbackTests con la firma
+  clientCreationFailed(-50). Es el flake conocido y aplazado a después de la v2.
+  Atribución concluyente: 'git diff main -- Packages/' muestra que este track no
+  ha tocado una sola línea de Packages/MIDI, y el error es de creación de
+  cliente CoreMIDI, no de código. Reproducido en dos pasadas seguidas con
+  idéntico recuento.
+- xcodebuild Debug para iOS: BUILD SUCCEEDED.
