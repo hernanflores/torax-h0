@@ -127,6 +127,24 @@ La frontera es firme:
 >
 > Track `mute-solo_20260902`.
 
+> **Excepción del 2026-09-05: Ctrl All congela la configuración táctil mientras
+> dura.** Con el step button 14 mantenido, Scale, Root, el canal, la selección de
+> Track y el número de Cycles activos dejan de responder al dedo. Vuelven solos al
+> soltar.
+>
+> **No es una frontera nueva sino su consecuencia.** Ctrl All promete que soltar
+> devuelve exactamente lo que había, y esa promesa solo es cierta si nada más pudo
+> escribir mientras tanto: un cambio de Scale reencuadra el pool, y el pool no
+> está en lo que el gesto guarda para devolver. Congelar es lo que hace la promesa
+> verdadera; dejarlo abierto la convertiría en una casi-promesa, que es peor que
+> ninguna.
+>
+> **Temp no lo hace**, y la asimetría es deliberada: su promesa está acotada a un
+> Track y a los parámetros que la mano toca, y convive con la pantalla desde
+> `temp-parameters_20260904`.
+>
+> Track `ctrl-all_20260905`.
+
 **Sin controlador conectado la app es de solo lectura y transporte:** se reproduce y se ve el estado, no se editan parámetros generativos. La configuración táctil sigue disponible — no es un parámetro generativo.
 
 Consecuencia para el desarrollo: probar el motor sin hardware exige un **controlador virtual de desarrollo** que inyecte eventos MIDI relativos. Es una herramienta de test, excluida del build de producción; no es un modo de edición táctil por la puerta de atrás.
