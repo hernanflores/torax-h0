@@ -148,6 +148,20 @@ struct ContentView: View {
     /// ninguna vía táctil, ni siquiera sin controlador conectado — un slider
     /// provisional para suplir un knob ausente es el antipatrón que
     /// `product-guidelines.md` nombra.
+    ///
+    /// **Y sin hardware esta pantalla no cambia** (FR29). No hay una sola rama
+    /// aquí que dependa de que haya controlador o destino: los anillos, los doce
+    /// playheads, la lectura grande, los tres cards y la franja se dibujan igual
+    /// con el cable puesto y sin él, porque **son estado y no edición**.
+    ///
+    /// Lo que sí cambia está donde tiene que estar: el punto y el texto de la
+    /// barra, y los dos selectores de la pantalla `midi`. Auditado el 2026-09-06
+    /// buscando `isReadOnly`, `canPlay`, `hasEndpoint` y `outputUnavailable` en
+    /// todo `App`: ninguno aparece en las vistas de esta pantalla.
+    ///
+    /// > **La consecuencia práctica es que las capturas de este track valen.**
+    /// > El simulador no tiene MIDI ninguno, así que todo lo que se ha verificado
+    /// > en él es exactamente el estado sin hardware — y se ve completo.
     private func trackScreen(width: CGFloat, height: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 24) {
             stage(width: width, height: height)
