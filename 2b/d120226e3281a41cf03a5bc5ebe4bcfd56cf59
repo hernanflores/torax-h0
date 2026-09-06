@@ -1,0 +1,43 @@
+Tasks: clock source, midi input/output, midiChannelRow, retirada de
+ChannelMapView y estado sin hardware (Fase 4, FR21–FR24, FR29, FR32)
+
+Track: screens-redesign_20260906
+
+Qué se hizo
+App/MidiScreen.swift: MidiScreen, ClockSourceCard, MidiInputCard,
+MidiOutputCard, EndpointRow, TrackChannels y Card.
+App/ChannelMapView.swift borrado; ContentView pierde sourceBinding y
+destinationBinding, que quedaron sin uso.
+
+Sin cambios en Engine ni en MIDI
+Esta fase no necesitó bajar nada: todo lo que dibuja ya existía con tests
+—clockStatus, tempoDescription, channels, las dos MIDIEndpointSelection— y la
+pantalla solo compone. Es lo que debería pasar cuando el trabajo anterior dejó
+la lógica donde toca.
+
+Dos decisiones de sistema, con su razón
+1. Segmentado propio en vez del de UIKit: cápsula, degradado y animación
+   deslizante son tres cosas que FR2 deja fuera.
+2. Selector de canal desplegado en línea y no en un Menu, por lo mismo que el
+   tempo dejó de ser un popover en la Fase 1: el chrome del sistema no pertenece
+   a este lenguaje visual.
+
+El borde discontinuo, usado con criterio
+Lo lleva la salida indisponible —existe como función y CoreMIDI no la dejó
+crear— y no lo lleva una lista de entrada vacía, donde no hay ningún dispositivo
+que prometer. Es la distinción entre 'no se puede usar todavía' y 'no hay'.
+
+FR29 en esta pantalla
+Aquí sí hay ramas por hardware, y es donde deben estar: los dos cards enseñan
+lo que hay y lo dicen con estado, nunca con disculpa. La captura del simulador,
+que no tiene MIDI ninguno, es el estado sin hardware: 'no midi input' y 'no midi
+device', con la estructura intacta.
+
+Verificación
+- Engine 578/0. xcodebuild iOS y simulador: BUILD SUCCEEDED.
+- Captura en iPad Pro 11-inch (M5): las doce filas, el segmentado y los tres
+  cards en su sitio; '12 tracks routed' al pie.
+
+Ajuste hecho desde la captura
+Las filas bajan de 44 a 40 puntos. A 44 la columna llegaba justo al borde y
+desplegar el selector de canal habría empujado el pie fuera de la pantalla.
