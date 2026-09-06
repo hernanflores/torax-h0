@@ -198,118 +198,8 @@ struct ContentView: View {
         ScaleScreen(model: model)
     }
 
-    /// La pantalla `3 · MIDI`: por dónde sale cada Track.
-    ///
-    /// **El canal vivía en la pantalla Track y no le correspondía.** Es ruteo,
-    /// no material generativo: qué instrumento suena, no qué toca. Aquí se ven
-    /// los doce a la vez, que es lo que permite detectar dos Tracks compartiendo
-    /// canal sin ir seleccionándolos uno a uno.
-    ///
-    /// **Falta MIDI Learn**, que es la rebanada 8 de la v1 y entra en esta misma
-    /// pantalla. El estado de los endpoints se queda arriba, en la barra: es
-    /// estado que se mira de reojo mientras se toca, no configuración que se
-    /// visita.
     private var midiScreen: some View {
-        // Mismo motivo que en la barra: el tempo y el estado del maestro los
-        // escribe el hilo de recepción, así que hay que repreguntar.
-        TimelineView(.periodic(from: .now, by: 0.25)) { _ in
-            VStack(alignment: .leading, spacing: 20) {
-                endpoints
-                channelMap
-            }
-        }
-    }
-
-    /// La elección de dispositivo, provisional y en su sitio definitivo.
-    ///
-    /// **Baja aquí desde la barra en la misma tarea que la vacía** (FR6), y no
-    /// una fase más tarde. Al retirar el estado MIDI del chrome, estos dos
-    /// selectores se quedaban sin ningún sitio hasta la Fase 4: con un solo
-    /// dispositivo por lado no se nota —`MIDIEndpointSelection.refreshed` cae al
-    /// primero disponible, para que la app funcione sin pasar por un selector—
-    /// pero con dos sintetizadores enchufados no habría forma de cambiar de uno
-    /// a otro durante cuatro fases. Eso es una regresión, no una fase
-    /// intermedia.
-    ///
-    /// La Fase 4 los sustituye por los cards `midi input` y `midi output` del
-    /// handoff. Lo que aquí hay es la función, sin su forma.
-    private var endpoints: some View {
-        HStack(spacing: 24) {
-            endpointPicker(
-                label: "midi output",
-                status: model.outputUnavailable ?? model.destinationStatus,
-                isConnected: model.selection.hasEndpoint,
-                choices: model.selection.available,
-                selection: destinationBinding
-            )
-            endpointPicker(
-                label: "midi input",
-                status: model.sourceStatus,
-                isConnected: !model.isReadOnly,
-                choices: model.sourceSelection.available,
-                selection: sourceBinding
-            )
-        }
-    }
-
-    private func endpointPicker(
-        label: String,
-        status: String,
-        isConnected: Bool,
-        choices: [MIDIEndpointInfo],
-        selection: Binding<MIDIEndpointRef>
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(display: label)
-                .font(Typography.caption)
-                .foregroundStyle(Palette.muted)
-
-            HStack(spacing: 8) {
-                Text(display: status)
-                    .font(Typography.bodyMedium)
-                    .foregroundStyle(isConnected ? Palette.text : Palette.muted)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-
-                // **Solo si hay más de uno.** Con un único dispositivo, un menú
-                // de un elemento sería una decisión que no existe.
-                if choices.count > 1 {
-                    Menu {
-                        Picker("", selection: selection) {
-                            ForEach(choices, id: \.endpoint) { choice in
-                                Text(display: choice.displayName).tag(choice.endpoint)
-                            }
-                        }
-                    } label: {
-                        Image(systemName: "chevron.down")
-                            .font(Typography.caption)
-                            .foregroundStyle(Palette.mutedBright)
-                            .frame(width: 28, height: 28)
-                    }
-                    .fixedSize()
-                }
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .brutalistPanel()
-    }
-
-    private var channelMap: some View {
-        ChannelMapView(
-            clock: ChannelMapView.Clock(
-                revision: model.clockRevision,
-                isExternal: model.followsExternalClock,
-                beatsPerMinute: model.beatsPerMinute,
-                status: model.clockStatus
-            ),
-            onClockSourceChange: { model.setFollowsExternalClock($0) },
-            onTempoChange: { model.setTempo($0) },
-            channels: model.channels,
-            selected: model.selectedTrackIndex,
-            accent: Palette.accent(for: family),
-            onChannelChange: { model.setChannel($1, forTrack: $0) }
-        )
+        MidiScreen(model: model)
     }
 
     // MARK: - La composición apaisada
@@ -596,32 +486,6 @@ struct ContentView: View {
             .padding(.horizontal, 24)
             .transition(.opacity)
             .animation(.easeOut(duration: 0.18), value: change)
-    }
-
-    private var sourceBinding: Binding<MIDIEndpointRef> {
-        Binding(
-            get: { model.sourceSelection.selected?.endpoint ?? 0 },
-            set: { endpoint in
-                guard
-                    let chosen = model.sourceSelection.available.first(where: {
-                        $0.endpoint == endpoint
-                    })
-                else { return }
-                model.selectSource(chosen)
-            }
-        )
-    }
-
-    private var destinationBinding: Binding<MIDIEndpointRef> {
-        Binding(
-            get: { model.selection.selected?.endpoint ?? 0 },
-            set: { endpoint in
-                guard
-                    let chosen = model.selection.available.first(where: { $0.endpoint == endpoint })
-                else { return }
-                model.select(chosen)
-            }
-        )
     }
 
     /// Los valores de Shape y de Groove, en solo lectura.
