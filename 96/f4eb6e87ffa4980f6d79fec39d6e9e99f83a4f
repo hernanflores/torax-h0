@@ -1,0 +1,38 @@
+Task: parameterFamilyCard — shape, groove y tonal (Fase 2, FR12)
+
+Track: screens-redesign_20260906
+
+Engine, con tests en rojo primero
+- TrackParameter.value(in:) — 4 tests. Uno fija que el card y el anuncio de un
+  giro dicen la misma cadena; si se separan es un fallo, no una variación.
+- Scale.name + CustomStringConvertible — 3 tests.
+- ParameterChange: los nueve cuerpos del if-chain colapsan en uno, porque eran
+  idénticos desde que value(in:) existe. La cadena se queda: decide a cuál se le
+  da voz y ese orden está documentado.
+Engine: 561 tests, 0 fallos (eran 554).
+
+Vistas
+- ParameterFamilyCard y TonalCard en App/TrackReadout.swift.
+- ContentView.entries(for:) toma la lista y el orden de TrackParameter, que es
+  el del dominio y no el de los knobs: el preset los reordenó el 2026-09-05 y la
+  pantalla no siguió, a propósito.
+- TonalView pierde su copia de los nombres de escala aunque desaparezca en la
+  Fase 3.
+
+Defectos encontrados en captura, ninguno visible leyendo el código
+1. La columna de lectura desbordaba su marco. Estaba atada a la altura del lado
+   del anillo y los cards la hacen más alta que ese cuadrado, así que se
+   dibujaban encima de la navegación y por debajo de la franja de Tracks.
+   Ahora tiene altura natural.
+2. Una celda del pool con anchura repartida y un pool de un solo pitch dibujaba
+   una celda del ancho del card: parecía un campo de texto vacío.
+3. Con todo dentro, la fila M/S quedaba cortada por el borde inferior. La
+   lectura grande baja de 44 a 38 y los cards aprietan padding y espaciado.
+
+Verificación
+- Engine 561/0. xcodebuild iOS y simulador: BUILD SUCCEEDED.
+- Captura en iPad Pro 11-inch (M5): la pantalla entera cabe sin scroll.
+
+Lo que queda para la tarea siguiente, visible en la captura
+Las pastillas de Track siguen en 1-12 en vez de 01-12 y la M y la S en
+mayúscula. Es trackPill, la tarea 12.
