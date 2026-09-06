@@ -209,7 +209,11 @@ struct AppChrome: View {
                         .font(Typography.captionStrong)
                         .monospacedDigit()
                         .foregroundStyle(tempoTint)
-                        .frame(minWidth: 68)
+                        .frame(minWidth: 68, minHeight: 32)
+                        // Mismo motivo que en los escalones: sin esto solo son
+                        // tocables las cifras, y el hueco entre ellas y el borde
+                        // del hueco reservado no responde.
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .disabled(model.followsExternalClock)
@@ -246,6 +250,17 @@ struct AppChrome: View {
                 .font(.system(size: 13))
                 .foregroundStyle(Palette.text)
                 .frame(width: 36, height: 32)
+                // **Sin esto solo se puede tocar la tinta**, y `minus` es una
+                // línea de un punto de grueso contra la cruz de `plus`: el mismo
+                // botón, con la mitad del área útil, fallaba la mitad de las
+                // veces. Se vio probándolo — el `−` respondía mal y el `+` bien,
+                // que es exactamente la forma que tiene este fallo.
+                //
+                // El relleno y el trazo los pone `brutalistControl` por fuera del
+                // `Button`, así que no cuentan como superficie tocable por más
+                // que se vean como un botón. Este es el sitio donde se declara
+                // que sí lo son.
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .brutalistControl(
@@ -276,6 +291,11 @@ struct AppChrome: View {
                 .font(.system(size: 18))
                 .foregroundStyle(transportGlyph)
                 .frame(width: 72, height: 40)
+                // El mismo defecto que en los escalones del tempo, y aquí importa
+                // más: es el control que se toca de pie y sin mirar. El triángulo
+                // ocupa una fracción de sus 72×40, y sin esto el resto del botón
+                // no responde aunque se vea como botón.
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(!canTransport)
