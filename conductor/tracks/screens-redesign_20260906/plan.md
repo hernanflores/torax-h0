@@ -112,7 +112,7 @@ animaciones derivan del reloj musical.
     - [x] Anillos, playheads y cards siguen visibles sin controlador ni destino
     - [x] Ninguna vía táctil suple un knob ausente
 
-- [ ] Task: Auditar que no se escapó lógica a las vistas
+- [x] Task: Auditar que no se escapó lógica a las vistas `fd7f565`
 
 - [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `track.png`
 
