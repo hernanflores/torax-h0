@@ -1,0 +1,62 @@
+Verificación de la Fase 1 — Desviaciones, tokens y chrome compartido
+
+Track: screens-redesign_20260906
+Commit de cierre: b45c965
+
+Tests automáticos
+- swift test --package-path Packages/Engine
+  546 tests, 0 fallos. Eran 542 antes de la fase; los 4 nuevos cubren
+  Tempo.displayDescription.
+- swift test --package-path Packages/MIDI
+  600 tests, 7 fallos, todos en VirtualLoopbackTests con la firma
+  clientCreationFailed(-50). Flake conocido, aplazado a después de la v2.
+  Atribución concluyente: git diff main -- Packages/ no muestra una sola línea
+  cambiada en Packages/MIDI. Reproducido en dos pasadas con recuento idéntico.
+- xcodebuild Debug y Release para iOS: BUILD SUCCEEDED en ambas.
+- xcodebuild Debug para simulador: BUILD SUCCEEDED.
+
+Cobertura
+Trece ficheros tocados. Doce en App/, que workflow.md declara no medible. El
+único fuera, Engine/MusicalTime.swift, llegó con sus tests escritos en rojo
+antes de implementar.
+
+Verificación manual, en iPad Pro 11-inch (M5) con iOS 26.3
+Confirmada por el usuario punto por punto:
+1. Solo landscape, sin colisión con la barra de estado. OK
+2. Barra completa y en minúsculas. OK
+3. Ajuste de tempo. FALLÓ dos veces, corregido las dos.
+4. Las cuatro entradas, subrayado de 3 pt, ninguna discontinua. OK
+5. El playhead sobrevive al cambio de módulo. OK
+6. 'no midi device' visible desde cualquier pantalla. OK
+7. Separación cromática. OK
+
+Defectos encontrados en verificación y corregidos
+Seis, y ninguno era visible leyendo el código:
+1. El título del módulo se dibujaba encima del estado MIDI (ZStack sobre HStack
+   de ancho completo). -> tres columnas repartiendo el sobrante.
+2. El subrayado del activo medía la columna en vez de la etiqueta.
+3. La hora del sistema pisaba 'torax h-0'. UIStatusBarHidden no oculta nada en
+   iPadOS 26 pero sí ponía el área segura a cero. Clave retirada.
+4. El popover del tempo se recortaba contra el borde derecho.
+5. El popover traía contenedor redondeado, sombra difuminada y flecha, que FR2
+   prohíbe por su nombre. Sustituido por despliegue en línea.
+6. El '−' del tempo respondía mal y el '+' bien: con buttonStyle(.plain) el
+   golpe se prueba contra la tinta, y una línea ofrece mucha menos que una cruz.
+   contentShape en los escalones y en el transporte, que tenía el mismo defecto
+   latente.
+
+Los seis justifican que la verificación de fase sea una captura y una prueba en
+mano, y no un build verde.
+
+Sobre la orientación, que cierra la duda abierta en la tarea 3
+La escena mide 2420x1668 -> proporción 1,45, la de un iPad Pro 11 en landscape.
+El bloqueo funciona. Sigue sin poder comprobarse aquí el comportamiento de
+ventana redimensionable de iPadOS 26 en dispositivo real.
+
+Comprobación de tokens
+Fondo muestreado en la captura: #111211, exactamente el token.
+
+Lo que esta fase deja para la siguiente, y es esperado
+La pantalla track sigue siendo la vieja dentro del chrome nuevo: cadenas
+capitalizadas ('Pulses 5', 'Cycles · Track 1', 'M'/'S'), Tracks numerados 1-12
+en vez de 01-12, y la columna de lectura casi vacía a la espera de los cards.
