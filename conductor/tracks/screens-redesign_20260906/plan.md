@@ -108,9 +108,9 @@ animaciones derivan del reloj musical.
     - [x] Táctil: seleccionar track, mute, solo
     - [x] **Auditar la pantalla entera:** ningún gesto altera un parámetro generativo
 
-- [ ] Task: Estado sin hardware en `track` (FR29)
-    - [ ] Anillos, playheads y cards siguen visibles sin controlador ni destino
-    - [ ] Ninguna vía táctil suple un knob ausente
+- [x] Task: Estado sin hardware en `track` (FR29) `dc46ea4`
+    - [x] Anillos, playheads y cards siguen visibles sin controlador ni destino
+    - [x] Ninguna vía táctil suple un knob ausente
 
 - [ ] Task: Auditar que no se escapó lógica a las vistas
 
