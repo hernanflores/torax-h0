@@ -231,8 +231,8 @@ lo que separa esta pantalla de una maqueta que miente.
     - [x] Recorrerlos uno a uno contra la app corriendo
     - [x] Registrar cualquiera que no se cumpla como tarea, no como nota al pie
 
-- [ ] Task: Abrir el Pull Request
-    - [ ] Rama propia contra `main`, sin push directo
-    - [ ] Descripción con las dos desviaciones documentadas y las dos limitaciones conocidas
+- [x] Task: Abrir el Pull Request — [#37](https://github.com/hernanflores/torax-h0/pull/37)
+    - [x] Rama propia contra `main`, sin push directo
+    - [x] Descripción con las dos desviaciones documentadas y las dos limitaciones conocidas
 
 - [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`)
