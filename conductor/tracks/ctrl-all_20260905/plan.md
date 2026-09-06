@@ -72,7 +72,7 @@ seguir.
 
 ## FASE 3: EL OFFSET COMO VALOR DE DOMINIO
 
-- [ ] Task: `CtrlAllOffset` — la base de los doce y el desplazamiento acumulado (FR2, FR3, FR7, FR18, NFR3)
+- [~] Task: `CtrlAllOffset` — la base de los doce y el desplazamiento acumulado (FR2, FR3, FR7, FR18, NFR3)
   - [ ] Tests (Red): capturar un parámetro guarda su base **por Track y por Cycle
         activo**; capturarlo dos veces no re-guarda la base; un parámetro no
         tocado no aparece en el snapshot.
