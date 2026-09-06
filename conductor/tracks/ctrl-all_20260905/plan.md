@@ -70,7 +70,7 @@ seguir.
         Fase 4 cierra esa ventana.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: EL OFFSET COMO VALOR DE DOMINIO
+## FASE 3: EL OFFSET COMO VALOR DE DOMINIO [checkpoint: cfeb5a6]
 
 - [x] Task: `CtrlAllOffset` — la base de los doce y el desplazamiento acumulado (FR2, FR3, FR7, FR18, NFR3) — `b165a2e`
   - [x] Tests (Red): capturar un parámetro guarda su base **por Track y por Cycle
@@ -137,7 +137,7 @@ seguir.
   - [x] Tests (Red): el Pattern completo antes y después de un hold es igual salvo
         los cursores (AC7) — comparación del valor entero, no campo a campo.
   - [x] Cobertura `Engine` ≥90%.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: EL GESTO EN EL CONTROLADOR
 
