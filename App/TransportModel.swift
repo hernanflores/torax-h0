@@ -174,30 +174,7 @@ final class TransportModel {
     /// 120 BPM está dentro del rango válido de `Tempo`, así que no puede fallar.
     private static let tempo = Tempo(beatsPerMinute: 120)!
 
-    /// Si el transporte está sonando.
-    ///
-    /// **Se pregunta al transporte, no se recuerda.**
-    ///
-    /// > **Era una variable guardada, y mentía.** Solo se actualizaba en `play()`
-    /// > y `stop()` —los dos botones de la app—, así que cuando el Start del
-    /// > controlador arrancaba el transporte, el modelo seguía creyendo que
-    /// > estaba parado. Consecuencia visible, y la que el usuario encontró el
-    /// > 2026-09-06: el botón de la pantalla seguía mostrando *play* con la
-    /// > secuencia sonando, y pulsarlo llamaba a `play()` otra vez en vez de
-    /// > parar. Parecía que el botón de la app tenía precedencia sobre el del
-    /// > BeatStep.
-    /// >
-    /// > **La precedencia nunca estuvo mal: `Transport.receive` da el mando al
-    /// > maestro desde el 2026-09-03.** Lo que estaba mal era que la app no se
-    /// > enteraba. Guardar una copia de un estado que otro hilo puede cambiar es
-    /// > prometer que nadie más lo va a tocar, y aquí el controlador lo toca.
-    ///
-    /// Leerlo es consultar `scheduler?.isRunning`; no hace falta guardarlo.
-    var isPlaying: Bool {
-        observingClock
-        return transport?.isPlaying ?? false
-    }
-
+    private(set) var isPlaying = false
     private(set) var selection = MIDIEndpointSelection(.destination)
 
     /// De dónde llegan los giros de knob.
@@ -397,11 +374,7 @@ final class TransportModel {
     /// reproducción vive en el hilo del scheduler y publicarlo sería trabajo en
     /// el camino de tiempo real para ahorrarle una división a la pantalla.
     var cycleInCourse: Int? {
-        // Sale del transporte, así que se suscribe como el resto: sin esto, el
-        // card de Cycle solo se enteraría de un arranque desde el controlador
-        // cuando algo lo invalidara por otro camino.
-        observingClock
-        return transport?.cyclesInCourse?[selectedTrackIndex].cycle
+        transport?.cyclesInCourse?[selectedTrackIndex].cycle
     }
 
     /// Cuántos Cycles recorre el Track seleccionado.
@@ -422,10 +395,7 @@ final class TransportModel {
 
     /// Los dieciséis anillos, dispuestos.
     var rings: RingStack { RingStack(pattern: pattern) }
-    var canPlay: Bool {
-        observingClock
-        return selection.hasEndpoint && transport != nil
-    }
+    var canPlay: Bool { selection.hasEndpoint && transport != nil }
 
     /// El tempo vigente, en la unidad que la barra muestra.
     ///
@@ -443,7 +413,6 @@ final class TransportModel {
     /// antipatrón que `product-guidelines.md` nombra y que el playhead ya evita.
     /// Leerlo es una lectura atómica.
     var beatsPerMinute: Double {
-        observingClock
         guard let transport else { return 120 }
         return transport.currentTempo.displayBeatsPerMinute
     }
@@ -458,17 +427,13 @@ final class TransportModel {
     }
 
     /// Si la app sigue a un maestro externo.
-    var followsExternalClock: Bool {
-        observingClock
-        return transport?.clockSource == .external
-    }
+    var followsExternalClock: Bool { transport?.clockSource == .external }
 
     /// Qué está pasando con el reloj externo, en una línea. `nil` con reloj
     /// interno, que no tiene nada que contar.
     ///
     /// En inglés y sin traducir, como el resto del vocabulario de interfaz.
     var clockStatus: String? {
-        observingClock
         guard let transport else { return nil }
 
         // **La tabla la decide `MIDI`, con tests.** Aquí solo se leen los tres
@@ -506,98 +471,13 @@ final class TransportModel {
         clockRevision &+= 1
     }
 
-    /// Cambia cada vez que el reloj o el transporte pueden haberse movido.
+    /// Cambia con cada gesto sobre el reloj.
     ///
-    /// **Existe para que SwiftUI repinte.** El tempo, quién manda el reloj y si
-    /// suena se calculan al preguntar —salen del `Transport`, que no es
-    /// observable— así que sin esto no hay nada que invalide la vista.
-    ///
-    /// > **Estaba y no lo leía nadie**, y eso lo dejó inútil el 2026-09-06. La
-    /// > única vista que lo consumía era `ChannelMapView`, que lo recibía dentro
-    /// > de un struct; al reescribirla, el contador siguió incrementándose y
-    /// > ninguna vista se enteraba. La app solo se refrescaba cuando un giro de
-    /// > knob tocaba una propiedad guardada por otro camino.
-    /// >
-    /// > **La lección: un contador de invalidación que las vistas tienen que
-    /// > acordarse de leer es un contador que alguien va a olvidar.** Por eso
-    /// > ahora lo leen las propias propiedades derivadas —`isPlaying`,
-    /// > `followsExternalClock`, `beatsPerMinute` y compañía— y no las vistas:
-    /// > usar el valor es suscribirse, sin que haya nada que recordar.
+    /// **Existe para que SwiftUI repinte.** El tempo y el estado se calculan al
+    /// preguntar, así que no hay estado observable que cambie al tocarlos y la
+    /// pantalla MIDI se quedaría con el valor viejo. Tocar esto es decirle a la
+    /// vista que vuelva a preguntar, sin guardar una copia que mantener al día.
     private(set) var clockRevision: UInt64 = 0
-
-    /// Léelo antes de devolver algo que salga del `Transport`.
-    ///
-    /// Devuelve `Void` a propósito: no se usa su valor, se usa el efecto de
-    /// haberlo leído dentro del seguimiento de `@Observable`.
-    private var observingClock: Void { _ = clockRevision }
-
-    /// Vuelve a mirar el `Transport` por si el hardware lo movió.
-    ///
-    /// **Es la única vía para lo que no origina la app.** Un Start del BeatStep
-    /// entra por el hilo de recepción de CoreMIDI, que no puede publicar nada
-    /// observable —saltar al principal metería su cola en la estimación de
-    /// tempo—, así que la pantalla no tiene forma de enterarse salvo volviendo a
-    /// preguntar.
-    ///
-    /// **No contradice la regla del playhead.** Lo que `product-guidelines.md`
-    /// llama antipatrón es animar con un temporizador algo que debería derivar
-    /// del reloj musical; esto no anima nada: relee un puñado de valores.
-    ///
-    /// **Solo avisa si algo cambió de verdad.** Sin esta comparación, invalidaría
-    /// la pantalla entera cuatro veces por segundo con el transporte parado y
-    /// nada que enseñar: trabajo constante en el hilo principal, que es el mismo
-    /// hilo al que la entrada de control salta para publicar un giro.
-    func refresh() {
-        let current = Snapshot(
-            isPlaying: transport?.isPlaying ?? false,
-            isExternal: transport?.clockSource == .external,
-            beatsPerMinute: transport?.currentTempo.displayBeatsPerMinute ?? 0,
-            cycleInCourse: transport?.cyclesInCourse?[selectedTrackIndex].cycle
-        )
-        guard current != observed else { return }
-        observed = current
-        clockRevision &+= 1
-    }
-
-    /// Lo último que se vio del transporte.
-    ///
-    /// Son los cuatro valores que la pantalla saca de él; si los cuatro siguen
-    /// igual, no hay nada que repintar.
-    private struct Snapshot: Equatable {
-        let isPlaying: Bool
-        let isExternal: Bool
-        let beatsPerMinute: Double
-        let cycleInCourse: Int?
-    }
-
-    private var observed: Snapshot?
-
-    /// El temporizador que mira si el hardware movió el transporte.
-    ///
-    /// **Vive en el modelo y no en una vista.** Estuvo un rato como un `.task`
-    /// del chrome y fue un error con consecuencia grave: el `task` causaba la
-    /// invalidación que recreaba la vista de la que colgaba, así que se
-    /// multiplicaban, saturaban el hilo principal y la app dejó de atender al
-    /// MIDI entrante. Un reloj que invalida una vista no puede depender del ciclo
-    /// de vida de esa vista.
-    ///
-    /// Uno solo, y dura lo que dura el modelo.
-    private var poll: Task<Void, Never>?
-
-    private func startPolling() {
-        poll = Task { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(250))
-                self?.refresh()
-            }
-        }
-    }
-
-    // **Sin `deinit` que lo cancele**, y no por descuido: `deinit` no está
-    // aislado al actor principal y `poll` sí, así que no se puede tocar desde
-    // ahí. No hace falta: la tarea captura `self` de forma débil, y cuando el
-    // modelo muere su siguiente vuelta encuentra `nil` y no hace nada. Este
-    // modelo vive lo que vive la app, así que ni siquiera llega a ocurrir.
 
     init() {
         // La entrada de control se construye primero y publica por el relevo:
@@ -644,7 +524,6 @@ final class TransportModel {
         }
 
         connectControlInput()
-        startPolling()
     }
 
     /// Cablea la entrada de control: los giros publican por el transporte, que
@@ -751,12 +630,12 @@ final class TransportModel {
     func play() {
         guard canPlay else { return }
         transport?.play()
-        refresh()
+        isPlaying = transport?.isPlaying ?? false
     }
 
     func stop() {
         transport?.stop()
-        refresh()
+        isPlaying = false
     }
 
     private func destinationsChanged(to selection: MIDIEndpointSelection) {

@@ -63,20 +63,6 @@ struct AppChrome: View {
         // > pisándose. Centrar contra la pantalla y no contra los vecinos sigue
         // > siendo lo correcto —si no, el título bailaría al enchufar un cable—
         // > pero se consigue repartiendo el espacio, no superponiendo.
-        // **El sondeo del hardware no vive aquí.** Lo tuvo puesto un rato, como
-        // un `.task` colgado de esta vista, y fue un error con una forma
-        // reconocible: el `task` provocaba la invalidación que recreaba la vista
-        // de la que colgaba, así que cada latido podía dejar otro `task` vivo.
-        // Se multiplicaban, saturaban el hilo principal y la app dejó de atender
-        // al MIDI entrante.
-        //
-        // Ahora lo hace el propio `TransportModel`, con un solo temporizador que
-        // vive lo que vive el modelo. Una vista no es sitio para un reloj que la
-        // invalida a ella misma.
-        bar
-    }
-
-    private var bar: some View {
         HStack(spacing: 20) {
             HStack {
                 Text(display: "torax h-0")
@@ -206,15 +192,13 @@ struct AppChrome: View {
     /// > con el transporte en la fila que se lee de reojo mientras se toca.
     @ViewBuilder
     private var tempo: some View {
-        // El `TimelineView` que hacía falta aquí envuelve ahora la barra entera:
-        // el transporte necesitaba lo mismo y tenerlo dos veces sería repintar
-        // en dos ritmos distintos.
-        HStack(spacing: 8) {
-            if isAdjustingTempo {
-                tempoStep(-1, symbol: "minus")
-            }
+        TimelineView(.periodic(from: .now, by: 0.25)) { _ in
+            HStack(spacing: 8) {
+                if isAdjustingTempo {
+                    tempoStep(-1, symbol: "minus")
+                }
 
-            Button {
+                Button {
                     // **Con reloj externo no despliega nada.** El tempo lo pone
                     // el maestro; ofrecer un ajuste que el siguiente tick va a
                     // pisar sería un control que miente.
@@ -234,8 +218,9 @@ struct AppChrome: View {
                 .buttonStyle(.plain)
                 .disabled(model.followsExternalClock)
 
-            if isAdjustingTempo {
-                tempoStep(1, symbol: "plus")
+                if isAdjustingTempo {
+                    tempoStep(1, symbol: "plus")
+                }
             }
         }
     }
