@@ -149,26 +149,26 @@ animaciones derivan del reloj musical.
 
 ## Fase 4 — Pantalla `midi`
 
-- [ ] Task: Card `clock source` (FR21)
-    - [ ] Segmentado `internal` / `external` reflejando la fuente real
-    - [ ] Lectura `internal clock · 124 bpm`; el ajuste de tempo está en la barra, **no se duplica aquí**
+- [x] Task: Card `clock source` (FR21) `2bd1202`
+    - [x] Segmentado `internal` / `external` reflejando la fuente real
+    - [x] Lectura `internal clock · 124 bpm`; el ajuste de tempo está en la barra, **no se duplica aquí**
 
-- [ ] Task: Cards `midi input` y `midi output` (FR22, FR23)
-    - [ ] Entrada: dispositivos disponibles con su estado; lo conectado marcado `connected`
-    - [ ] Lo que existe y no se puede usar: **borde discontinuo y `unavailable`**
-    - [ ] Salida: selección del destino externo y la nota `channel routing active`
-    - [ ] Comprobar que el `no midi device` de la barra y este card no se contradicen
+- [x] Task: Cards `midi input` y `midi output` (FR22, FR23) `2bd1202`
+    - [x] Entrada: dispositivos disponibles con su estado; lo conectado marcado `connected`
+    - [x] Lo que existe y no se puede usar: **borde discontinuo y `unavailable`**
+    - [x] Salida: selección del destino externo y la nota `channel routing active`
+    - [x] Comprobar que el `no midi device` de la barra y este card no se contradicen
 
-- [ ] Task: `midiChannelRow` — el routing de doce tracks (FR24)
-    - [ ] Filas `track 01`–`track 12` con `ch 01`–`ch 12`
-    - [ ] Track seleccionado resaltado; recuento de tracks enrutados
+- [x] Task: `midiChannelRow` — el routing de doce tracks (FR24) `2bd1202`
+    - [x] Filas `track 01`–`track 12` con `ch 01`–`ch 12`
+    - [x] Track seleccionado resaltado; recuento de tracks enrutados
 
-- [ ] Task: Retirar `ChannelMapView` (FR32)
-    - [ ] Borrar el fichero y confirmar que no queda ninguna referencia
-    - [ ] Verificar que el ajuste de tempo no se pierde al borrarla: vive ahora en la barra
+- [x] Task: Retirar `ChannelMapView` (FR32) `2bd1202`
+    - [x] Borrar el fichero y confirmar que no queda ninguna referencia
+    - [x] Verificar que el ajuste de tempo no se pierde al borrarla: vive ahora en la barra
 
-- [ ] Task: Estado sin hardware en `midi` (FR29)
-    - [ ] Lista de entrada vacía, salida en gris, estructura intacta
+- [x] Task: Estado sin hardware en `midi` (FR29) `2bd1202`
+    - [x] Lista de entrada vacía, salida en gris, estructura intacta
 
 - [ ] Task: Auditar que no se escapó lógica a las vistas
 
