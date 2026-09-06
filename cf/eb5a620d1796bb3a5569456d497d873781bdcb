@@ -1,0 +1,38 @@
+Task: Restaurar el Pattern entero (Fase 3, ctrl-all_20260905)
+
+QUE SE HIZO
+CtrlAllRestoreTests: ocho tests de la vuelta atras.
+
+DESVIACION DEL TASK WORKFLOW §3, ANOTADA
+No hubo fase Red. restored(into:) ya existia desde la primera tarea de la fase
+—se implemento junto al tipo, porque es lo que da sentido a guardar la base— asi
+que los ocho tests pasaron nada mas escribirse.
+
+Un test que pasa a la primera no prueba nada por si solo, asi que en vez de darlo
+por bueno se comprobo con dos mutaciones:
+  - restaurar saltandose el Cycle 1  -> 10 casos caen
+  - restaurar saltandose el Track 0  -> 10 casos caen
+  - codigo restaurado               -> 8 de 8 pasan
+Los tests tienen dientes. Si en la fase siguiente alguien toca la restauracion,
+se enterara.
+
+QUE CUBREN
+- Cada Cycle de cada Track recupera SU valor (la razon de guardar por posicion).
+- Varios parametros tocados en el mismo hold vuelven todos.
+- Un parametro no girado conserva su valor distinto por Track y por Cycle antes,
+  durante y despues: el desplazamiento alcanza un parametro, no el Cycle.
+- Los cursores NO retroceden. Se mueven a proposito durante el hold —advanced() y
+  withEditing(2)— y la restauracion los respeta: restaurar el Pattern entero
+  rebobinaria la musica, que es por lo que el snapshot guarda parametros.
+- Con los cursores movidos los valores siguen volviendo: la base va por posicion,
+  no por "el Cycle que estaba sonando".
+- Los Cycles inactivos no se tocan ni al aplicar ni al restaurar.
+- AC7 entero, comparando el Pattern como valor y no campo a campo.
+- Reversible incluso tras saturar el tope (FR5b): 60 clics arriba y 60 abajo, y
+  soltar devuelve la base.
+
+TESTS Y COBERTURA
+  swift test --package-path Packages/Engine -> 534 tests, 0 fallos.
+  Engine total: 98,56% de lineas (umbral >=90%).
+  CtrlAllOffset.swift: 97,75% de lineas.
+swift format limpio.
