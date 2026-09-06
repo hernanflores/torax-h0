@@ -1,0 +1,41 @@
+Task: Con Ctrl All hundido, Ctrl All manda (Fase 4, ctrl-all_20260905)
+
+QUE SE HIZO
+El corte de entrada de FR10, con 7 tests escritos primero (Red confirmado: 8
+fallos en 4 tests — seleccion de Track, gestos de mezcla, knob del Cycle y el
+enganche del modificador de mute).
+
+FICHEROS
+- Packages/MIDI/Sources/MIDI/ControlInput.swift: dos guards en receive(_:) y la
+  extension del guard de los pads.
+- Packages/MIDI/Tests/MIDITests/CtrlAllTakesOverInputTests.swift (nuevo).
+
+EN UN SOLO SITIO, COMO EL DE TEMP
+El corte vive en receive(_:) y no repartido por las ramas de
+stepButton(_:value:): con cuatro ramas serian cuatro sitios donde olvidarlo.
+
+LA CONDICION ES "NO ESTA HUNDIDO EL OTRO", NO "QUIEN MANDA"
+Los dos guards son independientes y se preguntan por su propio modificador. La
+consecuencia buscada: con Temp hundido, el step 14 se ignora ENTERO —ni siquiera
+se registra como hundido— asi que soltar el 13 no deja un Ctrl All armado que
+nadie pidio. Lo mismo al reves. La convivencia fina entre los dos es FR13, la
+tarea siguiente; esto es la base sobre la que se apoya.
+
+El mismo razonamiento aplica al modificador de mute, y tiene test:
+testTheMixModifiersAreNotLatchedByTheIgnoredPresses hunde mute dentro del hold,
+suelta Ctrl All y comprueba que el step button siguiente SELECCIONA en vez de
+mutear. Sin el guard, mute habria quedado armado desde dentro.
+
+UN TEST QUE MEDIA UN EXTREMO CREYENDO MEDIR UN SILENCIO
+testTheParameterKnobsAreTheOnlyThingAlive fallaba en Probability. El Cycle de
+prueba lo tenia en 100 y Steps en 16, que son sus extremos: contra un extremo el
+giro no cambia nada y no publica, asi que el test leia "el knob esta silenciado"
+donde decia "este valor ya no puede subir". Es el mismo tropiezo que en la Fase 3
+y la misma solucion: el fixture usa los nueve parametros en el interior de su
+rango. Queda anotado en el helper.
+
+TESTS
+  swift test --package-path Packages/MIDI -> 576 tests, 7 fallos, todos
+  VirtualLoopback (flake midi-test-flake_20260826).
+  Los 49 tests de Temp siguen en verde: el corte compartido no lo rompio.
+swift format limpio.
