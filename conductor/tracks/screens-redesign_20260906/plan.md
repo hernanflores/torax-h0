@@ -58,10 +58,10 @@ haya que perseguirlas.
     - [x] Todo el texto en minúsculas
     - [x] La barra no crece: el estado cede primero ante un nombre largo de endpoint
 
-- [ ] Task: `moduleNavigation` — la navegación persistente (FR7, FR8)
-    - [ ] Cuatro entradas, subrayado off-white de 3 pt en la activa
-    - [ ] Retirar los prefijos numéricos y el borde discontinuo: las cuatro pantallas existen
-    - [ ] Verificar que cambiar de pantalla no reinicia el transporte ni el playhead
+- [x] Task: `moduleNavigation` — la navegación persistente (FR7, FR8) `b1129d7`
+    - [x] Cuatro entradas, subrayado off-white de 3 pt en la activa
+    - [x] Retirar los prefijos numéricos y el borde discontinuo: las cuatro pantallas existen
+    - [x] Verificar que cambiar de pantalla no reinicia el transporte ni el playhead
 
 - [ ] Task: Reducir `ContentView` a contenedor (FR31)
     - [ ] Sacar el panel de jitter de la interfaz; **conservar `JitterMeasurementModel`** y su acceso por argumento de lanzamiento
