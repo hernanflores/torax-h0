@@ -126,7 +126,7 @@ seguir.
   - [x] Documentar el porqué con el síntoma delante: sin tope, un knob queda
         muerto durante decenas de clics, que es lo que la nota del 2026-08-28
         enseñó a reconocer como avería.
-- [ ] Task: Restaurar el Pattern entero (FR8, FR9)
+- [~] Task: Restaurar el Pattern entero (FR8, FR9)
   - [ ] Tests (Red): restaurar devuelve **cada** Cycle de **cada** Track a su
         valor propio.
   - [ ] Tests (Red): un parámetro no girado conserva su valor distinto por Track

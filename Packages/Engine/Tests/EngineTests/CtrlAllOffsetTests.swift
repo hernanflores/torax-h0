@@ -597,3 +597,181 @@ final class CtrlAllOffsetLimitTests: XCTestCase {
         XCTAssertEqual(offset.restored(into: moved), source)
     }
 }
+
+/// Tests de la restauración: soltar devuelve el Pattern, y nada más.
+///
+/// **Es lo que más importa que no falle.** Ctrl All promete no escribir en el
+/// Pattern, y esta es la única pieza que cumple la promesa: si aquí se pierde
+/// algo, el gesto habrá destruido material que costó construir y no hay deshacer.
+final class CtrlAllRestoreTests: XCTestCase {
+
+    private func cycle(pulses: Int = 5, velocity: Int = 64, steps: Int = 16) -> Cycle {
+        Cycle(
+            shape: Shape(steps: Steps(steps)!, pulses: Pulses(pulses)!),
+            pool: PitchPool().inserting(Pitch(48)!),
+            groove: Groove(
+                velocity: Velocity(velocity)!,
+                sustain: Sustain(percent: 100)!,
+                probability: Probability(percent: 50)!,
+                timing: Timing(percent: 60)!,
+                delay: Delay(percent: 0)!
+            )
+        )
+    }
+
+    /// Un Pattern con los doce Tracks distintos y varios Cycles distintos dentro.
+    private func layered() -> Pattern {
+        var pattern = Pattern()
+        for index in 0..<Pattern.trackCount {
+            var track = Track(cycle(pulses: index + 1)).withActiveCount(3)
+            for cycleIndex in 0..<3 {
+                track = track.replacing(
+                    cycle(pulses: index + 1 + cycleIndex, velocity: 40 + cycleIndex * 10),
+                    at: cycleIndex)
+            }
+            pattern = pattern.replacing(track, at: index)
+        }
+        return pattern
+    }
+
+    // MARK: - Cada Cycle a su valor
+
+    /// **Cada Cycle de cada Track recupera el suyo**, que es la razón de guardar
+    /// la base por posición y no un valor único.
+    func testEveryCycleOfEveryTrackComesBackToItsOwnValue() {
+        var offset = CtrlAllOffset()
+        let source = layered()
+
+        let moved = offset.apply(2, to: .pulses, in: source)
+        XCTAssertNotEqual(moved, source, "el gesto no movió nada")
+
+        XCTAssertEqual(offset.restored(into: moved), source)
+    }
+
+    /// Y con varios parámetros tocados en el mismo hold, todos vuelven.
+    func testSeveralTouchedParametersAllComeBack() {
+        var offset = CtrlAllOffset()
+        let source = layered()
+
+        var moved = offset.apply(3, to: .pulses, in: source)
+        moved = offset.apply(-10, to: .velocity, in: moved)
+        moved = offset.apply(5, to: .probability, in: moved)
+
+        XCTAssertEqual(offset.restored(into: moved), source)
+    }
+
+    /// **Un parámetro no girado conserva su valor distinto por Track y por
+    /// Cycle**, antes, durante y después: el desplazamiento alcanza un parámetro,
+    /// no el Cycle entero.
+    func testAnUntouchedParameterKeepsItsPerCycleValueThroughout() {
+        var offset = CtrlAllOffset()
+        let source = layered()
+
+        let moved = offset.apply(2, to: .pulses, in: source)
+
+        for index in 0..<Pattern.trackCount {
+            for cycleIndex in 0..<3 {
+                XCTAssertEqual(
+                    moved.track(at: index)?.cycle(at: cycleIndex)?.groove.velocity.value,
+                    40 + cycleIndex * 10,
+                    "Track \(index + 1), Cycle \(cycleIndex + 1) durante el hold")
+            }
+        }
+
+        XCTAssertEqual(offset.restored(into: moved), source)
+    }
+
+    // MARK: - Lo que la restauración no toca
+
+    /// **Los cursores no retroceden.** El de reproducción avanzó durante el hold
+    /// y no puede volver: restaurar el Pattern entero rebobinaría la música, que
+    /// es por lo que el snapshot guarda parámetros y no Tracks.
+    func testRestoringDoesNotRewindTheCursors() {
+        var offset = CtrlAllOffset()
+        let source = layered()
+
+        var moved = offset.apply(2, to: .pulses, in: source)
+
+        // La música sigue durante el hold: los cursores avanzan.
+        for index in 0..<Pattern.trackCount {
+            guard let track = moved.track(at: index) else { continue }
+            moved = moved.replacing(track.advanced().withEditing(2), at: index)
+        }
+
+        let restored = offset.restored(into: moved)
+
+        for index in 0..<Pattern.trackCount {
+            XCTAssertEqual(restored.track(at: index)?.cursor, 1, "Track \(index + 1)")
+            XCTAssertEqual(restored.track(at: index)?.editing, 2, "Track \(index + 1)")
+        }
+    }
+
+    /// Y con los cursores movidos, los valores siguen volviendo a su sitio: la
+    /// base se guarda por posición, no por «el Cycle que estaba sonando».
+    func testValuesStillComeBackWithTheCursorsMoved() {
+        var offset = CtrlAllOffset()
+        let source = layered()
+
+        var moved = offset.apply(2, to: .pulses, in: source)
+        for index in 0..<Pattern.trackCount {
+            guard let track = moved.track(at: index) else { continue }
+            moved = moved.replacing(track.advanced(), at: index)
+        }
+
+        let restored = offset.restored(into: moved)
+
+        for index in 0..<Pattern.trackCount {
+            for cycleIndex in 0..<3 {
+                XCTAssertEqual(
+                    restored.track(at: index)?.cycle(at: cycleIndex)?.shape.pulses.count,
+                    index + 1 + cycleIndex,
+                    "Track \(index + 1), Cycle \(cycleIndex + 1)")
+            }
+        }
+    }
+
+    /// **Un Cycle inactivo no se toca ni al aplicar ni al restaurar.**
+    func testInactiveCyclesSurviveUntouched() {
+        var offset = CtrlAllOffset()
+        var track = Track(cycle(pulses: 5)).withActiveCount(2)
+        track = track.replacing(cycle(pulses: 13), at: 2)
+        let source = Pattern().replacing(track, at: 0)
+
+        let moved = offset.apply(2, to: .pulses, in: source)
+        let restored = offset.restored(into: moved)
+
+        XCTAssertEqual(restored.track(at: 0)?.cycle(at: 2)?.shape.pulses.count, 13)
+        XCTAssertEqual(restored, source)
+    }
+
+    // MARK: - Tras un hold, el Pattern es el de partida
+
+    /// **El criterio de aceptación entero** (AC7): tras un hold completo, el
+    /// Pattern es igual al de partida salvo los cursores. Se compara el valor
+    /// entero y no campo a campo, para que nada se escape por no haberlo
+    /// enumerado.
+    func testAfterAFullHoldThePatternEqualsTheStartingOne() {
+        var offset = CtrlAllOffset()
+        let source = layered()
+
+        var moved = source
+        for _ in 0..<7 { moved = offset.apply(1, to: .pulses, in: moved) }
+        for _ in 0..<3 { moved = offset.apply(-1, to: .velocity, in: moved) }
+        moved = offset.apply(4, to: .rotate, in: moved)
+
+        XCTAssertEqual(offset.restored(into: moved), source)
+    }
+
+    /// Y también cuando el desplazamiento llegó a saturar (FR5b): el tope no
+    /// rompe la promesa, porque lo que se guarda es la base.
+    func testTheHoldIsReversibleEvenAfterSaturating() {
+        var offset = CtrlAllOffset()
+        let source = layered()
+
+        var moved = source
+        for _ in 0..<60 { moved = offset.apply(1, to: .pulses, in: moved) }
+        for _ in 0..<60 { moved = offset.apply(-1, to: .pulses, in: moved) }
+
+        XCTAssertEqual(offset.restored(into: moved), source)
+    }
+}
