@@ -30,3 +30,39 @@ TESTS Y COBERTURA
   MIDI total: 84,23% de lineas (umbral >=80%).
   ControlInput.swift: 100% de lineas y de funciones.
 swift format limpio.
+
+--- VERIFICACION DE FASE 4 (checkpoint) ---
+
+TESTS AUTOMATICOS
+  swift test --package-path Packages/Engine  -> 534 tests, 0 fallos
+  swift test --package-path Packages/MIDI    -> 597 tests, 7 fallos, todos
+    VirtualLoopback (flake midi-test-flake_20260826)
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS -> SUCCEEDED
+  swift format limpio.
+
+COBERTURA
+  MIDI total: 84,23% de lineas (umbral >=80%)
+  ControlInput.swift: 100% de lineas y de funciones
+
+COBERTURA DE TESTS PARA LOS CAMBIOS DE LA FASE
+Diff cfeb5a6..HEAD: un solo fichero de codigo, ControlInput.swift, con cinco
+ficheros de test nuevos y 40 casos: CtrlAllModifierInputTests (12),
+CtrlAllTakesOverInputTests (7), TempAndCtrlAllTests (7), CtrlAllTouchPathTests
+(8), CtrlAllReleaseModifiersTests (6).
+
+VERIFICACION MANUAL PROPUESTA
+Primera fase que se puede tocar en el iPad.
+1. Preset v3 cargado, encoders en Relative #2.
+2. Step 14 + Velocity: los doce suben conservando el balance; soltar devuelve.
+3. Desplaza y no iguala: dos Tracks con Pulses distintos mantienen su diferencia.
+4. El tope: giro largo contra el limite y vuelta, sin knob muerto.
+5. El step 14 es momentary y no toggle (supuesto de FR1).
+6. FR13: 13+14 suena como Temp; soltar el 13 sin soltar el 14 pasa a Ctrl All;
+   soltar el 14 primero no deshace el Temp antes de tiempo.
+7. El corte: step buttons, pads, knob del Cycle y las vias tactiles callan.
+8. Reconexion con el 14 hundido: el desplazamiento no se queda puesto.
+9. Con el transporte parado, igual.
+10. La pantalla todavia no distingue Ctrl All: eso es la Fase 5.
+
+CONFIRMACION DEL USUARIO
+Confirmado ("si") el 2026-09-05.
