@@ -186,13 +186,13 @@ seguir.
   - [x] Implementación (Green): un guard compartido; documentar que Temp no tiene
         este requisito y por qué Ctrl All sí (una escritura permanente colada
         dentro de un gesto que promete no escribir).
-- [~] Task: Reconexión y modificadores atascados (FR15)
-  - [ ] Tests (Red): `releaseModifiers()` con Ctrl All hundido restaura y publica
+- [x] Task: Reconexión y modificadores atascados (FR15) — `adbfd78`
+  - [x] Tests (Red): `releaseModifiers()` con Ctrl All hundido restaura y publica
         una vez.
-  - [ ] Tests (Red): con Ctrl All y Temp hundidos a la vez, `releaseModifiers()`
+  - [x] Tests (Red): con Ctrl All y Temp hundidos a la vez, `releaseModifiers()`
         deja el Pattern base y publica sin duplicar la restauración.
-  - [ ] Tests (Red): sin nada superpuesto no publica.
-  - [ ] Cobertura `MIDI` ≥80%.
+  - [x] Tests (Red): sin nada superpuesto no publica.
+  - [x] Cobertura `MIDI` ≥80%.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: LA PANTALLA ENSEÑA QUE ES GLOBAL
