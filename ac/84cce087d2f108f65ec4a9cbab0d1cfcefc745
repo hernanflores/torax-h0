@@ -1,0 +1,44 @@
+Task: El tope del offset acumulado (Fase 3, ctrl-all_20260905)
+
+QUE SE HIZO
+El tope de FR5, con dos correcciones de diseno que los tests forzaron.
+
+FICHEROS
+- Packages/Engine/Sources/Engine/TrackParameter.swift: displacementRange.
+- Packages/Engine/Sources/Engine/CtrlAllOffset.swift: headroom(for:) y el acotado
+  en advancing(_:by:).
+- Packages/Engine/Tests/EngineTests/CtrlAllOffsetTests.swift: clase
+  CtrlAllOffsetLimitTests (7 tests) y tres tests anteriores reescritos.
+- spec.md y plan.md: FR5 corregido, FR5b nuevo, AC5 corregido.
+
+CORRECCION 1 — EL TOPE NO ERA EL QUE SE APROBO, Y EL APROBADO NO SERVIA
+La opcion elegida decia "acotar al ancho del recorrido del parametro (p.ej. +-15
+para Pulses)", con la promesa de que "un clic hacia atras mueve algo
+inmediatamente". Las dos mitades se contradicen y lo demostro un test:
+
+  Pulses 1..12, ancho 15. Cuarenta clics abajo -> acumulado -15, los doce en 1.
+  Un clic arriba -> -14. El Track de base 12 da 12-14 = -2, acotado a 1.
+  No se mueve nada. Hacen falta cuatro clics.
+
+Hacia arriba si funcionaba (base 1 + 14 = 15), y por eso solo fallo el test
+descendente: la asimetria es del reparto de las bases, no del signo. El tope
+tiene que salir de las BASES CAPTURADAS. Con ellas el tope habria sido -11 y el
+primer clic mueve. Consultado con el usuario, que eligio corregir el calculo.
+
+CORRECCION 2 — TOPAR CUESTA REVERSIBILIDAD EN EL RECORRIDO (FR5b)
+testAFullSweepUpAndDownIsLossless fallo al apretar el tope: 40 arriba satura en
++15, y los 40 de vuelta parten de ahi y saturan en -11, asi que el Pattern no
+queda donde empezo. No es un defecto del tope: es el tope, y le pasa a cualquier
+acotado. Lo que importa es que la garantia de no perder nada NO vive en el
+recorrido sino en restored(into:) — soltar devuelve la base exacta por muchas
+vueltas que se den. El test se partio en dos para decir las dos cosas.
+
+UN TEST QUE MEDIA LO QUE NO CREIA
+testEveryTrackParameterCanBeCapturedAndAdvanced fallaba con el tope puesto porque
+el Cycle del helper tiene Timing en 50 y Probability en 100, que son sus extremos:
+contra un extremo el acumulado no avanza, asi que el test comprobaba saturacion.
+Ahora construye un Cycle con los nueve parametros en el interior de su rango.
+
+TESTS
+  swift test --package-path Packages/Engine -> 526 tests, 0 fallos.
+swift format limpio.
