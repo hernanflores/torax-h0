@@ -163,7 +163,7 @@ seguir.
   - [x] Implementación (Green): extender el corte que Temp ya tiene en
         `receive(_:)`, **en un solo sitio**. Repartirlo por rama dejaría cuatro
         sitios donde olvidarlo.
-- [ ] Task: Temp y Ctrl All se ceden el paso (FR13)
+- [~] Task: Temp y Ctrl All se ceden el paso (FR13)
   - [ ] Tests (Red): con 13 y 14 hundidos, los giros son Temp — el 14 no
         interfiere.
   - [ ] Tests (Red): soltar el 13 con el 14 hundido **restaura el Temp,

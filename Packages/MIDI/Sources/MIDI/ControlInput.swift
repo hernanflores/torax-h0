@@ -128,13 +128,27 @@ public final class ControlInput: @unchecked Sendable {
     /// la táctil está fuera de alcance en este track.
     public var isTempActive: Bool { holdingTempModifier }
 
-    /// Si Ctrl All está puesto ahora mismo.
+    /// Si Ctrl All está **al mando** ahora mismo.
     ///
     /// **Lo consume la pantalla**, que sin esto no puede distinguir un
     /// desplazamiento global de una edición permanente: los valores que enseña
     /// son los mismos en los dos casos. Es lectura y no una vía para accionar el
     /// gesto — la táctil está fuera de alcance en este track.
-    public var isCtrlAllActive: Bool { holdingCtrlAllModifier }
+    ///
+    /// **Dice quién manda y no qué botón está hundido**, que es la diferencia
+    /// que importa cuando los dos lo están: con el 13 y el 14 hundidos gana Temp
+    /// (FR13), así que esto es falso aunque el 14 esté físicamente hundido. Así
+    /// `isTempActive` y esto **nunca son ciertos a la vez**, y la pantalla no
+    /// tiene que desempatar por su cuenta — un desempate repartido entre la
+    /// entrada y la vista acabaría diciendo cosas distintas en cada una.
+    public var isCtrlAllActive: Bool { holdingCtrlAllModifier && !holdingTempModifier }
+
+    /// Si algún modificador se ha apoderado de la entrada.
+    ///
+    /// Lo que callan Temp y Ctrl All es lo mismo —la selección de Track, los
+    /// gestos de mezcla, el knob del Cycle y los pads— así que preguntarlo una
+    /// vez evita que un tercer modificador, algún día, se olvide de la mitad.
+    private var isTakenOver: Bool { holdingTempModifier || holdingCtrlAllModifier }
 
     /// Cuánto se lleva desplazado en el Ctrl All en curso, y qué había debajo.
     ///
@@ -270,15 +284,18 @@ public final class ControlInput: @unchecked Sendable {
                 // solo responden. Repartir la comprobación por cada rama de
                 // `stepButton(_:value:)` dejaría cuatro sitios donde olvidarla.
                 //
-                // **El otro de los dos tampoco pasa**, y por eso la condición no
-                // es «el modificador que está al mando». Con Temp hundido, el 14
-                // se ignora entero: no se registra como hundido, así que soltar
-                // el 13 no deja un Ctrl All armado que nadie pidió. Con Ctrl All
-                // hundido, el 13 se ignora igual (FR13).
-                guard !holdingTempModifier || index == Self.tempModifierIndex else {
-                    return false
-                }
-                guard !holdingCtrlAllModifier || index == Self.ctrlAllModifierIndex else {
+                // **Los dos modificadores sí pasan, y eso es FR13.** Con Temp
+                // hundido, el step 14 se registra como hundido aunque no actúe:
+                // así, al soltar el 13, Temp restaura y Ctrl All arranca ahí,
+                // sobre el Pattern ya devuelto. Bloquearlo del todo —que fue el
+                // primer intento— dejaba un botón hundido que no hacía nada ni
+                // al soltarse, y un botón hundido que no hace nada no tiene forma
+                // de explicarse. Vale en los dos sentidos, y por eso el orden de
+                // pulsación no importa.
+                guard
+                    !isTakenOver || index == Self.tempModifierIndex
+                        || index == Self.ctrlAllModifierIndex
+                else {
                     return false
                 }
                 return stepButton(index, value: value)
@@ -288,9 +305,7 @@ public final class ControlInput: @unchecked Sendable {
             // edición y moverlo cambiaría el punto de partida con el fill puesto;
             // con Ctrl All, porque movería el Cycle sobre el que la pantalla
             // enseña el desplazamiento mientras está puesto en los doce Tracks.
-            if holdingTempModifier || holdingCtrlAllModifier,
-                controller == mapping.editingCycleController
-            {
+            if isTakenOver, controller == mapping.editingCycleController {
                 return false
             }
             return turn(controller, by: value)
@@ -303,7 +318,7 @@ public final class ControlInput: @unchecked Sendable {
             // gesto se hace con una mano en el step button y la otra en los
             // knobs, y un roce que metiera una nota en el pool no se desharía al
             // soltar — ni el snapshot de Temp ni el de Ctrl All guardan el pool.
-            guard !holdingTempModifier, !holdingCtrlAllModifier else { return false }
+            guard !isTakenOver else { return false }
             return press(note)
         case .noteOff:
             return false
