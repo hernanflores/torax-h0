@@ -38,6 +38,33 @@ public struct PitchPool: Equatable, Sendable {
 
     public var isEmpty: Bool { count == 0 }
 
+    /// Cuántas alturas tiene, escrito.
+    ///
+    /// **El pool vacío se dice, no se disimula.** Es el estado de once Tracks al
+    /// arrancar: disparan sus Pulses y no tienen material que emitir. Escribir
+    /// «0 pitches» sería contar algo que no hay; `product-guidelines.md` pide
+    /// comunicar el estado, y el estado es que está vacío.
+    ///
+    /// El singular no es un detalle de estilo: una plantilla que dijera
+    /// «1 pitches» delataría que la app rellena huecos en vez de informar.
+    ///
+    /// > **Vive aquí desde el 2026-09-06, y antes vivía en tres sitios** con tres
+    /// > redacciones: `FamilyReadout` decía «1 pitch», el card tonal «pool empty»
+    /// > y la rejilla de la pantalla `scale` «1 note active». La tercera además
+    /// > usaba *note*, que es **sinónimo de *pitch***, y la guía fija el
+    /// > vocabulario de la Pre Spec «sin sinónimos, sin capa de traducción».
+    /// >
+    /// > **Se aparta del handoff a propósito**, que rotula «8 notes active». La
+    /// > regla del vocabulario es del proyecto y es anterior; el handoff decide
+    /// > la forma, no los términos.
+    public var countDescription: String {
+        switch count {
+        case 0: "empty"
+        case 1: "1 pitch"
+        default: "\(count) pitches"
+        }
+    }
+
     /// Pool vacío. Es un estado válido: el Track dispara sus Pulses y no tiene
     /// material que emitir.
     public init() {

@@ -156,7 +156,9 @@ struct RootPicker: View {
                 columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 6),
                 spacing: 6
             ) {
-                ForEach(0..<12, id: \.self) { value in
+                // El doce lo declara `Engine`, no la vista: es cuántas clases de
+                // altura hay, no cuántas caben en la rejilla.
+                ForEach(Root.validRange, id: \.self) { value in
                     let candidate = Root(value)!
                     let isSelected = candidate == root
 
@@ -267,13 +269,13 @@ struct PitchPoolGrid: View {
         }
     }
 
-    private var count: String {
-        switch pool.count {
-        case 0: "pool empty"
-        case 1: "1 note active"
-        default: "\(pool.count) notes active"
-        }
-    }
+    /// El recuento lo escribe `Engine`.
+    ///
+    /// **Dice `pitches` y no `notes`**, apartándose del rótulo del handoff. Es
+    /// deliberado: `product-guidelines.md` fija el vocabulario de la Pre Spec
+    /// «sin sinónimos», *Pitch* es el término, y esa regla es del proyecto y
+    /// anterior al handoff — que decide la forma, no los términos.
+    private var count: String { "pool \(pool.countDescription)" }
 
     @ViewBuilder
     private func pad(_ index: Int) -> some View {

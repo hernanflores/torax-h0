@@ -315,7 +315,7 @@ struct TonalCard: View {
                 // **El pool vacío se dice, no se disimula.** Es el estado de
                 // once Tracks al arrancar: disparan sus Pulses y no tienen
                 // material que emitir.
-                Text(display: "pool empty")
+                Text(display: "pool \(PitchPool().countDescription)")
                     .font(Typography.caption)
                     .foregroundStyle(Palette.muted)
             } else {

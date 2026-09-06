@@ -152,23 +152,7 @@ public struct FamilyReadout: Equatable, Sendable {
             label = "Scale"
             value = "\(track.frame.root) \(track.frame.scale.name)"
             headline = "\(track.frame.root) \(track.frame.scale.name)"
-            detail = "Pool · \(Self.pool(track.pool.count))"
+            detail = "Pool · \(track.pool.countDescription)"
         }
     }
-
-    /// **El pool vacío se dice, no se disimula.** Es el estado de quince Tracks
-    /// al arrancar: disparan sus Pulses y no tienen material que emitir. Escribir
-    /// «Pool · 0 pitches» sería contar algo que no hay; `product-guidelines.md`
-    /// pide comunicar el estado, y el estado es que está vacío.
-    ///
-    /// El singular no es un detalle de estilo: una plantilla que dijera
-    /// «1 pitches» delataría que la app rellena huecos en vez de informar.
-    private static func pool(_ count: Int) -> String {
-        switch count {
-        case 0: "empty"
-        case 1: "1 pitch"
-        default: "\(count) pitches"
-        }
-    }
-
 }
