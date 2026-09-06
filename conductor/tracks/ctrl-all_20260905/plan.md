@@ -141,18 +141,18 @@ seguir.
 
 ## FASE 4: EL GESTO EN EL CONTROLADOR
 
-- [~] Task: [step 14] mantiene y suelta (FR1, FR12, FR14)
-  - [ ] Tests (Red): CC 115 con 127 entra en Ctrl All y **no publica por sí
+- [x] Task: [step 14] mantiene y suelta (FR1, FR12, FR14) — `4aa708c`
+  - [x] Tests (Red): CC 115 con 127 entra en Ctrl All y **no publica por sí
         solo**; con 0 sale y publica una vez el Pattern restaurado.
-  - [ ] Tests (Red): con Ctrl All activo, girar Velocity publica un Pattern con
+  - [x] Tests (Red): con Ctrl All activo, girar Velocity publica un Pattern con
         los doce desplazados; soltar publica el Pattern base. Girar sin Ctrl All
         sigue escribiendo permanente en el Track seleccionado.
-  - [ ] Tests (Red): un giro nulo no publica; un giro donde **el Track
+  - [x] Tests (Red): un giro nulo no publica; un giro donde **el Track
         seleccionado topa pero otros se mueven sí publica** (FR12) — el caso que
         separa esta regla de la de Temp.
-  - [ ] Tests (Red): comportamiento idéntico con el transporte parado — el gesto
+  - [x] Tests (Red): comportamiento idéntico con el transporte parado — el gesto
         no consulta el transporte.
-  - [ ] Implementación (Green): `ctrlAllModifierIndex = ControlMapping.controlsPerFamily - 3`
+  - [x] Implementación (Green): `ctrlAllModifierIndex = ControlMapping.controlsPerFamily - 3`
         junto a los otros tres, despachado en `stepButton(_:value:)` antes de la
         selección.
 - [ ] Task: Con Ctrl All hundido, Ctrl All manda (FR10)
