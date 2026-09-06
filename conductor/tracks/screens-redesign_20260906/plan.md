@@ -147,7 +147,7 @@ animaciones derivan del reloj musical.
 
 ---
 
-## Fase 4 — Pantalla `midi`
+## Fase 4 — Pantalla `midi` [checkpoint: b1ded87]
 
 - [x] Task: Card `clock source` (FR21) `2bd1202`
     - [x] Segmentado `internal` / `external` reflejando la fuente real
@@ -172,7 +172,7 @@ animaciones derivan del reloj musical.
 
 - [x] Task: Auditar que no se escapó lógica a las vistas `9b6d058`
 
-- [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `midi.png`
+- [x] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `midi.png` `b1ded87`
 
 ---
 
