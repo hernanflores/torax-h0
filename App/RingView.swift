@@ -113,6 +113,38 @@ struct RingStackView: View {
             )
         }
 
+        // **El contorno de 3 pt del elegido** (FR10): dos circunferencias finas
+        // justo fuera de los bordes de la banda, dibujadas **encima** de los
+        // arcos.
+        //
+        // > **Se probó primero como halo —un trazo más grueso por detrás— y se
+        // > veía fatal.** Entre arco y arco hay un respiro, y el color del hueco
+        // > es semitransparente, así que el off-white se colaba por los dieciséis
+        // > huecos y por debajo de los arcos apagados: el anillo entero salía
+        // > blanco en vez de enmarcado. Dos líneas que no pisan la banda no
+        // > pueden filtrarse por ella.
+        //
+        // **Va además del acento, no en su lugar.** El color ya decía cuál se
+        // está editando, pero se pierde cuando el Track está muteado y el anillo
+        // se atenúa. El contorno no: es off-white, no pertenece a ninguna
+        // familia y sobrevive a la atenuación. Dos lecturas del mismo hecho por
+        // canales distintos, que es lo que pide leerse a un metro y con poca luz.
+        if isSelected {
+            let inset = width / 2 + Brutalist.strokeEmphasis / 2
+            for edge in [radius - inset, radius + inset] {
+                var outline = Path()
+                outline.addArc(
+                    center: centre, radius: edge,
+                    startAngle: .zero, endAngle: .radians(.pi * 2), clockwise: false
+                )
+                context.stroke(
+                    outline,
+                    with: .color(Palette.offWhite),
+                    style: StrokeStyle(lineWidth: Brutalist.strokeEmphasis)
+                )
+            }
+        }
+
         if let playhead = playheads.indices.contains(band.track) ? playheads[band.track] : nil {
             drawPlayhead(
                 playhead,

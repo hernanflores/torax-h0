@@ -299,17 +299,8 @@ struct ContentView: View {
             rings
                 .frame(width: side, height: side)
 
-            // **Dos columnas, no tres.** La tercera eran los tabs de familia,
-            // que el rediseño retira porque el handoff enseña las tres a la vez.
-            // Su ancho se lo queda la lectura, que es donde van a caber los tres
-            // cards.
-            //
-            // > **El reparto 68 / 32 de FR9 llega en la Fase 2**, con los cards.
-            // > Aquí solo se cierra el hueco que dejaron los tabs: repartir de
-            // > nuevo la pantalla antes de saber qué va dentro sería medir dos
-            // > veces.
             readout
-                .frame(width: columns.readout + columns.families + Self.gutter + slack, height: side)
+                .frame(width: columns.readout + slack, height: side)
         }
     }
 
@@ -368,12 +359,24 @@ struct ContentView: View {
     /// La lectura y los tabs se calculan primero y **el anillo se queda con lo
     /// que sobra**: así, en un iPad más ancho, el espacio de más va a donde se
     /// nota —más separación entre bandas— y no a estirar un texto que ya cabía.
-    static func columns(in total: CGFloat) -> (rings: CGFloat, readout: CGFloat, families: CGFloat)
-    {
-        let families = min(max(total * (170.0 / 924.0), 170), 260)
-        let readout = min(max(total * (190.0 / 924.0), 190), 320)
-        let rings = max(total - families - readout - gutter * 2, 240)
-        return (rings, readout, families)
+    /// El reparto horizontal: **68 % para el patrón, 32 % para la lectura**
+    /// (FR9).
+    ///
+    /// > **Los números son del brief y coinciden con lo que ya se había
+    /// > decidido.** El handoff anterior daba al anillo un quinto del ancho —una
+    /// > proporción dibujada para **cinco** anillos— y con doce cada banda
+    /// > quedaba en unos 8 puntos: el mapa dejaba de poder contarse. El
+    /// > 2026-09-01 se invirtió con el usuario delante de la pantalla. El brief
+    /// > de iPadOS pide 68 / 32, que es la misma decisión con un número exacto
+    /// > detrás, así que aquí solo se sustituyen los mínimos y máximos por la
+    /// > proporción.
+    ///
+    /// **Ya no hay tercera columna.** Eran los tabs de familia, que el rediseño
+    /// retira porque el handoff enseña las tres a la vez.
+    static func columns(in total: CGFloat) -> (rings: CGFloat, readout: CGFloat) {
+        let usable = total - gutter
+        let rings = usable * 0.68
+        return (rings, usable - rings)
     }
 
     /// La columna izquierda: los doce anillos y nada más.
