@@ -175,15 +175,15 @@ seguir.
         sitio.
   - [x] Implementación (Green): un solo punto de decisión sobre qué modificador
         está al mando; documentar que ninguno hereda el estado del otro.
-- [~] Task: Las vías táctiles que escriben callan (FR11)
-  - [ ] Tests (Red): `selectTrack`, `setChannel`, `setChannel(forTrack:)`,
+- [x] Task: Las vías táctiles que escriben callan (FR11) — `1742ac9`
+  - [x] Tests (Red): `selectTrack`, `setChannel`, `setChannel(forTrack:)`,
         `setFrame` y `setActiveCycleCount` devuelven `false` y no publican durante
         el hold.
-  - [ ] Tests (Red): fuera del hold las cinco siguen funcionando exactamente
+  - [x] Tests (Red): fuera del hold las cinco siguen funcionando exactamente
         igual.
-  - [ ] Tests (Red): el caso que motiva la regla — `setActiveCycleCount` durante
+  - [x] Tests (Red): el caso que motiva la regla — `setActiveCycleCount` durante
         el hold no puede dejar un Cycle con offset y sin base.
-  - [ ] Implementación (Green): un guard compartido; documentar que Temp no tiene
+  - [x] Implementación (Green): un guard compartido; documentar que Temp no tiene
         este requisito y por qué Ctrl All sí (una escritura permanente colada
         dentro de un gesto que promete no escribir).
 - [ ] Task: Reconexión y modificadores atascados (FR15)
