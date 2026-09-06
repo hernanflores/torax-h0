@@ -1,0 +1,42 @@
+Task: Reducir ContentView a contenedor (Fase 1, FR31)
+
+Track: screens-redesign_20260906
+
+Qué se hizo
+- ContentView pasa a ser chrome + conmutador de módulo. Se excisan la fila de
+  pestañas, midiStatus, endpoint, clockReadout, transport y los tabs de familia:
+  todo eso vive ahora en AppChrome.
+- El escenario baja de tres columnas a dos.
+- reservedBelowStage suma AppChrome.height + ModuleNavigation.height en vez de
+  un literal 44.
+- Los selectores de endpoint bajan a la pantalla midi.
+- banksScreen provisional con borde discontinuo.
+
+Verificación
+- xcodebuild Debug para iOS y para simulador: BUILD SUCCEEDED.
+- Captura en iPad Pro 11-inch (M5), iOS 26.3: barra, navegación y pantalla
+  track se dibujan con el chrome nuevo.
+
+Sobre la orientación, que aclara la duda de la tarea anterior
+La captura del simulador sale 1668x2420 (portrait) con la app en una banda
+central de 1668x1150 -> proporción 1,45, que es la de un iPad Pro 11 en
+landscape (1194/834 = 1,43). Es decir: iOS le da a la app una escena landscape
+y la mete en letterbox porque el simulador está en vertical. El bloqueo
+funciona. Lo que sigue sin poder comprobarse aquí es el comportamiento de
+ventana redimensionable de iPadOS 26 en dispositivo real.
+
+Dos defectos encontrados en la captura y corregidos en esta misma tarea
+1. El título del módulo se dibujaba encima del estado MIDI. El ZStack centraba
+   el título sobre un HStack de ancho completo. Sustituido por tres columnas
+   con las exteriores a maxWidth .infinity, que centra igual sin superponer.
+2. El subrayado del módulo activo medía la columna (un cuarto de pantalla) en
+   vez de la etiqueta, porque el frame(maxWidth:) estaba debajo del overlay.
+
+Ninguno se veía leyendo el código. Es la razón por la que la verificación de
+esta fase es una captura y no solo un build verde.
+
+Lo que queda para la Fase 2, visible en la captura
+- Las cadenas del track siguen capitalizadas: 'Pulses 5', 'Steps 16 · Rotate 0',
+  'Cycles · Track 1', 'M' / 'S', y los Tracks numerados 1-12 en vez de 01-12.
+  Salen de Engine y de TrackSelectorView, que se rehacen en la Fase 2 (FR3).
+- La columna de lectura está casi vacía: los cards shape/groove/tonal son FR12.
