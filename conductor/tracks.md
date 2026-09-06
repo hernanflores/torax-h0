@@ -576,8 +576,12 @@ escalón es el que se nota.
   Este track lo sustituye por el rediseño del handoff — chrome compartido y
   **cuatro pantallas completas**.
 
-  **Cambia el dibujo, no el motor.** `Engine` y `MIDI` quedan intactos; un diff que
-  alcance el camino de tiempo real es error de alcance.
+  **Cambia el dibujo, no el motor.** Lo que no se toca es el **camino de tiempo
+  real** —scheduler, `MusicalTimeline`, snapshot—; un diff que lo alcance es
+  error de alcance. `Engine` y `MIDI` sí cambian, y bastante: cada vez que una
+  regla o un texto de dominio aparecía escrito en una vista, bajó a su paquete
+  **con tests en rojo primero**. Nueve ficheros, los nueve con su fichero de
+  tests en el mismo commit.
 
   **Doce playheads, no uno.** El PNG dibuja una aguja porque su mock tiene los doce
   Tracks en la misma Division; con divisiones distintas eso mentiría sobre once de

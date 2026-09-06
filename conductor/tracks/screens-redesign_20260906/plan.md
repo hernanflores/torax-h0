@@ -17,6 +17,13 @@ pool—, esa lógica **baja a `Engine` y llega con test antes que con implementa
 Cada fase lleva una tarea explícita para vigilarlo, porque el fallo típico de un
 track de UI es dejar reglas sueltas dentro de una `View`.
 
+**Qué significa «verde».** `xcodebuild` sin errores y **`Engine` sin fallos**.
+`MIDI` arrastra siete fallos conocidos en `VirtualLoopbackTests` con la firma
+`clientCreationFailed(-50)`: es el flake de `midi-test-flake_20260826`, aplazado
+a después de la v2, y **no se atribuye a este track** —que no toca ese paquete
+salvo por lógica que baja con sus tests—. CI lo mitiga corriendo los tests de
+CoreMIDI primero y en su propio proceso, y ahí pasa en verde.
+
 **Verificación de fase:** `xcodebuild` verde, captura del simulador en landscape
 comparada con el PNG de la pantalla, y confirmación explícita del usuario. Es el
 protocolo de *Phase Completion Verification* de `workflow.md`, con la captura
@@ -70,7 +77,7 @@ haya que perseguirlas.
 
 - [x] Task: Auditar que no se escapó lógica a las vistas `794062a`
     - [x] Revisar lo escrito en esta fase: si hay una regla que no sea dibujo, bajarla a `Engine` o `MIDI` con test
-    - [x] Ejecutar la suite de `Engine` y `MIDI` y confirmar que sigue verde
+    - [x] Ejecutar la suite de `Engine` y `MIDI`; `Engine` sin fallos y `MIDI` solo con el flake conocido
 
 - [x] Task: Phase Verification & Checkpoint (ver `workflow.md`) `b45c965`
 
@@ -88,10 +95,10 @@ animaciones derivan del reloj musical.
     - [x] Un track silenciado se distingue **sin dejar de girar**: mute suprime salida, nunca cycle ni playhead
     - [x] Reajustar la geometría al chrome nuevo: la reserva vertical se escribe como suma, no como literal
 
-- [ ] Task: Los playheads (FR11, NFR2)
-    - [ ] Una aguja por anillo, off-white, cada una con la `Division` de su track
-    - [ ] Verificar que **no se mueven con el transporte parado**
-    - [ ] Confirmar que la posición se resuelve contra el origen del scheduler y que `TimelineView` solo decide cuándo repintar
+- [x] Task: Los playheads (FR11, NFR2) `bc7b977`
+    - [x] Una aguja por anillo, off-white, cada una con la `Division` de su track
+    - [x] Verificar que **no se mueven con el transporte parado**
+    - [x] Confirmar que la posición se resuelve contra el origen del scheduler y que `TimelineView` solo decide cuándo repintar
 
 - [x] Task: `cycleStrip` y la lectura grande (FR12) `c75a604`
     - [x] Lectura grande con nombre y valor; **persiste tras el giro**, pierde el acento y no el valor
@@ -125,7 +132,7 @@ animaciones derivan del reloj musical.
     - [x] La selección es la misma que la de la franja: un solo estado, no dos
 
 - [x] Task: `scalePicker` y `rootPicker` (FR16, FR17) `c91c0f0`
-    - [x] Seis escalas; la elegida en violeta tonal con trazo de 3 pt
+    - [x] Ocho escalas —las seis del brief más `pentatonic` y `hirajoshi`—; la elegida en violeta tonal con trazo de 3 pt
     - [x] Doce roots `c`–`b`; el elegido en off-white
     - [x] Cambiar escala o root **reencuadra el pool, no lo vacía** — la regla de `product-guidelines.md`, ya implementada en `PitchPool.reframed(to:)`
 

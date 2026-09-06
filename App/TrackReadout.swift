@@ -159,14 +159,24 @@ struct CycleStrip: View {
                     .accessibilityLabel(Text(display: "cycles chained"))
             }
 
-            // **Se envuelve en vez de encogerse.** Con dieciséis Cycles activos
-            // en la columna estrecha, una sola fila dejaría cada celda por debajo
-            // del objetivo táctil; el handoff dibuja ocho y caben en una.
+            // **Los dieciséis, siempre, en dos filas de ocho.**
+            //
+            // > **Se dibujaban solo hasta `max(activeCount, 8)` y eso era un
+            // > bug**, encontrado en la revisión del PR: con ocho Cycles activos,
+            // > la celda del nueve no existía, así que no había forma de subir a
+            // > nueve. El rango documentado es de uno a dieciséis.
+            // >
+            // > La fila que esto sustituyó ya lo hacía bien y su documentación
+            // > decía por qué: «los que quedan fuera del rango activo se dibujan
+            // > apagados en vez de desaparecer; si la fila cambiara de longitud,
+            // > los números se moverían de sitio y dejarían de poder pulsarse sin
+            // > mirar». Se perdió al traerla al card y vuelve con su razón.
+            //
+            // Dos filas y no una: en la columna estrecha, dieciséis celdas
+            // seguidas quedarían por debajo del objetivo táctil.
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 8), spacing: 6) {
                 ForEach(1...Track.cycleCount, id: \.self) { number in
-                    if number <= max(activeCount, 8) {
-                        cell(number, sounding: sounding)
-                    }
+                    cell(number, sounding: sounding)
                 }
             }
         }

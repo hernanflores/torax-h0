@@ -19,8 +19,20 @@ completas**: `track`, `scale`, `midi` y `banks`.
 
 **No es un cambio de estilo, es un cambio de sistema.** Lo que se rehace es el
 dibujo; el estado, el motor y el camino de tiempo real no se tocan. `Engine` y
-`MIDI` quedan intactos: si una tarea de este track necesita cambiarlos, es señal
-de que se ha salido del alcance.
+`MIDI` **no cambian por razones de dibujo**: si una tarea necesita tocarlos para
+que algo se vea distinto, es señal de que se ha salido del alcance.
+
+> **Enmienda del 2026-09-06, escrita al cerrar el track.** La frase de arriba
+> decía «`Engine` y `MIDI` quedan intactos», y no se cumplió — ni debía. Las seis
+> auditorías del plan existen precisamente para encontrar reglas y textos de
+> dominio escritos en vistas, y encontraron nueve: `Tempo.displayDescription`,
+> `Scale.name`, `ParameterFamily.name`, `ClockSource.name`,
+> `TrackParameter.value(in:)`, `PitchPool.countDescription`, los `label`/`value`
+> de `FamilyReadout` y `ParameterChange`, `ClockStatus` y
+> `ControlInput.pressPad(at:)`. Los nueve bajaron con tests en rojo primero.
+>
+> Lo que se mantiene entero es **NFR1**: el camino de tiempo real no aparece en
+> el diff, y eso sí se verificó fichero por fichero.
 
 **El principio rector no cambia.** El controlador sigue siendo el instrumento y
 la pantalla el espejo. Lo que el brief precisa es dónde el dedo es legítimo:
@@ -41,7 +53,7 @@ adivinar.
 | 3 | Fondo `#111211` vs. lenguaje «cerrado» en `#211823` | Se adopta `#111211` con nota fechada. |
 | 4 | Vistas heredadas | Se reemplazan; `JitterMeasurementModel` se conserva sin entrada en UI. |
 | 5 | Pool tonal | 7 grados × 2 bloques = 14 pads de nota + 2 pads de octava. |
-| 6 | Verificación de fase | `xcodebuild` verde + captura de simulador + confirmación del usuario. |
+| 6 | Verificación de fase | `xcodebuild` verde + `Engine` sin fallos + captura de simulador + confirmación del usuario. |
 | 7 | Minúsculas | Solo en UI; el vocabulario de la Pre Spec se conserva en código y docs. |
 | 8 | Cards de familia | Los tres simultáneos; el giro resalta el suyo. Sin tabs. |
 | 9 | Lectura grande | Persiste el último parámetro tocado. |
@@ -148,8 +160,21 @@ permite cambiarlo sin volver a `track`. Scale, root y pool son parámetros del
 track: editarlos sin poder elegir cuál obligaría a un viaje de ida y vuelta por
 cada uno de los doce.
 
-**FR16 — Selector de escala:** `minor`, `major`, `dorian`, `mixolydian`,
-`phrygian`, `lydian`. La elegida se rellena en violeta tonal con trazo de 3 pt.
+**FR16 — Selector de escala.** Las seis del brief y en su orden —`minor`,
+`major`, `dorian`, `mixolydian`, `phrygian`, `lydian`— más `pentatonic` y
+`hirajoshi`: **ocho**. La elegida se rellena en violeta tonal con trazo de 3 pt.
+
+> **Enmienda del 2026-09-06, decidida con el usuario al empezar la Fase 3.** El
+> brief pide seis y `Engine` tenía cinco: coincidían cuatro, faltaban
+> `mixolydian` y `lydian`, y sobraba `pentatonic`. Se añaden las que faltaban y
+> **se conserva `pentatonic`**, que funciona, tiene tests y es el único caso que
+> ejercita el hueco de pads que la Pre Spec documenta. `hirajoshi` la pidió el
+> usuario; se implementa como `0-2-3-7-8`, la forma que catalogan Elektron,
+> Ableton y Novation.
+>
+> El orden pone las seis del brief primero, así que la rejilla coincide con el
+> PNG en sus seis primeras tarjetas y las dos pentatónicas cierran en un cuarto
+> renglón.
 
 **FR17 — Selector de root:** las doce clases de altura, `c` a `b`. La elegida en
 off-white.
@@ -288,7 +313,8 @@ el sitio equivocado y hay que moverlo a `Engine` o `MIDI`.
 11. Sin BeatStep y sin destino, las cuatro pantallas conservan su estructura y la
     barra dice `no midi device`.
 12. La app solo se presenta en landscape.
-13. Cada fase cierra con `xcodebuild` verde, captura de simulador comparada con su
+13. Cada fase cierra con `xcodebuild` verde, `Engine` sin fallos, captura de
+    simulador comparada con su
     PNG, y confirmación explícita del usuario.
 
 ## Fuera de alcance
