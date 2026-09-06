@@ -81,12 +81,12 @@ haya que perseguirlas.
 La pantalla principal y la que más restricciones tiene: es feedback, y sus
 animaciones derivan del reloj musical.
 
-- [ ] Task: `ringPatternView` — los doce anillos (FR9, FR10)
-    - [ ] Reparto 68 / 32
-    - [ ] Doce anillos concéntricos, track 01 fuera y track 12 dentro, sobre `RingStack`
-    - [ ] Contorno de 3 pt en el track seleccionado
-    - [ ] Un track silenciado se distingue **sin dejar de girar**: mute suprime salida, nunca cycle ni playhead
-    - [ ] Reajustar la geometría al chrome nuevo: la reserva vertical se escribe como suma, no como literal
+- [x] Task: `ringPatternView` — los doce anillos (FR9, FR10) `bc7b977`
+    - [x] Reparto 68 / 32
+    - [x] Doce anillos concéntricos, track 01 fuera y track 12 dentro, sobre `RingStack`
+    - [x] Contorno de 3 pt en el track seleccionado
+    - [x] Un track silenciado se distingue **sin dejar de girar**: mute suprime salida, nunca cycle ni playhead
+    - [x] Reajustar la geometría al chrome nuevo: la reserva vertical se escribe como suma, no como literal
 
 - [ ] Task: Los playheads (FR11, NFR2)
     - [ ] Una aguja por anillo, off-white, cada una con la `Division` de su track
