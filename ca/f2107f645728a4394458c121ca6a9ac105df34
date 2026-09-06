@@ -1,0 +1,30 @@
+Task: Auditar que no se escapó lógica a las vistas (Fase 3)
+
+Track: screens-redesign_20260906
+
+Qué encontró
+1. El recuento del pool, escrito en tres sitios con tres redacciones, una de
+   ellas usando un sinónimo prohibido por la guía. -> Engine, 5 tests.
+2. Un 0..<12 en el picker de raíces. -> Root.validRange.
+
+Qué NO hizo falta mover, y por qué
+La sub-tarea del plan avisaba: 'decidir si un pad entra al pool es lógica de
+Engine, no de la vista'. Ya lo era antes de auditar: la vista llama a
+ControlInput.pressPad(at:), que vive en MIDI y tiene tests. La tarea anterior lo
+resolvió al construirla, en vez de dejarlo para aquí.
+
+Otras cosas revisadas y dejadas donde están
+- PitchPoolGrid.octaveName lee la altura del pad 1 para nombrar la octava.
+  Es una lectura, no una regla, y preguntarle a la superficie evita recalcular
+  el número desde octaveShift, que sería el duplicado de verdad.
+- El despacho de pad(_:) entre nota y octava usa las constantes de PadSurface,
+  no literales.
+
+La desviación del handoff, para que quede localizable
+La pantalla dirá 'pool 8 pitches' donde el PNG rotula '8 notes active'. Decidido
+por la regla de vocabulario de product-guidelines.md, que es anterior al
+handoff. Revertirlo es una línea en PitchPool.countDescription.
+
+Verificación
+- Engine: 578 tests, 0 fallos (eran 573).
+- xcodebuild iOS: BUILD SUCCEEDED.
