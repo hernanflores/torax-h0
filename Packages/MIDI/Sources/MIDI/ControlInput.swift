@@ -105,6 +105,11 @@ public final class ControlInput: @unchecked Sendable {
     /// describe el hardware y el consumidor acota el significado.
     static let tempModifierIndex = ControlMapping.controlsPerFamily - 4
 
+    /// **El 14 es el modificador de Ctrl All.** Cuarto de la serie y último
+    /// hueco: del 13 al 16 no hay Track detrás desde que el Pattern bajó a doce,
+    /// y los otros tres ya están tomados.
+    static let ctrlAllModifierIndex = ControlMapping.controlsPerFamily - 3
+
     /// Si los modificadores están hundidos ahora mismo.
     ///
     /// **Es estado de mensajes, no un temporizador.** El controlador manda 127
@@ -113,6 +118,7 @@ public final class ControlInput: @unchecked Sendable {
     private var holdingMuteModifier = false
     private var holdingSoloModifier = false
     private var holdingTempModifier = false
+    private var holdingCtrlAllModifier = false
 
     /// Si Temp está puesto ahora mismo.
     ///
@@ -121,6 +127,20 @@ public final class ControlInput: @unchecked Sendable {
     /// mismos en los dos casos. Es lectura y no una vía para accionar el gesto —
     /// la táctil está fuera de alcance en este track.
     public var isTempActive: Bool { holdingTempModifier }
+
+    /// Si Ctrl All está puesto ahora mismo.
+    ///
+    /// **Lo consume la pantalla**, que sin esto no puede distinguir un
+    /// desplazamiento global de una edición permanente: los valores que enseña
+    /// son los mismos en los dos casos. Es lectura y no una vía para accionar el
+    /// gesto — la táctil está fuera de alcance en este track.
+    public var isCtrlAllActive: Bool { holdingCtrlAllModifier }
+
+    /// Cuánto se lleva desplazado en el Ctrl All en curso, y qué había debajo.
+    ///
+    /// **Vacío es el estado de reposo**, no un caso aparte: mientras nadie
+    /// mantiene el step 14 no hay nada que devolver.
+    private var ctrlAll = CtrlAllOffset()
 
     /// Qué se superpuso durante el Temp en curso, y qué había debajo.
     ///
@@ -301,6 +321,10 @@ public final class ControlInput: @unchecked Sendable {
         if index == Self.tempModifierIndex {
             return value > 0 ? holdTemp() : releaseTemp()
         }
+        // Ctrl All va junto a Temp por el mismo motivo: su soltada hace algo.
+        if index == Self.ctrlAllModifierIndex {
+            return value > 0 ? holdCtrlAll() : releaseCtrlAll()
+        }
         if index == Self.muteModifierIndex {
             holdingMuteModifier = value > 0
             return false
@@ -358,6 +382,35 @@ public final class ControlInput: @unchecked Sendable {
         return true
     }
 
+    /// Entra en Ctrl All: a partir de aquí los giros desplazan los doce.
+    ///
+    /// **No publica por sí solo**, como los otros tres modificadores: nada ha
+    /// cambiado todavía.
+    private func holdCtrlAll() -> Bool {
+        holdingCtrlAllModifier = true
+        return false
+    }
+
+    /// Sale de Ctrl All y devuelve el Pattern.
+    ///
+    /// **Publica una sola vez el Pattern restaurado**, y solo si había algo que
+    /// devolver: soltar sin haber girado nada —o tras giros que no movieron
+    /// nada— no publica, con el mismo criterio que un giro nulo.
+    ///
+    /// El snapshot se vacía siempre, hubiera o no algo dentro: el hold terminó.
+    private func releaseCtrlAll() -> Bool {
+        holdingCtrlAllModifier = false
+        guard !ctrlAll.isEmpty else {
+            ctrlAll = CtrlAllOffset()
+            return false
+        }
+
+        pattern = ctrlAll.restored(into: pattern)
+        ctrlAll = CtrlAllOffset()
+        publish(pattern)
+        return true
+    }
+
     /// Da por soltados los tres modificadores.
     ///
     /// **Lo llama quien reconecta la entrada** (FR8): un cable desenchufado con
@@ -410,6 +463,14 @@ public final class ControlInput: @unchecked Sendable {
             return overlayTurn(delta, to: parameter)
         }
 
+        // Y con Ctrl All hundido, el giro desplaza los doce. Va después de Temp
+        // porque con los dos hundidos manda Temp (FR13); el corte de arriba ya
+        // impide llegar aquí en ese caso, pero el orden lo deja dicho también
+        // para quien lea solo esta función.
+        if holdingCtrlAllModifier {
+            return ctrlAllTurn(delta, to: parameter)
+        }
+
         // **El resto del Track se conserva.** Shape, pool y Groove son partes
         // del mismo valor: reconstruirlo sin alguna de ellas borraría material
         // al girar un knob, que es exactamente la destrucción que
@@ -440,6 +501,28 @@ public final class ControlInput: @unchecked Sendable {
         guard overlaid != track else { return false }
 
         pattern = pattern.replacing(overlaid, at: selectedTrackIndex)
+        publish(pattern)
+        return true
+    }
+
+    /// Un giro con Ctrl All hundido: desplaza los doce Tracks y no escribe.
+    ///
+    /// **Va sobre el `Pattern` entero y no sobre un Track**, que es la diferencia
+    /// con `overlayTurn(_:to:)`: el mismo delta se suma en los doce, conservando
+    /// sus diferencias. La regla entera vive en `CtrlAllOffset`, en `Engine`;
+    /// aquí solo se traduce el gesto.
+    ///
+    /// **Publica si cambió algún Track** (FR12), y aquí se aparta de Temp a
+    /// propósito. La regla de Temp —«si el Cycle en edición no se mueve, no se
+    /// mueve nadie»— existía porque la igualación aplanaba a los demás; con un
+    /// desplazamiento no hay nada que aplanar, y callar porque el Track que el
+    /// usuario está mirando topó silenciaría un gesto que está sonando. Se
+    /// compara el Pattern, como en el resto de la clase.
+    private func ctrlAllTurn(_ delta: Int, to parameter: TrackParameter) -> Bool {
+        let moved = ctrlAll.apply(delta, to: parameter, in: pattern)
+        guard moved != pattern else { return false }
+
+        pattern = moved
         publish(pattern)
         return true
     }

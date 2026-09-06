@@ -141,7 +141,7 @@ seguir.
 
 ## FASE 4: EL GESTO EN EL CONTROLADOR
 
-- [ ] Task: [step 14] mantiene y suelta (FR1, FR12, FR14)
+- [~] Task: [step 14] mantiene y suelta (FR1, FR12, FR14)
   - [ ] Tests (Red): CC 115 con 127 entra en Ctrl All y **no publica por sí
         solo**; con 0 sale y publica una vez el Pattern restaurado.
   - [ ] Tests (Red): con Ctrl All activo, girar Velocity publica un Pattern con
