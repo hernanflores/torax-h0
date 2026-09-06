@@ -1,0 +1,42 @@
+Tasks: contexto de track, scalePicker, rootPicker, pitchPoolGrid y retirada de
+TonalView (Fase 3, FR15–FR20 y FR32)
+
+Track: screens-redesign_20260906
+
+Cambio en MIDI, con tests en rojo primero
+ControlInput.pressPad(at:) — 6 tests nuevos en PadPoolInputTests. No es una
+segunda implementación: extrae el cuerpo de press(_ note:) y le pone delante la
+puerta de la pantalla. Un test compara las dos vías y exige que produzcan el
+mismo pool.
+
+El bug que el test encontró antes de existir en pantalla
+La puerta se escribió con isTouchFrozen (solo Ctrl All), copiando selectTrack.
+Falló: los pads del controlador callan con isTakenOver (Temp o Ctrl All), y la
+razón documentada vale igual para el dedo — ninguno de los dos snapshots guarda
+el pool. Con la puerta laxa, un pad tocado durante Temp habría escrito algo
+irreversible mientras el pad de hardware no hacía nada. Corregido a isTakenOver.
+El test se reescribió para fijar que las dos vías callan con los dos
+modificadores, en vez de afirmar una diferencia que no existe.
+
+Vistas
+App/ScaleScreen.swift: ScaleScreen, TrackContext, ScalePicker, RootPicker y
+PitchPoolGrid. App/TonalView.swift borrado.
+
+Decisiones de dibujo
+- La escala elegida se rellena de violeta (su familia); la raíz, de off-white
+  (el token de 'éste entre iguales'). Son dos decisiones distintas y se leen
+  distinto.
+- Los pads de octava son neutros, nunca violeta: el violeta dice que la altura
+  está en el pool.
+- Un pad sin grado se dibuja vacío y deshabilitado. PadSurface documenta por qué
+  no se rellena: pondría el pad 9 a una distancia distinta para cada escala.
+
+Defecto encontrado en captura
+La octava se escribía en los dos pads de octava a la vez. Movida a la cabecera
+del card, una sola vez.
+
+Verificación
+- Engine 573/0. MIDI 606 tests, 7 fallos, todos el flake de VirtualLoopback.
+- xcodebuild iOS y simulador: BUILD SUCCEEDED.
+- Captura: los 14 pads de nota y los 2 de octava en su sitio; con C minor la
+  rejilla da c-d-d#-f-g-g#-a#, que son sus siete grados.
