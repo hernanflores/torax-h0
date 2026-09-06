@@ -140,8 +140,8 @@ animaciones derivan del reloj musical.
     - [x] Borrar el fichero una vez sus funciones están cubiertas
     - [x] Confirmar que no queda ninguna referencia
 
-- [ ] Task: Auditar que no se escapó lógica a las vistas
-    - [ ] Atención especial aquí: decidir si un pad entra al pool es lógica de `Engine`, no de la vista
+- [x] Task: Auditar que no se escapó lógica a las vistas `caf2107`
+    - [x] Atención especial aquí: decidir si un pad entra al pool es lógica de `Engine`, no de la vista
 
 - [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `scale.png`
 
