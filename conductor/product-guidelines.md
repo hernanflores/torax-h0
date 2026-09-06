@@ -6,9 +6,32 @@
 
 ## Voz y tono
 
-- **Preciso, no conversacional.** La app no explica ni acompaña: informa. `Steps 16 · Pulses 5`, no "Has elegido 5 pulsos".
+- **Preciso, no conversacional.** La app no explica ni acompaña: informa. `steps 16 · pulses 5`, no "Has elegido 5 pulsos".
 - **Vocabulario de la Pre Spec, en inglés, sin traducir.** Steps, Pulses, Rotate, Division, Velocity, Sustain, Timing, Delay, Probability, Scale, Root, Pitch. Un solo término por concepto en UI, código y documentación — sin sinónimos, sin capa de traducción.
-- **Sin mensajes de error emotivos.** Un dispositivo MIDI desconectado se comunica con un estado (`No MIDI device`), no con una disculpa.
+- **Sin mensajes de error emotivos.** Un dispositivo MIDI desconectado se comunica con un estado (`no midi device`), no con una disculpa.
+
+> **Enmienda del 2026-09-06 — la interfaz se escribe en minúsculas. Cambia la
+> caja, no el término.** El handoff de iPadOS exige que **todo texto visible esté
+> en minúsculas**, y el rediseño de las cuatro pantallas
+> (`screens-redesign_20260906`) lo adopta: la pantalla escribe `steps`, `pulses`,
+> `dorian`, `no midi device`.
+>
+> **La regla de arriba sobrevive entera, porque no era una regla de caja.** Lo que
+> fija es *qué palabra* se usa y que sea una sola por concepto, en inglés y sin
+> traducir. Eso no se toca: `Steps` sigue siendo `Steps` en código, tests,
+> Pre Spec y documentación, y sigue sin tener sinónimo. Lo único que cambia es
+> cómo se dibuja en pantalla.
+>
+> **Dónde vive la conversión: en la capa de presentación y en ningún otro sitio.**
+> Un identificador en minúsculas dentro de `Engine` sería traducir el modelo para
+> complacer al dibujo, y entonces sí se habría roto el «un solo término por
+> concepto en UI, código y documentación» — el término sería el mismo, pero
+> habría dos formas de escribirlo compitiendo dentro del código.
+>
+> **Por qué se acepta.** La minúscula constante es lo que hace que el chrome se
+> lea como un aparato y no como una app de sistema, que es el mismo criterio por
+> el que el tratamiento neo-brutalista no usa pastillas completas. Es una decisión
+> de superficie con una consecuencia de superficie.
 
 ## Lenguaje visual
 
@@ -31,6 +54,33 @@
 > Los tres viven cada uno en un solo fichero de `App`. **Una vista que invente
 > su propio color, su propia fuente o su propio borde es un fallo**, no una
 > variación.
+
+> **Enmienda del 2026-09-06 — el fondo pasa a neutro; lo demás del cierre sigue
+> en pie.** El fondo era `#211823`, un violeta muy oscuro. El handoff de iPadOS
+> lo sustituye por el neutro **`#111211`**, y el rediseño de las cuatro pantallas
+> (`screens-redesign_20260906`) lo adopta.
+>
+> **Qué cambia y qué no.** Cambia el fondo y, con él, los neutros que se
+> derivaban de un violeta: toolbar, panel hundido, bordes, posición vacía del
+> anillo y los dos grises de texto. **No cambian los tres acentos** —Shape
+> `#9AAB79`, Groove `#AA6DA8`, Tonal `#7C5FD9`— **ni la tipografía ni el
+> tratamiento neo-brutalista**, que siguen siendo exactamente los cerrados el
+> 2026-09-02. La nota de arriba se enmienda en una línea, no se retira.
+>
+> **Por qué se acepta.** El violeta oscuro se eligió cuando el lenguaje visual
+> era ilustrativo, y su tinte competía con dos de los tres acentos por estar del
+> mismo lado del círculo cromático. Un fondo neutro no compite con ninguno: lo
+> que codifica familia vuelve a ser lo único cromático de la pantalla, que es lo
+> que esta sección pide cuando dice que el color nunca decora.
+>
+> **Lo que reabre, y hay que escribirlo porque ya estaba escrito.** El cierre del
+> 2026-09-02 dice que el mauve de Groove «se comprobó a un metro y con poca luz
+> que sigue separándose del violeta de Tonal». **Esa comprobación se hizo contra
+> el violeta oscuro y no vale contra el neutro.** `ShapeTheme.swift` ya dejaba la
+> pregunta abierta —los dos quedan del mismo lado del círculo y se separan más
+> por saturación que por tono— y este cambio la vuelve a poner encima de la mesa.
+> Se decide con la app en la mano, a un metro y con poca luz; no se revierte por
+> precaución ni se da por buena por deferencia al handoff.
 
 - **Protagonista:** la visualización del patrón. Todo lo demás es soporte.
 - **Secundario:** controles, etiquetas y chrome. Neutros, planos, sin competir por atención.
