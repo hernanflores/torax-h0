@@ -1,0 +1,47 @@
+Task: Cerrar el sistema de tokens (Fase 1, FR1 y FR2)
+
+Track: screens-redesign_20260906
+
+Qué se hizo
+- Palette entera rederivada sobre el fondo neutro #111211.
+- Tres tokens nuevos: surface, text, offWhite.
+- toolbar renombrado a onAccent; el hub del anillo pasa a inset.
+- Los tres acentos intactos, con su contraste medido en la documentación.
+- Brutalist revisado contra el brief sin cambiar valores, con nota de lo que
+  queda por comprobar en la captura.
+- Typography suma moduleTitle, navigationItem y navigationItemActive.
+
+Ficheros
+- App/ShapeTheme.swift (reescrito), App/Typography.swift, App/Brutalist.swift
+- App/RingView.swift, App/ContentView.swift, App/TonalView.swift,
+  App/TrackSelectorView.swift, App/ChannelMapView.swift (call sites)
+
+El porqué
+El fondo cambia por el brief, pero los neutros no se podían copiar tal cual:
+derivaban de un violeta. Se eligieron conservando el contraste de cada token
+contra su fondo anterior en vez de su claridad, porque lo que estos tokens
+codifican es separación, no luminosidad absoluta.
+
+Los tres tokens nuevos no son ampliación del sistema: son fugas que ya
+existían. '.white' estaba suelto en RingView, ContentView y TonalView, que es
+literalmente el fallo que FR1 prohíbe.
+
+Método
+Los valores del handoff se midieron decodificando los cuatro PNG y muestreando
+píxeles, no a ojo. De ahí salen el off-white cálido #f2ede3 y el hallazgo de
+que los cards no son superficies hundidas: su interior y el fondo se llevan uno
+o dos valores, y lo que los separa es el trazo de 2 pt.
+
+Verificación
+- xcodebuild Debug para iOS: BUILD SUCCEEDED.
+- Engine: 542 tests, 0 fallos (sin cambios en Engine, como exige NFR1).
+- grep confirma cero restos de Palette.toolbar y cero usos de Color.white.
+
+Lo que queda abierto
+1. La separación mauve de Groove / violeta de Tonal: 1,21:1 entre sí, y su
+   comprobación a un metro se hizo contra el fondo violeta. No vale contra el
+   neutro. Se mira en la verificación de fase.
+2. La sombra dura es negro al 40 % y el fondo bajó de luminosidad. Si no se
+   separa en la captura, se sube la opacidad; no se añade blur.
+3. Los valores exactos de text y offWhite salen de muestreo sobre PNG con ruido
+   de compresión. Se confirman contra la captura.
