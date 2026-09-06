@@ -120,25 +120,25 @@ animaciones derivan del reloj musical.
 
 ## Fase 3 — Pantalla `scale`
 
-- [ ] Task: Contexto de track, táctil (FR15)
-    - [ ] Muestra el track en edición y permite cambiarlo sin volver a `track`
-    - [ ] La selección es la misma que la de la franja: un solo estado, no dos
+- [x] Task: Contexto de track, táctil (FR15) `c91c0f0`
+    - [x] Muestra el track en edición y permite cambiarlo sin volver a `track`
+    - [x] La selección es la misma que la de la franja: un solo estado, no dos
 
-- [ ] Task: `scalePicker` y `rootPicker` (FR16, FR17)
-    - [ ] Seis escalas; la elegida en violeta tonal con trazo de 3 pt
-    - [ ] Doce roots `c`–`b`; el elegido en off-white
-    - [ ] Cambiar escala o root **reencuadra el pool, no lo vacía** — la regla de `product-guidelines.md`, ya implementada en `PitchPool.reframed(to:)`
+- [x] Task: `scalePicker` y `rootPicker` (FR16, FR17) `c91c0f0`
+    - [x] Seis escalas; la elegida en violeta tonal con trazo de 3 pt
+    - [x] Doce roots `c`–`b`; el elegido en off-white
+    - [x] Cambiar escala o root **reencuadra el pool, no lo vacía** — la regla de `product-guidelines.md`, ya implementada en `PitchPool.reframed(to:)`
 
-- [ ] Task: `pitchPoolGrid` — la rejilla espejo del controlador (FR18, FR19, FR20)
-    - [ ] Rejilla 4×4 fiel a `PadSurface`: 14 pads de nota (7 grados × 2 bloques) y 2 pads de octava en las posiciones 8 y 16
-    - [ ] Los pads de octava **indican la octava vigente** (`PadSurface.octaveShift`); esa información no está en ninguna otra parte de la interfaz
-    - [ ] Pool en violeta tonal, resto neutro, **pads de octava nunca en violeta**
-    - [ ] Contador con el número real de notas; la novena no entra y el contador no miente
-    - [ ] Verificar que la rejilla dice qué alturas hay disponibles y nunca qué altura suena en qué step
+- [x] Task: `pitchPoolGrid` — la rejilla espejo del controlador (FR18, FR19, FR20) `c91c0f0`
+    - [x] Rejilla 4×4 fiel a `PadSurface`: 14 pads de nota (7 grados × 2 bloques) y 2 pads de octava en las posiciones 8 y 16
+    - [x] Los pads de octava **indican la octava vigente** (`PadSurface.octaveShift`); esa información no está en ninguna otra parte de la interfaz
+    - [x] Pool en violeta tonal, resto neutro, **pads de octava nunca en violeta**
+    - [x] Contador con el número real de notas; la novena no entra y el contador no miente
+    - [x] Verificar que la rejilla dice qué alturas hay disponibles y nunca qué altura suena en qué step
 
-- [ ] Task: Retirar `TonalView` (FR32)
-    - [ ] Borrar el fichero una vez sus funciones están cubiertas
-    - [ ] Confirmar que no queda ninguna referencia
+- [x] Task: Retirar `TonalView` (FR32) `c91c0f0`
+    - [x] Borrar el fichero una vez sus funciones están cubiertas
+    - [x] Confirmar que no queda ninguna referencia
 
 - [ ] Task: Auditar que no se escapó lógica a las vistas
     - [ ] Atención especial aquí: decidir si un pad entra al pool es lógica de `Engine`, no de la vista
