@@ -133,7 +133,9 @@ final class TransportModel {
     private func syncFromControlInput() {
         pattern = controlInput.pattern
         selectedTrackIndex = controlInput.selectedTrackIndex
-        isTempActive = controlInput.isTempActive
+        gesture =
+            controlInput.isTempActive
+            ? .temp : (controlInput.isCtrlAllActive ? .ctrlAll : .none)
     }
 
     /// Con qué material arranca la app.
@@ -285,13 +287,27 @@ final class TransportModel {
     /// ninguna vía táctil para suplirlo.
     var isReadOnly: Bool { !sourceSelection.hasEndpoint }
 
-    /// Si lo que la pantalla enseña es un Temp y no una edición permanente.
+    /// Qué gesto momentáneo está puesto, si hay alguno.
     ///
-    /// **Los valores no cambian de camino: cambia lo que significan.** El
-    /// overlay se escribe en el `Pattern` publicado, así que la lectura, el
-    /// anillo y el valor grande ya recogen los superpuestos solos; sin esto, un
-    /// fill puesto y una edición permanente se leerían exactamente igual (FR10).
-    private(set) var isTempActive = false
+    /// **Los valores no cambian de camino: cambia lo que significan.** El overlay
+    /// y el desplazamiento se escriben en el `Pattern` publicado, así que la
+    /// lectura, los anillos y el valor grande ya los recogen solos; sin esto, un
+    /// gesto puesto y una edición permanente se leerían exactamente igual (FR10,
+    /// FR16).
+    ///
+    /// > **Sustituye a `isTempActive`, que era un `Bool`.** Con dos gestos
+    /// > momentáneos, un booleano solo podía decir «hay algo puesto», y lo que el
+    /// > usuario necesita saber es **cuál**: los dos son reversibles, y lo que
+    /// > los separa es si se mueve un Track o los doce. Mantener el booleano al
+    /// > lado del caso habría dejado dos fuentes de verdad para la misma
+    /// > pregunta.
+    ///
+    /// **Los dos nunca están puestos a la vez**, y el empate no se resuelve aquí:
+    /// `isCtrlAllActive` ya dice «al mando» y no «hundido», así que con el step
+    /// 13 y el 14 bajo los dedos gana Temp sin que la vista ni este modelo tengan
+    /// que saberlo. Repartir el desempate entre la entrada y la presentación
+    /// acabaría con los dos diciendo cosas distintas.
+    private(set) var gesture: ReadoutGesture = .none
 
     /// Cuánto se queda el valor grande tras el último giro.
     ///

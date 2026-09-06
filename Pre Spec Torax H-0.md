@@ -294,6 +294,73 @@ En la práctica: Steps largos contra una Phrase de 16 posiciones generan desfase
 > quedan fuera. El overlay es de parámetros; material y configuración no se
 > superponen.
 
+> **Nota del 2026-09-05 — Ctrl All: un knob mueve los doce Tracks.** La Pre Spec
+> tampoco lo tiene: todo giro de knob de esta sección alcanza a **un** Track, el
+> seleccionado. Ctrl All añade el gesto que faltaba —el track
+> `ctrl-all_20260905`—: **mantener [step 14]** y girar desplaza ese parámetro en
+> **los doce Tracks a la vez**, y **soltar lo devuelve**. En el Pattern no queda
+> rastro, igual que con Temp.
+>
+> Es lo que hace posible subir el Velocity de la mezcla entera, abrir el Sustain
+> de todo o desfasar el Pattern con Rotate. Sin él harían falta ciento ocho
+> vueltas de knob —nueve parámetros por doce Tracks— y ninguna se podría
+> deshacer.
+>
+> **Ctrl All desplaza; Temp iguala. Ese es todo el parentesco y toda la
+> diferencia.** Temp existe para que un parámetro suene **igual** en todos los
+> Cycles del Track seleccionado. Ctrl All existe para lo contrario: mover el
+> Pattern entero **conservando** lo que lo hace un Pattern y no doce copias. Un
+> Track lento sigue siendo el lento; el que tenía menos Pulses sigue teniendo
+> menos; y con varios Cycles activos, cada Cycle conserva su valor propio
+> desplazado. Quien lea «afecta a todos los Tracks» dará por supuesto lo
+> contrario, y de ahí que se escriba.
+>
+> **Lo que se guarda es la base y el desplazamiento, por separado.** El valor de
+> cada Cycle se recalcula siempre como base + offset, nunca desde el valor ya
+> escrito. Es lo único que hace exacta la ida y vuelta cuando un Track topa
+> contra su extremo: el topado **no arrastra a los demás** y retoma **su** valor
+> exacto en cuanto el desplazamiento reentra en su rango — no en el primer clic
+> de vuelta, que es lo que esta nota afirmaba al escribirse y se corrigió el
+> mismo día al implementarlo. El desplazamiento acumulado sí se acota
+> al ancho del recorrido del parámetro —sin tope, cuarenta clics contra el
+> límite dejan el knob muerto durante cuarenta clics de vuelta, que es el
+> síntoma que la nota del 2026-08-28 sobre los encoders enseñó a reconocer como
+> avería—. **Rotate queda fuera de ese tope:** envuelve módulo el Steps de cada
+> Cycle en vez de acotar, así que nunca se muere, y con Steps distintos los
+> Tracks se desfasan entre sí — que es lo que se le pide a un Rotate global.
+>
+> **Alcanza a los doce, muteados incluidos.** Mute es mezcla y no material: la
+> rejilla del Track muteado sigue avanzando, así que dejarlo fuera del
+> desplazamiento lo devolvería desalineado al desmutearlo, y el gesto dependería
+> de un estado que no se ve en los knobs. Los Cycles inactivos no se tocan: el
+> desplazamiento alcanza a lo que se recorre.
+>
+> **Con Ctrl All hundido, Ctrl All manda** —la selección de Track, los
+> modificadores de mute y solo, el knob del Cycle en edición y los pads callan—
+> **y además callan las vías táctiles que escriben**: Scale, Root, canal,
+> selección de Track y número de Cycles activos. Es un requisito que Temp no
+> tiene, y la razón es que el gesto promete no escribir: un cambio de Scale a
+> media superposición reencuadra el pool y **no se deshace al soltar**, y un
+> número de Cycles que sube deja Cycles sin base guardada que se quedarían con
+> el desplazamiento puesto para siempre.
+>
+> **Con [step 13] y [step 14] hundidos a la vez gana Temp**, y ninguno hereda el
+> estado del otro: al soltar el 13 con el 14 aún hundido, Temp restaura y Ctrl
+> All arranca ahí, sobre el Pattern ya restaurado. Cada modificador entra y sale
+> por su propio botón; un botón hundido que no hiciera nada sería peor que
+> cualquiera de las dos respuestas.
+>
+> **Es el cuarto modificador mantenido y no inventa mecánica.** El 13, el 15 y el
+> 16 ya son Temp, solo y mute, con el mismo 127 al pulsar y 0 al soltar; el 14 es
+> el último de los cuatro que quedaban libres al bajar el Pattern a doce Tracks.
+>
+> **El término es «Ctrl All».** No «global», no «all tracks», no «macro»: un
+> concepto, un nombre.
+>
+> **Lo que Ctrl All no toca:** pool, Scale, Root, canal, registro de pads y
+> número de Cycles activos quedan fuera, igual que con Temp. El desplazamiento es
+> de parámetros; material y configuración no se superponen.
+
 ## 6. Random Modulation: comportamiento por destino
 
 La dirección importa: clockwise y counter-clockwise tienen semánticas distintas. Sólo se modula la función primaria del knob.

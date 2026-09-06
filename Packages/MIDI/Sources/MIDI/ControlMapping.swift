@@ -15,17 +15,26 @@ public struct ControlMapping: Equatable, Sendable {
 
     /// El preset del BeatStep Pro.
     ///
-    /// Los números salen del rango de controladores de propósito general
-    /// (70–79), que es donde la especificación MIDI espera parámetros de
-    /// síntesis sin significado fijo — no pisan volumen, paneo ni pedal.
-    /// Los cuatro de Shape y los cinco de Groove, en el mismo bloque contiguo:
-    /// el orden de los CC sigue al de `TrackParameter`, así que la fila de
-    /// knobs se lee igual que la lista de parámetros.
+    /// Los números no pisan controladores con significado asignado en la
+    /// especificación MIDI: ni volumen, ni paneo, ni pedal. Los cuatro de Shape
+    /// y los cinco de Groove, en un bloque contiguo desde el 70.
     ///
-    /// **Los nueve caben sin salir del rango.** Con Timing y Delay el bloque
-    /// llega al 78 y el rango de propósito general termina en el 79: no hay que
-    /// invadir controladores con significado asignado, que es lo que habría
-    /// obligado a repartir los knobs por criterios ajenos al dominio.
+    /// > **Nota del 2026-09-05 — la regla era «no pisar nada asignado», no
+    /// > «70–79».** Esto decía que los números salen «del rango de controladores
+    /// > de propósito general (70–79)» y que los nueve «caben sin salir del
+    /// > rango». Las dos frases describían la tabla de entonces, no la regla: el
+    /// > 79 no tiene nada de especial y los CC 80–85 tampoco están asignados en
+    /// > la especificación. Se reescribe al mover el knob del Cycle al 82, que
+    /// > con el texto viejo habría parecido una excepción cuando no lo es.
+    ///
+    /// > **Nota del 2026-09-05 — el orden de los CC ya no sigue al de
+    /// > `TrackParameter`.** Esto decía que sí, y de ahí que «la fila de knobs se
+    /// > lea igual que la lista de parámetros». Con Delay en el 76 y Probability
+    /// > en el 78 deja de ser cierto. **La pantalla conserva el orden del
+    /// > dominio** —`Velocity · Sustain · Probability · Timing · Delay`—: el
+    /// > orden de lectura es del dominio y el de los knobs es de la mano, y desde
+    /// > esta fecha son dos cosas distintas. Quien busque la correspondencia
+    /// > tiene la tabla en `preset/README.md`, que es donde debía estar.
     public static let beatStepPro = ControlMapping(assignments: [
         .steps: 70,
         .pulses: 71,
@@ -33,9 +42,9 @@ public struct ControlMapping: Equatable, Sendable {
         .division: 73,
         .velocity: 74,
         .sustain: 75,
-        .probability: 76,
+        .delay: 76,
         .timing: 77,
-        .delay: 78,
+        .probability: 78,
     ])
 
     /// CC por defecto del primer knob; los dieciséis van seguidos desde ahí.
@@ -106,16 +115,31 @@ public struct ControlMapping: Equatable, Sendable {
         )
     }
 
-    /// CC del knob que mueve el Cycle en edición: el décimo del bloque.
+    /// Posición del knob del Cycle en edición dentro del bloque, contando desde
+    /// cero: el decimotercero.
+    ///
+    /// **Es un dato del mapeo y no un desplazamiento escondido en el código.**
+    /// Hasta el 2026-09-05 el CC se calculaba como `knobBlock.number + 9` dentro
+    /// de la propiedad de abajo, y eso hacía que mover un knob fuera un cambio de
+    /// aritmética en vez de un cambio de tabla — que es exactamente lo que un
+    /// mapeo existe para evitar.
+    public static let editingCycleKnobOffset = 12
+
+    /// CC del knob que mueve el Cycle en edición: el decimotercero del bloque.
     ///
     /// **No es un `TrackParameter`, y por eso no está en `assignments`.** Los
     /// nueve primeros knobs mueven parámetros del Cycle; este mueve *a cuál* de
     /// ellos se está apuntando, que es una operación de otro orden. Meterlo en
     /// la tabla obligaría a inventarle un caso al enum que el modelo no tiene.
     ///
-    /// El número cae en el 79 con el bloque por defecto, que es el último del
-    /// rango de propósito general de la especificación MIDI: el sitio sigue
-    /// siendo el correcto.
+    /// > **Nota del 2026-09-05 — se movió del knob 10 al 13.** Estaba en el 79,
+    /// > pegado a los nueve parámetros, y este comentario decía que «el sitio
+    /// > sigue siendo el correcto» porque el 79 cerraba el rango de propósito
+    /// > general. Ninguna de las dos cosas se sostiene: el rango no era la regla
+    /// > —ver la nota de `beatStepPro`— y estar pegado a los nueve era
+    /// > precisamente lo que confundía la fila. Separarlo dice con la mano lo que
+    /// > el modelo ya decía. **El CC 79 queda libre**, declarado a propósito
+    /// > como los otros cinco.
     ///
     /// > **Desviación de la Pre Spec, anotada el 2026-09-02.** La tabla de Shape
     /// > dice «Cycles: selecciona/edita el Cycle actual; **con CTRL** ajusta 1–16
@@ -124,7 +148,7 @@ public struct ControlMapping: Equatable, Sendable {
     /// > se ajusta táctilmente, que es donde `product-guidelines.md` pone la
     /// > configuración. La nota fechada está en la Pre Spec.
     public var editingCycleController: MIDIController? {
-        MIDIController(knobBlock.number + 9)
+        MIDIController(knobBlock.number + Self.editingCycleKnobOffset)
     }
 
     /// Índice 0–15 del step button que envió ese CC, o `nil` fuera del bloque.

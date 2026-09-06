@@ -39,7 +39,7 @@ final class FamilyReadoutTempTests: XCTestCase {
     /// se esté mirando.
     func testWithTheOverlayEveryFamilyShowsTheMarker() {
         for family in ParameterFamily.allCases {
-            let readout = FamilyReadout(track: track, family: family, isTemporary: true)
+            let readout = FamilyReadout(track: track, family: family, gesture: .temp)
 
             XCTAssertEqual(readout.marker, "Temp", "\(family) no sacó el distintivo")
         }
@@ -50,7 +50,7 @@ final class FamilyReadoutTempTests: XCTestCase {
     /// nombre que se lee en pantalla es el que el usuario va a usar para
     /// pensarlo.
     func testTheMarkerUsesTheAnchoredTerm() {
-        let readout = FamilyReadout(track: track, family: .shape, isTemporary: true)
+        let readout = FamilyReadout(track: track, family: .shape, gesture: .temp)
 
         XCTAssertEqual(readout.marker, "Temp")
     }
@@ -63,7 +63,7 @@ final class FamilyReadoutTempTests: XCTestCase {
     func testTheMarkerDoesNotChangeTheReading() {
         for family in ParameterFamily.allCases {
             let resting = FamilyReadout(track: track, family: family)
-            let temporary = FamilyReadout(track: track, family: family, isTemporary: true)
+            let temporary = FamilyReadout(track: track, family: family, gesture: .temp)
 
             XCTAssertEqual(
                 temporary.headline, resting.headline, "\(family) cambió la lectura grande")
@@ -77,7 +77,7 @@ final class FamilyReadoutTempTests: XCTestCase {
     func testTheReadingIsAlwaysThatOfTheCycleGiven() {
         let overlaid = track.setting(.pulses, to: 9)
 
-        let readout = FamilyReadout(track: overlaid, family: .shape, isTemporary: true)
+        let readout = FamilyReadout(track: overlaid, family: .shape, gesture: .temp)
 
         XCTAssertEqual(readout.headline, "Pulses 9")
     }

@@ -22,8 +22,7 @@ Se configura en MIDI Control Center, por encoder o para todos a la vez.
 
 ## Los dieciséis knobs — CC 70 a 85
 
-Los nueve primeros son los nueve parámetros del Track, en el mismo orden en que
-aparecen en la pantalla.
+Los nueve primeros son los nueve parámetros del Track.
 
 | Knob | CC | Parámetro |
 |---|---|---|
@@ -33,20 +32,41 @@ aparecen en la pantalla.
 | 4 | 73 | Division |
 | 5 | 74 | Velocity |
 | 6 | 75 | Sustain |
-| 7 | 76 | Probability |
+| 7 | 76 | Delay |
 | 8 | 77 | Timing |
-| 9 | 78 | Delay |
-| 10 | 79 | **Cycle en edición** del Track seleccionado |
-| 11–16 | 80–85 | **Sin asignar.** Se ignoran en silencio |
+| 9 | 78 | Probability |
+| 10–12 | 79–81 | **Sin asignar.** Se ignoran en silencio |
+| 13 | 82 | **Cycle en edición** del Track seleccionado |
+| 14–16 | 83–85 | **Sin asignar.** Se ignoran en silencio |
 
-El knob 10 dejó de estar libre en `cycles_20260901`: mueve el cursor de edición
-del Track seleccionado. **Cuántos Cycles están activos no se toca aquí**, sino en
-la pantalla — la nota del 2026-09-02 en la Pre Spec explica por qué el gesto de
-CTRL se partió en dos.
+El knob 13 mueve el cursor de edición del Track seleccionado. **Cuántos Cycles
+están activos no se toca aquí**, sino en la pantalla — la nota del 2026-09-02 en
+la Pre Spec explica por qué el gesto de CTRL se partió en dos.
 
 Los seis libres están declarados a propósito, no olvidados: su sitio es de v2
 —Accent, Repeats, Time, Voicing, Range—. Girarlos no hace nada y no es un
 error.
+
+> **Nota del 2026-09-05 — tres knobs cambiaron de sitio.** Delay pasó del 78 al
+> **76** y Probability del 76 al **78**; el Cycle en edición se fue del knob 10
+> (CC 79) al **13** (CC 82), y el 79 quedó libre.
+>
+> **Esta tabla decía «los nueve primeros son los nueve parámetros, en el mismo
+> orden en que aparecen en la pantalla», y ya no es cierto.** La pantalla
+> conserva el orden del dominio —`Velocity · Sustain · Probability · Timing ·
+> Delay`— y los knobs siguen el de la mano. Son dos órdenes distintos desde esta
+> fecha, y la correspondencia es esta tabla: no se puede deducir de la pantalla.
+>
+> **El Cycle se separó de los nueve a propósito.** Pegado a ellos parecía el
+> décimo parámetro, y no lo es: mueve *a cuál* de los nueve se apunta, que es una
+> operación de otro orden.
+>
+> **Y el rango: el 79 no era una frontera.** Esta página y `ControlMapping`
+> decían que los números salían del rango de propósito general «70–79». La regla
+> siempre fue **no pisar CC con significado asignado**, y los 80–85 tampoco lo
+> tienen. Por eso el 82 no es una excepción.
+>
+> Track `ctrl-all_20260905`.
 
 **Scale y Root no están aquí**: son configuración táctil y se tocan en la
 pantalla del iPad.
@@ -80,9 +100,18 @@ la nota 48. Son dos numeraciones distintas y no hay que confundirlas.
 |---|---|---|
 | 1–12 | 102–113 | Seleccionar Track 1–12 |
 | 13 | 114 | **Modificador de Temp** — mantenido |
-| 14 | 115 | Nada: el Pattern tiene doce Tracks |
+| 14 | 115 | **Modificador de Ctrl All** — mantenido |
 | 15 | 116 | **Modificador de solo** — mantenido |
 | 16 | 117 | **Modificador de mute** — mantenido |
+
+Los cuatro modificadores funcionan igual: 127 al pulsar, 0 al soltar. **Temp**
+superpone parámetros sobre el Track seleccionado; **Ctrl All** los desplaza en
+los doce a la vez. Ninguno de los dos escribe en el Pattern, y con los dos
+hundidos manda Temp.
+
+> **El step 14 se declara aquí antes de que la app lo haga.** El preset y el
+> mapeo van en la misma rebanada que el gesto, pero en fases distintas: hasta que
+> la fase del gesto cierre, mantener el 14 no hace nada. `ctrl-all_20260905`.
 
 El bloque 102–117 está sin definir en la especificación MIDI, así que no pisa
 nada con significado asignado.

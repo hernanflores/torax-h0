@@ -43,13 +43,50 @@ final class PresetMappingTests: XCTestCase {
 
     // MARK: - Los knobs
 
-    /// Los nueve primeros knobs son los nueve parámetros, en el orden de
-    /// `TrackParameter` — que es el de la pantalla.
-    func testTheFirstNineKnobsAreTheNineParametersInOrder() {
-        let knobs = mapping.declaredNumbers.knobs
-        for (offset, parameter) in TrackParameter.allCases.enumerated() {
+    /// Los nueve primeros knobs son los nueve parámetros, en la tabla que
+    /// declara el preset.
+    ///
+    /// > **El orden dejó de seguir a `TrackParameter` el 2026-09-05.** Este test
+    /// > se llamaba `…AreTheNineParametersInOrder` y recorría `allCases`
+    /// > confiando en que el knob N fuera el parámetro N. Con Delay en el 76 y
+    /// > Probability en el 78 eso ya no es cierto, así que la tabla se escribe
+    /// > entera: un test que deduce lo que debería comprobar no protege nada, y
+    /// > éste habría seguido pasando con los dos knobs intercambiados si el
+    /// > intercambio hubiera sido un error de dedo.
+    ///
+    /// La pantalla **sí** conserva el orden de `TrackParameter`
+    /// —`Velocity · Sustain · Probability · Timing · Delay`—: el orden de lectura
+    /// es del dominio y el de los knobs es de la mano, y desde esta fecha son dos
+    /// cosas distintas.
+    func testTheFirstNineKnobsCarryTheDeclaredParameters() {
+        let expected: [Int: TrackParameter] = [
+            70: .steps, 71: .pulses, 72: .rotate, 73: .division,
+            74: .velocity, 75: .sustain, 76: .delay, 77: .timing, 78: .probability,
+        ]
+        for (number, parameter) in expected {
+            XCTAssertEqual(mapping.controller(for: parameter)?.number, number, "\(parameter)")
+        }
+        XCTAssertEqual(expected.count, TrackParameter.allCases.count, "falta algún parámetro")
+    }
+
+    /// El intercambio del 2026-09-05, escrito aparte porque es lo que se pidió.
+    func testDelayIsOnSeventySixAndProbabilityOnSeventyEight() throws {
+        XCTAssertEqual(
+            mapping.parameter(for: try XCTUnwrap(MIDIController(76))), .delay)
+        XCTAssertEqual(
+            mapping.parameter(for: try XCTUnwrap(MIDIController(78))), .probability)
+    }
+
+    /// Y ningún otro parámetro se movió de sitio con el intercambio.
+    func testNoOtherParameterChangedController() throws {
+        let untouched: [Int: TrackParameter] = [
+            70: .steps, 71: .pulses, 72: .rotate, 73: .division,
+            74: .velocity, 75: .sustain, 77: .timing,
+        ]
+        for (number, parameter) in untouched {
             XCTAssertEqual(
-                mapping.controller(for: parameter)?.number, knobs[offset], "\(parameter)")
+                mapping.parameter(for: try XCTUnwrap(MIDIController(number))), parameter,
+                "CC \(number)")
         }
     }
 
@@ -76,6 +113,47 @@ final class PresetMappingTests: XCTestCase {
                     .controlChange(channel: MIDIChannel(1)!, controller: controller, value: 1)),
                 "CC \(number)")
         }
+    }
+
+    // MARK: - El knob del Cycle en edición
+
+    /// **El Cycle en edición vive en el knob 13, CC 82** desde el 2026-09-05.
+    ///
+    /// Estaba en el knob 10 (CC 79), contiguo a los nueve parámetros. Separarlo
+    /// de la fila dice con la mano lo que ya decía el modelo: los nueve mueven
+    /// un parámetro del Cycle y éste mueve *a cuál* de ellos se apunta, que es
+    /// una operación de otro orden.
+    func testTheEditingCycleKnobIsTheThirteenth() throws {
+        XCTAssertEqual(mapping.editingCycleController?.number, 82)
+        XCTAssertEqual(mapping.declaredNumbers.knobs[12], 82)
+    }
+
+    /// **El CC 79 quedó libre y se ignora en silencio**, con el mismo criterio
+    /// que los otros cinco: no es un olvido, y girarlo no es un error.
+    func testTheTenthKnobIsNowFree() throws {
+        let seventyNine = try XCTUnwrap(MIDIController(79))
+        XCTAssertNil(mapping.parameter(for: seventyNine))
+        XCTAssertNotEqual(mapping.editingCycleController, seventyNine)
+
+        let input = ControlInput(
+            track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
+            publish: { _ in }
+        )
+        XCTAssertFalse(
+            input.receive(
+                .controlChange(channel: MIDIChannel(1)!, controller: seventyNine, value: 1)),
+            "el knob 10 movió algo")
+    }
+
+    /// **El número sigue al bloque, no está clavado al 82.** Es lo que separa un
+    /// dato del mapeo de una constante repartida por el código: mover
+    /// `knobBlock` mueve los dieciséis knobs a la vez, éste incluido.
+    func testTheEditingCycleKnobFollowsItsBlock() throws {
+        let moved = ControlMapping(
+            assignments: [.steps: 20],
+            knobBlock: try XCTUnwrap(MIDIController(20))
+        )
+        XCTAssertEqual(moved.editingCycleController?.number, 32)
     }
 
     // MARK: - Los step buttons

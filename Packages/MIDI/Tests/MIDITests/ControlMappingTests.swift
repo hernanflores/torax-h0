@@ -80,9 +80,12 @@ final class ControlMappingTests: XCTestCase {
 /// Tests del mapeo ampliado a los nueve parámetros.
 ///
 /// Los cinco CC de Groove entran en el mismo bloque contiguo que los de Shape:
-/// 70–78. Los de propósito general de la especificación MIDI llegan hasta el 79,
-/// así que los nueve caben sin salir del rango que la especificación deja sin
-/// significado fijo.
+/// 70–78, ninguno con significado asignado en la especificación MIDI.
+///
+/// > **Nota del 2026-09-05.** Esto añadía que «los de propósito general llegan
+/// > hasta el 79, así que los nueve caben sin salir del rango». Se quita por lo
+/// > mismo que en `ControlMapping`: la regla es no pisar nada asignado, y el 79
+/// > no era una frontera. El knob del Cycle se fue al 82.
 final class GrooveControlMappingTests: XCTestCase {
 
     func testEveryTrackParameterHasAController() {
@@ -105,7 +108,7 @@ final class GrooveControlMappingTests: XCTestCase {
 
     func testTheGrooveControllersResolveBack() {
         let expected: [Int: TrackParameter] = [
-            74: .velocity, 75: .sustain, 76: .probability, 77: .timing, 78: .delay,
+            74: .velocity, 75: .sustain, 76: .delay, 77: .timing, 78: .probability,
         ]
 
         for (number, parameter) in expected {

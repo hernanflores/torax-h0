@@ -533,6 +533,38 @@ escalón es el que se nota.
   Toca Timing y Delay, que la regla del 2026-08-28 habría marcado como medibles,
   pero **no lleva medición**: sigue suspendida desde el 2026-09-02.
 
+---
+
+- [x] **Track: Ctrl All — un knob mueve los doce Tracks** — mantener [step 14] desplaza los doce y soltar devuelve; verificado en iPad con BeatStep Pro
+  *Link: [conductor/tracks/ctrl-all_20260905/index.md](./tracks/ctrl-all_20260905/index.md)*
+
+  Subir el Velocity de la mezcla entera no se puede hacer hoy: con dieciséis knobs
+  y doce Tracks harían falta ciento ocho vueltas, y ninguna se podría deshacer.
+  **Mantener [step 14]** desplaza el parámetro girado en los doce Tracks a la vez;
+  soltarlo lo devuelve, sin dejar rastro en el Pattern.
+
+  **Es el cuarto modificador y el 14 era el único hueco:** 13, 15 y 16 son Temp,
+  solo y mute, con el mismo 127/0.
+
+  **La diferencia con Temp es el verbo: Ctrl All desplaza, Temp iguala.** Mover el
+  Pattern entero conservando lo que lo hace un Pattern y no doce copias. Guarda
+  **base y offset por separado** —el valor se recalcula siempre como base +
+  offset— y por eso un Track topado no arrastra a los demás y vuelve a su valor
+  exacto en cuanto el desplazamiento reentra. El acumulado sí se acota al ancho del
+  recorrido; Rotate no, porque envuelve y nunca se muere.
+
+  **Congela también las vías táctiles que escriben**, que es un requisito que Temp
+  no tiene: un cambio de Scale a media superposición no se deshace al soltar.
+
+  **Lleva dentro un remapeo de tres knobs** —Delay al 76, Probability al 78, el
+  Cycle en edición al 82 con el CC 79 libre—, que solo comparte con Ctrl All el
+  abrir el preset. Van juntos para tocarlo una sola vez y verificar en iPad el
+  mapeo definitivo.
+
+  Sin medición de jitter (suspendida el 2026-09-02) y **sin test de coste del hilo
+  de control**, aunque un clic reescriba hasta doce Tracks contra el único de
+  Temp. Las dos decisiones quedan anotadas con su coste delante.
+
 ## Defectos conocidos
 
 Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres

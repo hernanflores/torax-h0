@@ -81,6 +81,37 @@ extension TrackParameter: CustomStringConvertible {
 
     /// Los términos de la Pre Spec, en inglés y sin traducir, como exige
     /// `product-guidelines.md`.
+    /// Los extremos entre los que se mueve este parámetro, o `nil` si envuelve
+    /// en vez de acotarse.
+    ///
+    /// **Lo consume el tope del desplazamiento acumulado de Ctrl All** (FR5), y
+    /// nada más. Se expone el rango entero y no solo su ancho porque el tope se
+    /// calcula contra los **valores concretos** de los Tracks capturados: cuánto
+    /// le queda por subir al que más recorrido tiene, y cuánto por bajar al que
+    /// más. Ver `CtrlAllOffset.advancing(_:by:)`.
+    ///
+    /// **`nil` para Rotate, y no un rango vacío.** Rotate envuelve módulo el
+    /// `steps.count` de cada Cycle, así que no tiene extremos contra los que
+    /// saturar y su knob no puede quedarse muerto: la razón del tope no le
+    /// aplica.
+    ///
+    /// **Sale de los rangos que cada tipo ya declara**, no de una tabla nueva:
+    /// duplicar los extremos aquí sería tener dos sitios donde equivocarse, y el
+    /// segundo se olvidaría al cambiar el primero.
+    public var displacementRange: ClosedRange<Int>? {
+        switch self {
+        case .steps: Steps.validRange
+        case .pulses: Pulses.validRange
+        case .rotate: nil
+        case .division: 0...(Division.ordered.count - 1)
+        case .velocity: Velocity.validRange
+        case .sustain: Sustain.validRange
+        case .probability: Probability.validRange
+        case .timing: Timing.validRange
+        case .delay: Delay.validRange
+        }
+    }
+
     public var description: String {
         switch self {
         case .steps: "Steps"
