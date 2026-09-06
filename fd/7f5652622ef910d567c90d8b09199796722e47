@@ -1,0 +1,28 @@
+Task: Auditar que no se escapó lógica a las vistas (Fase 2)
+
+Track: screens-redesign_20260906
+
+Qué encontró, y dónde fue cada cosa
+1. Los nombres de ParameterFamily, escritos en ParameterFamilyCard más un
+   literal repetido en TonalCard. -> Engine, con cuatro tests.
+2. El relleno con cero, duplicado en TrackSelectorView y TrackReadout.
+   -> App/UIText.swift, con la presentación.
+
+La distinción entre los dos casos es el resultado de la auditoría, no un
+detalle: 'esto no debería estar en una vista' no significa 'esto debería estar
+en Engine'. Un nombre de familia es dominio; escribir 01 en vez de 1 es una
+convención del handoff. Bajar la segunda a Engine habría metido una decisión de
+dibujo en el motor puro.
+
+Qué NO se movió, y por qué
+- TrackReadout.shown, la precedencia entre lo que se gira, lo último girado y el
+  reposo. Depende de @State de la vista y decide qué se enseña, no qué es.
+- CycleStrip.current(_:), que resuelve el número a enseñar entre el que suena y
+  el que se edita. Misma razón.
+- ContentView.entries(for:): filtro y mapeo sobre TrackParameter, que ya declara
+  la lista y el orden. Es cableado.
+
+Verificación
+- Engine: 565 tests, 0 fallos (eran 561).
+- xcodebuild iOS y simulador: BUILD SUCCEEDED.
+- Captura: la pantalla no cambia, que es lo que tiene que pasar en un refactor.
