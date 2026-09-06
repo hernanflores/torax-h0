@@ -176,7 +176,7 @@ animaciones derivan del reloj musical.
 
 ---
 
-## Fase 5 — Pantalla `banks`
+## Fase 5 — Pantalla `banks` [checkpoint: 646eef4]
 
 Cáscara visual, y declarada como tal. La tarea de honestidad no es opcional: es
 lo que separa esta pantalla de una maqueta que miente.
@@ -200,7 +200,7 @@ lo que separa esta pantalla de una maqueta que miente.
 
 - [x] Task: Auditar que no se escapó lógica a las vistas `1c1d3ff`
 
-- [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `banks.png`
+- [x] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `banks.png` `646eef4`
 
 ---
 
