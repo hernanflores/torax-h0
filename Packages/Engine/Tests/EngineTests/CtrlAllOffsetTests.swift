@@ -605,9 +605,12 @@ final class CtrlAllOffsetLimitTests: XCTestCase {
 /// algo, el gesto habrá destruido material que costó construir y no hay deshacer.
 final class CtrlAllRestoreTests: XCTestCase {
 
-    private func cycle(pulses: Int = 5, velocity: Int = 64, steps: Int = 16) -> Cycle {
+    private func cycle(
+        pulses: Int = 5, velocity: Int = 64, steps: Int = 16, rotate: Int = 0
+    ) -> Cycle {
         Cycle(
-            shape: Shape(steps: Steps(steps)!, pulses: Pulses(pulses)!),
+            shape: Shape(
+                steps: Steps(steps)!, pulses: Pulses(pulses)!, rotate: Rotate(rotate)),
             pool: PitchPool().inserting(Pitch(48)!),
             groove: Groove(
                 velocity: Velocity(velocity)!,
@@ -656,6 +659,18 @@ final class CtrlAllRestoreTests: XCTestCase {
         var moved = offset.apply(3, to: .pulses, in: source)
         moved = offset.apply(-10, to: .velocity, in: moved)
         moved = offset.apply(5, to: .probability, in: moved)
+
+        XCTAssertEqual(offset.restored(into: moved), source)
+    }
+
+    /// Steps se restaura antes que Rotate, porque `setting(.rotate, to:)`
+    /// envuelve contra el número de Steps que tenga el Cycle en ese momento.
+    func testRestoringUsesParameterDeclarationOrder() {
+        var offset = CtrlAllOffset()
+        let source = Pattern().replacing(Track(cycle(steps: 8, rotate: 7)), at: 0)
+
+        var moved = offset.apply(1, to: .rotate, in: source)
+        moved = offset.apply(-4, to: .steps, in: moved)
 
         XCTAssertEqual(offset.restored(into: moved), source)
     }

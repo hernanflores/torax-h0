@@ -252,7 +252,8 @@ public struct CtrlAllOffset: Equatable, Sendable {
     /// girado nada se queda en nada.
     public func restored(into pattern: Pattern) -> Pattern {
         var restored = pattern
-        for (parameter, byPosition) in bases {
+        for parameter in parameters {
+            guard let byPosition = bases[parameter] else { continue }
             for (position, value) in byPosition {
                 guard let track = restored.track(at: position.track),
                     let cycle = track.cycle(at: position.cycle)

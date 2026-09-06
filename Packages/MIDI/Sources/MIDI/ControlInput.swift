@@ -414,20 +414,29 @@ public final class ControlInput: @unchecked Sendable {
     /// movieron nada— no publica, con el mismo criterio que un giro nulo.
     ///
     /// El overlay se vacía siempre, hubiera o no algo dentro: el hold terminó.
+    /// Si Ctrl All se soltó antes, su snapshot se devuelve después del overlay:
+    /// la base de Temp todavía contiene el desplazamiento y no puede ser la
+    /// última en restaurarse.
     /// - Parameter publishing: si publica el snapshot restaurado. Solo
     ///   `releaseModifiers()` lo pone a `false`, para que soltar los dos a la vez
     ///   no enseñe un estado intermedio que nunca existió.
     private func releaseTemp(publishing: Bool = true) -> Bool {
         holdingTempModifier = false
-        guard !overlay.isEmpty, let track = pattern.track(at: selectedTrackIndex) else {
-            overlay = ParameterOverlay()
-            return false
+        var didRestore = false
+        if !overlay.isEmpty, let track = pattern.track(at: selectedTrackIndex) {
+            pattern = pattern.replacing(overlay.restored(into: track), at: selectedTrackIndex)
+            didRestore = true
+        }
+        overlay = ParameterOverlay()
+
+        if !holdingCtrlAllModifier, !ctrlAll.isEmpty {
+            pattern = ctrlAll.restored(into: pattern)
+            ctrlAll = CtrlAllOffset()
+            didRestore = true
         }
 
-        pattern = pattern.replacing(overlay.restored(into: track), at: selectedTrackIndex)
-        overlay = ParameterOverlay()
-        if publishing { publish(pattern) }
-        return true
+        if publishing, didRestore { publish(pattern) }
+        return didRestore
     }
 
     /// Entra en Ctrl All: a partir de aquí los giros desplazan los doce.
@@ -445,7 +454,9 @@ public final class ControlInput: @unchecked Sendable {
     /// devolver: soltar sin haber girado nada —o tras giros que no movieron
     /// nada— no publica, con el mismo criterio que un giro nulo.
     ///
-    /// El snapshot se vacía siempre, hubiera o no algo dentro: el hold terminó.
+    /// Si Temp capturó una base desplazada, el snapshot se conserva hasta que
+    /// Temp se suelte: restaurarlo antes permitiría que esa base obsoleta
+    /// volviera a aplicar el desplazamiento después.
     /// - Parameter publishing: ver `releaseTemp(publishing:)`.
     private func releaseCtrlAll(publishing: Bool = true) -> Bool {
         holdingCtrlAllModifier = false
@@ -453,6 +464,7 @@ public final class ControlInput: @unchecked Sendable {
             ctrlAll = CtrlAllOffset()
             return false
         }
+        guard overlay.isEmpty else { return false }
 
         pattern = ctrlAll.restored(into: pattern)
         ctrlAll = CtrlAllOffset()

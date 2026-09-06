@@ -136,6 +136,24 @@ final class TempAndCtrlAllTests: XCTestCase {
         XCTAssertEqual(input.pattern, before)
     }
 
+    /// Si Ctrl All ya había desplazado el Pattern cuando Temp captura su base,
+    /// su snapshot no puede restaurarse después del de Ctrl All: volvería a
+    /// aplicar el desplazamiento que Temp vio debajo.
+    func testCtrlAllThenTempReturnsToTheOriginalWhenCtrlAllIsReleasedFirst() {
+        let (input, _) = makeInput()
+        let before = input.pattern
+
+        input.receive(ctrlAll())
+        input.receive(knob(.pulses, by: 2))
+        input.receive(temp())
+        input.receive(knob(.pulses, by: 1))
+
+        input.receive(ctrlAll(value: 0))
+        input.receive(temp(value: 0))
+
+        XCTAssertEqual(input.pattern, before, "Temp volvió a aplicar el desplazamiento de Ctrl All")
+    }
+
     /// Tras ese cruce, el 14 no quedó armado: un giro suelto escribe normal.
     func testAfterTheCrossoverNothingIsLeftArmed() {
         let (input, _) = makeInput()
