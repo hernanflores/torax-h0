@@ -1,0 +1,51 @@
+Task: isCtrlAllActive y el distintivo (Fase 5, ctrl-all_20260905)
+
+QUE SE HIZO
+FR16: el distintivo de Ctrl All en el panel de lectura, con 7 tests en Engine y
+2 mas en MIDI escritos primero (Red: "extra argument 'gesture' in call").
+
+FICHEROS
+- Packages/Engine/Sources/Engine/FamilyReadout.swift: enum ReadoutGesture; el
+  init recibe `gesture` en vez de `isTemporary`.
+- Packages/Engine/Tests/EngineTests/FamilyReadoutCtrlAllTests.swift (nuevo).
+- Packages/Engine/Tests/EngineTests/FamilyReadoutTempTests.swift: migrado al enum.
+- Packages/MIDI/Tests/MIDITests/CtrlAllModifierInputTests.swift: dos tests del
+  lector.
+- App/TransportModel.swift: `gesture` sustituye a `isTempActive`.
+- App/ContentView.swift: gestureMarker(_:gesture:).
+
+EL BOOL DEJO DE BASTAR
+isTemporary decia "esto no sobrevivira a soltar el boton", y con dos gestos
+momentaneos eso ya no distingue nada: los dos son reversibles. Lo que el usuario
+necesita saber con las manos ocupadas es si esta moviendo UN Track o LOS DOCE. Un
+enum de tres casos lo dice y ademas obliga a decidir la marca de cualquier gesto
+futuro — hay un test que barre allCases para eso.
+
+SE SEPARAN POR FORMA, NO POR COLOR
+Los tres acentos de la paleta codifican FAMILIA (Shape verde, Groove mauve, Tonal
+violeta). Darle uno a un gesto haria que un desplazamiento global se leyera como
+"Shape" de reojo, que es justo el criterio de lectura de product-guidelines.md.
+Los dos distintivos comparten el acento de Tonal —el unico que no pertenece a
+ningun knob— y lo que cambia es el ancho: Temp una pastilla compacta, Ctrl All
+una banda que cruza el panel. EL ANCHO DICE EL ALCANCE, asi que se distinguen sin
+llegar a leer la palabra.
+
+SE RETIRA isTempActive DE TransportModel
+Quedo sin consumidores al entrar `gesture`. Mantener los dos habria dejado dos
+fuentes de verdad para la misma pregunta, y la que sobra es la que no sabe
+distinguir los gestos.
+
+LO QUE EL SIMULADOR NO PUDO VERIFICAR
+El plan pedia comprobar el distintivo en simulador. NO SE PUDO: el simulador no
+tiene fuentes MIDI, asi que la app arranca en read-only y el gesto no se puede
+accionar — la captura muestra la pantalla en reposo, sin marcador. Es la
+limitacion que workflow.md ya deja anotada ("nada que dependa de un knob"). La
+comparacion visual entre los dos distintivos queda para la Fase 6, en
+dispositivo, y se anota alli en vez de darla por hecha.
+
+TESTS
+  swift test --package-path Packages/Engine -> 541 tests, 0 fallos
+  swift test --package-path Packages/MIDI   -> 599 tests, 7 fallos, todos
+  VirtualLoopback (flake midi-test-flake_20260826)
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS -> SUCCEEDED
+swift format limpio.
