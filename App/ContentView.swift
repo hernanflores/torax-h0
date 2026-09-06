@@ -121,22 +121,11 @@ struct ContentView: View {
         }
     }
 
-    /// **Provisional, y marcada como tal.** La construye la Fase 5; hasta
-    /// entonces la entrada de navegación lleva a un módulo que existe y todavía
-    /// no se puede usar, que es exactamente lo que el borde discontinuo del
-    /// lenguaje visual significa.
-    ///
-    /// El signo está aquí y no en la navegación a propósito: FR7 pide que las
-    /// cuatro entradas se vean iguales porque las cuatro pantallas existen. Lo
-    /// que falta es el contenido de una, y se dice donde falta.
     private var banksScreen: some View {
-        Text(display: "banks")
-            .font(Typography.sectionTitle)
-            .frame(maxWidth: .infinity, minHeight: 240)
-            .brutalistUnavailable(radius: Brutalist.radiusLarge)
+        BanksScreen(model: model)
     }
 
-    // MARK: - Las dos pantallas
+    // MARK: - Las cuatro pantallas
 
     /// La pantalla `track`: el patrón, su lectura y la franja de doce.
     ///

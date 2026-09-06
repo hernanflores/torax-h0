@@ -203,6 +203,13 @@ final class TransportModel {
     var track: Cycle { pattern.editingCycle(at: selectedTrackIndex)! }
 
     /// Cuáles tienen material: los vacíos no suenan, y eso se ve.
+    /// Si el Pattern tiene algo que emitir: alguno de sus doce Tracks con pool.
+    ///
+    /// Lo usa la pantalla `banks` para decidir si el único pattern que existe
+    /// está `ready` o `empty`. Sale del Pattern real, así que esa parte de esa
+    /// pantalla no es cáscara.
+    var patternHasMaterial: Bool { tracksWithMaterial.contains(true) }
+
     var tracksWithMaterial: [Bool] {
         (0..<Pattern.trackCount).map { !(pattern.editingCycle(at: $0)?.pool.isEmpty ?? true) }
     }
