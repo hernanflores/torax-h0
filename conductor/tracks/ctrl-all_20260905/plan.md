@@ -139,7 +139,7 @@ seguir.
   - [x] Cobertura `Engine` ≥90%.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 4: EL GESTO EN EL CONTROLADOR
+## FASE 4: EL GESTO EN EL CONTROLADOR [checkpoint: adbfd78]
 
 - [x] Task: [step 14] mantiene y suelta (FR1, FR12, FR14) — `4aa708c`
   - [x] Tests (Red): CC 115 con 127 entra en Ctrl All y **no publica por sí
@@ -193,7 +193,7 @@ seguir.
         deja el Pattern base y publica sin duplicar la restauración.
   - [x] Tests (Red): sin nada superpuesto no publica.
   - [x] Cobertura `MIDI` ≥80%.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: LA PANTALLA ENSEÑA QUE ES GLOBAL
 
