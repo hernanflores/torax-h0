@@ -1,0 +1,37 @@
+Tasks: bankGrid, patternGrid, track assignments y declarar el alcance
+(Fase 5, FR25–FR28)
+
+Track: screens-redesign_20260906
+
+Qué se hizo
+App/BanksScreen.swift: BanksScreen, BankGrid, PatternGrid y TrackAssignments.
+ContentView pierde el marcador con borde discontinuo de la Fase 1.
+TransportModel gana patternHasMaterial, que deriva de tracksWithMaterial.
+
+Sin cambios en Engine ni en MIDI
+No hacía falta: lo poco que esta pantalla dice de verdad ya existía. Añadir un
+modelo de Bank para que la cáscara pareciera menos cáscara habría sido
+justamente el trabajo que el alcance excluye.
+
+Dónde el rótulo se aparta del handoff, y por qué en los dos casos es lo mismo
+- '1 pattern' en vez de '16 patterns': dieciséis es la capacidad del banco;
+  decirlo con quince vacíos sería contar sitios y llamarlos contenido.
+- Las doce filas dicen 'pattern 01' porque es el único que hay. Inventar doce
+  asignaciones para parecerse al mock es literalmente lo que FR25 prohíbe.
+
+Una separación que el mock no tiene
+El pattern que suena lleva el olivo de Shape; el elegido, el off-white. En el
+PNG coinciden porque su mock tiene elegido el que suena. Separarlas permite
+mirar un pattern sin dejar de ver cuál está sonando, que es lo que va a hacer
+falta el día que haya dieciséis.
+
+Defectos encontrados en captura
+1. Los cards se estiraban a toda la altura y el pie del banco quedaba recortado
+   contra el borde inferior.
+2. Las doce filas de asignación, con el espaciado del card, sumaban más que la
+   columna y 'track 12' caía fuera.
+
+Verificación
+- Engine 578/0. xcodebuild iOS y simulador: BUILD SUCCEEDED.
+- Captura en iPad Pro 11-inch (M5): las tres columnas completas, con el pie y
+  las doce filas dentro.
