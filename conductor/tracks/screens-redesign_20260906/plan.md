@@ -27,7 +27,7 @@ directo.
 
 ---
 
-## Fase 1 — Desviaciones, tokens y chrome compartido
+## Fase 1 — Desviaciones, tokens y chrome compartido [checkpoint: b45c965]
 
 Nada se dibuja hasta que el sistema de tokens esté cerrado. Es el orden que evita
 que cuatro pantallas fijen cada una su propia interpretación del brief y luego
@@ -72,7 +72,7 @@ haya que perseguirlas.
     - [x] Revisar lo escrito en esta fase: si hay una regla que no sea dibujo, bajarla a `Engine` o `MIDI` con test
     - [x] Ejecutar la suite de `Engine` y `MIDI` y confirmar que sigue verde
 
-- [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`)
+- [x] Task: Phase Verification & Checkpoint (ver `workflow.md`) `b45c965`
 
 ---
 
