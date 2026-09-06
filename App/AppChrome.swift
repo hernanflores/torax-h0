@@ -294,3 +294,74 @@ private struct TempoAdjuster: View {
         .brutalistControl(accent: Palette.offWhite, isSelected: false, isPopulated: true)
     }
 }
+
+/// La navegación persistente: `track`, `scale`, `midi`, `banks`.
+///
+/// **Las cuatro, siempre visibles y siempre alcanzables** (FR7). Es lo que la
+/// pantalla anterior no podía prometer: dibujaba las que faltaban con borde
+/// discontinuo —el signo de «existe y todavía no se puede usar»— y era honesto
+/// entonces. Ahora las cuatro existen, así que el signo se retira; dejarlo sería
+/// convertir en decoración algo que el lenguaje visual usa para informar.
+///
+/// **El activo lleva un subrayado de 3 pt en off-white, no un relleno.** El
+/// resto del sistema marca lo elegido rellenándolo de acento, y aquí no vale:
+/// un módulo no pertenece a ninguna familia de parámetros, y rellenarlo de
+/// off-white pondría cuatro bloques compitiendo con el patrón, que es el
+/// protagonista. El subrayado dice lo mismo gastando una línea.
+///
+/// **Navegar no toca el reloj** (FR8). Esta vista no conoce el transporte: solo
+/// escribe en un binding que vive por encima de las pantallas, así que cambiar
+/// de módulo no puede reiniciar nada aunque quisiera. El playhead sigue donde
+/// estaba al volver porque el modelo es el mismo objeto.
+struct ModuleNavigation: View {
+
+    @Binding var module: Module
+
+    /// **Alto fijo, como el de la barra y por lo mismo:** la pantalla `track`
+    /// resta lo que no le toca para saber cuánto le queda al anillo.
+    static let height: CGFloat = 60
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(Module.allCases) { candidate in
+                item(candidate)
+            }
+        }
+        .frame(height: Self.height)
+        .frame(maxWidth: .infinity)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Palette.border)
+                .frame(height: Brutalist.stroke)
+        }
+    }
+
+    private func item(_ candidate: Module) -> some View {
+        let isActive = candidate == module
+
+        return Button {
+            module = candidate
+        } label: {
+            Text(display: candidate.title)
+                .font(isActive ? Typography.navigationItemActive : Typography.navigationItem)
+                .foregroundStyle(isActive ? Palette.text : Palette.muted)
+                .frame(maxWidth: .infinity)
+                .frame(height: Self.height)
+                .overlay(alignment: .bottom) {
+                    // **El subrayado se dibuja siempre y se pinta o no.**
+                    // Meterlo en un `if` cambiaría la altura del texto al
+                    // conmutar —SwiftUI recompone el overlay— y las cuatro
+                    // etiquetas darían un salto de un par de puntos cada vez que
+                    // se navega. Así solo cambia el color.
+                    Rectangle()
+                        .fill(isActive ? Palette.offWhite : .clear)
+                        .frame(height: Brutalist.strokeEmphasis)
+                }
+        }
+        .buttonStyle(.plain)
+        // **El objetivo táctil es toda la columna**, no la palabra. Se navega de
+        // pie y sin mirar de cerca; un objetivo del ancho de `midi` —cuatro
+        // caracteres— obligaría a apuntar.
+        .contentShape(Rectangle())
+    }
+}
