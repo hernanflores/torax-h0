@@ -181,22 +181,22 @@ animaciones derivan del reloj musical.
 Cáscara visual, y declarada como tal. La tarea de honestidad no es opcional: es
 lo que separa esta pantalla de una maqueta que miente.
 
-- [ ] Task: `bankGrid` — la columna de bancos (FR26)
-    - [ ] `bank 01` y rejilla 4×4 de `01`–`16`, banco 01 seleccionado
-    - [ ] Pie con tempo y número de patterns
+- [x] Task: `bankGrid` — la columna de bancos (FR26) `4c77f6e`
+    - [x] `bank 01` y rejilla 4×4 de `01`–`16`, banco 01 seleccionado
+    - [x] Pie con tempo y número de patterns
 
-- [ ] Task: `patternGrid` — la rejilla de patterns (FR27)
-    - [ ] 4×4 de `01`–`16`; el que suena en olivo de shape y etiquetado `playing`
-    - [ ] Los demás, `ready` o `empty` según tengan material
-    - [ ] Clasificar el estado de un pattern es lógica: si no es una lectura directa del `Pattern`, baja a `Engine` con test
+- [x] Task: `patternGrid` — la rejilla de patterns (FR27) `4c77f6e`
+    - [x] 4×4 de `01`–`16`; el que suena en olivo de shape y etiquetado `playing`
+    - [x] Los demás, `ready` o `empty` según tengan material
+    - [x] Clasificar el estado de un pattern es lógica: si no es una lectura directa del `Pattern`, baja a `Engine` con test
 
-- [ ] Task: `track assignments` — la columna derecha (FR28)
-    - [ ] Doce filas de track a pattern, con la fila del track seleccionado enfatizada
+- [x] Task: `track assignments` — la columna derecha (FR28) `4c77f6e`
+    - [x] Doce filas de track a pattern, con la fila del track seleccionado enfatizada
 
-- [ ] Task: Declarar el alcance en la pantalla y en el código (FR25)
-    - [ ] La selección se mueve y **no altera lo que suena**
-    - [ ] Dejar escrito en el propio fichero que es cáscara sobre el `Pattern` actual y qué haría falta para levantarla
-    - [ ] Verificar que ningún gesto de esta pantalla llega al scheduler
+- [x] Task: Declarar el alcance en la pantalla y en el código (FR25) `4c77f6e`
+    - [x] La selección se mueve y **no altera lo que suena**
+    - [x] Dejar escrito en el propio fichero que es cáscara sobre el `Pattern` actual y qué haría falta para levantarla
+    - [x] Verificar que ningún gesto de esta pantalla llega al scheduler
 
 - [ ] Task: Auditar que no se escapó lógica a las vistas
 
