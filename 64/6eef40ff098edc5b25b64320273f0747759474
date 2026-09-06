@@ -1,0 +1,48 @@
+Verificación de la Fase 5 — Pantalla banks
+
+Track: screens-redesign_20260906
+Commit de cierre: 646eef4
+
+Tests automáticos
+- Engine: 578 tests, 0 fallos.
+- CI del PR #37: build pass en 2m41s. Confirma que la mitigación del flake
+  funciona en el runner: corriendo los tests de CoreMIDI primero y en su propio
+  proceso, los 7 fallos de VirtualLoopbackTests que se dan en local no aparecen.
+- xcodebuild Debug para iOS y para simulador: BUILD SUCCEEDED.
+
+Cobertura
+Tres ficheros, los tres en App, que no se mide. Ningún cambio en Engine ni en
+MIDI, y esta vez es el resultado correcto: añadir un modelo de Bank para que la
+cáscara pareciera menos cáscara es lo que el alcance excluye.
+
+Verificación manual, en iPad
+Confirmada por el usuario sobre los ocho puntos, incluidas las dos desviaciones
+declaradas del rótulo del handoff.
+
+Lo que esta fase entrega, y lo que no
+Entrega la forma completa de la app: las cuatro pantallas existen y ninguna
+entrada de navegación lleva a un hueco. No entrega Banks: mover la selección no
+cambia lo que suena porque no hay nada a lo que cambiar, y los quince patterns
+restantes dicen 'empty' porque están vacíos de verdad.
+
+Dos rótulos se apartan del PNG, y en la misma dirección
+- '1 pattern' en vez de '16 patterns': dieciséis es la capacidad del banco, y
+  decirlo con quince vacíos sería contar sitios y llamarlos contenido.
+- Las doce filas dicen 'pattern 01' porque es el único que existe.
+
+Una separación que el mock no tiene y que se conserva a propósito
+El pattern que suena lleva el olivo de Shape; el elegido, el off-white. En el
+PNG coinciden porque su mock tiene elegido el que suena. Separarlas permite
+mirar un pattern sin dejar de ver cuál está sonando, que es lo que hará falta el
+día que haya dieciséis.
+
+Defectos encontrados en captura
+1. Los cards se estiraban a toda la altura y el pie del banco quedaba recortado.
+2. Las doce filas de asignación se salían por abajo con el espaciado del card.
+
+La auditoría, por primera vez, no movió nada
+Tres candidatos revisados y los tres se quedan, cada uno con su razón escrita en
+el código: las dos constantes de dieciséis exigirían inventar un tipo Bank; la
+clasificación playing/ready/empty incorpora la premisa temporal de la cáscara; y
+el recuento de patterns tiene la forma de PitchPool.countDescription pero cuenta
+otra cosa y se escribe una vez.
