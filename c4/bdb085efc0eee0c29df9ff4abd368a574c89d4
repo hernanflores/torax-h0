@@ -1,0 +1,33 @@
+Task: Documentar las dos desviaciones antes de tocar código (Fase 1)
+
+Track: screens-redesign_20260906
+
+Qué se hizo
+- Nota fechada 2026-09-06 en la sección 'Lenguaje visual': el fondo pasa de
+  #211823 a #111211. Acota qué cambia (fondo y neutros derivados) y qué no
+  (los tres acentos, la tipografía y el tratamiento neo-brutalista).
+- Nota fechada 2026-09-06 en 'Voz y tono': la interfaz se escribe en
+  minúsculas. Cambia la caja, no el término, y la conversión vive solo en la
+  capa de presentación.
+- Los dos ejemplos de texto de interfaz del propio documento pasan a
+  minúsculas: 'steps 16 · pulses 5' y 'no midi device'.
+
+Ficheros
+- conductor/product-guidelines.md (modificado)
+
+El porqué
+El paso 8 del Task Workflow exige parar y anotar antes de implementar cuando
+la implementación se aparta de un documento del proyecto. Aquí se aparta de
+dos reglas que el proyecto había declarado cerradas, así que la alternativa
+era descubrir la contradicción a mitad de la Fase 1 con los tokens ya
+escritos.
+
+La segunda nota se redactó cuidando que no rompa 'un solo término por
+concepto en UI, código y documentación': lo que la regla fija es qué palabra
+se usa, no cómo se dibuja, y bajar la minúscula al modelo sí la habría roto.
+
+Lo que queda abierto
+La separación entre el mauve de Groove (#AA6DA8) y el violeta de Tonal
+(#7C5FD9) se comprobó a un metro contra el fondo violeta oscuro. Contra el
+neutro esa comprobación no vale, y la pregunta que ShapeTheme.swift dejó
+abierta el 2026-09-01 vuelve a estar viva. Se decide con la app en la mano.
