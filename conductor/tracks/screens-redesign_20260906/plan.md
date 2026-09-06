@@ -39,12 +39,12 @@ haya que perseguirlas.
     - [x] Verificar que ninguna de las dos notas contradice el «un solo término por concepto» de la guía
     - [x] Es el paso 8 del *Task Workflow*: se para, se anota, y solo entonces se implementa
 
-- [ ] Task: Cerrar el sistema de tokens (FR1, FR2)
-    - [ ] `Palette`: fondo a `#111211` y rederivar los neutros —toolbar, inset, border, borderBright, step, muted, mutedBright— sobre el neutro, ya no sobre el violeta oscuro
-    - [ ] Comprobar el contraste de los tres acentos contra el fondo nuevo; el mauve de groove y el violeta de tonal son los que más riesgo tienen de acercarse
-    - [ ] `Brutalist`: confirmar trazos 2/3 pt, radios 3–8 y sombra dura sin blur; añadir lo que el brief pida y no exista
-    - [ ] `Typography`: revisar la escala para el chrome nuevo; **los tamaños viven aquí, no en las vistas**
-    - [ ] Dejar escrito en el propio tipo por qué el fondo cambió, con la fecha
+- [x] Task: Cerrar el sistema de tokens (FR1, FR2) `502f2b8`
+    - [x] `Palette`: fondo a `#111211` y rederivar los neutros —toolbar, inset, border, borderBright, step, muted, mutedBright— sobre el neutro, ya no sobre el violeta oscuro
+    - [x] Comprobar el contraste de los tres acentos contra el fondo nuevo; el mauve de groove y el violeta de tonal son los que más riesgo tienen de acercarse
+    - [x] `Brutalist`: confirmar trazos 2/3 pt, radios 3–8 y sombra dura sin blur; añadir lo que el brief pida y no exista
+    - [x] `Typography`: revisar la escala para el chrome nuevo; **los tamaños viven aquí, no en las vistas**
+    - [x] Dejar escrito en el propio tipo por qué el fondo cambió, con la fecha
 
 - [ ] Task: Bloquear landscape (FR30)
     - [ ] `Config/Info-Debug.plist` y la configuración de Release: solo las dos orientaciones horizontales
