@@ -64,6 +64,24 @@ public enum ParameterFamily: Equatable, Sendable, CaseIterable {
     /// resuelva ese caso con un condicional propio — que lo dejaría donde no hay
     /// tests, exactamente lo que esta clasificación existe para evitar.
     case tonal
+
+    /// El nombre de la familia, en el vocabulario de la Pre Spec y sin traducir
+    /// (`product-guidelines.md`, NFR7).
+    ///
+    /// **Vive aquí desde el 2026-09-06.** Se escribía en un `switch` dentro de
+    /// `ParameterFamilyCard`, y el card tonal repetía el suyo como literal. Es la
+    /// misma clase de texto que `Scale.name`: dominio, no presentación, y se
+    /// rompe en silencio — una familia mal nombrada se sigue dibujando.
+    ///
+    /// **Capitalizado, como el resto del vocabulario.** Que la interfaz lo pinte
+    /// en minúsculas es cosa de la capa de presentación.
+    public var name: String {
+        switch self {
+        case .shape: "Shape"
+        case .groove: "Groove"
+        case .tonal: "Tonal"
+        }
+    }
 }
 
 extension TrackParameter {

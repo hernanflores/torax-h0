@@ -89,7 +89,7 @@ struct TrackSelectorView: View {
             // cuatro pantallas, y no es cosmética: con ancho monoespaciado, doce
             // etiquetas de dos cifras ocupan lo mismo y la fila deja de dar un
             // salto de medio carácter entre el `9` y el `10`.
-            Text(display: number(index))
+            Text(display: (index + 1).paddedForDisplay)
                 .font(isSelected ? Typography.bodyStrong : Typography.body)
                 .foregroundStyle(
                     isSelected ? Palette.onAccent : (sounds ? accent : Palette.muted)
@@ -106,12 +106,6 @@ struct TrackSelectorView: View {
             radius: Brutalist.radius
         )
         .opacity(audible ? 1 : 0.45)
-    }
-
-    /// El número de un Track, con cero delante.
-    private func number(_ index: Int) -> String {
-        let track = index + 1
-        return track < 10 ? "0\(track)" : "\(track)"
     }
 
     // MARK: - Mute y Solo

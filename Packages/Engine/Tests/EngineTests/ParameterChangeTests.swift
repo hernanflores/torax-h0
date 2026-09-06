@@ -168,6 +168,38 @@ final class ParameterChangeTests: XCTestCase {
         let tight = Cycle(shape: Shape(steps: Steps(4)!, pulses: Pulses(9)!))
         XCTAssertEqual(TrackParameter.pulses.value(in: tight), "9")
     }
+
+    // MARK: - El nombre de una familia
+
+    // **Bajó de la vista el 2026-09-06.** Los tres nombres se escribían en un
+    // `switch` dentro de `ParameterFamilyCard` y el card tonal repetía el suyo
+    // como literal. Es texto de dominio y se rompe en silencio: una familia mal
+    // nombrada se sigue dibujando.
+
+    func testEveryFamilyHasAName() {
+        for family in ParameterFamily.allCases {
+            XCTAssertFalse(family.name.isEmpty, "\(family)")
+        }
+    }
+
+    func testFamilyNamesAreTheVocabularyOfThePreSpec() {
+        XCTAssertEqual(ParameterFamily.shape.name, "Shape")
+        XCTAssertEqual(ParameterFamily.groove.name, "Groove")
+        XCTAssertEqual(ParameterFamily.tonal.name, "Tonal")
+    }
+
+    func testFamilyNamesAreAllDistinct() {
+        XCTAssertEqual(Set(ParameterFamily.allCases.map(\.name)).count,
+                       ParameterFamily.allCases.count)
+    }
+
+    func testEveryParameterBelongsToANamedFamily() {
+        // Si alguna vez se añade una familia, este test la obliga a tener nombre
+        // antes de que una vista invente uno.
+        for parameter in TrackParameter.allCases {
+            XCTAssertFalse(parameter.family.name.isEmpty, "\(parameter)")
+        }
+    }
 }
 
 /// Tests de los dos parámetros temporales en el valor grande transitorio.

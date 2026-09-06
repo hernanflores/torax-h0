@@ -142,7 +142,7 @@ struct CycleStrip: View {
                         .font(Typography.parameterLine)
                         .foregroundStyle(Palette.muted)
 
-                    Text(display: "\(pad(current(sounding))) / \(pad(activeCount))")
+                    Text(display: "\(current(sounding).paddedForDisplay) / \(activeCount.paddedForDisplay)")
                         .font(Typography.valueTitle)
                         .monospacedDigit()
                         .foregroundStyle(Palette.text)
@@ -178,17 +178,13 @@ struct CycleStrip: View {
     /// En cuál va: el que suena, o el que se edita con el transporte parado.
     private func current(_ sounding: Int?) -> Int { (sounding ?? editing) + 1 }
 
-    private func pad(_ number: Int) -> String {
-        number < 10 ? "0\(number)" : "\(number)"
-    }
-
     private func cell(_ number: Int, sounding: Int?) -> some View {
         let index = number - 1
         let isActive = number <= activeCount
         let isSounding = index == sounding && isActive
         let isEditing = index == editing && isActive
 
-        return Button(pad(number)) { onActiveCountChange(number) }
+        return Button(number.paddedForDisplay) { onActiveCountChange(number) }
             .font(isSounding || isEditing ? Typography.captionBold : Typography.caption)
             .monospacedDigit()
             .foregroundStyle(foreground(isActive: isActive, isSounding: isSounding))
@@ -280,13 +276,8 @@ struct ParameterFamilyCard: View {
         }
     }
 
-    private var title: String {
-        switch family {
-        case .shape: "shape"
-        case .groove: "groove"
-        case .tonal: "tonal"
-        }
-    }
+    /// El nombre lo pone `Engine`; la minúscula, `Text(display:)`.
+    private var title: String { family.name }
 }
 
 /// El card `tonal`, que no es una lista de parámetros como los otros dos.
@@ -310,7 +301,7 @@ struct TonalCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(display: "tonal")
+            Text(display: ParameterFamily.tonal.name)
                 .font(Typography.parameterLine)
                 .foregroundStyle(isActive ? Palette.tonal : Palette.muted)
 

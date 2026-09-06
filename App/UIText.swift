@@ -44,3 +44,22 @@ extension Text {
         self.init(string.lowercasedForDisplay)
     }
 }
+
+extension Int {
+
+    /// El número con cero delante cuando tiene una sola cifra: `01`, `12`.
+    ///
+    /// **Es una convención de dibujo, no de dominio**, y por eso vive aquí y no
+    /// en `Engine`. El Track 1 es el Track 1; lo que el handoff decide es cómo se
+    /// escribe, y lo decide para que doce etiquetas monoespaciadas ocupen lo
+    /// mismo y la fila no dé un salto de medio carácter entre el 9 y el 10.
+    ///
+    /// Existía dos veces —una en la franja de Tracks y otra en el card de
+    /// Cycle— hasta que la auditoría de la Fase 2 las juntó. Dos rellenos con la
+    /// misma regla es una regla que puede divergir.
+    ///
+    /// A partir de tres cifras no rellena: no hay nada en el modelo que llegue
+    /// ahí —doce Tracks, dieciséis Cycles, dieciséis Banks— y un `0` de más
+    /// mentiría sobre el rango.
+    var paddedForDisplay: String { self < 10 && self >= 0 ? "0\(self)" : "\(self)" }
+}
