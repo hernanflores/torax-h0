@@ -565,12 +565,89 @@ escalón es el que se nota.
   de control**, aunque un clic reescriba hasta doce Tracks contra el único de
   Temp. Las dos decisiones quedan anotadas con su coste delante.
 
+---
+
+- [x] **Track: Rediseño de las cuatro pantallas — track, scale, midi y banks** — las cuatro pantallas sobre el chrome nuevo; verificado en dispositivo fase a fase
+  *Link: [conductor/tracks/screens-redesign_20260906/index.md](./tracks/screens-redesign_20260906/index.md)*
+
+  El chrome creció rebanada a rebanada y lo acusa: una fila mezclando pestañas,
+  estado y transporte; pantallas con prefijo numérico; dos pestañas discontinuas
+  porque no existían; y un panel de jitter que sobrevive a una medición suspendida.
+  Este track lo sustituye por el rediseño del handoff — chrome compartido y
+  **cuatro pantallas completas**.
+
+  **Cambia el dibujo, no el motor.** Lo que no se toca es el **camino de tiempo
+  real** —scheduler, `MusicalTimeline`, snapshot—; un diff que lo alcance es
+  error de alcance. `Engine` y `MIDI` sí cambian, y bastante: cada vez que una
+  regla o un texto de dominio aparecía escrito en una vista, bajó a su paquete
+  **con tests en rojo primero**. Nueve ficheros, los nueve con su fichero de
+  tests en el mismo commit.
+
+  **Doce playheads, no uno.** El PNG dibuja una aguja porque su mock tiene los doce
+  Tracks en la misma Division; con divisiones distintas eso mentiría sobre once de
+  los doce. Donde el handoff y el estado real se separan, gana el estado.
+
+  **La rejilla del pool son 14 pads de nota y 2 de octava**, no dieciséis notas: es
+  el espejo literal de `PadSurface`, y los de octava enseñan en qué octava se está
+  — información que hoy no aparece en ningún otro sitio.
+
+  **`banks` es cáscara visual y se declara como tal:** la selección se mueve y no
+  altera lo que suena. Queda como limitación conocida hasta la rebanada 4 de la v2,
+  que es la que trae Banks de verdad.
+
+  **Dos desviaciones documentadas antes de escribir código.** El fondo pasa a
+  `#111211` contra un lenguaje visual cerrado el 2026-09-02 —cambia el fondo, no
+  los acentos ni el tratamiento— y la interfaz pasa a minúsculas —cambia la caja,
+  no el término—.
+
+  **Reabre una pregunta ya escrita:** la separación entre el mauve de Groove y el
+  violeta de Tonal se juzgó contra el fondo violeta oscuro, y sobre el neutro esa
+  comprobación no vale.
+
 ## Defectos conocidos
 
 Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres
 están encadenados: `midi-test-flake` bloquea a `scheduler-lifecycle`, no al
 revés. `network-session-source` es independiente de esa cadena y se puede tomar
 en cualquier momento.
+
+---
+
+- [ ] **Track: La pantalla no ve lo que cambia el hardware**
+
+  Descubierto el 2026-09-06, durante la Fase 4 de `screens-redesign_20260906`.
+
+  El estado del transporte y del reloj vive en `Transport`, que no es observable,
+  y **nadie incrementa `clockRevision` desde el hilo de recepción de CoreMIDI**.
+  Consecuencia: un cambio que venga del controlador no invalida la pantalla.
+
+  Dos síntomas confirmados en dispositivo:
+
+  - **El botón de transporte no se entera de un Start del BeatStep.** La secuencia
+    suena y el botón sigue enseñando *play*; pulsarlo llama a `play()` otra vez en
+    vez de parar, así que **parece** que la app tiene precedencia sobre el
+    controlador. No la tiene: `Transport.receive` da el mando al maestro desde el
+    2026-09-03 y `ExternalStartTests` lo cubre. Lo que falla es que la app no se
+    entera.
+  - **El tempo de un maestro externo no refresca la barra**, por lo mismo.
+
+  **Lo que este defecto ya enseñó, y por qué merece su propio track.** Se intentó
+  arreglar de paso, dentro de la Fase 4, y los tres intentos dejaron la app peor:
+  dos de ellos sin atender el MIDI entrante. El último colgó un temporizador de un
+  `.task` en una vista que la propia invalidación recreaba, así que se
+  multiplicaban y saturaban el hilo principal — el mismo al que la entrada de
+  control salta para publicar un giro. Se revirtió todo.
+
+  **La lección de método, que es lo que hay que llevarse:** los tres síntomas
+  viven en el hilo de recepción de CoreMIDI y en el hardware, y el simulador no
+  tiene ninguno de los dos. Un cambio en esa zona **no se valida con una captura
+  ni con un porcentaje de CPU**. Lo que resolvió el diagnóstico fue instrumentar y
+  mirar los números en el dispositivo.
+
+  La forma probable del arreglo: avisar desde el propio hilo de recepción cuando
+  llega un `.start` o un `.stop` —no en cada tick de reloj, que serían cuarenta y
+  ocho saltos por segundo al hilo principal—, y dejar el tempo externo con su
+  propia cadencia. Nada de temporizadores colgados de vistas.
 
 ---
 

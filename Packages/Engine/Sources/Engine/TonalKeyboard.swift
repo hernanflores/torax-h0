@@ -79,16 +79,6 @@ public struct TonalKeyboard: Equatable, Sendable {
     ///
     /// El nombre de la escala en inglés y sin traducir (NFR7).
     public var statusLine: String {
-        "Scale · \(Self.name(of: frame.scale))   Root · \(frame.root)"
-    }
-
-    static func name(of scale: Scale) -> String {
-        switch scale {
-        case .minor: "Minor"
-        case .major: "Major"
-        case .dorian: "Dorian"
-        case .phrygian: "Phrygian"
-        case .pentatonic: "Pentatonic"
-        }
+        "Scale · \(frame.scale.name)   Root · \(frame.root)"
     }
 }

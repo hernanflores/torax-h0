@@ -24,6 +24,15 @@ import SwiftUI
 /// > radio pequeño y constante es lo que hace que la pantalla se lea como un
 /// > aparato. El botón de transporte era una pastilla —`.borderedProminent`— y
 /// > es el primer sitio donde se nota el cambio.
+/// > **Revisado contra el brief de iPadOS el 2026-09-06, sin cambiar un valor.**
+/// > Los trazos de 2 y 3 pt, los radios dentro de 3–8, el relleno plano, la
+/// > sombra dura sin blur reservada a lo seleccionado y el borde discontinuo para
+/// > lo no disponible son literalmente lo que el brief nuevo pide. El sistema no
+/// > se toca; lo que cambió ese día fue el suelo sobre el que se dibuja
+/// > (`Palette`), y eso deja **una cosa por comprobar en la captura**: la sombra
+/// > es negro al 40 %, y el fondo pasó de `#211823` a un `#111211` más oscuro, así
+/// > que el bloque desplazado tiene menos recorrido para separarse. Si no se ve,
+/// > se sube la opacidad — no se añade blur, que es lo que el brief prohíbe.
 enum Brutalist {
 
     // MARK: - Trazo

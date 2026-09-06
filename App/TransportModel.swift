@@ -126,6 +126,18 @@ final class TransportModel {
         syncFromControlInput()
     }
 
+    /// Toca un pad de la rejilla de la pantalla `scale`.
+    ///
+    /// **Va por la misma puerta que el pad del controlador.** `pressPad(at:)`
+    /// vive en `MIDI` y es el mismo cuerpo que atiende al hardware, así que la
+    /// regla —alternar en el pool, mover la octava, callar con un modificador
+    /// hundido— no existe dos veces.
+    func pressPad(at index: Int) {
+        controlInput.pressPad(at: index)
+        syncFromControlInput()
+    }
+
+
     /// Copia el estado de la entrada de control al modelo observable.
     ///
     /// Es un solo sitio a propósito: cada camino que edita —knob, pad, pantalla—
@@ -191,6 +203,13 @@ final class TransportModel {
     var track: Cycle { pattern.editingCycle(at: selectedTrackIndex)! }
 
     /// Cuáles tienen material: los vacíos no suenan, y eso se ve.
+    /// Si el Pattern tiene algo que emitir: alguno de sus doce Tracks con pool.
+    ///
+    /// Lo usa la pantalla `banks` para decidir si el único pattern que existe
+    /// está `ready` o `empty`. Sale del Pattern real, así que esa parte de esa
+    /// pantalla no es cáscara.
+    var patternHasMaterial: Bool { tracksWithMaterial.contains(true) }
+
     var tracksWithMaterial: [Bool] {
         (0..<Pattern.trackCount).map { !(pattern.editingCycle(at: $0)?.pool.isEmpty ?? true) }
     }
@@ -276,6 +295,15 @@ final class TransportModel {
 
     var destinationStatus: String { selection.statusDescription }
     var sourceStatus: String { sourceSelection.statusDescription }
+    /// Las alturas del pool del Track seleccionado, ya nombradas.
+    ///
+    /// **`Pitch` sabe decir su nombre** y el pool sabe cuántas tiene; juntarlas
+    /// es cableado, no una regla.
+    var poolNames: [String] {
+        let pool = track.pool
+        return (0..<pool.count).compactMap { pool.pitch(at: $0).map { "\($0)" } }
+    }
+
     var shapeSummary: String { track.shape.description }
 
     /// Los cinco parámetros de Groove, en reposo, partidos en dos renglones.
@@ -392,26 +420,70 @@ final class TransportModel {
     /// antipatrón que `product-guidelines.md` nombra y que el playhead ya evita.
     /// Leerlo es una lectura atómica.
     var beatsPerMinute: Double {
+        // Misma suscripción que `followsExternalClock`: `setTempo` incrementa el
+        // contador y así el número de la barra se ve al instante.
+        _ = clockRevision
         guard let transport else { return 120 }
         return transport.currentTempo.displayBeatsPerMinute
     }
 
+    /// El tempo escrito, `124 bpm`.
+    ///
+    /// **El formato lo pone `Engine`**, donde tiene tests. Aquí solo se pasa el
+    /// tempo vigente: la vista no debería saber cuántos decimales lleva un tempo
+    /// ni qué locale usar para escribirlos.
+    var tempoDescription: String {
+        (Tempo(beatsPerMinute: beatsPerMinute) ?? Self.tempo).displayDescription
+    }
+
     /// Si la app sigue a un maestro externo.
-    var followsExternalClock: Bool { transport?.clockSource == .external }
+    ///
+    /// **Lee `clockRevision` antes de responder, y en eso consiste el arreglo.**
+    ///
+    /// > **El segmentado de la pantalla `midi` no reaccionaba al tocarlo**, y el
+    /// > cambio solo se veía al navegar a otra pantalla y volver. La causa es que
+    /// > esto sale del `Transport`, que no es observable: `setFollowsExternalClock`
+    /// > incrementaba `clockRevision` religiosamente y **no lo leía nadie**. Su
+    /// > única consumidora era `ChannelMapView`, que lo recibía dentro de un
+    /// > struct; al reescribirla, el contador se quedó sin suscriptores.
+    /// >
+    /// > Leerlo aquí hace que **usar el valor sea suscribirse**, sin que ninguna
+    /// > vista tenga que acordarse de nada. Un contador de invalidación que hay
+    /// > que recordar leer es un contador que alguien va a olvidar.
+    ///
+    /// **Lo que esto no arregla, y conviene que esté escrito:** un cambio que
+    /// venga del hardware —el tempo de un maestro externo, un Start del
+    /// BeatStep— sigue sin invalidar nada, porque nadie incrementa el contador
+    /// desde el hilo de recepción. Eso necesita un aviso desde ese hilo y es otro
+    /// trabajo; tres intentos de resolverlo de paso dejaron la app peor.
+    var followsExternalClock: Bool {
+        _ = clockRevision
+        return transport?.clockSource == .external
+    }
 
     /// Qué está pasando con el reloj externo, en una línea. `nil` con reloj
     /// interno, que no tiene nada que contar.
     ///
     /// En inglés y sin traducir, como el resto del vocabulario de interfaz.
     var clockStatus: String? {
-        guard let transport, transport.clockSource == .external else { return nil }
+        _ = clockRevision
+        guard let transport else { return nil }
 
-        return switch (transport.isPlaying, transport.clockHasDropped()) {
-        case (true, true): "Clock lost — holding last tempo"
-        case (true, false): "Following external clock"
-        case (false, _):
-            transport.isFollowingEstablishedClock ? "External clock detected" : "No clock"
-        }
+        // **La tabla la decide `MIDI`, con tests.** Aquí solo se leen los tres
+        // estados del transporte y se pide el texto: qué mensaje va con qué
+        // combinación es una regla, y una regla mal escrita en `App` no falla —
+        // enseña el mensaje equivocado, que es peor.
+        return ClockStatus(
+            source: transport.clockSource,
+            isPlaying: transport.isPlaying,
+            hasDropped: transport.clockHasDropped(),
+            isEstablished: transport.isFollowingEstablishedClock
+        )?.description
+    }
+
+    /// Quién manda el tempo, con su nombre. El nombre lo pone `MIDI`.
+    var clockSourceName: String {
+        (followsExternalClock ? ClockSource.external : .internal).name
     }
 
     /// La marca de la barra: quién manda el tempo, en dos letras.

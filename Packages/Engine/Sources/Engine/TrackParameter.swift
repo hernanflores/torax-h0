@@ -64,6 +64,24 @@ public enum ParameterFamily: Equatable, Sendable, CaseIterable {
     /// resuelva ese caso con un condicional propio — que lo dejaría donde no hay
     /// tests, exactamente lo que esta clasificación existe para evitar.
     case tonal
+
+    /// El nombre de la familia, en el vocabulario de la Pre Spec y sin traducir
+    /// (`product-guidelines.md`, NFR7).
+    ///
+    /// **Vive aquí desde el 2026-09-06.** Se escribía en un `switch` dentro de
+    /// `ParameterFamilyCard`, y el card tonal repetía el suyo como literal. Es la
+    /// misma clase de texto que `Scale.name`: dominio, no presentación, y se
+    /// rompe en silencio — una familia mal nombrada se sigue dibujando.
+    ///
+    /// **Capitalizado, como el resto del vocabulario.** Que la interfaz lo pinte
+    /// en minúsculas es cosa de la capa de presentación.
+    public var name: String {
+        switch self {
+        case .shape: "Shape"
+        case .groove: "Groove"
+        case .tonal: "Tonal"
+        }
+    }
 }
 
 extension TrackParameter {
@@ -212,5 +230,45 @@ extension Cycle {
     /// - Returns: A track with the specified groove.
     private func withGroove(_ groove: Groove) -> Cycle {
         with(groove: groove)
+    }
+}
+
+extension TrackParameter {
+
+    /// Cómo está este parámetro en un Cycle, ya escrito y con su unidad.
+    ///
+    /// **Existe porque un card en reposo no tiene dos Cycles que comparar.**
+    /// Hasta el 2026-09-06 el valor de un parámetro solo se sabía escribir como
+    /// efecto de un cambio, dentro de `ParameterChange`: el handoff de iPadOS
+    /// pide los nueve a la vez y en reposo, así que la lectura tenía que poder
+    /// hacerse sin diferencia.
+    ///
+    /// **`ParameterChange` pasa a usar esto**, así que las nueve reglas de
+    /// escritura viven en un solo sitio en vez de dos. Un test comprueba que lo
+    /// que anuncia un giro y lo que dice el card son la misma cadena: si alguna
+    /// vez se separan, es un fallo y no una variación.
+    ///
+    /// El texto no lleva el nombre del parámetro; ése lo da `description`.
+    public func value(in track: Cycle) -> String {
+        let shape = track.shape
+        let groove = track.groove
+        switch self {
+        case .steps: return "\(shape.steps.count)"
+        // **El valor pedido, no `effectivePulses`.** El knob está en este número
+        // y mostrar el otro haría creer que se perdió (enmienda del 2026-08-27).
+        case .pulses: return "\(shape.pulses.count)"
+        case .rotate: return "\(shape.rotate.amount)"
+        case .division: return "\(shape.division)"
+        // Sin signo de porcentaje: Velocity vive en la unidad MIDI, y ponérselo
+        // diría que es un porcentaje de algo.
+        case .velocity: return "\(groove.velocity.value)"
+        case .sustain: return "\(groove.sustain.percent)%"
+        case .probability: return "\(groove.probability.percent)%"
+        case .timing: return "\(groove.timing.percent)%"
+        // Con signo, y por la misma razón que en `Groove.description`: es el
+        // único parámetro que puede ser negativo, y adelantar y atrasar no se
+        // distinguen por el contexto.
+        case .delay: return "\(groove.delay.percent)%"
+        }
     }
 }

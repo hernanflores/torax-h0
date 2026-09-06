@@ -25,6 +25,28 @@ public struct Tempo: Equatable, Sendable {
     /// una preferencia. Lo que se redondea es lo que se enseña; lo que suena
     /// sigue usando el valor entero.
     public var displayBeatsPerMinute: Double { (beatsPerMinute * 10).rounded() / 10 }
+
+    /// El tempo tal y como se escribe en la interfaz: `124 bpm`.
+    ///
+    /// **Vivía en la vista y bajó aquí el 2026-09-06**, en la auditoría de la
+    /// Fase 1 de `screens-redesign_20260906`. Era un `String(format:locale:)`
+    /// repetido en dos sitios de `AppChrome`, y lo único que impedía que un iPad
+    /// en español escribiera `120,0 BPM` era un comentario encima. Un comentario
+    /// no es una defensa; un test sí.
+    ///
+    /// **Redondea a entero, y por eso el separador decimal no aparece nunca.**
+    /// Es la misma razón que `displayBeatsPerMinute` documenta un escalón más
+    /// arriba: un último decimal que baila con el reloj externo es ilegible a un
+    /// metro. Al enseñarlo entero, la trampa del locale deja de poder ocurrir en
+    /// vez de quedar esquivada.
+    ///
+    /// La unidad va en minúsculas porque **todo texto visible lo va**
+    /// (`product-guidelines.md`, enmienda del 2026-09-06). Es el único sitio de
+    /// `Engine` donde eso importa, y no lo contradice: no es un término de la
+    /// Pre Spec, es una unidad.
+    public var displayDescription: String {
+        "\(Int(displayBeatsPerMinute.rounded())) bpm"
+    }
 }
 
 /// Valor rítmico de cada Step, expresado como fracción de redonda.

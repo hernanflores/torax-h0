@@ -21,22 +21,11 @@ struct TrackSelectorView: View {
     let accent: Color
     let onSelect: (Int) -> Void
 
-    /// Cuántos Cycles recorre el Track seleccionado.
     /// La mezcla vigente: quién está muteado, quién soleado y quién se oye.
     let mix: MuteState
     let onToggleMute: (Int) -> Void
     let onToggleSolo: (Int) -> Void
 
-    let activeCycles: Int
-    /// Cuál se está editando: al que escuchan los knobs y los pads.
-    let editingCycle: Int
-    /// Cuál está sonando, o `nil` con el transporte parado.
-    ///
-    /// **Es un cierre y no un valor** porque deriva del reloj: se pregunta al
-    /// dibujar, como los playheads. Un valor pasado por parámetro se quedaría
-    /// congelado en el instante en que se compuso la vista.
-    let cycleInCourse: () -> Int?
-    let onActiveCyclesChange: (Int) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -48,7 +37,6 @@ struct TrackSelectorView: View {
                 selector
                 mixRow
             }
-            cyclesRow
         }
     }
 
@@ -97,13 +85,18 @@ struct TrackSelectorView: View {
         return Button {
             onSelect(index)
         } label: {
-            Text("\(index + 1)")
+            // **Con cero delante, `01`–`12`.** El handoff los numera así en las
+            // cuatro pantallas, y no es cosmética: con ancho monoespaciado, doce
+            // etiquetas de dos cifras ocupan lo mismo y la fila deja de dar un
+            // salto de medio carácter entre el `9` y el `10`.
+            Text(display: (index + 1).paddedForDisplay)
                 .font(isSelected ? Typography.bodyStrong : Typography.body)
                 .foregroundStyle(
-                    isSelected ? Palette.toolbar : (sounds ? accent : Palette.muted)
+                    isSelected ? Palette.onAccent : (sounds ? accent : Palette.muted)
                 )
                 .monospacedDigit()
                 .frame(maxWidth: .infinity, minHeight: 44)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .brutalistControl(
@@ -132,10 +125,10 @@ struct TrackSelectorView: View {
         HStack(spacing: 6) {
             ForEach(0..<Pattern.trackCount, id: \.self) { index in
                 HStack(spacing: 4) {
-                    mixButton("M", isOn: mix.isMuted(index), color: Palette.groove) {
+                    mixButton("m", isOn: mix.isMuted(index), color: Palette.groove) {
                         onToggleMute(index)
                     }
-                    mixButton("S", isOn: mix.isSoloed(index), color: Palette.tonal) {
+                    mixButton("s", isOn: mix.isSoloed(index), color: Palette.tonal) {
                         onToggleSolo(index)
                     }
                 }
@@ -155,90 +148,19 @@ struct TrackSelectorView: View {
         _ letter: String, isOn: Bool, color: Color, action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            Text(letter)
+            Text(display: letter)
                 .font(isOn ? Typography.captionBold : Typography.caption)
-                .foregroundStyle(isOn ? Palette.toolbar : Palette.muted)
+                .foregroundStyle(isOn ? Palette.onAccent : Palette.muted)
                 .frame(maxWidth: .infinity, minHeight: 32)
+                // **Sin esto solo se toca la letra**, que en una `m` de 13
+                // puntos son unos pocos píxeles de tinta dentro de un botón de
+                // 32. Es el mismo fallo que el `−` del tempo destapó en la
+                // Fase 1: el relleno lo pone `brutalistControl` por fuera del
+                // `Button` y no cuenta como superficie tocable.
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .brutalistControl(accent: color, isSelected: isOn, radius: Brutalist.radiusSmall)
     }
 
-    /// Los dieciséis Cycles del Track seleccionado: cuántos hay, cuál suena y
-    /// cuál se edita (FR11).
-    ///
-    /// **Una sola fila hace las tres cosas**, y por eso se lee de un vistazo:
-    /// pulsar el número N deja N Cycles activos, el que suena va relleno y el
-    /// que se edita va con el contorno duro. Tres filas separadas —una para el
-    /// número, otra para el cursor de reproducción, otra para el de edición—
-    /// dirían lo mismo ocupando el triple y obligarían a cruzarlas con la
-    /// vista.
-    ///
-    /// **El relleno se mueve con el reloj y el contorno con el knob**, que es
-    /// exactamente la distinción de FR7 puesta donde se ve: si los dos
-    /// coinciden, es que se está editando lo que suena.
-    ///
-    /// Los que quedan fuera del rango activo se dibujan apagados en vez de
-    /// desaparecer: si la fila cambiara de longitud, los números se moverían de
-    /// sitio y dejarían de poder pulsarse sin mirar.
-    private var cyclesRow: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            label("Cycles · Track \(selected + 1)")
-            // **Diez veces por segundo, no sesenta.** El relleno se mueve cuando
-            // cierra una vuelta, que a los tempos de la app son segundos: pedir
-            // un repintado por fotograma para eso sería carga visual sin nada
-            // que enseñar. Los anillos sí van a `.animation`, porque ahí lo que
-            // se mueve es continuo.
-            //
-            // La posición sigue saliendo del reloj musical y no del
-            // temporizador: lo único que este decide es cuándo volver a
-            // preguntar.
-            TimelineView(.periodic(from: .now, by: 0.1)) { _ in
-                let sounding = cycleInCourse()
-                HStack(spacing: 6) {
-                    ForEach(1...Track.cycleCount, id: \.self) { number in
-                        cycleButton(number, sounding: sounding)
-                    }
-                }
-            }
-        }
-    }
-
-    private func cycleButton(_ number: Int, sounding: Int?) -> some View {
-        let index = number - 1
-        let isActive = number <= activeCycles
-        let isSounding = index == sounding && isActive
-        let isEditing = index == editingCycle && isActive
-
-        return Button("\(number)") { onActiveCyclesChange(number) }
-            .font(isSounding || isEditing ? Typography.captionBold : Typography.caption)
-            .monospacedDigit()
-            .foregroundStyle(cycleForeground(isActive: isActive, isSounding: isSounding))
-            .frame(minWidth: 34, minHeight: 44)
-            .brutalistControl(
-                accent: accent,
-                isSelected: isSounding,
-                radius: Brutalist.radiusSmall
-            )
-            // El contorno del Cycle en edición va **encima** del control, para
-            // que se distinga del relleno del que suena aunque sean el mismo.
-            .overlay {
-                if isEditing {
-                    RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
-                        .strokeBorder(accent, lineWidth: Brutalist.strokeEmphasis)
-                }
-            }
-            .opacity(isActive ? 1 : 0.35)
-    }
-
-    private func cycleForeground(isActive: Bool, isSounding: Bool) -> Color {
-        guard isActive else { return Palette.muted }
-        return isSounding ? Palette.toolbar : Palette.mutedBright
-    }
-
-    private func label(_ text: String) -> some View {
-        Text(text)
-            .font(Typography.captionStrong)
-            .foregroundStyle(Palette.muted)
-    }
 }

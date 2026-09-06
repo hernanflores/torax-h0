@@ -84,6 +84,15 @@ extension Typography {
     /// legibilidad a un metro pide de él.
     static var readout: Font { bold(44) }
 
+    /// La misma lectura cuando comparte columna con los cards.
+    ///
+    /// **38 y no 44 desde el 2026-09-06.** Con los tres cards de familia y el de
+    /// Cycle apilados debajo, los 44 dejaban la franja de Tracks fuera de la
+    /// pantalla: se vio en captura, con la fila M/S cortada por el borde. Sigue
+    /// siendo con diferencia el texto más grande de la pantalla, que es lo que la
+    /// legibilidad a un metro le pide.
+    static var readoutCompact: Font { bold(38) }
+
     /// El botón de transporte, que es el control más grande de la pantalla.
     ///
     /// **Se llamaba `appTitle`** y lo usaba el nombre de la app, que se quitó de
@@ -94,6 +103,38 @@ extension Typography {
 
     /// Cabecera de sección: Tracks, Tonal, Channel.
     static var sectionTitle: Font { semibold(22) }
+
+    // MARK: - El chrome compartido
+
+    // **Tres papeles que antes no existían.** La barra y la navegación se
+    // dibujaban con `captionStrong` y `captionBold`, que son etiquetas de 13
+    // puntos: valían cuando las pestañas eran `1 · Track` en una fila que además
+    // llevaba el estado y el transporte. El handoff les da una fila propia y un
+    // tamaño de lectura, así que piden un nombre propio en vez de reusar el de
+    // otra cosa.
+
+    /// El módulo activo, centrado en la barra superior.
+    static var moduleTitle: Font { semibold(22) }
+
+    /// Una entrada de la navegación persistente.
+    static var navigationItem: Font { regular(20) }
+
+    /// La entrada activa, la que lleva el subrayado de 3 pt.
+    static var navigationItemActive: Font { bold(20) }
+
+    // MARK: - Los símbolos
+
+    // **Los iconos no son Figtree, y aun así sus tamaños viven aquí.** Un SF
+    // Symbol se dimensiona con la fuente del sistema —pedirle Figtree devolvería
+    // la del sistema igualmente— pero el número de puntos es una decisión de
+    // escala como cualquier otra, y escribirlo en la vista es el mismo fallo que
+    // escribir un color. La auditoría de la Fase 6 encontró tres.
+
+    /// Un icono dentro de un control pequeño: los escalones del tempo.
+    static let symbolSmall: CGFloat = 13
+
+    /// Un icono que es el control: el transporte, el indicador de encadenamiento.
+    static let symbol: CGFloat = 18
 
     /// Un renglón de parámetros, que es una lista de valores y no prosa.
     static var parameterLine: Font { regular(20) }

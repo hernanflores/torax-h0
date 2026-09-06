@@ -63,7 +63,26 @@ public enum ReadoutGesture: Equatable, Sendable, CaseIterable {
 
 public struct FamilyReadout: Equatable, Sendable {
 
-    /// La lectura grande, la que se lee a un metro.
+    /// El nombre del parámetro que encabeza la familia: `Pulses`, `Velocity`,
+    /// `Scale`.
+    ///
+    /// **Va aparte del valor desde el 2026-09-06**, porque el handoff de iPadOS
+    /// dibuja la lectura en dos renglones: el nombre pequeño encima y el valor
+    /// grande debajo. Partir `headline` en la vista buscando el espacio habría
+    /// funcionado hoy y se habría roto en silencio el día que un valor lleve uno
+    /// —`1/16` no lo lleva, pero nadie lo garantiza—. Aquí no hay que buscar
+    /// nada: se construyen por separado.
+    public let label: String
+
+    /// El valor, ya escrito. Es lo que se lee a un metro.
+    public let value: String
+
+    /// Las dos cosas pegadas, que es como lo escribe un valor transitorio.
+    ///
+    /// Se conserva porque reposo y giro tienen que leerse en el mismo idioma:
+    /// girar Pulses hasta 6 y estar en reposo con Pulses 6 producen el mismo
+    /// texto. **En Shape ya no coinciden del todo**: la lectura en reposo añade
+    /// el denominador, y `headline` se queda con la forma corta.
     public let headline: String
 
     /// El resto de la familia, en una línea pequeña.
@@ -94,6 +113,16 @@ public struct FamilyReadout: Equatable, Sendable {
         switch family {
         case .shape:
             let shape = track.shape
+            label = "Pulses"
+            // **Sobre cuántos Steps reparte, que es lo que el handoff escribe.**
+            // Pulses solo significa algo contra su denominador: 5 de 16 y 5 de 12
+            // son dos densidades distintas, y el número solo no las separa.
+            //
+            // Es el valor **pedido**, no `effectivePulses`. La enmienda del
+            // 2026-08-27 separó los dos: el knob está en este número y la lectura
+            // acompaña al knob; lo que suena —`min(pulses, steps)`— lo enseña el
+            // anillo, que es donde se ve.
+            value = "\(shape.pulses.count) / \(shape.steps.count)"
             headline = "Pulses \(shape.pulses.count)"
             detail =
                 "Steps \(shape.steps.count) · Rotate \(shape.rotate.amount) "
@@ -101,41 +130,29 @@ public struct FamilyReadout: Equatable, Sendable {
 
         case .groove:
             let groove = track.groove
+            label = "Velocity"
+            value = "\(groove.velocity.value)"
             headline = "Velocity \(groove.velocity.value)"
             detail =
                 "Sustain \(groove.sustain.percent)% · Probability \(groove.probability.percent)% "
                 + "· Timing \(groove.timing.percent)% · Delay \(groove.delay.percent)%"
 
         case .tonal:
-            headline = "\(track.frame.root) \(Self.name(of: track.frame.scale))"
-            detail = "Pool · \(Self.pool(track.pool.count))"
-        }
-    }
-
-    /// **El pool vacío se dice, no se disimula.** Es el estado de quince Tracks
-    /// al arrancar: disparan sus Pulses y no tienen material que emitir. Escribir
-    /// «Pool · 0 pitches» sería contar algo que no hay; `product-guidelines.md`
-    /// pide comunicar el estado, y el estado es que está vacío.
-    ///
-    /// El singular no es un detalle de estilo: una plantilla que dijera
-    /// «1 pitches» delataría que la app rellena huecos en vez de informar.
-    private static func pool(_ count: Int) -> String {
-        switch count {
-        case 0: "empty"
-        case 1: "1 pitch"
-        default: "\(count) pitches"
-        }
-    }
-
-    /// Los nombres van en inglés y sin traducir, como el resto del vocabulario de
-    /// interfaz (`product-guidelines.md`, NFR7).
-    private static func name(of scale: Scale) -> String {
-        switch scale {
-        case .minor: "Minor"
-        case .major: "Major"
-        case .dorian: "Dorian"
-        case .phrygian: "Phrygian"
-        case .pentatonic: "Pentatonic"
+            // **Aquí la etiqueta se añade, no se extrae.** En Shape y Groove el
+            // nombre del parámetro ya estaba dentro del `headline` y partirlo lo
+            // separa; en Tonal no hay nombre que separar, porque el marco *es* el
+            // valor —TONAL no tiene knob detrás— y el `headline` siempre fue
+            // `C Minor` a secas.
+            //
+            // Así que `value` repite el `headline` y `label` es una etiqueta
+            // nueva que solo existe para el renglón pequeño del handoff. La
+            // consecuencia, escrita para que nadie la tome por un descuido: en
+            // Tonal `label + value` **no** reconstruye el `headline`, y el test
+            // que comprueba esa identidad excluye la familia a propósito.
+            label = "Scale"
+            value = "\(track.frame.root) \(track.frame.scale.name)"
+            headline = "\(track.frame.root) \(track.frame.scale.name)"
+            detail = "Pool · \(track.pool.countDescription)"
         }
     }
 }

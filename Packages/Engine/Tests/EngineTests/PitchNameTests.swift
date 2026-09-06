@@ -49,4 +49,91 @@ final class PitchNameTests: XCTestCase {
             )
         }
     }
+
+    // MARK: - El nombre de una escala
+
+    // **Bajó aquí el 2026-09-06, en la Fase 2 de screens-redesign.** El nombre
+    // de cada Scale se escribía en dos sitios de `App` —`FamilyReadout` lo tenía
+    // privado y `TonalView` tenía el suyo— y el card tonal habría sido el
+    // tercero. Es texto de dominio, y `workflow.md` manda que eso no viva donde
+    // no hay tests.
+
+    func testEveryScaleHasAName() {
+        for scale in Scale.allCases {
+            XCTAssertFalse("\(scale)".isEmpty, "\(scale)")
+        }
+    }
+
+    func testScaleNamesAreTheVocabularyOfThePreSpec() {
+        XCTAssertEqual("\(Scale.minor)", "Minor")
+        XCTAssertEqual("\(Scale.major)", "Major")
+        XCTAssertEqual("\(Scale.dorian)", "Dorian")
+        XCTAssertEqual("\(Scale.phrygian)", "Phrygian")
+        XCTAssertEqual("\(Scale.pentatonic)", "Pentatonic")
+    }
+
+    func testScaleNamesAreAllDistinct() {
+        let names = Set(Scale.allCases.map { "\($0)" })
+        XCTAssertEqual(names.count, Scale.allCases.count)
+    }
+
+    // MARK: - Las tres escalas nuevas
+
+    // **Añadidas el 2026-09-06, en la Fase 3 de screens-redesign.** El brief de
+    // iPadOS dibuja seis escalas y `Engine` tenía cinco: coincidían cuatro,
+    // faltaban Mixolydian y Lydian, y sobraba Pentatonic. Se añaden las dos que
+    // faltaban, se conserva Pentatonic —funciona, tiene tests y es el único caso
+    // que ejercita el hueco de los pads— y el usuario pide además Hirajoshi.
+
+    func testTheNewScalesExist() {
+        XCTAssertTrue(Scale.allCases.contains(.mixolydian))
+        XCTAssertTrue(Scale.allCases.contains(.lydian))
+        XCTAssertTrue(Scale.allCases.contains(.hirajoshi))
+    }
+
+    func testMixolydianIsMajorWithAFlatSeventh() {
+        // Es la única diferencia con Major, y es la que le da su carácter.
+        XCTAssertEqual(degrees(of: .mixolydian), [0, 2, 4, 5, 7, 9, 10])
+        XCTAssertEqual(degrees(of: .major), [0, 2, 4, 5, 7, 9, 11])
+    }
+
+    func testLydianIsMajorWithASharpFourth() {
+        XCTAssertEqual(degrees(of: .lydian), [0, 2, 4, 6, 7, 9, 11])
+    }
+
+    func testHirajoshiHasFiveDegrees() {
+        // Pentatónica japonesa, en la forma que catalogan los secuenciadores:
+        // 0-2-3-7-8. Como Pentatonic, deja pads sin altura, y eso está previsto.
+        XCTAssertEqual(degrees(of: .hirajoshi), [0, 2, 3, 7, 8])
+    }
+
+    func testEveryScaleStartsOnItsRoot() {
+        for scale in Scale.allCases {
+            XCTAssertEqual(degrees(of: scale).first, 0, "\(scale)")
+        }
+    }
+
+    func testOrderedListsEveryScaleOnce() {
+        XCTAssertEqual(Scale.ordered.count, Scale.allCases.count)
+        XCTAssertEqual(Set(Scale.ordered).count, Scale.allCases.count)
+    }
+
+    func testOrderedKeepsTheReadingOrderOfTheHandoff() {
+        // Las seis del brief primero y en su orden, para que la rejilla de la
+        // pantalla `scale` coincida con el PNG. Las dos pentatónicas cierran.
+        XCTAssertEqual(
+            Scale.ordered,
+            [.minor, .major, .dorian, .mixolydian, .phrygian, .lydian, .pentatonic, .hirajoshi])
+    }
+
+    func testTheNewScalesHaveNames() {
+        XCTAssertEqual(Scale.mixolydian.name, "Mixolydian")
+        XCTAssertEqual(Scale.lydian.name, "Lydian")
+        XCTAssertEqual(Scale.hirajoshi.name, "Hirajoshi")
+    }
+
+    /// Los semitonos de una escala, leídos de su máscara.
+    private func degrees(of scale: Scale) -> [Int] {
+        (0..<12).filter { scale.pitchClassMask & (1 << UInt16($0)) != 0 }
+    }
 }

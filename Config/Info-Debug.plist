@@ -33,5 +33,27 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<!--
+	  La orientación NO está aquí: vive en el .pbxproj, como
+	  INFOPLIST_KEY_UIRequiresFullScreen e
+	  INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad, en las dos
+	  configuraciones. Se escribe aquí porque es el sitio donde un lector va a
+	  buscarla primero.
+
+	  Esas dos claves sí las reconoce Xcode, a diferencia de UIAppFonts y
+	  UIBackgroundModes, que descarta en silencio (ver el comentario de arriba).
+	  La lista de INFOPLIST_KEY_* aceptadas es cerrada, así que la regla no es
+	  "los plists son para X y el pbxproj para Y" sino: comprobar en el
+	  Info.plist del .app construido. Verificado el 2026-09-06 en Debug y
+	  Release.
+
+	  Landscape es requisito del rediseño (FR30 de screens-redesign_20260906):
+	  los layouts se calculan para horizontal y nadie ha diseñado el retrato.
+
+	  Pendiente de comprobar en dispositivo: UIRequiresFullScreen está obsoleta
+	  en iPadOS 26 y el binario se compila contra ese SDK. Si el sistema la
+	  ignora, la app podrá redimensionarse aunque la orientación siga acotada, y
+	  entonces el retrato llega por la ventana en vez de por el giro.
+	-->
 </dict>
 </plist>

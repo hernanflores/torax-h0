@@ -152,6 +152,27 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
   en la 8.
 - Pantalla de estado del Track.
 
+> **Nota del 2026-09-06 — la app tiene cuatro pantallas, no una.** La línea de
+> arriba se escribió cuando la interfaz era el anillo y poco más. El rediseño del
+> handoff de iPadOS (`screens-redesign_20260906`) entrega `track`, `scale`, `midi`
+> y `banks` sobre un chrome compartido —barra de estado y navegación
+> persistente—.
+>
+> **Tres son estado real y una es cáscara.** `banks` dibuja dieciséis huecos de
+> banco y dieciséis de pattern de los que solo el primero existe: no hay modelo de
+> `Bank` ni persistencia, así que mover la selección no cambia lo que suena. Se
+> entrega igualmente porque enseñar la forma completa y decir qué está vacío es
+> más honesto que una pestaña que no lleva a ninguna parte; deja de ser cáscara
+> con la rebanada 4 de la v2, sin cambiar de forma.
+>
+> **Y la frontera del tacto queda dicha**, que es lo que el principio rector
+> implicaba sin concretar: `track` se lee mientras suena y ahí **no se edita
+> ningún parámetro generativo con el dedo**; `scale`, `midi` y `banks` se
+> configuran antes de tocar y ahí el dedo opera. La regla está auditada en el
+> código, no solo escrita: la pantalla `track` tiene exactamente cuatro
+> escrituras táctiles —seleccionar Track, mute, solo y cuántos Cycles están
+> activos— y ninguna toca Steps, Pulses, Rotate, Division ni Groove.
+
 > **Nota del 2026-09-03 — el reloj puede ser de otro.** La línea de arriba dice
 > «transporte (play/stop) y **reloj interno**», y sigue siendo cierta: el reloj
 > interno existe, y ahora además es **editable** —el tempo estaba clavado en 120

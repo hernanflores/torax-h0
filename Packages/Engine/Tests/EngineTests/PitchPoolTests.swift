@@ -193,4 +193,45 @@ final class PitchPoolTests: XCTestCase {
         let reframed = PitchPool().reframed(to: TonalFrame(scale: .minor, root: Root(5)!))
         XCTAssertTrue(reframed.isEmpty)
     }
+
+    // MARK: - Cómo se cuenta el pool
+
+    // **Se escribía en tres sitios el 2026-09-06**, con tres redacciones: el
+    // `FamilyReadout` decía «1 pitch», el card tonal «pool empty» y la rejilla de
+    // la pantalla `scale` «1 note active». La tercera además usaba *note*, que es
+    // sinónimo de *pitch* — y `product-guidelines.md` fija el vocabulario de la
+    // Pre Spec «sin sinónimos».
+
+    func testAnEmptyPoolSaysSoInsteadOfCountingZero() {
+        // Escribir «0 pitches» sería contar algo que no hay.
+        XCTAssertEqual(PitchPool().countDescription, "empty")
+    }
+
+    func testOnePitchIsSingular() {
+        // «1 pitches» delataría que la app rellena huecos en vez de informar.
+        XCTAssertEqual(PitchPool().inserting(Pitch(48)!).countDescription, "1 pitch")
+    }
+
+    func testMoreThanOneIsPlural() {
+        let pool = PitchPool().inserting(Pitch(48)!).inserting(Pitch(50)!)
+        XCTAssertEqual(pool.countDescription, "2 pitches")
+    }
+
+    func testTheFullPoolCountsItsEight() {
+        var pool = PitchPool()
+        for offset in 0..<PitchPool.capacity {
+            pool = pool.inserting(Pitch(48 + offset)!)
+        }
+        XCTAssertEqual(pool.countDescription, "8 pitches")
+    }
+
+    func testTheDescriptionNeverSaysNote() {
+        // El término de la Pre Spec es Pitch. `note` es el sinónimo que la guía
+        // prohíbe, y el handoff lo usaba en su rótulo.
+        for count in 0...PitchPool.capacity {
+            var pool = PitchPool()
+            for offset in 0..<count { pool = pool.inserting(Pitch(48 + offset)!) }
+            XCTAssertFalse(pool.countDescription.contains("note"), "\(count)")
+        }
+    }
 }

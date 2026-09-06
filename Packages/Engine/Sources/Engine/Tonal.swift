@@ -90,11 +90,54 @@ public enum Scale: Equatable, Sendable, CaseIterable {
     case phrygian
     case pentatonic
 
+    // **Las tres del 2026-09-06.** El brief de iPadOS dibuja seis escalas y aquí
+    // había cinco: coincidían cuatro, faltaban las dos primeras de abajo y
+    // sobraba `pentatonic`. Se añaden las que faltaban y **se conserva
+    // `pentatonic`**, que funciona, tiene tests y es el único caso que ejercita
+    // el hueco de los pads que la Pre Spec documenta. `hirajoshi` la pidió el
+    // usuario.
+    case mixolydian
+    case lydian
+    case hirajoshi
+
     /// Orden en que se recorren, y en que se muestran.
     ///
-    /// Sigue el orden de la rejilla del handoff de diseño, para que el knob y la
-    /// pantalla no discrepen.
-    public static let ordered: [Scale] = [.minor, .major, .dorian, .phrygian, .pentatonic]
+    /// Sigue el orden de la rejilla del handoff, para que el knob y la pantalla
+    /// no discrepen.
+    ///
+    /// **Las seis del brief primero y en su orden** —el PNG las lee por filas de
+    /// dos: minor|major, dorian|mixolydian, phrygian|lydian— y **las dos
+    /// pentatónicas cierran**. Así la rejilla coincide con el handoff en sus seis
+    /// primeras tarjetas y las añadidas se leen como lo que son: un cuarto
+    /// renglón, no una intercalación que descoloque las demás.
+    public static let ordered: [Scale] = [
+        .minor, .major, .dorian, .mixolydian, .phrygian, .lydian, .pentatonic, .hirajoshi,
+    ]
+
+    /// El nombre, en el vocabulario de la Pre Spec y sin traducir
+    /// (`product-guidelines.md`, NFR7).
+    ///
+    /// **Vive aquí desde el 2026-09-06.** Se escribía en dos sitios de `App`
+    /// —`FamilyReadout` y `TonalView`, cada uno con su `switch` privado— y el
+    /// card tonal del rediseño habría sido el tercero. Es texto de dominio: una
+    /// escala mal nombrada se sigue dibujando, y `workflow.md` manda que lo que
+    /// se rompe en silencio esté donde hay tests.
+    ///
+    /// **Capitalizado, como el resto del vocabulario.** Que la interfaz lo
+    /// dibuje en minúsculas es cosa de la capa de presentación, y cambia la
+    /// caja, no el término (enmienda del 2026-09-06 en `product-guidelines.md`).
+    public var name: String {
+        switch self {
+        case .minor: "Minor"
+        case .major: "Major"
+        case .dorian: "Dorian"
+        case .phrygian: "Phrygian"
+        case .pentatonic: "Pentatonic"
+        case .mixolydian: "Mixolydian"
+        case .lydian: "Lydian"
+        case .hirajoshi: "Hirajoshi"
+        }
+    }
 
     /// Un bit por clase de altura: el bit *i* está a uno si el semitono *i* por
     /// encima de la fundamental pertenece a la escala.
@@ -116,6 +159,20 @@ public enum Scale: Equatable, Sendable, CaseIterable {
         case .dorian: 0b0110_1010_1101  // 0 2 3 5 7 9 10
         case .phrygian: 0b0101_1010_1011  // 0 1 3 5 7 8 10
         case .pentatonic: 0b0100_1010_1001  // 0 3 5 7 10
+        // Major con la séptima bajada: la única diferencia, y la que le da su
+        // carácter.
+        case .mixolydian: 0b0110_1011_0101  // 0 2 4 5 7 9 10
+        // Major con la cuarta subida.
+        case .lydian: 0b1010_1101_0101  // 0 2 4 6 7 9 11
+        // **Pentatónica japonesa, en la forma que catalogan los
+        // secuenciadores.** Hay varias transcripciones de Hirajoshi; se elige
+        // 0-2-3-7-8, que es la que usan Elektron, Ableton y Novation, para que el
+        // nombre signifique en esta app lo mismo que en el hardware de al lado.
+        //
+        // Como `pentatonic`, tiene cinco grados: deja los pads 6, 7, 14 y 15 sin
+        // altura asignada. Está previsto y documentado en la Pre Spec — un pad
+        // sin altura no publica evento, igual que un CC sin asignar.
+        case .hirajoshi: 0b0001_1000_1101  // 0 2 3 7 8
         }
     }
 
@@ -210,4 +267,9 @@ public struct TonalFrame: Equatable, Sendable {
         }
         return pitch
     }
+}
+
+extension Scale: CustomStringConvertible {
+
+    public var description: String { name }
 }

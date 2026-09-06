@@ -80,9 +80,7 @@ struct RingStackView: View {
         let dim = heard ? 1.0 : 0.3
         let pulseColour = pulseColour(isSelected: isSelected, hasMaterial: band.hasMaterial)
             .opacity(dim)
-        let gapColour =
-            (isSelected ? Palette.step.opacity(0.55) : Palette.border.opacity(0.55))
-            .opacity(dim)
+        let gapColour = (isSelected ? Palette.stepDim : Palette.border).opacity(dim)
 
         // **Arcos y no puntos.** Se dibujó primero con una marca por Step, como
         // el anillo único de la v1, y con dieciséis anillos no funciona: los
@@ -111,6 +109,38 @@ struct RingStackView: View {
                 with: .color(position.isPulse ? pulseColour : gapColour),
                 style: StrokeStyle(lineWidth: width, lineCap: .butt)
             )
+        }
+
+        // **El contorno de 3 pt del elegido** (FR10): dos circunferencias finas
+        // justo fuera de los bordes de la banda, dibujadas **encima** de los
+        // arcos.
+        //
+        // > **Se probó primero como halo —un trazo más grueso por detrás— y se
+        // > veía fatal.** Entre arco y arco hay un respiro, y el color del hueco
+        // > es semitransparente, así que el off-white se colaba por los dieciséis
+        // > huecos y por debajo de los arcos apagados: el anillo entero salía
+        // > blanco en vez de enmarcado. Dos líneas que no pisan la banda no
+        // > pueden filtrarse por ella.
+        //
+        // **Va además del acento, no en su lugar.** El color ya decía cuál se
+        // está editando, pero se pierde cuando el Track está muteado y el anillo
+        // se atenúa. El contorno no: es off-white, no pertenece a ninguna
+        // familia y sobrevive a la atenuación. Dos lecturas del mismo hecho por
+        // canales distintos, que es lo que pide leerse a un metro y con poca luz.
+        if isSelected {
+            let inset = width / 2 + Brutalist.strokeEmphasis / 2
+            for edge in [radius - inset, radius + inset] {
+                var outline = Path()
+                outline.addArc(
+                    center: centre, radius: edge,
+                    startAngle: .zero, endAngle: .radians(.pi * 2), clockwise: false
+                )
+                context.stroke(
+                    outline,
+                    with: .color(Palette.offWhite),
+                    style: StrokeStyle(lineWidth: Brutalist.strokeEmphasis)
+                )
+            }
         }
 
         if let playhead = playheads.indices.contains(band.track) ? playheads[band.track] : nil {
@@ -172,13 +202,20 @@ struct RingStackView: View {
         )
         context.stroke(
             arc,
-            with: .color(.white.opacity(isSelected ? 0.95 : 0.4)),
+            with: .color(Palette.offWhite.opacity(isSelected ? 0.95 : 0.4)),
             style: StrokeStyle(lineWidth: width, lineCap: .butt)
         )
     }
 
     /// El punto oscuro del centro, que el handoff dibuja y que el hueco central
     /// de `RingStack` reserva.
+    ///
+    /// **Es el suelo del panel, no un color propio.** Usaba `toolbar`, que valía
+    /// por coincidencia numérica: ese token era a la vez el fondo de la barra
+    /// superior y la tinta sobre acento, y aquí no era ninguna de las dos cosas.
+    /// Al renombrarse a `onAccent` el 2026-09-06 la coincidencia dejó de
+    /// sostenerse, así que el hub pasa a pedir lo que de verdad es — el interior
+    /// del panel que lo rodea.
     private func drawHub(in context: inout GraphicsContext, centre: CGPoint, available: CGFloat) {
         let hub = available * RingStack.centreHole * 0.5
         context.fill(
@@ -186,7 +223,7 @@ struct RingStackView: View {
                 ellipseIn: CGRect(
                     x: centre.x - hub, y: centre.y - hub, width: hub * 2, height: hub * 2
                 )),
-            with: .color(Palette.toolbar)
+            with: .color(Palette.inset)
         )
     }
 
