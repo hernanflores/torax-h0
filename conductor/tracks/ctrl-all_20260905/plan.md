@@ -195,7 +195,7 @@ seguir.
   - [x] Cobertura `MIDI` ≥80%.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 5: LA PANTALLA ENSEÑA QUE ES GLOBAL
+## FASE 5: LA PANTALLA ENSEÑA QUE ES GLOBAL [checkpoint: 5f19198]
 
 - [x] Task: `isCtrlAllActive` y el distintivo (FR16) — `5f19198`
   - [x] Tests (Red): `isCtrlAllActive` es cierto entre la pulsación y la soltada,
@@ -213,7 +213,7 @@ seguir.
         la captura sale en reposo y sin marcador. Es la limitación que
         `workflow.md` ya anota. La comparación entre los dos distintivos pasa a la
         Fase 6, en dispositivo.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: EN EL DISPOSITIVO
 
