@@ -98,10 +98,10 @@ animaciones derivan del reloj musical.
     - [x] Card `cycle`: `03 / 08`, celdas `01`–`08`, activa marcada
     - [x] El icono de encadenamiento es **indicador de estado, no botón** — sin gesto asociado
 
-- [ ] Task: `parameterFamilyCard` — shape, groove y tonal (FR12)
-    - [ ] Los tres cards visibles a la vez, sin tabs
-    - [ ] Girar un knob resalta el card de su familia con su acento
-    - [ ] El card tonal muestra `scale`, `root` y el pool, **sin mapear alturas a steps**
+- [x] Task: `parameterFamilyCard` — shape, groove y tonal (FR12) `96f4eb6`
+    - [x] Los tres cards visibles a la vez, sin tabs
+    - [x] Girar un knob resalta el card de su familia con su acento
+    - [x] El card tonal muestra `scale`, `root` y el pool, **sin mapear alturas a steps**
 
 - [ ] Task: `trackPill` — la franja de doce tracks (FR13, FR14)
     - [ ] `01`–`12` con `m` / `s` bajo cada uno; refleja mute y solo vigentes
