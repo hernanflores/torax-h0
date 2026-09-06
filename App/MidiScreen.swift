@@ -20,6 +20,7 @@ struct MidiScreen: View {
         TimelineView(.periodic(from: .now, by: 0.25)) { _ in
             HStack(alignment: .top, spacing: 24) {
                 VStack(alignment: .leading, spacing: 16) {
+                    DiagnosticCard(model: model)
                     ClockSourceCard(model: model)
                     MidiInputCard(model: model)
                     MidiOutputCard(model: model)
@@ -351,5 +352,41 @@ struct Card<Content: View>: View {
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .brutalistPanel()
+    }
+}
+
+/// **Instrumentación temporal, no producto.** Se retira en cuanto se sepa por
+/// qué la app dejó de recibir MIDI.
+///
+/// **Se lee al dibujar y no se refresca sola**, a propósito: el problema que se
+/// está diagnosticando toca justo el mecanismo de refresco, así que meter aquí
+/// otro sería medir con el instrumento averiado. Para tomar una lectura nueva se
+/// sale a otra pestaña y se vuelve, que es lo único que se sabe que fuerza una
+/// reconstrucción.
+struct DiagnosticCard: View {
+
+    let model: TransportModel
+
+    var body: some View {
+        Card(title: "diagnóstico · temporal") {
+            line("puerto", model.diagnosticConnectedSource ?? "sin conectar")
+            line("mensajes recibidos", "\(model.diagnosticMessages.value)")
+            line("→ al transporte", "\(model.diagnosticTransportMessages.value)")
+            line("→ al control", "\(model.diagnosticControlMessages.value)")
+            line("aceptados por el control", "\(model.diagnosticAcceptedMessages.value)")
+        }
+    }
+
+    private func line(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(display: label)
+                .font(Typography.caption)
+                .foregroundStyle(Palette.muted)
+            Spacer(minLength: 12)
+            Text(display: value)
+                .font(Typography.captionStrong)
+                .monospacedDigit()
+                .foregroundStyle(Palette.text)
+        }
     }
 }
