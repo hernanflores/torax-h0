@@ -1,0 +1,47 @@
+Verificación de la Fase 6 — Cierre
+
+Track: screens-redesign_20260906
+Commit de cierre: f3112a6
+
+Tests automáticos
+- Engine: 578 tests, 0 fallos. Eran 542 al empezar el track: +36.
+- MIDI: 615 tests, 7 fallos, todos VirtualLoopbackTests con la firma
+  clientCreationFailed(-50). Flake conocido y aplazado.
+- CI del PR #37: build pass.
+- xcodebuild Debug y Release para iOS: BUILD SUCCEEDED las dos.
+
+Tamaño: 41 ficheros, +4142 / -1299.
+
+Las cuatro auditorías del cierre
+1. Tokens: nueve búsquedas —color, blanco, negro, Font.custom, tamaños de
+   símbolo, radios, grosores, sombras, opacidades— todas en cero fuera de
+   Palette, Typography y Brutalist.
+2. Minúsculas: cero Text("..."), cero uppercased(), cero capitalized() en App.
+   El vocabulario de la Pre Spec sigue capitalizado en Engine.
+3. Alcance: ninguno de los ocho ficheros del camino de tiempo real aparece en el
+   diff. Los nueve de Engine y MIDI que cambiaron llegan con su fichero de tests
+   tocado en el mismo commit.
+4. Los trece criterios de aceptación se cumplen. Nueve comprobados
+   mecánicamente, dos en capturas, dos confirmados por el usuario en
+   dispositivo.
+
+El hallazgo de fondo del cierre
+Las dos primeras auditorías encontraron lo mismo por caminos distintos: cuatro
+vistas muertas —parameters, gestureMarker, transient y label(_:)— que
+sustituyeron los cards y la lectura nueva. Entre ellas escondían las dos últimas
+fugas de opacidad y un uppercased() que habría violado FR3 si estuviera vivo.
+parameters además seguía citando a TonalView, borrada en la Fase 3.
+
+La revisión del PR
+Seis observaciones, verificadas una a una. Una era un bug real —las celdas de
+Cycle 9 a 16 no se dibujaban, así que no se podía subir de ocho—, cuatro eran
+documentación que había dejado de ser cierta, y la sexta es el defecto ya
+registrado sobre invalidar tras un cambio del hardware, que no se toma aquí.
+
+El bug tiene una moraleja que merece quedarse: la fila que ese card sustituyó ya
+lo hacía bien y su documentación decía por qué. Se perdió al traerla al card, y
+vuelve con esa razón escrita al lado.
+
+Verificación manual
+Confirmada por el usuario sobre los ocho puntos, incluidos los dos defectos
+conocidos que siguen abiertos y están registrados.
