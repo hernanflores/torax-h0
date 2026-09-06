@@ -33,11 +33,11 @@ Nada se dibuja hasta que el sistema de tokens esté cerrado. Es el orden que evi
 que cuatro pantallas fijen cada una su propia interpretación del brief y luego
 haya que perseguirlas.
 
-- [ ] Task: Documentar las dos desviaciones antes de tocar código
-    - [ ] Añadir nota fechada 2026-09-06 en `product-guidelines.md`: el fondo pasa de `#211823` a `#111211`, y **los tres acentos y el tratamiento neo-brutalista siguen siendo los cerrados el 2026-09-02**
-    - [ ] Añadir nota fechada 2026-09-06 en `product-guidelines.md`: la interfaz escribe en minúsculas; **cambia la caja, no el término** — `Steps` sigue siendo `Steps` en código, tests y documentación
-    - [ ] Verificar que ninguna de las dos notas contradice el «un solo término por concepto» de la guía
-    - [ ] Es el paso 8 del *Task Workflow*: se para, se anota, y solo entonces se implementa
+- [x] Task: Documentar las dos desviaciones antes de tocar código `c4bdb08`
+    - [x] Añadir nota fechada 2026-09-06 en `product-guidelines.md`: el fondo pasa de `#211823` a `#111211`, y **los tres acentos y el tratamiento neo-brutalista siguen siendo los cerrados el 2026-09-02**
+    - [x] Añadir nota fechada 2026-09-06 en `product-guidelines.md`: la interfaz escribe en minúsculas; **cambia la caja, no el término** — `Steps` sigue siendo `Steps` en código, tests y documentación
+    - [x] Verificar que ninguna de las dos notas contradice el «un solo término por concepto» de la guía
+    - [x] Es el paso 8 del *Task Workflow*: se para, se anota, y solo entonces se implementa
 
 - [ ] Task: Cerrar el sistema de tokens (FR1, FR2)
     - [ ] `Palette`: fondo a `#111211` y rederivar los neutros —toolbar, inset, border, borderBright, step, muted, mutedBright— sobre el neutro, ya no sobre el violeta oscuro
