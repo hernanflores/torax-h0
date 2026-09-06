@@ -180,7 +180,7 @@ struct AppChrome: View {
             Button {
                 isAdjustingTempo = true
             } label: {
-                Text(display: formattedTempo)
+                Text(display: model.tempoDescription)
                     .font(Typography.captionStrong)
                     .monospacedDigit()
                     .foregroundStyle(
@@ -199,17 +199,6 @@ struct AppChrome: View {
     }
 
     @State private var isAdjustingTempo = false
-
-    /// **El punto decimal no depende del locale.** La interfaz va en inglés y
-    /// sin traducir; interpolar un `Double` daba `124,0` en un iPad en español,
-    /// que es la mitad del texto en un idioma y la otra mitad en otro.
-    private var formattedTempo: String {
-        String(
-            format: "%.0f bpm",
-            locale: Locale(identifier: "en_US_POSIX"),
-            model.beatsPerMinute
-        )
-    }
 
     // MARK: - Transporte
 
@@ -268,17 +257,11 @@ private struct TempoAdjuster: View {
             step(-1, symbol: "minus")
 
             TimelineView(.periodic(from: .now, by: 0.25)) { _ in
-                Text(
-                    String(
-                        format: "%.0f bpm",
-                        locale: Locale(identifier: "en_US_POSIX"),
-                        model.beatsPerMinute
-                    )
-                )
-                .font(Typography.valueTitle)
-                .monospacedDigit()
-                .foregroundStyle(Palette.text)
-                .frame(minWidth: 110)
+                Text(display: model.tempoDescription)
+                    .font(Typography.valueTitle)
+                    .monospacedDigit()
+                    .foregroundStyle(Palette.text)
+                    .frame(minWidth: 110)
             }
 
             step(1, symbol: "plus")

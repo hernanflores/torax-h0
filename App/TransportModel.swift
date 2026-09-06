@@ -396,6 +396,15 @@ final class TransportModel {
         return transport.currentTempo.displayBeatsPerMinute
     }
 
+    /// El tempo escrito, `124 bpm`.
+    ///
+    /// **El formato lo pone `Engine`**, donde tiene tests. Aquí solo se pasa el
+    /// tempo vigente: la vista no debería saber cuántos decimales lleva un tempo
+    /// ni qué locale usar para escribirlos.
+    var tempoDescription: String {
+        (Tempo(beatsPerMinute: beatsPerMinute) ?? Self.tempo).displayDescription
+    }
+
     /// Si la app sigue a un maestro externo.
     var followsExternalClock: Bool { transport?.clockSource == .external }
 

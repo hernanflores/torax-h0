@@ -151,4 +151,35 @@ extension MusicalTimeTests {
         XCTAssertNotNil(dotted)
         XCTAssertEqual(dotted?.numerator, 3)
     }
+
+    // MARK: - El tempo escrito
+
+    // **Bajaron de la vista el 2026-09-06.** El formato del tempo vivía como
+    // `String(format:locale:)` repetido en dos sitios de `AppChrome`, y lo único
+    // que impedía que un iPad en español escribiera `120,0` era un comentario.
+    // Un comentario no es una defensa: la auditoría de la Fase 1 de
+    // `screens-redesign_20260906` lo bajó aquí, donde hay tests.
+
+    func testDisplayDescriptionWritesTheUnitInLowerCase() {
+        XCTAssertEqual(Tempo(beatsPerMinute: 124)!.displayDescription, "124 bpm")
+    }
+
+    func testDisplayDescriptionDoesNotDependOnTheDeviceLocale() {
+        // El punto decimal del locale es la trampa: en español el separador es
+        // la coma, y la mitad del texto saldría en un idioma que la interfaz no
+        // habla. El tempo se enseña redondeado a entero, así que el separador no
+        // debería aparecer nunca — este test lo fija.
+        XCTAssertFalse(Tempo(beatsPerMinute: 123.456)!.displayDescription.contains(","))
+        XCTAssertFalse(Tempo(beatsPerMinute: 123.456)!.displayDescription.contains("."))
+    }
+
+    func testDisplayDescriptionRoundsToWholeBeats() {
+        XCTAssertEqual(Tempo(beatsPerMinute: 123.4)!.displayDescription, "123 bpm")
+        XCTAssertEqual(Tempo(beatsPerMinute: 123.6)!.displayDescription, "124 bpm")
+    }
+
+    func testDisplayDescriptionSurvivesTheEndsOfTheRange() {
+        XCTAssertEqual(Tempo(beatsPerMinute: 20)!.displayDescription, "20 bpm")
+        XCTAssertEqual(Tempo(beatsPerMinute: 300)!.displayDescription, "300 bpm")
+    }
 }

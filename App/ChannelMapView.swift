@@ -114,10 +114,18 @@ struct ChannelMapView: View {
         }
     }
 
-    /// El tempo, con un decimal y en formato fijo: la barra lo escribe igual.
+    /// El tempo escrito, `124 bpm`.
+    ///
+    /// **El formato bajó a `Engine` el 2026-09-06.** Era la tercera copia del
+    /// mismo `String(format:locale:)` —dos en la barra y ésta—, cada una
+    /// defendida por su propio comentario contra el separador decimal del
+    /// locale. Ahora lo dice `Tempo.displayDescription`, que tiene tests.
+    ///
+    /// Esta vista desaparece en la Fase 4 del rediseño; se corrige igualmente
+    /// porque una duplicación conocida que se deja para más tarde es la que
+    /// sobrevive al «más tarde».
     static func tempoText(_ beatsPerMinute: Double) -> String {
-        String(
-            format: "%.1f BPM", locale: Locale(identifier: "en_US_POSIX"), beatsPerMinute)
+        (Tempo(beatsPerMinute: beatsPerMinute)?.displayDescription ?? "")
     }
 
     private func sourceButton(_ title: String, isExternal: Bool) -> some View {
