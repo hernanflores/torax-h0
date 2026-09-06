@@ -1,0 +1,30 @@
+Task: moduleNavigation — la navegación persistente (Fase 1, FR7, FR8)
+
+Track: screens-redesign_20260906
+
+Qué se hizo
+- ModuleNavigation en App/AppChrome.swift, junto al enum Module y a la barra:
+  son un solo sistema y separarlos en dos ficheros habría dejado el enum
+  huérfano entre los dos.
+
+Decisiones que no son obvias en el diff
+- El subrayado se dibuja incondicionalmente y cambia de color en vez de
+  aparecer y desaparecer. Con un 'if' el overlay se recompone y las etiquetas
+  saltan al navegar.
+- El activo se marca con subrayado y no con relleno de acento, que es lo que
+  hace el resto del sistema. Un módulo no tiene familia, y cuatro bloques
+  claros competirían con la visualización del patrón.
+- contentShape(Rectangle()) para que el objetivo táctil sea toda la columna.
+
+Sobre FR8
+'Navegar no toca el reloj' no se implementó: se hizo imposible. La vista no
+tiene acceso al TransportModel, solo a un Binding<Module>. La verificación real
+es de composición —el modelo lo posee ContentView y sobrevive al cambio de
+pantalla— y se comprueba en la captura de la fase, con el transporte corriendo.
+
+Verificación
+- xcodebuild Debug para iOS: BUILD SUCCEEDED.
+
+Estado
+Como la barra, compila y todavía no se dibuja. Las monta ContentView en la
+tarea siguiente.
