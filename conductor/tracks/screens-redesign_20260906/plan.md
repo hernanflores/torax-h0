@@ -198,7 +198,7 @@ lo que separa esta pantalla de una maqueta que miente.
     - [x] Dejar escrito en el propio fichero que es cáscara sobre el `Pattern` actual y qué haría falta para levantarla
     - [x] Verificar que ningún gesto de esta pantalla llega al scheduler
 
-- [ ] Task: Auditar que no se escapó lógica a las vistas
+- [x] Task: Auditar que no se escapó lógica a las vistas `1c1d3ff`
 
 - [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `banks.png`
 
