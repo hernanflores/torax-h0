@@ -321,7 +321,14 @@ implementar.
 1. **`banks` enseña una selección que no suena.** Mover el banco o el pattern
    cambia lo que la pantalla marca y nada más. Se levanta cuando exista el modelo
    de `Bank`.
-2. **El pool admite 8 de 14 candidatos.** La rejilla ofrece catorce alturas y el
+2. **La pantalla no ve lo que cambia el hardware.** El botón de transporte no se
+   entera de un Start del BeatStep y el tempo de un maestro externo no refresca
+   la barra: nadie incrementa `clockRevision` desde el hilo de recepción de
+   CoreMIDI. Se intentó arreglar dentro de este track y los tres intentos
+   dejaron la app sin atender el MIDI entrante; se revirtieron. Registrado como
+   defecto propio en `conductor/tracks.md`.
+
+3. **El pool admite 8 de 14 candidatos.** La rejilla ofrece catorce alturas y el
    pool solo guarda ocho: la novena se rechaza en silencio. El límite es de
    `Engine` y es deliberado —snapshot trivial—, pero el usuario lo descubre al
    chocar con él.
