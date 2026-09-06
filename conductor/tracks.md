@@ -604,6 +604,33 @@ escalón es el que se nota.
   violeta de Tonal se juzgó contra el fondo violeta oscuro, y sobre el neutro esa
   comprobación no vale.
 
+---
+
+- [ ] **Track: v2 rebanada 5 — Note Repeater: Repeats, Time, Ramp y Pace**
+  *Link: [conductor/tracks/note-repeater_20260906/index.md](./tracks/note-repeater_20260906/index.md)*
+
+  Abierto el 2026-09-06. **Saca el Note Repeater de «Fuera de v1»** de
+  `product.md`, por la misma vía que salieron Cycles y los múltiples Tracks. Cada
+  Pulse pasa a poder generar hasta ocho triggers extra **sin tocar Steps, Pulses
+  ni Rotate**: es una capa sobre el ritmo, no un secuenciador aparte.
+
+  **Con Repeats en 0 —el default— no cambia nada de lo entregado**, y ese es el
+  requisito que sostiene la rebanada. Es también lo que permite que Probability
+  pase a decidir sobre *todas* las notas sin que ningún Pattern existente suene
+  distinto: sin repeticiones, «todas las notas» y «solo los Pulses» son el mismo
+  conjunto.
+
+  **Tres desviaciones de la Pre Spec, escritas antes de implementar.** Repeats es
+  0–8 y no 0–48, y no hay «infinito»: el techo de coste en el hilo del scheduler
+  se razona en vez de medirse, y con doce Tracks 108 eventos por Step es
+  defendible donde 588 no lo es. Ramp y Pace son knobs y no secundarios de CTRL,
+  que es el mismo caso que la nota del 2026-09-02 ya resolvió con Cycles. Y
+  Choke/Tail quedan fuera, con la limitación de solape escrita.
+
+  **No lleva medición de jitter**, y es el segundo cambio desde la suspensión del
+  2026-09-02 que toca la rejilla temporal. Aquí no se abre excepción —el primero,
+  `external-clock_20260903`, sí la abrió—: se verifica tocando.
+
 ## Defectos conocidos
 
 Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres
