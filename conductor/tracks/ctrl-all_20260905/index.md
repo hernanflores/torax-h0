@@ -1,6 +1,6 @@
 # Track: Ctrl All — un knob mueve los doce Tracks
 
-**ID:** `ctrl-all_20260905` · **Type:** Feature · **Status:** new
+**ID:** `ctrl-all_20260905` · **Type:** Feature · **Status:** complete
 
 Subir el Velocity de la mezcla entera no se puede hacer hoy de ninguna manera.
 Con dieciséis knobs y doce Tracks harían falta ciento ocho vueltas, y ninguna se
@@ -60,6 +60,23 @@ solo traduce el gesto. El hilo del scheduler no se entera: sigue leyendo un
 **No lleva medición de jitter** (suspendida el 2026-09-02) **ni test de coste del
 hilo de control**, aunque un clic reescriba hasta doce Tracks contra el único de
 Temp. Las dos decisiones quedan anotadas con su coste delante.
+
+## Verificación
+
+Verificado en iPad con BeatStep Pro el 2026-09-05:
+[`device-verification.md`](./device-verification.md). Cerró los dos puntos que
+seguían abiertos — que el step 14 es momentary y no toggle, y que los dos
+distintivos se distinguen a un metro sin gastar un color.
+
+**Tres requisitos se corrigieron implementando**, cada uno destapado por un test
+al fallar y anotado con fecha en el `spec.md`:
+
+- **FR4** prometía que el Track topado se despega del tope «en el mismo clic»; es
+  falso. Lo que base+offset garantiza es exactitud, no inmediatez.
+- **FR5** calculaba el tope con el ancho del parámetro, y así no cumplía su propia
+  promesa de que un clic de vuelta mueva algo. Sale de las bases capturadas.
+- **FR13** lo contradecía el primer corte de entrada, que ignoraba el step 14
+  entero durante Temp y dejaba un botón hundido sin efecto.
 
 ## Documents
 

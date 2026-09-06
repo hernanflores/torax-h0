@@ -535,7 +535,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: Ctrl All — un knob mueve los doce Tracks**
+- [x] **Track: Ctrl All — un knob mueve los doce Tracks** — mantener [step 14] desplaza los doce y soltar devuelve; verificado en iPad con BeatStep Pro
   *Link: [conductor/tracks/ctrl-all_20260905/index.md](./tracks/ctrl-all_20260905/index.md)*
 
   Subir el Velocity de la mezcla entera no se puede hacer hoy: con dieciséis knobs

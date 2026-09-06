@@ -2,7 +2,7 @@
   "id": "ctrl-all_20260905",
   "title": "Ctrl All: un knob mueve los doce Tracks",
   "type": "Feature",
-  "status": "new",
+  "status": "complete",
   "created_at": "2026-09-05",
   "updated_at": "2026-09-05",
   "phases": 6,
