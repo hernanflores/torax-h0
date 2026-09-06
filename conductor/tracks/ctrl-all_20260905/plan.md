@@ -197,7 +197,7 @@ seguir.
 
 ## FASE 5: LA PANTALLA ENSEÑA QUE ES GLOBAL
 
-- [ ] Task: `isCtrlAllActive` y el distintivo (FR16)
+- [~] Task: `isCtrlAllActive` y el distintivo (FR16)
   - [ ] Tests (Red): `isCtrlAllActive` es cierto entre la pulsación y la soltada,
         y falso el resto del tiempo, incluido el hold en el que no se giró nada.
   - [ ] Tests (Red): con Temp al mando (FR13), `isTempActive` y `isCtrlAllActive`

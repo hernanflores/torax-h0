@@ -24,6 +24,43 @@
 /// >   *cómo* o *cuándo*, no *cuánto* suena.
 /// > - **Tonal → el marco.** No hay elección: TONAL no tiene parámetros de knob
 /// >   detrás (FR4), y Scale y Root son lo que restringe todo lo demás.
+/// Qué gesto momentáneo está puesto, si hay alguno.
+///
+/// **Existe porque un `Bool` dejó de bastar el 2026-09-05.** Hasta entonces el
+/// panel solo tenía que distinguir «temporal» de «permanente», y `isTemporary`
+/// lo decía. Con Ctrl All hay dos gestos temporales, y lo que el usuario necesita
+/// saber con las manos ocupadas no es si el cambio sobrevivirá a soltar —los dos
+/// son reversibles— sino **si está moviendo un Track o los doce**. Un distintivo
+/// compartido no lo diría.
+///
+/// **Los dos nunca están puestos a la vez**: con el step 13 y el 14 hundidos
+/// manda Temp, y quien resuelve el empate es `ControlInput`, no la vista. Por eso
+/// esto es un caso y no un juego de banderas.
+public enum ReadoutGesture: Equatable, Sendable, CaseIterable {
+
+    /// Nada puesto: lo que se lee es el Pattern, y sobrevivirá.
+    case none
+
+    /// Temp: superpuesto sobre el Track seleccionado.
+    case temp
+
+    /// Ctrl All: desplazado en los doce Tracks.
+    case ctrlAll
+
+    /// El texto del distintivo, o `nil` si no hay gesto.
+    ///
+    /// Los términos son los que ancla la Pre Spec —«Temp» y «Ctrl All»— y no se
+    /// inventan sinónimos para pantalla (NFR7): lo que se lee es lo que el
+    /// usuario usará para pensarlo.
+    var marker: String? {
+        switch self {
+        case .none: nil
+        case .temp: "Temp"
+        case .ctrlAll: "Ctrl All"
+        }
+    }
+}
+
 public struct FamilyReadout: Equatable, Sendable {
 
     /// La lectura grande, la que se lee a un metro.
@@ -32,7 +69,7 @@ public struct FamilyReadout: Equatable, Sendable {
     /// El resto de la familia, en una línea pequeña.
     public let detail: String
 
-    /// El distintivo de que lo que se lee es **temporal**, o `nil` en reposo.
+    /// El distintivo del gesto que está puesto, o `nil` en reposo.
     ///
     /// > **Por qué hace falta.** Con Temp puesto, la lectura, el anillo y el
     /// > valor grande ya enseñan los valores superpuestos sin ningún camino
@@ -46,13 +83,14 @@ public struct FamilyReadout: Equatable, Sendable {
     /// parámetros: depender del tab que se esté mirando dejaría el fill sin
     /// marcar en dos de cada tres pantallas.
     ///
-    /// El término es «Temp», el que la Pre Spec ancla (NFR6). No se inventa un
-    /// sinónimo para pantalla: lo que se lee es lo que el usuario usará para
-    /// pensarlo.
+    /// **Y desde el 2026-09-05 dice *cuál* de los dos gestos**, no solo que hay
+    /// uno. Temp y Ctrl All son reversibles los dos, así que «esto es temporal»
+    /// no distinguiría lo único que importa con las manos ocupadas: si lo que se
+    /// mueve es un Track o los doce. El texto lo decide `ReadoutGesture`.
     public let marker: String?
 
-    public init(track: Cycle, family: ParameterFamily, isTemporary: Bool = false) {
-        marker = isTemporary ? "Temp" : nil
+    public init(track: Cycle, family: ParameterFamily, gesture: ReadoutGesture = .none) {
+        marker = gesture.marker
         switch family {
         case .shape:
             let shape = track.shape

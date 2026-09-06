@@ -219,6 +219,33 @@ final class CtrlAllModifierInputTests: XCTestCase {
         XCTAssertEqual(input.pattern, before)
     }
 
+    // MARK: - Lo que la pantalla lee (FR16)
+
+    /// `isCtrlAllActive` es cierto entre la pulsación y la soltada, y falso el
+    /// resto del tiempo.
+    func testTheReaderFollowsTheHold() {
+        let (input, _) = makeInput()
+
+        XCTAssertFalse(input.isCtrlAllActive)
+        input.receive(ctrlAll())
+        XCTAssertTrue(input.isCtrlAllActive)
+        input.receive(knob(.pulses, by: 2))
+        XCTAssertTrue(input.isCtrlAllActive)
+        input.receive(ctrlAll(value: 0))
+        XCTAssertFalse(input.isCtrlAllActive)
+    }
+
+    /// **Incluido el hold en el que no se giró nada:** el distintivo depende del
+    /// botón y no de que haya pasado algo, porque lo que anuncia es qué va a
+    /// hacer el siguiente giro.
+    func testTheReaderIsTrueEvenWithoutTurningAnything() {
+        let (input, _) = makeInput()
+
+        input.receive(ctrlAll())
+
+        XCTAssertTrue(input.isCtrlAllActive)
+    }
+
     // MARK: - Helpers
 
     private func makeInput(pulsesPerTrack: [Int]? = nil) -> (ControlInput, Published) {

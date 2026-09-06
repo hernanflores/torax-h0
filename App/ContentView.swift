@@ -499,9 +499,9 @@ struct ContentView: View {
             // del valor grande lo haría desaparecer con él, a los 1,6 segundos,
             // con el fill todavía puesto.
             if let marker = FamilyReadout(
-                track: model.track, family: family, isTemporary: model.isTempActive
+                track: model.track, family: family, gesture: model.gesture
             ).marker {
-                temporaryMarker(marker)
+                gestureMarker(marker, gesture: model.gesture)
             }
 
             // **El valor grande sustituye al estado en reposo, no lo tapa**, y
@@ -530,7 +530,7 @@ struct ContentView: View {
         // Los valores son los superpuestos cuando Temp está puesto, y llegan por
         // el camino de siempre: el overlay se escribe en el `Pattern` publicado.
         let readout = FamilyReadout(
-            track: model.track, family: family, isTemporary: model.isTempActive)
+            track: model.track, family: family, gesture: model.gesture)
         return VStack(alignment: .leading, spacing: 8) {
             // **Dos líneas antes que cortarse.** En la columna estrecha
             // `Probability 100` no cabe en una, y truncar una lectura que existe
@@ -617,7 +617,7 @@ struct ContentView: View {
     /// Displays the description of a parameter change with its family-specific accent color.
     /// - Parameter change: The parameter change to display.
     /// - Returns: A view showing the change description.
-    /// El distintivo de que lo que se lee es temporal.
+    /// El distintivo del gesto momentáneo que está puesto.
     ///
     /// **La palabra la decide `FamilyReadout`**, en `Engine` y con tests; aquí
     /// solo se dibuja. Es la regla de `workflow.md`: si algo en `App` mereciera
@@ -626,12 +626,23 @@ struct ContentView: View {
     /// Lleva el acento de Tonal a propósito, que es el único de los tres que no
     /// pertenece a ningún knob: así no se confunde con la familia del parámetro
     /// que se esté girando, que es lo que colorea el valor grande.
-    private func temporaryMarker(_ marker: String) -> some View {
-        Text(marker.uppercased())
+    ///
+    /// > **Temp y Ctrl All se separan por forma, no por color** (FR16). Los tres
+    /// > acentos codifican familia y darle uno a un gesto haría que un
+    /// > desplazamiento global se leyera como «Shape» de reojo. Lo que cambia es
+    /// > el ancho, **y el ancho dice el alcance**: Temp es una pastilla compacta
+    /// > porque alcanza a un Track; Ctrl All cruza el panel entero porque alcanza
+    /// > a los doce. A un metro se distinguen sin llegar a leer la palabra, que
+    /// > es el criterio de `product-guidelines.md` — de reojo, en movimiento y
+    /// > con poca luz.
+    private func gestureMarker(_ marker: String, gesture: ReadoutGesture) -> some View {
+        let spansEverything = gesture == .ctrlAll
+        return Text(marker.uppercased())
             .font(Typography.captionBold)
             .foregroundStyle(Palette.background)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
+            .frame(maxWidth: spansEverything ? .infinity : nil)
             .background(Palette.tonal, in: RoundedRectangle(cornerRadius: Brutalist.radiusSmall))
             .padding(.horizontal, 24)
             .transition(.opacity)
