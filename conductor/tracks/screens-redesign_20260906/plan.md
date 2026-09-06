@@ -118,7 +118,7 @@ animaciones derivan del reloj musical.
 
 ---
 
-## Fase 3 — Pantalla `scale`
+## Fase 3 — Pantalla `scale` [checkpoint: 803b1a0]
 
 - [x] Task: Contexto de track, táctil (FR15) `c91c0f0`
     - [x] Muestra el track en edición y permite cambiarlo sin volver a `track`
@@ -143,7 +143,7 @@ animaciones derivan del reloj musical.
 - [x] Task: Auditar que no se escapó lógica a las vistas `caf2107`
     - [x] Atención especial aquí: decidir si un pad entra al pool es lógica de `Engine`, no de la vista
 
-- [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `scale.png`
+- [x] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `scale.png` `803b1a0`
 
 ---
 
