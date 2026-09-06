@@ -215,10 +215,10 @@ lo que separa esta pantalla de una maqueta que miente.
     - [x] Revisar cada cadena visible de las cuatro pantallas y del chrome
     - [x] Confirmar que el vocabulario capitalizado sigue intacto en código, tests y documentación
 
-- [ ] Task: Auditoría de alcance (NFR1)
-    - [ ] `git diff main --name-only` y confirmar que `Engine` y `MIDI` solo cambian por lógica que bajó con sus tests
-    - [ ] Confirmar que el camino de tiempo real no aparece en el diff
-    - [ ] Ejecutar la suite completa; el flake de CoreMIDI en `MIDITests` es ruido conocido y no se atribuye a este track
+- [x] Task: Auditoría de alcance (NFR1) `dfb0aca`
+    - [x] `git diff main --name-only` y confirmar que `Engine` y `MIDI` solo cambian por lógica que bajó con sus tests
+    - [x] Confirmar que el camino de tiempo real no aparece en el diff
+    - [x] Ejecutar la suite completa; el flake de CoreMIDI en `MIDITests` es ruido conocido y no se atribuye a este track
 
 - [ ] Task: Repaso de los trece criterios de aceptación del spec
     - [ ] Recorrerlos uno a uno contra la app corriendo
