@@ -1,0 +1,64 @@
+Verificación de la Fase 2 — Pantalla track
+
+Track: screens-redesign_20260906
+Commit de cierre: ce92e29
+
+Tests automáticos
+- swift test --package-path Packages/Engine
+  565 tests, 0 fallos. Eran 546 al cerrar la Fase 1; los 19 nuevos cubren
+  FamilyReadout.label/.value, ParameterChange.label/.value,
+  TrackParameter.value(in:), Scale.name y ParameterFamily.name.
+- swift test --package-path Packages/MIDI
+  600 tests, 7 fallos, todos en VirtualLoopbackTests con la firma
+  clientCreationFailed(-50). Flake conocido. git diff main -- Packages/MIDI
+  sigue vacío: este track no ha tocado ese paquete.
+- xcodebuild Debug para iOS y para simulador: BUILD SUCCEEDED.
+
+Cobertura
+Dieciséis ficheros. Los cuatro de Engine llegan con su fichero de tests tocado
+en el mismo commit; los nueve de App no se miden por regla del proyecto.
+
+Verificación manual, iPad Pro 11-inch (M5) con iOS 26.3
+Confirmada por el usuario. Un rechazo y su corrección:
+
+- 'El tamaño del anillo no cambió, debería ser más grande como en el handoff.'
+  Tenía razón y la causa eran tres errores encadenados en la misma dirección:
+  el GeometryReader medía la pantalla entera restando 64 puntos a ojo; la
+  reserva descontaba el chrome por segunda vez y una fila de Cycles que ya se
+  había mudado; y el escenario deducía su altura de sus columnas en vez de
+  recibirla. Unos 180 puntos de lado.
+
+Defectos encontrados durante la fase, todos en captura
+1. El contorno del Track elegido, dibujado como halo, se colaba por los huecos
+   entre arcos y pintaba el anillo entero de blanco.
+2. La columna de lectura desbordaba su marco al recibir los cards.
+3. Una celda del pool con un solo pitch ocupaba el ancho del card.
+4. La fila M/S cortada por el borde inferior.
+5. El tamaño del anillo, arriba.
+
+Ninguno era visible leyendo el código, que es el argumento de que esta
+verificación sea una captura y una prueba en mano.
+
+Un accidente de método, anotado por si se repite
+Un AssertionError a mitad de un script de edición abortó la escritura entera de
+su bloque, así que una reestructuración del layout no llegó a aplicarse y dos
+capturas seguidas salieron idénticas. Se detectó al ir a instrumentar la
+geometría y no encontrar el código que se creía escrito.
+
+Preguntas cerradas en esta fase
+- La separación entre el mauve de Groove y el violeta de Tonal sobre el fondo
+  neutro: confirmada por el usuario con los dos cards visibles. Queda escrito
+  que esa separación depende del fondo, así que si el fondo cambia hay que
+  rehacer la comprobación.
+
+Decisiones tomadas contra el PNG, y por qué
+- Una aguja por anillo y no una global: con divisiones distintas, una sola
+  mentiría sobre once de los doce.
+- Los pulsos de los anillos no elegidos no llevan acento: los colores variados
+  del mock no codifican nada que exista en el modelo.
+- Sin los números 01-16 alrededor del anillo ni la lista del hub: no los pide
+  FR10 ni los menciona el spec.
+
+Estado al cerrar
+La pantalla track cabe entera sin scroll. scale, midi y banks siguen con su
+contenido viejo o provisional; son las Fases 3, 4 y 5.
