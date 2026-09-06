@@ -163,9 +163,4 @@ struct TrackSelectorView: View {
         .brutalistControl(accent: color, isSelected: isOn, radius: Brutalist.radiusSmall)
     }
 
-    private func label(_ text: String) -> some View {
-        Text(text)
-            .font(Typography.captionStrong)
-            .foregroundStyle(Palette.muted)
-    }
 }

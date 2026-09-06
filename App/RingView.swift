@@ -80,9 +80,7 @@ struct RingStackView: View {
         let dim = heard ? 1.0 : 0.3
         let pulseColour = pulseColour(isSelected: isSelected, hasMaterial: band.hasMaterial)
             .opacity(dim)
-        let gapColour =
-            (isSelected ? Palette.step.opacity(0.55) : Palette.border.opacity(0.55))
-            .opacity(dim)
+        let gapColour = (isSelected ? Palette.stepDim : Palette.border).opacity(dim)
 
         // **Arcos y no puntos.** Se dibujó primero con una marca por Step, como
         // el anillo único de la v1, y con dieciséis anillos no funciona: los

@@ -247,7 +247,7 @@ struct AppChrome: View {
             model.setTempo(model.beatsPerMinute + delta)
         } label: {
             Image(systemName: symbol)
-                .font(.system(size: 13))
+                .font(.system(size: Typography.symbolSmall))
                 .foregroundStyle(Palette.text)
                 .frame(width: 36, height: 32)
                 // **Sin esto solo se puede tocar la tinta**, y `minus` es una
@@ -288,7 +288,7 @@ struct AppChrome: View {
             model.isPlaying ? model.stop() : model.play()
         } label: {
             Image(systemName: model.isPlaying ? "stop.fill" : "play.fill")
-                .font(.system(size: 18))
+                .font(.system(size: Typography.symbol))
                 .foregroundStyle(transportGlyph)
                 .frame(width: 72, height: 40)
                 // El mismo defecto que en los escalones del tempo, y aquí importa

@@ -122,6 +122,20 @@ extension Typography {
     /// La entrada activa, la que lleva el subrayado de 3 pt.
     static var navigationItemActive: Font { bold(20) }
 
+    // MARK: - Los símbolos
+
+    // **Los iconos no son Figtree, y aun así sus tamaños viven aquí.** Un SF
+    // Symbol se dimensiona con la fuente del sistema —pedirle Figtree devolvería
+    // la del sistema igualmente— pero el número de puntos es una decisión de
+    // escala como cualquier otra, y escribirlo en la vista es el mismo fallo que
+    // escribir un color. La auditoría de la Fase 6 encontró tres.
+
+    /// Un icono dentro de un control pequeño: los escalones del tempo.
+    static let symbolSmall: CGFloat = 13
+
+    /// Un icono que es el control: el transporte, el indicador de encadenamiento.
+    static let symbol: CGFloat = 18
+
     /// Un renglón de parámetros, que es una lista de valores y no prosa.
     static var parameterLine: Font { regular(20) }
 

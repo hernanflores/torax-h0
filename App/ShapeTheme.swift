@@ -84,6 +84,15 @@ enum Palette {
     /// sobre el violeta. El hueco se ve algo mejor que antes, no peor.
     static let step = Color(red: 0x5f / 255, green: 0x62 / 255, blue: 0x5f / 255)
 
+    /// El hueco del anillo cuando la banda no es la elegida.
+    ///
+    /// **Es un token y no `step.opacity(0.55)` escrito en la vista.** El valor es
+    /// el mismo; lo que cambia es que derivar un color dentro de un `Canvas` es
+    /// exactamente el fallo que FR1 nombra — el día que el hueco haya que
+    /// ajustarlo, se ajusta aquí y no buscando una llamada a `opacity` entre el
+    /// código de dibujo. Encontrado en la auditoría de la Fase 6.
+    static let stepDim = Color(red: 0x3d / 255, green: 0x3f / 255, blue: 0x3d / 255)
+
     /// Texto secundario: etiquetas y estado en reposo.
     static let muted = Color(red: 0x8a / 255, green: 0x8d / 255, blue: 0x8a / 255)
 

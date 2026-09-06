@@ -154,7 +154,7 @@ struct CycleStrip: View {
                 // activo, porque entonces no hay nada que encadenar y un símbolo
                 // encendido diría que sí.
                 Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
-                    .font(.system(size: 18))
+                    .font(.system(size: Typography.symbol))
                     .foregroundStyle(activeCount > 1 ? Palette.mutedBright : Palette.border)
                     .accessibilityLabel(Text(display: "cycles chained"))
             }
