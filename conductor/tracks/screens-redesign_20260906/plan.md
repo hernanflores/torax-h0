@@ -93,10 +93,10 @@ animaciones derivan del reloj musical.
     - [ ] Verificar que **no se mueven con el transporte parado**
     - [ ] Confirmar que la posición se resuelve contra el origen del scheduler y que `TimelineView` solo decide cuándo repintar
 
-- [ ] Task: `cycleStrip` y la lectura grande (FR12)
-    - [ ] Lectura grande con nombre y valor; **persiste tras el giro**, pierde el acento y no el valor
-    - [ ] Card `cycle`: `03 / 08`, celdas `01`–`08`, activa marcada
-    - [ ] El icono de encadenamiento es **indicador de estado, no botón** — sin gesto asociado
+- [x] Task: `cycleStrip` y la lectura grande (FR12) `c75a604`
+    - [x] Lectura grande con nombre y valor; **persiste tras el giro**, pierde el acento y no el valor
+    - [x] Card `cycle`: `03 / 08`, celdas `01`–`08`, activa marcada
+    - [x] El icono de encadenamiento es **indicador de estado, no botón** — sin gesto asociado
 
 - [ ] Task: `parameterFamilyCard` — shape, groove y tonal (FR12)
     - [ ] Los tres cards visibles a la vez, sin tabs
