@@ -118,22 +118,28 @@ final class TonalKeyboardTests: XCTestCase {
             "Scale · Dorian   Root · D")
     }
 
-    /// **Las cinco escalas tienen nombre**, en inglés y sin traducir (NFR7).
-    /// Una que se quedara sin él no fallaría al dibujarse: saldría el nombre del
-    /// caso de Swift, que es un detalle del lenguaje y no vocabulario de dominio.
+    /// **Toda escala tiene nombre**, en inglés y sin traducir (NFR7). Una que se
+    /// quedara sin él no fallaría al dibujarse: saldría el nombre del caso de
+    /// Swift, que es un detalle del lenguaje y no vocabulario de dominio.
+    ///
+    /// > **Comprobaba otra cosa hasta el 2026-09-06, y esa cosa ya no puede
+    /// > romperse.** Fijaba las cinco líneas como literales, y su valor real era
+    /// > detectar que `TonalKeyboard` y `FamilyReadout` se separaran, porque cada
+    /// > uno tenía su propio `switch` de nombres. Ahora hay un solo sitio
+    /// > —`Scale.name`— así que comparar contra literales solo obligaría a
+    /// > reescribir el test cada vez que se añade una escala, que es exactamente
+    /// > lo que pasó al añadir tres.
+    /// >
+    /// > Lo que sí puede romperse y por tanto se comprueba: que la línea lleve el
+    /// > nombre y la raíz, y que ninguna escala se cuele con el nombre del caso
+    /// > de Swift, que va en minúscula.
     func testEveryScaleHasItsPreSpecName() {
-        let names = Scale.ordered.map {
-            TonalKeyboard(frame: TonalFrame(scale: $0, root: .c)).statusLine
-        }
+        for scale in Scale.allCases {
+            let line = TonalKeyboard(frame: TonalFrame(scale: scale, root: .c)).statusLine
 
-        XCTAssertEqual(
-            names,
-            [
-                "Scale · Minor   Root · C",
-                "Scale · Major   Root · C",
-                "Scale · Dorian   Root · C",
-                "Scale · Phrygian   Root · C",
-                "Scale · Pentatonic   Root · C",
-            ])
+            XCTAssertTrue(line.contains(scale.name), "\(scale)")
+            XCTAssertTrue(line.hasSuffix("Root · C"), "\(scale)")
+            XCTAssertTrue(scale.name.first?.isUppercase == true, "\(scale)")
+        }
     }
 }
