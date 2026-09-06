@@ -1,0 +1,44 @@
+Task: CtrlAllOffset — la base de los doce y el desplazamiento acumulado
+(Fase 3, ctrl-all_20260905)
+
+QUE SE HIZO
+El valor puro que recuerda el gesto, con sus tests escritos primero (Red
+confirmado: "cannot find 'CtrlAllOffset' in scope").
+
+FICHEROS
+- Packages/Engine/Sources/Engine/CtrlAllOffset.swift (nuevo)
+- Packages/Engine/Tests/EngineTests/CtrlAllOffsetTests.swift (nuevo): 11 tests.
+
+LA DECISION DEL TIPO: BASE Y OFFSET POR SEPARADO
+Lo natural seria guardar el valor superpuesto y devolverlo al soltar. Esta mal, y
+el caso que lo rompe es un Track topado contra su extremo: si se guarda el valor
+ya acotado, desandar el giro devuelve a los demas y deja al topado clavado en el
+tope. El balance del Pattern quedaria destruido por un gesto que promete no
+escribir nada. Guardando base y delta aparte, el valor se recalcula siempre como
+base + offset y la ida y vuelta es exacta por construccion.
+
+POR QUE NO REUTILIZAR ParameterOverlay
+Son dos verbos. Temp escribe un valor ABSOLUTO para que los Cycles del Track
+seleccionado suenen igual; Ctrl All acumula un DELTA para que los doce Tracks
+conserven sus diferencias. Compartir tipo obligaria a un modo, y el modo se
+consultaria en cada operacion.
+
+DETALLES
+- `Position` es un par (track, cycle) plano y no dos diccionarios anidados:
+  anidar obligaria a distinguir "Track sin capturar" de "Track capturado sin
+  Cycles", que no son estados distintos para nadie.
+- `amount(of:)` devuelve 0 y no nil para un parametro sin tocar: quien aplica no
+  sabe de antemano cuales se giraron, y cero es la respuesta correcta.
+- capturing dos veces no re-guarda la base. Es el caso NORMAL: un giro produce un
+  mensaje tras otro y el segundo llega con el desplazamiento ya puesto.
+- Los Tracks muteados se capturan como cualquier otro (FR3). Aqui ni siquiera se
+  puede consultar la mascara, que vive en MIDI, y es lo correcto.
+
+TESTS Y COBERTURA
+  swift test --package-path Packages/Engine -> 507 tests, 0 fallos.
+  DependencyBoundaryTests pasa: Engine sigue sin importar nada fuera de la stdlib.
+  Engine total: 98,03% de lineas (umbral >=90%).
+  CtrlAllOffset.swift al 84,62%: lo no cubierto es restored(into:) mas alla del
+  caso vacio, cuya tarea es la cuarta de esta misma fase. Se vuelve a medir en el
+  checkpoint.
+swift format limpio.
