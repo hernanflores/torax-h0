@@ -217,7 +217,7 @@ seguir.
 
 ## FASE 6: EN EL DISPOSITIVO
 
-- [ ] Task: Verificación en iPad con BeatStep Pro (AC1–AC12, AC14, AC15)
+- [~] Task: Verificación en iPad con BeatStep Pro (AC1–AC12, AC14, AC15)
   - [ ] Reconfigurar los encoders en MIDI Control Center con el preset exportado
         nuevo, en `Relative #2` — que sigue siendo la condición de que nada salte
         a su extremo.
