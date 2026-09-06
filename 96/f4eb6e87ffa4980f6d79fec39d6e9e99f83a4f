@@ -1,0 +1,28 @@
+Task: parameterFamilyCard — shape, groove y tonal (Fase 2, FR12)
+
+Track: screens-redesign_20260906
+
+Engine, con tests en rojo primero
+- TrackParameter.value(in:) — 4 tests. Uno fija que el card y el anuncio de un
+  giro dicen la misma cadena; si se separan es un fallo, no una variación.
+- Scale.name + CustomStringConvertible — 3 tests.
+- ParameterChange: los nueve cuerpos del if-chain colapsan en uno.
+Engine: 561, 0 fallos (eran 554).
+
+Vistas
+- ParameterFamilyCard y TonalCard en App/TrackReadout.swift.
+- ContentView.entries(for:) toma la lista y el orden de TrackParameter, que es
+  el del dominio y no el de los knobs: el preset los reordenó el 2026-09-05 y la
+  pantalla no siguió, a propósito.
+
+Defectos encontrados en captura
+1. La columna de lectura desbordaba: estaba atada a  y los cards
+   la hacen más alta que el cuadrado del anillo.
+2. Celda del pool estirada a todo el ancho con un solo pitch.
+3. Fila M/S cortada por el borde inferior; se ajustó la escala vertical.
+
+Ninguno era visible leyendo el código.
+
+Lo que queda para la tarea siguiente, visible en la captura
+Las pastillas de Track siguen en 1-12 en vez de 01-12 y la M y la S en
+mayúscula. Es trackPill, la tarea 12.
