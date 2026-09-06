@@ -46,10 +46,10 @@ haya que perseguirlas.
     - [x] `Typography`: revisar la escala para el chrome nuevo; **los tamaños viven aquí, no en las vistas**
     - [x] Dejar escrito en el propio tipo por qué el fondo cambió, con la fecha
 
-- [ ] Task: Bloquear landscape (FR30)
-    - [ ] `Config/Info-Debug.plist` y la configuración de Release: solo las dos orientaciones horizontales
-    - [ ] `xcodebuild clean` — el plist generado queda cacheado, según `tech-stack.md`
-    - [ ] Verificar que el `Info.plist` de Release sigue sin `UIBackgroundModes`
+- [x] Task: Bloquear landscape (FR30) `39b7e3f`
+    - [x] `Config/Info-Debug.plist` y la configuración de Release: solo las dos orientaciones horizontales
+    - [x] `xcodebuild clean` — el plist generado queda cacheado, según `tech-stack.md`
+    - [x] Verificar que el `Info.plist` de Release sigue sin `UIBackgroundModes`
 
 - [ ] Task: `appChrome` — la barra superior (FR4, FR5, FR6)
     - [ ] `torax h-0`, módulo activo centrado, punto de conexión, entrada MIDI, fuente de clock, tempo y transporte
