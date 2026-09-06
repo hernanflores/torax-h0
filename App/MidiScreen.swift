@@ -20,7 +20,27 @@ struct MidiScreen: View {
         TimelineView(.periodic(from: .now, by: 0.25)) { _ in
             HStack(alignment: .top, spacing: 24) {
                 VStack(alignment: .leading, spacing: 16) {
-                    ClockSourceCard(model: model)
+                    // **Valores, no el modelo.**
+                    //
+                    // > **El card recibía `model` y no se enteraba de nada.**
+                    // > `followsExternalClock` sale de `Transport`, que no es
+                    // > observable, así que `@Observable` no avisa; y como el
+                    // > card es una `View` aparte cuyo único dato es una
+                    // > referencia de clase, SwiftUI comparaba «igual» y se
+                    // > saltaba su cuerpo aunque el `TimelineView` de fuera
+                    // > repintara. El cambio solo se veía al navegar a otra
+                    // > pantalla y volver, que es lo que el usuario encontró el
+                    // > 2026-09-06.
+                    // >
+                    // > Pasándole los valores ya leídos, cada latido del
+                    // > `TimelineView` produce datos distintos y el cuerpo se
+                    // > vuelve a evaluar. Es lo que hacía `ChannelMapView` con su
+                    // > struct `Clock`, y se perdió al reescribirla.
+                    ClockSourceCard(
+                        isExternal: model.followsExternalClock,
+                        status: model.clockStatus ?? "internal clock · \(model.tempoDescription)",
+                        onSelect: { model.setFollowsExternalClock($0) }
+                    )
                     MidiInputCard(model: model)
                     MidiOutputCard(model: model)
                     Spacer(minLength: 0)
@@ -45,7 +65,16 @@ struct MidiScreen: View {
 /// mismo, y el que se quedara atrás mentiría.
 struct ClockSourceCard: View {
 
-    let model: TransportModel
+    let isExternal: Bool
+
+    /// Lo que el reloj está haciendo, ya escrito.
+    ///
+    /// **Es lo que hace, no lo que se eligió.** Con reloj externo lo escribe
+    /// `ClockStatus`, que distingue seguir a un maestro de haberlo perdido; con
+    /// interno no hay nada que contar y se dice el tempo.
+    let status: String
+
+    let onSelect: (Bool) -> Void
 
     var body: some View {
         Card(title: "clock source") {
@@ -67,26 +96,16 @@ struct ClockSourceCard: View {
                     .stroke(Palette.border, lineWidth: Brutalist.stroke)
             }
 
-            // **Lo que el reloj está haciendo, no lo que se eligió.** Con reloj
-            // externo el texto lo escribe `clockStatus`, que distingue seguir a
-            // un maestro de haberlo perdido; sin él, no hay nada que contar y se
-            // dice el tempo.
             Text(display: status)
                 .font(Typography.caption)
                 .foregroundStyle(Palette.muted)
         }
     }
 
-    private var status: String {
-        if let external = model.clockStatus { return external }
-        return "internal clock · \(model.tempoDescription)"
-    }
-
     private func segment(_ source: ClockSource) -> some View {
-        let isExternal = source == .external
-        let isSelected = model.followsExternalClock == isExternal
+        let isSelected = self.isExternal == (source == .external)
 
-        return Button(action: { model.setFollowsExternalClock(isExternal) }) {
+        return Button(action: { onSelect(source == .external) }) {
             Text(display: source.name)
                 .font(isSelected ? Typography.bodyStrong : Typography.body)
                 .foregroundStyle(isSelected ? Palette.onAccent : Palette.mutedBright)

@@ -174,7 +174,27 @@ final class TransportModel {
     /// 120 BPM está dentro del rango válido de `Tempo`, así que no puede fallar.
     private static let tempo = Tempo(beatsPerMinute: 120)!
 
-    private(set) var isPlaying = false
+    /// Si el transporte está sonando.
+    ///
+    /// **Se pregunta al transporte, no se recuerda.**
+    ///
+    /// > **Era una variable guardada, y mentía.** Solo se actualizaba en `play()`
+    /// > y `stop()` —los dos botones de la app—, así que cuando el Start del
+    /// > controlador arrancaba el transporte, el modelo seguía creyendo que
+    /// > estaba parado. Consecuencia visible, y la que el usuario encontró el
+    /// > 2026-09-06: el botón de la pantalla seguía mostrando *play* con la
+    /// > secuencia sonando, y pulsarlo llamaba a `play()` otra vez en vez de
+    /// > parar. Parecía que el botón de la app tenía precedencia sobre el del
+    /// > BeatStep.
+    /// >
+    /// > **La precedencia nunca estuvo mal: `Transport.receive` da el mando al
+    /// > maestro desde el 2026-09-03.** Lo que estaba mal era que la app no se
+    /// > enteraba. Guardar una copia de un estado que otro hilo puede cambiar es
+    /// > prometer que nadie más lo va a tocar, y aquí el controlador lo toca.
+    ///
+    /// Leerlo es consultar `scheduler?.isRunning`; no hace falta guardarlo.
+    var isPlaying: Bool { transport?.isPlaying ?? false }
+
     private(set) var selection = MIDIEndpointSelection(.destination)
 
     /// De dónde llegan los giros de knob.
@@ -630,12 +650,10 @@ final class TransportModel {
     func play() {
         guard canPlay else { return }
         transport?.play()
-        isPlaying = transport?.isPlaying ?? false
     }
 
     func stop() {
         transport?.stop()
-        isPlaying = false
     }
 
     private func destinationsChanged(to selection: MIDIEndpointSelection) {

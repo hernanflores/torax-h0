@@ -63,6 +63,27 @@ struct AppChrome: View {
         // > pisándose. Centrar contra la pantalla y no contra los vecinos sigue
         // > siendo lo correcto —si no, el título bailaría al enchufar un cable—
         // > pero se consigue repartiendo el espacio, no superponiendo.
+        // **La barra entera se repregunta cuatro veces por segundo.**
+        //
+        // > **Solo lo hacía el tempo, y por eso el transporte mentía.** El estado
+        // > del reloj y el del transporte los cambia el hilo de recepción de
+        // > CoreMIDI, que no puede publicar nada observable —saltar al principal
+        // > metería su cola en la estimación—, así que la única forma de verlos
+        // > es volver a preguntar. El tempo tenía su `TimelineView` y el botón de
+        // > transporte no: con el Start del BeatStep, la secuencia sonaba y el
+        // > botón seguía enseñando *play*.
+        //
+        // **No contradice la regla del playhead.** Lo que
+        // `product-guidelines.md` llama antipatrón es animar con un temporizador
+        // algo que debería derivar del reloj musical; esto no anima nada: relee
+        // unos cuantos valores. Cuatro veces por segundo es lento para el ojo y
+        // sobra para un puñado de textos.
+        TimelineView(.periodic(from: .now, by: 0.25)) { _ in
+            bar
+        }
+    }
+
+    private var bar: some View {
         HStack(spacing: 20) {
             HStack {
                 Text(display: "torax h-0")
@@ -192,13 +213,15 @@ struct AppChrome: View {
     /// > con el transporte en la fila que se lee de reojo mientras se toca.
     @ViewBuilder
     private var tempo: some View {
-        TimelineView(.periodic(from: .now, by: 0.25)) { _ in
-            HStack(spacing: 8) {
-                if isAdjustingTempo {
-                    tempoStep(-1, symbol: "minus")
-                }
+        // El `TimelineView` que hacía falta aquí envuelve ahora la barra entera:
+        // el transporte necesitaba lo mismo y tenerlo dos veces sería repintar
+        // en dos ritmos distintos.
+        HStack(spacing: 8) {
+            if isAdjustingTempo {
+                tempoStep(-1, symbol: "minus")
+            }
 
-                Button {
+            Button {
                     // **Con reloj externo no despliega nada.** El tempo lo pone
                     // el maestro; ofrecer un ajuste que el siguiente tick va a
                     // pisar sería un control que miente.
@@ -218,9 +241,8 @@ struct AppChrome: View {
                 .buttonStyle(.plain)
                 .disabled(model.followsExternalClock)
 
-                if isAdjustingTempo {
-                    tempoStep(1, symbol: "plus")
-                }
+            if isAdjustingTempo {
+                tempoStep(1, symbol: "plus")
             }
         }
     }
