@@ -150,13 +150,19 @@ enum Palette {
     /// el violeta de Tonal, y la diferencia con `#7C5FD9` es más de saturación que
     /// de tono. Entre sí contrastan **1,21 : 1**.
     ///
-    /// > **La pregunta sigue abierta, y el 2026-09-06 se reabre.** Se comprobó a
-    /// > un metro y con poca luz que se separaban — **pero contra el fondo violeta
-    /// > oscuro**, que arrimaba el ojo hacia el lado violeta del círculo. Contra
-    /// > el neutro `#111211` esa comprobación no vale. Se vuelve a mirar en la
-    /// > verificación de la fase, en dispositivo y con poca luz. Si se confunden,
-    /// > se registra y se decide con la app en la mano — no se revierte por
-    /// > precaución ni se deja pasar por deferencia al handoff.
+    /// > **La pregunta se reabrió el 2026-09-06 y se cerró el mismo día.** Se
+    /// > había comprobado a un metro que se separaban, **pero contra el fondo
+    /// > violeta oscuro**, que arrimaba el ojo hacia el lado violeta del círculo;
+    /// > contra el neutro `#111211` esa comprobación no valía.
+    /// >
+    /// > **Se volvió a mirar con la app delante**, con los cards de Groove y
+    /// > Tonal visibles a la vez en la pantalla `track`, y el usuario confirmó
+    /// > que el contraste es bueno. El mauve se queda.
+    /// >
+    /// > Lo que la reapertura enseñó sigue valiendo: **la separación de estos dos
+    /// > depende del fondo**, no solo de ellos. Si el fondo vuelve a cambiar, la
+    /// > comprobación hay que rehacerla; los 1,21 : 1 que contrastan entre sí no
+    /// > dejan margen para darla por hecha.
     static let groove = Color(red: 0xaa / 255, green: 0x6d / 255, blue: 0xa8 / 255)
 
     /// El acento que le toca a una familia de parámetros.

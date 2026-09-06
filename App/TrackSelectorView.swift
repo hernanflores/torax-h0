@@ -85,13 +85,18 @@ struct TrackSelectorView: View {
         return Button {
             onSelect(index)
         } label: {
-            Text("\(index + 1)")
+            // **Con cero delante, `01`–`12`.** El handoff los numera así en las
+            // cuatro pantallas, y no es cosmética: con ancho monoespaciado, doce
+            // etiquetas de dos cifras ocupan lo mismo y la fila deja de dar un
+            // salto de medio carácter entre el `9` y el `10`.
+            Text(display: number(index))
                 .font(isSelected ? Typography.bodyStrong : Typography.body)
                 .foregroundStyle(
                     isSelected ? Palette.onAccent : (sounds ? accent : Palette.muted)
                 )
                 .monospacedDigit()
                 .frame(maxWidth: .infinity, minHeight: 44)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .brutalistControl(
@@ -101,6 +106,12 @@ struct TrackSelectorView: View {
             radius: Brutalist.radius
         )
         .opacity(audible ? 1 : 0.45)
+    }
+
+    /// El número de un Track, con cero delante.
+    private func number(_ index: Int) -> String {
+        let track = index + 1
+        return track < 10 ? "0\(track)" : "\(track)"
     }
 
     // MARK: - Mute y Solo
@@ -120,10 +131,10 @@ struct TrackSelectorView: View {
         HStack(spacing: 6) {
             ForEach(0..<Pattern.trackCount, id: \.self) { index in
                 HStack(spacing: 4) {
-                    mixButton("M", isOn: mix.isMuted(index), color: Palette.groove) {
+                    mixButton("m", isOn: mix.isMuted(index), color: Palette.groove) {
                         onToggleMute(index)
                     }
-                    mixButton("S", isOn: mix.isSoloed(index), color: Palette.tonal) {
+                    mixButton("s", isOn: mix.isSoloed(index), color: Palette.tonal) {
                         onToggleSolo(index)
                     }
                 }
@@ -143,10 +154,16 @@ struct TrackSelectorView: View {
         _ letter: String, isOn: Bool, color: Color, action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            Text(letter)
+            Text(display: letter)
                 .font(isOn ? Typography.captionBold : Typography.caption)
                 .foregroundStyle(isOn ? Palette.onAccent : Palette.muted)
                 .frame(maxWidth: .infinity, minHeight: 32)
+                // **Sin esto solo se toca la letra**, que en una `m` de 13
+                // puntos son unos pocos píxeles de tinta dentro de un botón de
+                // 32. Es el mismo fallo que el `−` del tempo destapó en la
+                // Fase 1: el relleno lo pone `brutalistControl` por fuera del
+                // `Button` y no cuenta como superficie tocable.
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .brutalistControl(accent: color, isSelected: isOn, radius: Brutalist.radiusSmall)

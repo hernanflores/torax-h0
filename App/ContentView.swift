@@ -129,6 +129,25 @@ struct ContentView: View {
 
     // MARK: - Las dos pantallas
 
+    /// La pantalla `track`: el patrón, su lectura y la franja de doce.
+    ///
+    /// **Aquí no se edita ningún parámetro generativo con el dedo** (FR14), y no
+    /// es una aspiración sino algo comprobable. La pantalla entera tiene
+    /// exactamente cuatro escrituras táctiles, auditadas el 2026-09-06:
+    ///
+    /// | Gesto | Escribe | Por qué se permite |
+    /// |---|---|---|
+    /// | Pastilla de Track | `selectTrack` | Elegir qué se mira, no qué suena |
+    /// | `m` | `toggleMute` | Mezcla, no material (FR13) |
+    /// | `s` | `toggleSolo` | Mezcla, no material (FR13) |
+    /// | Celda de Cycle | `setActiveCycleCount` | Estructura, y su única vía |
+    ///
+    /// `RingStackView`, `TrackReadout`, `ParameterFamilyCard` y `TonalCard` no
+    /// tienen **ni un solo** `Button`, `gesture` ni `onTapGesture`: son texto y
+    /// dibujo. Steps, Pulses, Rotate, Division y los cinco de Groove no tienen
+    /// ninguna vía táctil, ni siquiera sin controlador conectado — un slider
+    /// provisional para suplir un knob ausente es el antipatrón que
+    /// `product-guidelines.md` nombra.
     private func trackScreen(width: CGFloat, height: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 24) {
             stage(width: width, height: height)
