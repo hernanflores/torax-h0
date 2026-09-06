@@ -1,0 +1,38 @@
+Task: ringPatternView — los doce anillos (Fase 2, FR9, FR10)
+
+Track: screens-redesign_20260906
+
+Qué se hizo
+- ContentView.columns(in:) pasa a 68/32 y devuelve dos columnas.
+- RingStackView dibuja el contorno de 3 pt del Track elegido.
+
+Qué ya estaba y no hizo falta tocar
+Los doce anillos concéntricos con el orden exterior->interior, el reparto
+euclidiano por anillo, la atenuación del Track muteado y el playhead por anillo
+venían de multi-track_20260831 y mute-solo_20260902. La regla de que un Track
+muteado se atenúa pero su playhead sigue girando ya estaba implementada y
+documentada; se verificó, no se reescribió.
+
+Decisión de dibujo, con su intento fallido
+El contorno se implementó primero como halo: un trazo de width + 2*3 centrado en
+el mismo radio, por detrás de los arcos. Se vio en captura que salía un anillo
+blanco sólido. La causa: los arcos dejan un respiro entre ellos y el color del
+hueco lleva opacidad 0,55, así que el halo se veía por los dieciséis huecos y a
+través de los arcos apagados. Sustituido por dos circunferencias de 3 pt en los
+bordes de la banda, dibujadas encima.
+
+Lo que NO se adoptó del PNG, y por qué
+En track.png los pulsos de anillos distintos salen en verde, mauve y violeta.
+No se copia: el acento lo lleva solo el Track elegido, por la razón que
+RingView ya documentaba —si lo llevaran los doce, el color dejaría de codificar
+'cuál estoy editando' y volvería a ser decoración, que es lo que
+product-guidelines.md dice que el color no es—. Los colores del mock no
+codifican nada que exista en el modelo.
+
+Tampoco se añaden los números 01-16 alrededor del anillo ni la lista 01-12 del
+hub que el PNG dibuja: FR10 no los pide y el spec no los menciona.
+
+Verificación
+- xcodebuild Debug para iOS y para simulador: BUILD SUCCEEDED.
+- Captura en iPad Pro 11-inch (M5): contorno visible enmarcando el Track 01,
+  sin filtrarse por los huecos.
