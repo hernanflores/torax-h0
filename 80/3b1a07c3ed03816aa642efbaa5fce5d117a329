@@ -1,0 +1,55 @@
+Verificación de la Fase 3 — Pantalla scale
+
+Track: screens-redesign_20260906
+Commit de cierre: 803b1a0
+
+Tests automáticos
+- Engine: 578 tests, 0 fallos. Eran 565 al cerrar la Fase 2; los 13 nuevos
+  cubren las tres escalas añadidas, Scale.name y PitchPool.countDescription.
+- MIDI: 606 tests, 7 fallos, todos en VirtualLoopbackTests con la firma
+  clientCreationFailed(-50). Flake conocido. Los 6 nuevos cubren
+  ControlInput.pressPad(at:).
+- xcodebuild Debug para iOS y para simulador: BUILD SUCCEEDED.
+
+Cobertura
+Catorce ficheros. Los cinco de Engine y MIDI llegan cada uno con su fichero de
+tests tocado en el mismo commit.
+
+Verificación manual, iPad Pro 11-inch (M5)
+Confirmada por el usuario sobre los diez puntos propuestos, incluidas las dos
+desviaciones declaradas.
+
+El bug que un test encontró antes de que llegara a la pantalla
+pressPad(at:) se escribió con la puerta isTouchFrozen (solo Ctrl All), copiando
+selectTrack. Los pads del controlador ya callaban con isTakenOver (Temp o Ctrl
+All), y la razón documentada vale igual para el dedo: ninguno de los dos
+snapshots guarda el pool, así que una nota metida a media superposición no se
+desharía al soltar. Con la puerta laxa, tocar un pad durante Temp habría escrito
+algo irreversible mientras el pad de hardware no hacía nada.
+
+Es el hallazgo más valioso de la fase y no salió de una captura: salió de
+escribir el test de la vía táctil contra el comportamiento de la vía de
+hardware.
+
+Defectos encontrados en captura
+1. La octava se escribía en los dos pads de octava a la vez: el mismo dato a
+   cuatro filas de distancia y pegado a los botones que lo cambian. Movida a la
+   cabecera del card.
+
+Desviaciones del handoff, declaradas y aceptadas por el usuario
+1. Ocho escalas en vez de seis. Se añaden Mixolydian y Lydian —que el brief pide
+   y Engine no tenía— y se conserva Pentatonic, que funciona y es el único caso
+   que ejercitaba el hueco de pads. Hirajoshi la pidió el usuario, implementada
+   como 0-2-3-7-8, la forma que catalogan Elektron, Ableton y Novation.
+2. El rótulo dice 'pool 8 pitches' donde el PNG dice '8 notes active'. 'note' es
+   sinónimo de 'pitch' y product-guidelines.md fija el vocabulario de la Pre
+   Spec sin sinónimos. Revertirlo es una línea en PitchPool.countDescription.
+
+Duplicados retirados en la fase
+- Los nombres de escala existían en cuatro sitios; el cuarto lo destapó el
+  compilador al añadir casos, dentro de Engine y no en una vista.
+- El recuento del pool existía en tres, con tres redacciones.
+
+Estado al cerrar
+track y scale terminadas. midi tiene su contenido viejo más los selectores de
+endpoint provisionales; banks sigue siendo un marcador con borde discontinuo.
