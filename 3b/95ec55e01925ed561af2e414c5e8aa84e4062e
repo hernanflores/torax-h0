@@ -1,0 +1,36 @@
+Task: appChrome — la barra superior (Fase 1, FR4, FR5, FR6)
+
+Track: screens-redesign_20260906
+
+Qué se hizo
+- App/AppChrome.swift: el enum Module (los cuatro, sin prefijo numérico y sin
+  borde discontinuo) y la vista AppChrome.
+- App/UIText.swift: lowercasedForDisplay y Text(display:), el único punto de
+  conversión a minúsculas de toda la app.
+
+Decisiones que no son obvias en el diff
+- El título centrado va en un ZStack, no en el HStack: dentro lo desplazaría
+  el ancho variable del nombre del endpoint.
+- AppChrome.height es una constante estática porque la pantalla track calcula
+  el lado del anillo restando lo que no le toca; leerlo de un GeometryReader
+  sería circular.
+- El transporte usa la misma gramática que el resto del sistema: bloque de
+  off-white cuando suena, contorno cuando no.
+- La barra no tiene fondo propio, solo un trazo inferior. Es lo que dejó a
+  Palette.toolbar sin su primer papel en la tarea anterior.
+
+Lo que se añade sobre el handoff, y por qué
+TempoAdjuster. El handoff no dibuja control de tempo en ninguna de sus cinco
+pantallas; entregarlo literalmente dejaría el tempo interno fijo en el valor de
+arranque. Es una regresión funcional, no una decisión de diseño, así que se
+añade acotado: colgado del número, un BPM por toque, y deshabilitado con reloj
+externo.
+
+Verificación
+- xcodebuild Debug para iOS: BUILD SUCCEEDED.
+- Los dos imports iniciales (CoreMIDI y MIDI) resultaron innecesarios y se
+  retiraron: el acceso a miembros no exige importar el módulo del tipo.
+
+Estado
+La vista compila pero no está cableada. ContentView la monta en la tarea 6 de
+esta misma fase.
