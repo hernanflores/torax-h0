@@ -193,7 +193,10 @@ final class TransportModel {
     /// > prometer que nadie más lo va a tocar, y aquí el controlador lo toca.
     ///
     /// Leerlo es consultar `scheduler?.isRunning`; no hace falta guardarlo.
-    var isPlaying: Bool { transport?.isPlaying ?? false }
+    var isPlaying: Bool {
+        observingClock
+        return transport?.isPlaying ?? false
+    }
 
     private(set) var selection = MIDIEndpointSelection(.destination)
 
@@ -394,7 +397,11 @@ final class TransportModel {
     /// reproducción vive en el hilo del scheduler y publicarlo sería trabajo en
     /// el camino de tiempo real para ahorrarle una división a la pantalla.
     var cycleInCourse: Int? {
-        transport?.cyclesInCourse?[selectedTrackIndex].cycle
+        // Sale del transporte, así que se suscribe como el resto: sin esto, el
+        // card de Cycle solo se enteraría de un arranque desde el controlador
+        // cuando algo lo invalidara por otro camino.
+        observingClock
+        return transport?.cyclesInCourse?[selectedTrackIndex].cycle
     }
 
     /// Cuántos Cycles recorre el Track seleccionado.
@@ -415,7 +422,10 @@ final class TransportModel {
 
     /// Los dieciséis anillos, dispuestos.
     var rings: RingStack { RingStack(pattern: pattern) }
-    var canPlay: Bool { selection.hasEndpoint && transport != nil }
+    var canPlay: Bool {
+        observingClock
+        return selection.hasEndpoint && transport != nil
+    }
 
     /// El tempo vigente, en la unidad que la barra muestra.
     ///
@@ -433,6 +443,7 @@ final class TransportModel {
     /// antipatrón que `product-guidelines.md` nombra y que el playhead ya evita.
     /// Leerlo es una lectura atómica.
     var beatsPerMinute: Double {
+        observingClock
         guard let transport else { return 120 }
         return transport.currentTempo.displayBeatsPerMinute
     }
@@ -447,13 +458,17 @@ final class TransportModel {
     }
 
     /// Si la app sigue a un maestro externo.
-    var followsExternalClock: Bool { transport?.clockSource == .external }
+    var followsExternalClock: Bool {
+        observingClock
+        return transport?.clockSource == .external
+    }
 
     /// Qué está pasando con el reloj externo, en una línea. `nil` con reloj
     /// interno, que no tiene nada que contar.
     ///
     /// En inglés y sin traducir, como el resto del vocabulario de interfaz.
     var clockStatus: String? {
+        observingClock
         guard let transport else { return nil }
 
         // **La tabla la decide `MIDI`, con tests.** Aquí solo se leen los tres
@@ -491,13 +506,45 @@ final class TransportModel {
         clockRevision &+= 1
     }
 
-    /// Cambia con cada gesto sobre el reloj.
+    /// Cambia cada vez que el reloj o el transporte pueden haberse movido.
     ///
-    /// **Existe para que SwiftUI repinte.** El tempo y el estado se calculan al
-    /// preguntar, así que no hay estado observable que cambie al tocarlos y la
-    /// pantalla MIDI se quedaría con el valor viejo. Tocar esto es decirle a la
-    /// vista que vuelva a preguntar, sin guardar una copia que mantener al día.
+    /// **Existe para que SwiftUI repinte.** El tempo, quién manda el reloj y si
+    /// suena se calculan al preguntar —salen del `Transport`, que no es
+    /// observable— así que sin esto no hay nada que invalide la vista.
+    ///
+    /// > **Estaba y no lo leía nadie**, y eso lo dejó inútil el 2026-09-06. La
+    /// > única vista que lo consumía era `ChannelMapView`, que lo recibía dentro
+    /// > de un struct; al reescribirla, el contador siguió incrementándose y
+    /// > ninguna vista se enteraba. La app solo se refrescaba cuando un giro de
+    /// > knob tocaba una propiedad guardada por otro camino.
+    /// >
+    /// > **La lección: un contador de invalidación que las vistas tienen que
+    /// > acordarse de leer es un contador que alguien va a olvidar.** Por eso
+    /// > ahora lo leen las propias propiedades derivadas —`isPlaying`,
+    /// > `followsExternalClock`, `beatsPerMinute` y compañía— y no las vistas:
+    /// > usar el valor es suscribirse, sin que haya nada que recordar.
     private(set) var clockRevision: UInt64 = 0
+
+    /// Léelo antes de devolver algo que salga del `Transport`.
+    ///
+    /// Devuelve `Void` a propósito: no se usa su valor, se usa el efecto de
+    /// haberlo leído dentro del seguimiento de `@Observable`.
+    private var observingClock: Void { _ = clockRevision }
+
+    /// Vuelve a mirar el `Transport` por si el hardware lo movió.
+    ///
+    /// **Es la única vía para lo que no origina la app.** Un Start del BeatStep
+    /// entra por el hilo de recepción de CoreMIDI, que no puede publicar nada
+    /// observable —saltar al principal metería su cola en la estimación de
+    /// tempo—, así que la pantalla no tiene forma de enterarse salvo volviendo a
+    /// preguntar.
+    ///
+    /// **No contradice la regla del playhead.** Lo que `product-guidelines.md`
+    /// llama antipatrón es animar con un temporizador algo que debería derivar
+    /// del reloj musical; esto no anima nada: relee un puñado de valores.
+    func refresh() {
+        clockRevision &+= 1
+    }
 
     init() {
         // La entrada de control se construye primero y publica por el relevo:
@@ -650,10 +697,12 @@ final class TransportModel {
     func play() {
         guard canPlay else { return }
         transport?.play()
+        refresh()
     }
 
     func stop() {
         transport?.stop()
+        refresh()
     }
 
     private func destinationsChanged(to selection: MIDIEndpointSelection) {

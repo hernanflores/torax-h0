@@ -15,10 +15,12 @@ struct MidiScreen: View {
     let model: TransportModel
 
     var body: some View {
-        // El tempo y el estado del maestro los escribe el hilo de recepción de
-        // CoreMIDI, que no publica nada observable: hay que repreguntar.
-        TimelineView(.periodic(from: .now, by: 0.25)) { _ in
-            HStack(alignment: .top, spacing: 24) {
+        // **Sin `TimelineView`.** El sondeo del hardware lo hace el chrome, que
+        // está siempre montado, y toca una propiedad observable del modelo: esta
+        // pantalla se entera por la misma vía que cualquier otro cambio de
+        // estado. Tener aquí un segundo temporizador sería repintar en dos
+        // ritmos distintos para ver lo mismo.
+        HStack(alignment: .top, spacing: 24) {
                 VStack(alignment: .leading, spacing: 16) {
                     // **Valores, no el modelo.**
                     //
@@ -53,7 +55,6 @@ struct MidiScreen: View {
                     onChange: { model.setChannel($1, forTrack: $0) }
                 )
                 .frame(maxWidth: .infinity, alignment: .leading)
-            }
         }
     }
 }
