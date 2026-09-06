@@ -21,11 +21,22 @@ public struct ParameterChange: Equatable, Sendable {
     /// Qué se movió.
     public let parameter: TrackParameter
 
-    /// Cómo quedó, listo para leerse.
+    /// El nombre del parámetro: `Pulses`, `Delay`, `Division`.
+    ///
+    /// **Va aparte del valor desde el 2026-09-06.** El handoff de iPadOS dibuja
+    /// la lectura grande en dos renglones y la vista necesita las dos piezas por
+    /// separado. Partir `description` buscando el espacio habría funcionado hoy
+    /// y se habría roto en silencio el día que un valor lleve uno.
+    public let label: String
+
+    /// Cómo quedó, ya escrito y con su unidad si la tiene.
+    public let value: String
+
+    /// Las dos cosas pegadas, que es como se venía leyendo.
     ///
     /// El término de la Pre Spec y el valor, sin adornos: la app informa, no
     /// conversa (`product-guidelines.md`).
-    public let description: String
+    public var description: String { "\(label) \(value)" }
 
     /// Compara dos Tracks. Devuelve `nil` si no se movió ningún parámetro.
     ///
@@ -54,38 +65,47 @@ public struct ParameterChange: Equatable, Sendable {
 
         if previousShape.steps != shape.steps {
             parameter = .steps
-            description = "Steps \(shape.steps.count)"
+            label = "Steps"
+            value = "\(shape.steps.count)"
         } else if previousShape.pulses != shape.pulses {
             parameter = .pulses
             // El valor pedido, no `effectivePulses`: el knob está en este número
             // y mostrar el otro haría creer que se perdió.
-            description = "Pulses \(shape.pulses.count)"
+            label = "Pulses"
+            value = "\(shape.pulses.count)"
         } else if previousShape.rotate != shape.rotate {
             parameter = .rotate
-            description = "Rotate \(shape.rotate.amount)"
+            label = "Rotate"
+            value = "\(shape.rotate.amount)"
         } else if previousShape.division != shape.division {
             parameter = .division
-            description = "Division \(shape.division)"
+            label = "Division"
+            value = "\(shape.division)"
         } else if previousGroove.velocity != groove.velocity {
             parameter = .velocity
             // Sin signo de porcentaje: Velocity vive en la unidad MIDI, y
             // ponérselo diría que es un porcentaje de algo.
-            description = "Velocity \(groove.velocity.value)"
+            label = "Velocity"
+            value = "\(groove.velocity.value)"
         } else if previousGroove.sustain != groove.sustain {
             parameter = .sustain
-            description = "Sustain \(groove.sustain.percent)%"
+            label = "Sustain"
+            value = "\(groove.sustain.percent)%"
         } else if previousGroove.probability != groove.probability {
             parameter = .probability
-            description = "Probability \(groove.probability.percent)%"
+            label = "Probability"
+            value = "\(groove.probability.percent)%"
         } else if previousGroove.timing != groove.timing {
             parameter = .timing
-            description = "Timing \(groove.timing.percent)%"
+            label = "Timing"
+            value = "\(groove.timing.percent)%"
         } else if previousGroove.delay != groove.delay {
             parameter = .delay
             // Con signo, y por la misma razón que en `Groove.description`: es el
             // único parámetro que puede ser negativo, y adelantar y atrasar no
             // se distinguen por el contexto.
-            description = "Delay \(groove.delay.percent)%"
+            label = "Delay"
+            value = "\(groove.delay.percent)%"
         } else {
             // Cambió algo que no es un parámetro ajustable: el pool.
             return nil

@@ -110,4 +110,61 @@ final class FamilyReadoutTests: XCTestCase {
         XCTAssertEqual(change?.description, "Pulses 6")
         XCTAssertEqual(FamilyReadout(track: moved, family: .shape).headline, "Pulses 6")
     }
+
+    // MARK: - Etiqueta y valor por separado
+
+    // **El handoff de iPadOS parte la lectura grande en dos**: `pulses` en
+    // pequeño encima y `5 / 16` grande debajo. Hasta el 2026-09-06 `headline`
+    // devolvía las dos cosas pegadas —«Pulses 5»— y partirla en la vista habría
+    // sido buscar el espacio dentro de una cadena de dominio: se rompe en
+    // silencio en cuanto un valor lleve espacio, como `1/16`.
+
+    func testShapeSplitsIntoLabelAndValue() {
+        let readout = FamilyReadout(track: .init(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!)), family: .shape)
+        XCTAssertEqual(readout.label, "Pulses")
+        XCTAssertEqual(readout.value, "5 / 16")
+    }
+
+    func testShapeValueShowsPulsesOverSteps() {
+        // Pulses solo significa algo contra los Steps en los que reparte: 5 de 16
+        // y 5 de 12 son dos densidades distintas. El handoff escribe las dos.
+        let readout = FamilyReadout(track: .init(shape: Shape(steps: Steps(12)!, pulses: Pulses(5)!)), family: .shape)
+        XCTAssertEqual(readout.value, "5 / 12")
+    }
+
+    func testShapeValueKeepsTheIntendedPulsesNotTheEffectiveOnes() {
+        // La enmienda del 2026-08-27: Pulses guarda la intención, no lo que cabe.
+        // La lectura enseña lo que el knob dice, que es lo que el usuario acaba
+        // de girar; lo que suena es min(pulses, steps) y lo enseña el anillo.
+        let shape = Shape(steps: Steps(4)!, pulses: Pulses(9)!)
+        let readout = FamilyReadout(track: .init(shape: shape), family: .shape)
+        XCTAssertEqual(readout.value, "9 / 4")
+        XCTAssertEqual(shape.effectivePulses, 4)
+    }
+
+    func testGrooveSplitsIntoLabelAndValue() {
+        let readout = FamilyReadout(track: .init(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!)), family: .groove)
+        XCTAssertEqual(readout.label, "Velocity")
+        XCTAssertFalse(readout.value.contains("Velocity"))
+    }
+
+    func testTonalGetsALabelWithoutChangingWhatItSays() {
+        // En Tonal la etiqueta se **añade**: el marco es el valor —TONAL no tiene
+        // knob detrás— y el headline siempre fue `C Minor` a secas. Partirlo
+        // habría cambiado lo que dice la pantalla en reposo, que es texto
+        // establecido y con tests propios.
+        let readout = FamilyReadout(track: .init(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!)), family: .tonal)
+        XCTAssertEqual(readout.label, "Scale")
+        XCTAssertEqual(readout.value, readout.headline)
+    }
+
+    func testLabelAndValueRebuildTheHeadlineInGroove() {
+        // Groove sigue siendo «nombre valor», así que partir no cambió nada.
+        // Shape queda fuera porque su lectura añade el denominador, y Tonal
+        // porque su etiqueta es nueva: las dos excepciones están documentadas en
+        // el propio tipo.
+        let track = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!))
+        let readout = FamilyReadout(track: track, family: .groove)
+        XCTAssertEqual("\(readout.label) \(readout.value)", readout.headline)
+    }
 }

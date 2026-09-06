@@ -50,6 +50,15 @@ struct ContentView: View {
     /// Qué módulo se está mirando.
     @State private var module: Module = .track
 
+    /// El último parámetro que se movió, para que la lectura grande no se vacíe
+    /// (FR12).
+    ///
+    /// **Es una copia y no una lectura del modelo** porque el modelo solo guarda
+    /// lo *transitorio*: `transientChange` vuelve a `nil` a los 1,6 segundos, que
+    /// es lo que hace que el acento se apague. Guardar aquí lo último visto es lo
+    /// que separa «se apagó el acento» de «se borró el valor».
+    @State private var lastChange: ParameterChange?
+
     var body: some View {
         // **El ancho se lee una vez, arriba.** La altura del escenario depende
         // del ancho —el anillo es cuadrado y llena su columna— y un
@@ -86,7 +95,9 @@ struct ContentView: View {
         // > se fueron con el rediseño —el handoff enseña las tres familias a la
         // > vez— y la regla se queda con lo que valía de ella.
         .onChange(of: model.transientChange) { _, change in
-            if let change { family = change.parameter.family }
+            guard let change else { return }
+            family = change.parameter.family
+            lastChange = change
         }
     }
 
@@ -127,11 +138,7 @@ struct ContentView: View {
                 onSelect: { model.selectTrack($0) },
                 mix: model.mix,
                 onToggleMute: { model.toggleMute($0) },
-                onToggleSolo: { model.toggleSolo($0) },
-                activeCycles: model.activeCycleCount,
-                editingCycle: model.editingCycle,
-                cycleInCourse: { model.cycleInCourse },
-                onActiveCyclesChange: { model.setActiveCycleCount($0) }
+                onToggleSolo: { model.toggleSolo($0) }
             )
         }
     }
@@ -413,71 +420,31 @@ struct ContentView: View {
         .brutalistPanel()
     }
 
-    /// La columna central: la lectura grande.
+    /// La columna derecha: la lectura grande y los cards.
     ///
-    /// En reposo muestra el estado; al girar un knob, el valor transitorio con
-    /// el acento de su familia. **Su contenido en reposo lo construye la tarea
-    /// siguiente de la Fase 3**; por ahora sostiene lo que ya había.
+    /// **Sin panel envolvente.** Cada card lleva el suyo; encuadrar además el
+    /// conjunto pondría un borde alrededor de tres bordes.
     private var readout: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Spacer(minLength: 0)
+        VStack(alignment: .leading, spacing: 16) {
+            TrackReadout(
+                change: model.transientChange,
+                lastChange: lastChange,
+                resting: FamilyReadout(
+                    track: model.track, family: family, gesture: model.gesture),
+                family: family
+            )
 
-            // **El distintivo va encima de los dos estados y no dentro de
-            // ninguno** (FR10). Lo que Temp cambia no es el valor —que se lee
-            // igual, girando o en reposo— sino si va a sobrevivir a soltar el
-            // botón, y eso es cierto durante todo el hold: meterlo en la rama
-            // del valor grande lo haría desaparecer con él, a los 1,6 segundos,
-            // con el fill todavía puesto.
-            if let marker = FamilyReadout(
-                track: model.track, family: family, gesture: model.gesture
-            ).marker {
-                gestureMarker(marker, gesture: model.gesture)
-            }
-
-            // **El valor grande sustituye al estado en reposo, no lo tapa**, y
-            // sobre todo no tapa los anillos: viven en otra columna (FR14). Con
-            // esto la regla de `product-guidelines.md` —el patrón permanece
-            // visible bajo el valor— deja de ser algo que haya que recordar al
-            // dibujar.
-            if let change = model.transientChange {
-                transient(change)
-            } else {
-                resting
-            }
+            CycleStrip(
+                activeCount: model.activeCycleCount,
+                editing: model.editingCycle,
+                inCourse: { model.cycleInCourse },
+                accent: Palette.accent(for: family),
+                onActiveCountChange: { model.setActiveCycleCount($0) }
+            )
 
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .brutalistPanel()
-    }
-
-    /// Lo que el panel dice cuando no se está girando nada.
-    ///
-    /// El texto lo decide `FamilyReadout`, en `Engine` y con tests. Aquí solo se
-    /// compone y se le pone el acento de la familia.
-    private var resting: some View {
-        // Los valores son los superpuestos cuando Temp está puesto, y llegan por
-        // el camino de siempre: el overlay se escribe en el `Pattern` publicado.
-        let readout = FamilyReadout(
-            track: model.track, family: family, gesture: model.gesture)
-        return VStack(alignment: .leading, spacing: 8) {
-            // **Dos líneas antes que cortarse.** En la columna estrecha
-            // `Probability 100` no cabe en una, y truncar una lectura que existe
-            // para leerse a un metro la inutiliza. Parte por el espacio, que
-            // deja el nombre del parámetro arriba y su valor debajo — el mismo
-            // orden en que se lee.
-            Text(readout.headline)
-                .font(Typography.readout)
-                .minimumScaleFactor(0.5)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
-                .foregroundStyle(Palette.accent(for: family))
-            Text(readout.detail)
-                .font(Typography.parameterLine)
-                .foregroundStyle(Palette.mutedBright)
-        }
-        .padding(.horizontal, 24)
     }
 
     // MARK: - El patrón

@@ -100,6 +100,32 @@ final class ParameterChangeTests: XCTestCase {
         )
         XCTAssertEqual(ParameterChange(from: track, to: other)?.parameter, .steps)
     }
+
+    // MARK: - Etiqueta y valor por separado
+
+    // Mismo motivo que en `FamilyReadout`: el handoff dibuja la lectura grande
+    // en dos renglones, y buscar el espacio dentro de `description` se rompería
+    // con `Division 1/16`, cuyo valor lleva barra pero no espacio — hoy. Mañana
+    // cualquiera añade uno que sí.
+
+    func testDescriptionIsTheLabelAndTheValue() {
+        for parameter in TrackParameter.allCases {
+            guard let moved = change(1, parameter) ?? change(-1, parameter) else {
+                XCTFail("\(parameter) no se movió"); continue
+            }
+            XCTAssertEqual("\(moved.label) \(moved.value)", moved.description, "\(parameter)")
+        }
+    }
+
+    func testLabelNeverCarriesTheValue() {
+        for parameter in TrackParameter.allCases {
+            guard let moved = change(1, parameter) ?? change(-1, parameter) else {
+                XCTFail("\(parameter) no se movió"); continue
+            }
+            XCTAssertFalse(moved.label.isEmpty, "\(parameter)")
+            XCTAssertFalse(moved.label.contains(" "), "\(parameter)")
+        }
+    }
 }
 
 /// Tests de los dos parámetros temporales en el valor grande transitorio.
@@ -148,4 +174,5 @@ final class TemporalParameterChangeTests: XCTestCase {
         XCTAssertNil(
             ParameterChange(from: track(timing: 67, delay: -25), to: track(timing: 67, delay: -25)))
     }
+
 }
