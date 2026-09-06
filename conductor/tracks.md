@@ -549,8 +549,8 @@ escalón es el que se nota.
   **La diferencia con Temp es el verbo: Ctrl All desplaza, Temp iguala.** Mover el
   Pattern entero conservando lo que lo hace un Pattern y no doce copias. Guarda
   **base y offset por separado** —el valor se recalcula siempre como base +
-  offset— y por eso un Track topado no arrastra a los demás y se despega en el
-  mismo clic en que se desanda el giro. El acumulado sí se acota al ancho del
+  offset— y por eso un Track topado no arrastra a los demás y vuelve a su valor
+  exacto en cuanto el desplazamiento reentra. El acumulado sí se acota al ancho del
   recorrido; Rotate no, porque envuelve y nunca se muere.
 
   **Congela también las vías táctiles que escriben**, que es un requisito que Temp

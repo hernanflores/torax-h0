@@ -17,8 +17,8 @@ siendo el lento, el que tenía menos Pulses sigue teniendo menos.
 **Guarda base y offset por separado, y esa es la decisión de diseño del track.**
 El valor de cada Cycle se recalcula siempre como base + offset, nunca desde el
 valor ya escrito. Es lo único que hace exacta la ida y vuelta cuando un Track topa
-contra su extremo: el topado no arrastra a los demás y **se despega en el mismo
-clic** en que se desanda el giro. El acumulado sí se acota al ancho del recorrido,
+contra su extremo: el topado no arrastra a los demás y **retoma su valor exacto**
+en cuanto el desplazamiento reentra en su rango. El acumulado sí se acota al ancho del recorrido,
 porque sin tope cuarenta clics contra el límite dejan el knob muerto durante
 cuarenta clics de vuelta — el síntoma que la nota del 2026-08-28 enseñó a
 reconocer como avería. Rotate queda fuera de ese tope: envuelve, así que nunca se

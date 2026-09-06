@@ -205,3 +205,225 @@ final class CtrlAllOffsetTests: XCTestCase {
         XCTAssertEqual(offset.parameters, TrackParameter.allCases)
     }
 }
+
+/// Tests de aplicar el desplazamiento sobre el Pattern.
+///
+/// **Lo que se fija aquí es que Ctrl All desplaza y no iguala**, y que acotar
+/// contra un extremo no destruye nada: es la mitad del tipo que justifica
+/// guardar base y offset por separado.
+final class CtrlAllApplyTests: XCTestCase {
+
+    private func cycle(pulses: Int = 5, velocity: Int = 100, steps: Int = 16, rotate: Int = 0)
+        -> Cycle
+    {
+        Cycle(
+            shape: Shape(
+                steps: Steps(steps)!, pulses: Pulses(pulses)!, rotate: Rotate(rotate)),
+            pool: PitchPool().inserting(Pitch(48)!),
+            groove: Groove(
+                velocity: Velocity(velocity)!,
+                sustain: Sustain(percent: 50)!,
+                probability: Probability(percent: 100)!,
+                timing: Timing(percent: 50)!,
+                delay: Delay(percent: 0)!
+            )
+        )
+    }
+
+    private func pattern(pulsesPerTrack: [Int]) -> Pattern {
+        var pattern = Pattern()
+        for (index, pulses) in pulsesPerTrack.enumerated() {
+            pattern = pattern.replacing(Track(cycle(pulses: pulses)), at: index)
+        }
+        return pattern
+    }
+
+    private var twelve: [Int] { [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }
+
+    private func pulses(_ pattern: Pattern, track: Int, cycle: Int = 0) -> Int? {
+        pattern.track(at: track)?.cycle(at: cycle)?.shape.pulses.count
+    }
+
+    // MARK: - Desplaza los doce
+
+    /// Un delta mueve el mismo parámetro en los doce Tracks.
+    func testOneTurnMovesAllTwelveTracks() {
+        var offset = CtrlAllOffset()
+        let source = pattern(pulsesPerTrack: twelve)
+
+        let moved = offset.apply(1, to: .pulses, in: source)
+
+        for index in 0..<Pattern.trackCount {
+            XCTAssertEqual(pulses(moved, track: index), index + 2, "Track \(index + 1)")
+        }
+    }
+
+    /// **Y conserva las diferencias**, que es lo que lo separa de Temp: dos
+    /// Tracks a distancia 5 siguen a distancia 5 después del gesto.
+    func testTheDistanceBetweenTracksSurvives() {
+        var offset = CtrlAllOffset()
+        var source = Pattern()
+        source = source.replacing(Track(cycle(pulses: 4)), at: 0)
+        source = source.replacing(Track(cycle(pulses: 9)), at: 1)
+
+        let moved = offset.apply(3, to: .pulses, in: source)
+
+        XCTAssertEqual(pulses(moved, track: 0), 7)
+        XCTAssertEqual(pulses(moved, track: 1), 12)
+        XCTAssertEqual(
+            pulses(moved, track: 1)! - pulses(moved, track: 0)!, 5,
+            "el gesto aplanó la diferencia entre los dos Tracks")
+    }
+
+    /// Alcanza a todos los Cycles activos, y cada uno conserva el suyo
+    /// desplazado.
+    func testEveryActiveCycleMovesKeepingItsOwnValue() {
+        var offset = CtrlAllOffset()
+        var track = Track(cycle(pulses: 5)).withActiveCount(3)
+        for (index, count) in [5, 7, 9].enumerated() {
+            track = track.replacing(cycle(pulses: count), at: index)
+        }
+        let source = Pattern().replacing(track, at: 0)
+
+        let moved = offset.apply(2, to: .pulses, in: source)
+
+        XCTAssertEqual(pulses(moved, track: 0, cycle: 0), 7)
+        XCTAssertEqual(pulses(moved, track: 0, cycle: 1), 9)
+        XCTAssertEqual(pulses(moved, track: 0, cycle: 2), 11)
+    }
+
+    /// Los Cycles inactivos no se tocan.
+    func testInactiveCyclesAreLeftAlone() {
+        var offset = CtrlAllOffset()
+        var track = Track(cycle(pulses: 5)).withActiveCount(2)
+        track = track.replacing(cycle(pulses: 12), at: 2)
+        let source = Pattern().replacing(track, at: 0)
+
+        let moved = offset.apply(2, to: .pulses, in: source)
+
+        XCTAssertEqual(pulses(moved, track: 0, cycle: 2), 12, "tocó un Cycle inactivo")
+    }
+
+    /// Aplicar guarda la base la primera vez.
+    func testApplyingCapturesTheBase() {
+        var offset = CtrlAllOffset()
+
+        _ = offset.apply(3, to: .pulses, in: pattern(pulsesPerTrack: twelve))
+
+        XCTAssertEqual(offset.base(of: .pulses, track: 0, cycle: 0), 1)
+        XCTAssertEqual(offset.amount(of: .pulses), 3)
+    }
+
+    // MARK: - Acotar sin destruir
+
+    /// **Un Track topado no arrastra a los demás.** Cada Cycle acota contra sus
+    /// propios extremos.
+    func testATrackAtItsLimitDoesNotHoldTheOthersBack() {
+        var offset = CtrlAllOffset()
+        var source = Pattern()
+        source = source.replacing(Track(cycle(pulses: 16)), at: 0)
+        source = source.replacing(Track(cycle(pulses: 5)), at: 1)
+
+        let moved = offset.apply(2, to: .pulses, in: source)
+
+        XCTAssertEqual(pulses(moved, track: 0), 16, "el topado se pasó de su extremo")
+        XCTAssertEqual(pulses(moved, track: 1), 7, "el topado arrastró al que tenía recorrido")
+    }
+
+    /// **El Track topado vuelve en cuanto el desplazamiento vuelve a entrar en
+    /// su rango, y vuelve al valor exacto.**
+    ///
+    /// > **Lo que este test NO dice, porque se escribió creyendo lo contrario.**
+    /// > El primer borrador afirmaba que el topado «se despega en el primer clic
+    /// > de vuelta», y es falso: con base 16 y tres clics arriba, un clic abajo
+    /// > deja el desplazamiento en +2 y `16 + 2` sigue acotado a 16. Lo que se
+    /// > gana guardando base y offset por separado no es inmediatez sino
+    /// > **exactitud**: el desplazamiento pedido se recuerda entero, así que
+    /// > cuando vuelve a entrar en rango el Track retoma su valor real en lugar
+    /// > de uno derivado de lo que cupo.
+    /// >
+    /// > La alternativa —aplicar el delta al valor ya acotado— es peor por otra
+    /// > razón, y es la que justifica el diseño: el clic de vuelta lo bajaría a
+    /// > 15 **desde el tope**, así que desandar el giro entero dejaría el Track
+    /// > en 13 en vez de en 16. Perdería material de forma permanente, que es lo
+    /// > que `product-guidelines.md` prohíbe.
+    func testTheClampedTrackComesBackExactlyWhenTheOffsetReenters() {
+        var offset = CtrlAllOffset()
+        var source = Pattern()
+        source = source.replacing(Track(cycle(pulses: 16)), at: 0)
+
+        var moved = offset.apply(3, to: .pulses, in: source)
+        XCTAssertEqual(pulses(moved, track: 0), 16, "se pasó de su extremo")
+
+        // Sigue acotado mientras el desplazamiento no vuelva a entrar en rango.
+        moved = offset.apply(-1, to: .pulses, in: moved)
+        XCTAssertEqual(pulses(moved, track: 0), 16)
+
+        // En cuanto entra, retoma su valor real y no uno derivado de lo que cupo.
+        moved = offset.apply(-4, to: .pulses, in: moved)
+        XCTAssertEqual(
+            pulses(moved, track: 0), 14,
+            "volvió a un valor derivado del tope en vez de al suyo")
+
+        // Y desandar el giro entero lo devuelve exactamente a su base.
+        moved = offset.apply(2, to: .pulses, in: moved)
+        XCTAssertEqual(pulses(moved, track: 0), 16)
+        XCTAssertEqual(offset.amount(of: .pulses), 0)
+    }
+
+    /// La ida y vuelta completa devuelve exactamente los valores de partida,
+    /// aunque por el camino todos hayan topado.
+    func testAFullSweepUpAndDownIsLossless() {
+        var offset = CtrlAllOffset()
+        let source = pattern(pulsesPerTrack: twelve)
+
+        var moved = source
+        for _ in 0..<40 { moved = offset.apply(1, to: .pulses, in: moved) }
+        for _ in 0..<40 { moved = offset.apply(-1, to: .pulses, in: moved) }
+
+        for index in 0..<Pattern.trackCount {
+            XCTAssertEqual(pulses(moved, track: index), index + 1, "Track \(index + 1)")
+        }
+    }
+
+    // MARK: - Rotate envuelve
+
+    /// **Rotate envuelve con el `steps.count` de cada Cycle**, así que dos Tracks
+    /// de longitud distinta se desfasan entre sí bajo el mismo desplazamiento —
+    /// que es lo que se le pide a un Rotate global.
+    func testRotateWrapsWithEachCyclesOwnSteps() {
+        var offset = CtrlAllOffset()
+        var source = Pattern()
+        source = source.replacing(Track(cycle(steps: 16, rotate: 15)), at: 0)
+        source = source.replacing(Track(cycle(steps: 12, rotate: 11)), at: 1)
+
+        let moved = offset.apply(1, to: .rotate, in: source)
+
+        XCTAssertEqual(moved.track(at: 0)?.cycle(at: 0)?.shape.rotate.amount, 0)
+        XCTAssertEqual(moved.track(at: 1)?.cycle(at: 0)?.shape.rotate.amount, 0)
+    }
+
+    // MARK: - Mute no es asunto suyo
+
+    /// Un Track muteado recibe el desplazamiento igual que los demás (FR3): el
+    /// offset no consulta la máscara, que vive en `MIDI`.
+    func testMutedTracksAreNotSpecialHere() {
+        var offset = CtrlAllOffset()
+        let moved = offset.apply(1, to: .pulses, in: pattern(pulsesPerTrack: twelve))
+
+        for index in 0..<Pattern.trackCount {
+            XCTAssertEqual(pulses(moved, track: index), index + 2)
+        }
+    }
+
+    // MARK: - Un giro que no mueve nada
+
+    /// Un delta cero devuelve el Pattern tal cual, para que quien publica lo
+    /// detecte comparando, como hoy.
+    func testAZeroTurnChangesNothing() {
+        var offset = CtrlAllOffset()
+        let source = pattern(pulsesPerTrack: twelve)
+
+        XCTAssertEqual(offset.apply(0, to: .pulses, in: source), source)
+    }
+}

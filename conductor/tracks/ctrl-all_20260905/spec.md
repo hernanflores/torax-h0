@@ -51,9 +51,18 @@ tocan, con el mismo criterio que Temp: el overlay alcanza a lo que se recorre.
 
 **FR4 — Acotar sin destruir.** Cada Cycle acota **su** resultado contra **sus**
 extremos, con la aritmética que ya tiene `Cycle.applying(_:to:)`. Un Track que
-topa no arrastra a los demás, y **desandar el giro lo despega del tope en el
-mismo clic** en que los otros se mueven, porque lo que se guarda es el offset y
-no el valor acotado. Es la regla de `product-guidelines.md` —«cambiar un
+topa no arrastra a los demás, y **al desandar el giro retoma su valor exacto**
+en cuanto el desplazamiento vuelve a entrar en su rango, porque lo que se guarda
+es el offset pedido y no el valor acotado.
+
+> **Corrección del 2026-09-05, encontrada implementando.** Este requisito decía
+> que el Track topado «se despega del tope en el mismo clic» en que los otros se
+> mueven, y es falso: con base 16 y tres clics arriba, un clic abajo deja el
+> offset en +2 y `16 + 2` sigue acotado. Lo que base+offset garantiza no es
+> inmediatez sino **exactitud** — y frente a la alternativa de acotar sobre el
+> valor ya escrito, que dejaría el Track en 13 tras tres clics arriba y tres
+> abajo, evita perder material de forma permanente. Eso es lo que el requisito
+> debía decir. Es la regla de `product-guidelines.md` —«cambiar un
 parámetro nunca destruye material»— aplicada al gesto global.
 
 **FR5 — El offset acumulado se acota al recorrido más ancho en juego.** Para los
@@ -199,8 +208,9 @@ Pre Spec y en la pantalla — como se ancló «Temp». No se inventan sinónimos
    Ctrl All desplaza y no iguala.
 3. Con dos o más Cycles activos, cada Cycle de cada Track conserva su valor
    propio desplazado, y recupera **el suyo** al soltar.
-4. Un Track topado contra su extremo no arrastra a los demás y se despega del
-   tope en el mismo clic en que se desanda el giro.
+4. Un Track topado contra su extremo no arrastra a los demás, retoma su valor
+   exacto en cuanto el desplazamiento reentra en su rango, y una ida y vuelta
+   completa lo devuelve a su base sin pérdida.
 5. Cuarenta clics contra el tope y un clic de vuelta mueven algo: el offset
    acumulado está acotado al ancho del rango (FR5).
 6. Rotate desplaza los doce envolviendo cada Cycle con su propio Steps, y su

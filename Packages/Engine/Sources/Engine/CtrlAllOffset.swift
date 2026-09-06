@@ -136,6 +136,71 @@ public struct CtrlAllOffset: Equatable, Sendable {
         return updated
     }
 
+    /// El Pattern con ese parámetro desplazado `delta` posiciones más, guardando
+    /// la base si aún no lo estaba.
+    ///
+    /// **Desplaza en vez de igualar** (FR2), que es la diferencia entera con
+    /// `ParameterOverlay.apply`. Allí el delta se resuelve contra el Cycle en
+    /// edición y el valor absoluto resultante se escribe igual en todos; aquí
+    /// cada Cycle recibe el mismo delta y conserva su propio valor. Con Pulses 4
+    /// y 9 y tres clics quedan 7 y 12: siguen a distancia 5, que es lo que hace
+    /// que el Pattern siga siendo un Pattern y no doce copias.
+    ///
+    /// **El valor sale siempre de la base, no del Cycle que entra.** Cada Cycle
+    /// se recalcula como `base + offset`: lo que se acumula es el desplazamiento
+    /// **pedido**, no el que cupo. Por eso un Track que topa contra su extremo
+    /// **no arrastra a los demás**, y en cuanto el desplazamiento vuelve a entrar
+    /// en su rango retoma **su** valor y no uno derivado del tope.
+    ///
+    /// > **Lo que esto no promete.** El topado no se despega en el primer clic de
+    /// > vuelta: con base 16 y tres clics arriba, un clic abajo deja el offset en
+    /// > +2 y `16 + 2` sigue acotado. Lo que se gana no es inmediatez sino
+    /// > **exactitud**.
+    ///
+    /// Aplicar el delta al valor ya escrito sería lo natural y estaría mal: con
+    /// Pulses en 16, tres clics arriba y tres abajo dejarían el Track en 13 en
+    /// vez de en 16, porque los de bajada partirían del tope. Perdería material de
+    /// forma permanente, que es lo que `product-guidelines.md` prohíbe.
+    ///
+    /// **Cada Cycle acota contra sus propios extremos**, con la aritmética que ya
+    /// tiene `Cycle.setting(_:to:)`: Rotate envuelve módulo su `steps.count` y
+    /// los demás se frenan donde lo haría el knob. Duplicar esas reglas aquí
+    /// sería tener dos sitios donde equivocarse.
+    ///
+    /// **Los Cycles inactivos no se tocan**: el desplazamiento alcanza a lo que
+    /// se recorre.
+    ///
+    /// Un delta nulo devuelve el Pattern tal cual y ni siquiera guarda la base,
+    /// para que quien publica lo detecte comparando, como hoy.
+    ///
+    /// Es `mutating` porque el primer giro de cada parámetro guarda su base y
+    /// cada giro acumula, y eso es estado del hold. Lo que devuelve es el
+    /// Pattern, no el offset: son dos cosas distintas y quien las junta es
+    /// `ControlInput`.
+    public mutating func apply(_ delta: Int, to parameter: TrackParameter, in pattern: Pattern)
+        -> Pattern
+    {
+        guard delta != 0 else { return pattern }
+
+        self = capturing(parameter, from: pattern).advancing(parameter, by: delta)
+        let amount = amount(of: parameter)
+
+        var moved = pattern
+        for trackIndex in 0..<Pattern.trackCount {
+            guard let track = moved.track(at: trackIndex) else { continue }
+            var updated = track
+            for cycleIndex in 0..<track.activeCount {
+                guard let cycle = updated.cycle(at: cycleIndex),
+                    let base = base(of: parameter, track: trackIndex, cycle: cycleIndex)
+                else { continue }
+                updated = updated.replacing(
+                    cycle.setting(parameter, to: base + amount), at: cycleIndex)
+            }
+            moved = moved.replacing(updated, at: trackIndex)
+        }
+        return moved
+    }
+
     /// El Pattern con cada parámetro tocado devuelto a **su** valor en **cada**
     /// Cycle de **cada** Track.
     ///

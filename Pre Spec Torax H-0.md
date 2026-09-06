@@ -318,8 +318,10 @@ En la práctica: Steps largos contra una Phrase de 16 posiciones generan desfase
 > **Lo que se guarda es la base y el desplazamiento, por separado.** El valor de
 > cada Cycle se recalcula siempre como base + offset, nunca desde el valor ya
 > escrito. Es lo único que hace exacta la ida y vuelta cuando un Track topa
-> contra su extremo: el topado **no arrastra a los demás** y se despega en el
-> mismo clic en que se desanda el giro. El desplazamiento acumulado sí se acota
+> contra su extremo: el topado **no arrastra a los demás** y retoma **su** valor
+> exacto en cuanto el desplazamiento reentra en su rango — no en el primer clic
+> de vuelta, que es lo que esta nota afirmaba al escribirse y se corrigió el
+> mismo día al implementarlo. El desplazamiento acumulado sí se acota
 > al ancho del recorrido del parámetro —sin tope, cuarenta clics contra el
 > límite dejan el knob muerto durante cuarenta clics de vuelta, que es el
 > síntoma que la nota del 2026-08-28 sobre los encoders enseñó a reconocer como
