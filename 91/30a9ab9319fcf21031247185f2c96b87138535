@@ -1,0 +1,46 @@
+Task: Aplicar el offset al Pattern, acotando sin destruir (Fase 3, ctrl-all_20260905)
+
+QUE SE HIZO
+CtrlAllOffset.apply(_:to:in:), con 11 tests nuevos en CtrlAllApplyTests. Y una
+correccion de documentacion que el propio test forzo.
+
+FICHEROS
+- Packages/Engine/Sources/Engine/CtrlAllOffset.swift: apply(_:to:in:).
+- Packages/Engine/Tests/EngineTests/CtrlAllOffsetTests.swift: clase nueva.
+- Pre Spec, spec.md, plan.md, index.md del track y conductor/tracks.md: la
+  correccion, en los cinco sitios donde la afirmacion falsa estaba escrita.
+
+EL ERROR, Y COMO SALIO
+El spec (FR4) prometia que un Track topado "se despega del tope en el mismo clic"
+en que los otros se mueven. Lo escribi asi al planificar, lo repeti en la Pre
+Spec, en el index del track y en el registro, y lo puse de assert en el test.
+
+El test fallo. Con base 16 y tres clics arriba el offset es +3 y el valor se
+acota a 16; un clic abajo deja el offset en +2 y 16+2 sigue acotado. El Track se
+despega cuando el desplazamiento ACUMULADO vuelve a entrar en rango, no en el
+primer clic.
+
+LO QUE BASE+OFFSET SI GARANTIZA, que es lo que el requisito deberia haber dicho:
+- El topado no arrastra a los demas.
+- Cuando el desplazamiento reentra, el Track retoma SU valor y no uno derivado
+  del tope.
+- La ida y vuelta es exacta: offset de vuelta a cero devuelve la base.
+
+Y por que el diseno sigue siendo el correcto: la alternativa —aplicar el delta al
+valor ya acotado— deja el Track en 13 tras tres clics arriba y tres abajo, porque
+los de bajada parten del tope. Perderia material de forma permanente, que es lo
+que product-guidelines.md prohibe. El test lo documenta con el contraste delante.
+
+DETALLES DE IMPLEMENTACION
+- Delta cero devuelve el Pattern tal cual y ni siquiera captura la base, para que
+  quien publica lo detecte comparando.
+- Cada Cycle acota con Cycle.setting(_:to:), que ya sabe frenar o envolver. Rotate
+  envuelve modulo el steps.count de CADA Cycle: dos Tracks de 16 y 12 steps se
+  desfasan bajo el mismo desplazamiento, que es lo que se le pide a un Rotate
+  global.
+- Los Cycles inactivos y los Tracks muteados: los primeros no se tocan, los
+  segundos si (FR3).
+
+TESTS
+  swift test --package-path Packages/Engine -> 518 tests, 0 fallos.
+swift format limpio.
