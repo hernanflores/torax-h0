@@ -172,13 +172,20 @@ struct RingStackView: View {
         )
         context.stroke(
             arc,
-            with: .color(.white.opacity(isSelected ? 0.95 : 0.4)),
+            with: .color(Palette.offWhite.opacity(isSelected ? 0.95 : 0.4)),
             style: StrokeStyle(lineWidth: width, lineCap: .butt)
         )
     }
 
     /// El punto oscuro del centro, que el handoff dibuja y que el hueco central
     /// de `RingStack` reserva.
+    ///
+    /// **Es el suelo del panel, no un color propio.** Usaba `toolbar`, que valía
+    /// por coincidencia numérica: ese token era a la vez el fondo de la barra
+    /// superior y la tinta sobre acento, y aquí no era ninguna de las dos cosas.
+    /// Al renombrarse a `onAccent` el 2026-09-06 la coincidencia dejó de
+    /// sostenerse, así que el hub pasa a pedir lo que de verdad es — el interior
+    /// del panel que lo rodea.
     private func drawHub(in context: inout GraphicsContext, centre: CGPoint, available: CGFloat) {
         let hub = available * RingStack.centreHole * 0.5
         context.fill(
@@ -186,7 +193,7 @@ struct RingStackView: View {
                 ellipseIn: CGRect(
                     x: centre.x - hub, y: centre.y - hub, width: hub * 2, height: hub * 2
                 )),
-            with: .color(Palette.toolbar)
+            with: .color(Palette.inset)
         )
     }
 

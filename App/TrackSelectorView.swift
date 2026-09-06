@@ -100,7 +100,7 @@ struct TrackSelectorView: View {
             Text("\(index + 1)")
                 .font(isSelected ? Typography.bodyStrong : Typography.body)
                 .foregroundStyle(
-                    isSelected ? Palette.toolbar : (sounds ? accent : Palette.muted)
+                    isSelected ? Palette.onAccent : (sounds ? accent : Palette.muted)
                 )
                 .monospacedDigit()
                 .frame(maxWidth: .infinity, minHeight: 44)
@@ -157,7 +157,7 @@ struct TrackSelectorView: View {
         Button(action: action) {
             Text(letter)
                 .font(isOn ? Typography.captionBold : Typography.caption)
-                .foregroundStyle(isOn ? Palette.toolbar : Palette.muted)
+                .foregroundStyle(isOn ? Palette.onAccent : Palette.muted)
                 .frame(maxWidth: .infinity, minHeight: 32)
         }
         .buttonStyle(.plain)
@@ -233,7 +233,7 @@ struct TrackSelectorView: View {
 
     private func cycleForeground(isActive: Bool, isSounding: Bool) -> Color {
         guard isActive else { return Palette.muted }
-        return isSounding ? Palette.toolbar : Palette.mutedBright
+        return isSounding ? Palette.onAccent : Palette.mutedBright
     }
 
     private func label(_ text: String) -> some View {

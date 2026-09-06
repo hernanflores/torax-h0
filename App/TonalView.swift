@@ -110,7 +110,7 @@ struct TonalView: View {
             .background(fill(for: key), in: shape)
             .overlay(
                 shape.stroke(
-                    key.isRoot ? Color.white : (key.isInScale ? Palette.tonal : Palette.border),
+                    key.isRoot ? Palette.offWhite : (key.isInScale ? Palette.tonal : Palette.border),
                     // 3px solo en la raíz: es el tratamiento que el handoff
                     // reserva para distinguirla de «está en la escala».
                     lineWidth: key.isRoot ? Brutalist.strokeEmphasis : Brutalist.stroke
@@ -126,7 +126,7 @@ struct TonalView: View {
     }
 
     private func labelColour(for key: TonalKeyboard.Key) -> Color {
-        if key.isRoot { return Palette.toolbar }
+        if key.isRoot { return Palette.onAccent }
         return key.isInScale ? Palette.tonal : Palette.muted
     }
 
@@ -247,7 +247,7 @@ struct TonalView: View {
     {
         Button(title, action: action)
             .font(isSelected ? Typography.bodyStrong : Typography.body)
-            .foregroundStyle(isSelected ? Palette.toolbar : Palette.muted)
+            .foregroundStyle(isSelected ? Palette.onAccent : Palette.muted)
             // Objetivo táctil holgado: se toca de pie, delante del sintetizador.
             .frame(minWidth: 52, minHeight: 52)
             .brutalistControl(

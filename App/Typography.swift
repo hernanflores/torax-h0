@@ -95,6 +95,24 @@ extension Typography {
     /// Cabecera de sección: Tracks, Tonal, Channel.
     static var sectionTitle: Font { semibold(22) }
 
+    // MARK: - El chrome compartido
+
+    // **Tres papeles que antes no existían.** La barra y la navegación se
+    // dibujaban con `captionStrong` y `captionBold`, que son etiquetas de 13
+    // puntos: valían cuando las pestañas eran `1 · Track` en una fila que además
+    // llevaba el estado y el transporte. El handoff les da una fila propia y un
+    // tamaño de lectura, así que piden un nombre propio en vez de reusar el de
+    // otra cosa.
+
+    /// El módulo activo, centrado en la barra superior.
+    static var moduleTitle: Font { semibold(22) }
+
+    /// Una entrada de la navegación persistente.
+    static var navigationItem: Font { regular(20) }
+
+    /// La entrada activa, la que lleva el subrayado de 3 pt.
+    static var navigationItemActive: Font { bold(20) }
+
     /// Un renglón de parámetros, que es una lista de valores y no prosa.
     static var parameterLine: Font { regular(20) }
 

@@ -65,7 +65,7 @@ struct ContentView: View {
         .padding(32)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Palette.background)
-        .foregroundStyle(.white)
+        .foregroundStyle(Palette.text)
         .onAppear { jitter.startIfRequestedByLaunchArguments() }
         // **El giro manda sobre el tab.** Mover un knob de otra familia cambia
         // el tab activo en vez de mostrar el valor con un acento que no
@@ -127,7 +127,7 @@ struct ContentView: View {
                             screen == candidate ? Typography.captionBold : Typography.captionStrong
                         )
                         .foregroundStyle(
-                            screen == candidate ? Palette.toolbar : Palette.mutedBright
+                            screen == candidate ? Palette.onAccent : Palette.mutedBright
                         )
                         .padding(.horizontal, 20)
                         .frame(height: 44)
@@ -584,7 +584,7 @@ struct ContentView: View {
                     .frame(width: Brutalist.stroke * 2)
                 Text(Self.name(of: candidate))
                     .font(isActive ? Typography.captionBold : Typography.captionStrong)
-                    .foregroundStyle(isActive ? Palette.toolbar : accent)
+                    .foregroundStyle(isActive ? Palette.onAccent : accent)
                 Spacer(minLength: 0)
             }
             // Alto fijo: sin él, el `VStack` reparte entre los tres el alto de
@@ -687,7 +687,7 @@ struct ContentView: View {
         }
         .font(Typography.bodyStrong)
         .buttonStyle(.plain)
-        .foregroundStyle(canTransport ? Palette.toolbar : Palette.muted)
+        .foregroundStyle(canTransport ? Palette.onAccent : Palette.muted)
         .disabled(!canTransport)
         // Objetivo táctil holgado: se toca de pie, delante del sintetizador.
         .frame(minWidth: 130, minHeight: 44)

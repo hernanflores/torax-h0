@@ -125,7 +125,7 @@ struct ChannelMapView: View {
 
         return Button(title) { onClockSourceChange(isExternal) }
             .font(isSelected ? Typography.captionBold : Typography.caption)
-            .foregroundStyle(isSelected ? Palette.toolbar : Palette.muted)
+            .foregroundStyle(isSelected ? Palette.onAccent : Palette.muted)
             .frame(minWidth: 96, minHeight: 44)
             .brutalistControl(
                 accent: accent,
@@ -201,7 +201,7 @@ struct ChannelMapView: View {
         return Button("\(number)") { onChannelChange(index, Channel(number)!) }
             .font(isSelected ? Typography.captionBold : Typography.caption)
             .monospacedDigit()
-            .foregroundStyle(isSelected ? Palette.toolbar : Palette.muted)
+            .foregroundStyle(isSelected ? Palette.onAccent : Palette.muted)
             .frame(minWidth: 34, minHeight: 44)
             .brutalistControl(
                 accent: accent,
