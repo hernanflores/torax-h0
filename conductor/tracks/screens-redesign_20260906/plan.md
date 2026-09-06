@@ -206,14 +206,14 @@ lo que separa esta pantalla de una maqueta que miente.
 
 ## Fase 6 — Cierre
 
-- [ ] Task: Auditoría del sistema de tokens (FR1, criterio 3)
-    - [ ] `grep` en `App/` buscando literales de color, `Font.custom`, grosores, radios y sombras fuera de `Palette`, `Typography` y `Brutalist`
-    - [ ] Corregir cada hallazgo llevándolo al token que corresponda; si no existe, crearlo ahí
-    - [ ] Repetir la búsqueda hasta que salga vacía
+- [x] Task: Auditoría del sistema de tokens (FR1, criterio 3) `12b92c9`
+    - [x] `grep` en `App/` buscando literales de color, `Font.custom`, grosores, radios y sombras fuera de `Palette`, `Typography` y `Brutalist`
+    - [x] Corregir cada hallazgo llevándolo al token que corresponda; si no existe, crearlo ahí
+    - [x] Repetir la búsqueda hasta que salga vacía
 
-- [ ] Task: Auditoría de minúsculas (FR3, criterio 2)
-    - [ ] Revisar cada cadena visible de las cuatro pantallas y del chrome
-    - [ ] Confirmar que el vocabulario capitalizado sigue intacto en código, tests y documentación
+- [x] Task: Auditoría de minúsculas (FR3, criterio 2) `12b92c9`
+    - [x] Revisar cada cadena visible de las cuatro pantallas y del chrome
+    - [x] Confirmar que el vocabulario capitalizado sigue intacto en código, tests y documentación
 
 - [ ] Task: Auditoría de alcance (NFR1)
     - [ ] `git diff main --name-only` y confirmar que `Engine` y `MIDI` solo cambian por lógica que bajó con sus tests
