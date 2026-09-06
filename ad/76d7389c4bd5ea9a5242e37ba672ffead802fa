@@ -1,0 +1,28 @@
+Task: trackPill — la franja de doce tracks (Fase 2, FR13, FR14)
+
+Track: screens-redesign_20260906
+
+Qué se hizo
+- Numeración 01-12 con cero delante y helper number(_:) en la vista.
+- m y s en minúscula, vía Text(display:).
+- contentShape en la pastilla y en los dos botones del par.
+- Auditoría de FR14 escrita como tabla en la documentación de trackScreen.
+- ShapeTheme: cerrada la pregunta abierta sobre mauve vs violeta.
+
+La auditoría de FR14, con su método
+Se hizo por grep sobre las cuatro vistas de la pantalla buscando Button,
+gesture, onTapGesture, Slider, Stepper y Toggle. Resultado: cuatro escrituras,
+todas nombradas en la tabla. RingStackView no tiene ninguna.
+
+La tabla va en el código y no solo aquí a propósito: una auditoría que vive en
+un mensaje de commit no la vuelve a leer nadie, y FR14 es la clase de requisito
+que se erosiona añadiendo un control 'pequeño' meses después.
+
+La pregunta del color, cerrada
+Confirmada por el usuario con los cards de Groove y Tonal visibles a la vez:
+buen contraste sobre el fondo neutro. Lo que se conserva escrito es que la
+separación depende del fondo, no solo de los dos acentos.
+
+Verificación
+- xcodebuild iOS y simulador: BUILD SUCCEEDED.
+- Captura: 01-12 alineados sin salto entre el 09 y el 10, m/s en minúscula.
