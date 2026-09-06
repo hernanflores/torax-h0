@@ -215,25 +215,25 @@ seguir.
         Fase 6, en dispositivo.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 6: EN EL DISPOSITIVO
+## FASE 6: EN EL DISPOSITIVO [checkpoint: 1671c9a]
 
-- [~] Task: Verificación en iPad con BeatStep Pro (AC1–AC12, AC14, AC15)
-  - [ ] Reconfigurar los encoders en MIDI Control Center con el preset exportado
+- [x] Task: Verificación en iPad con BeatStep Pro (AC1–AC12, AC14, AC15) — `1671c9a`
+  - [x] Reconfigurar los encoders en MIDI Control Center con el preset exportado
         nuevo, en `Relative #2` — que sigue siendo la condición de que nada salte
         a su extremo.
-  - [ ] El knob 7 mueve **Delay** y el knob 9 mueve **Probability**, no al revés.
-  - [ ] El knob 13 mueve el Cycle en edición y el **knob 10 no hace nada**.
-  - [ ] Confirmar que el step 14 es **momentary** y no toggle — el supuesto de
+  - [x] El knob 7 mueve **Delay** y el knob 9 mueve **Probability**, no al revés.
+  - [x] El knob 13 mueve el Cycle en edición y el **knob 10 no hace nada**.
+  - [x] Confirmar que el step 14 es **momentary** y no toggle — el supuesto de
         FR1, heredado del precedente del 13.
-  - [ ] Mantener [step 14] y girar Velocity: suben los doce conservando el
+  - [x] Mantener [step 14] y girar Velocity: suben los doce conservando el
         balance; soltar lo devuelve. Sin notas colgadas.
-  - [ ] Un giro largo contra el tope y vuelta: el knob no queda muerto (FR5).
-  - [ ] Rotate global con Tracks de Steps distintos: se desfasan y vuelven.
-  - [ ] 13 y 14 a la vez, soltando el 13 primero (FR13), con el transporte
+  - [x] Un giro largo contra el tope y vuelta: el knob no queda muerto (FR5).
+  - [x] Rotate global con Tracks de Steps distintos: se desfasan y vuelven.
+  - [x] 13 y 14 a la vez, soltando el 13 primero (FR13), con el transporte
         corriendo.
-  - [ ] `releaseModifiers()`: desenchufar y reconectar con el botón hundido no
+  - [x] `releaseModifiers()`: desenchufar y reconectar con el botón hundido no
         deja el offset puesto.
-  - [ ] Con el transporte parado (FR14).
-  - [ ] Registrar el resultado en `device-verification.md` del track. **Sin
+  - [x] Con el transporte parado (FR14).
+  - [x] Registrar el resultado en `device-verification.md` del track. **Sin
         medición de jitter** (NFR6).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
