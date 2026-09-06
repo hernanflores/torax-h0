@@ -175,30 +175,86 @@ struct AppChrome: View {
     /// llama antipatrón es animar con un temporizador algo que debería derivar
     /// del reloj musical; esto no anima nada: relee un valor. Cuatro veces por
     /// segundo es lento para el ojo y sobra para un número.
+    ///
+    /// > **Era un `popover` y se descartó en la verificación de la Fase 1.** Dos
+    /// > razones, y la segunda basta por sí sola:
+    /// >
+    /// > 1. **Se recortaba.** El número está pegado al borde derecho de la
+    /// >    barra, no cabía a su lado, y el sistema lo cortaba en vez de moverlo.
+    /// >    Estrecharlo lo mejoró y no lo resolvió.
+    /// > 2. **Traía chrome ajeno.** Un popover llega con su contenedor
+    /// >    redondeado, su sombra difuminada y su flecha — tres cosas que el
+    /// >    lenguaje visual prohíbe por su nombre. Estaba metiendo por la puerta
+    /// >    de atrás justo lo que FR2 deja fuera.
+    /// >
+    /// > Desplegarlo en línea no tiene ninguno de los dos problemas y conserva lo
+    /// > que motivó el popover: que no haya dos botones permanentes compitiendo
+    /// > con el transporte en la fila que se lee de reojo mientras se toca.
+    @ViewBuilder
     private var tempo: some View {
         TimelineView(.periodic(from: .now, by: 0.25)) { _ in
-            Button {
-                isAdjustingTempo = true
-            } label: {
-                Text(display: model.tempoDescription)
-                    .font(Typography.captionStrong)
-                    .monospacedDigit()
-                    .foregroundStyle(
-                        model.followsExternalClock ? Palette.groove : Palette.mutedBright
-                    )
-            }
-            .buttonStyle(.plain)
-            // **Con reloj externo el número es lectura.** El tempo lo pone el
-            // maestro; ofrecer un ajuste que el siguiente tick va a pisar sería
-            // un control que miente.
-            .disabled(model.followsExternalClock)
-            .popover(isPresented: $isAdjustingTempo, arrowEdge: .bottom) {
-                TempoAdjuster(model: model)
+            HStack(spacing: 8) {
+                if isAdjustingTempo {
+                    tempoStep(-1, symbol: "minus")
+                }
+
+                Button {
+                    // **Con reloj externo no despliega nada.** El tempo lo pone
+                    // el maestro; ofrecer un ajuste que el siguiente tick va a
+                    // pisar sería un control que miente.
+                    guard !model.followsExternalClock else { return }
+                    isAdjustingTempo.toggle()
+                } label: {
+                    Text(display: model.tempoDescription)
+                        .font(Typography.captionStrong)
+                        .monospacedDigit()
+                        .foregroundStyle(tempoTint)
+                        .frame(minWidth: 68)
+                }
+                .buttonStyle(.plain)
+                .disabled(model.followsExternalClock)
+
+                if isAdjustingTempo {
+                    tempoStep(1, symbol: "plus")
+                }
             }
         }
     }
 
+    /// De qué color va el número.
+    ///
+    /// El acento de Groove marca que el tempo viene de fuera, que es el mismo
+    /// código que la barra ya usaba. Desplegado se aclara a `text` para que se
+    /// note cuál de los tres elementos es el valor y cuáles son los botones.
+    private var tempoTint: Color {
+        if model.followsExternalClock { return Palette.groove }
+        return isAdjustingTempo ? Palette.text : Palette.mutedBright
+    }
+
     @State private var isAdjustingTempo = false
+
+    /// Un escalón de un BPM.
+    ///
+    /// **Uno, no cinco.** `Transport.setTempo` acota a 20–300 y devuelve `false`
+    /// fuera de rango, así que los extremos se defienden solos; lo que decide el
+    /// tamaño del paso es que ajustar a mano un tempo es afinar, no barrer.
+    private func tempoStep(_ delta: Double, symbol: String) -> some View {
+        Button {
+            model.setTempo(model.beatsPerMinute + delta)
+        } label: {
+            Image(systemName: symbol)
+                .font(.system(size: 13))
+                .foregroundStyle(Palette.text)
+                .frame(width: 36, height: 32)
+        }
+        .buttonStyle(.plain)
+        .brutalistControl(
+            accent: Palette.offWhite,
+            isSelected: false,
+            isPopulated: true,
+            radius: Brutalist.radiusSmall
+        )
+    }
 
     // MARK: - Transporte
 
@@ -233,60 +289,6 @@ struct AppChrome: View {
     private var transportGlyph: Color {
         if model.isPlaying { return Palette.onAccent }
         return canTransport ? Palette.offWhite : Palette.muted
-    }
-}
-
-/// El ajuste del tempo interno.
-///
-/// **El handoff no lo dibuja, y aun así tiene que existir.** Sus cinco pantallas
-/// enseñan `124 bpm` como lectura en la barra y `internal clock · 124 bpm` en la
-/// pantalla `midi`, sin un solo control que lo cambie. Entregar eso literalmente
-/// dejaría el tempo interno fijo en el valor de arranque, que es una regresión
-/// funcional y no una decisión de diseño.
-///
-/// **Va colgado del número y no suelto en la barra** porque el chrome del
-/// handoff es escueto a propósito: dos botones `−` / `+` permanentes ahí arriba
-/// serían dos controles compitiendo con el transporte en la fila que se lee de
-/// reojo mientras se toca.
-private struct TempoAdjuster: View {
-
-    let model: TransportModel
-
-    var body: some View {
-        HStack(spacing: 16) {
-            step(-1, symbol: "minus")
-
-            TimelineView(.periodic(from: .now, by: 0.25)) { _ in
-                Text(display: model.tempoDescription)
-                    .font(Typography.valueTitle)
-                    .monospacedDigit()
-                    .foregroundStyle(Palette.text)
-                    .frame(minWidth: 110)
-            }
-
-            step(1, symbol: "plus")
-        }
-        .padding(20)
-        .background(Palette.background)
-        .presentationCompactAdaptation(.popover)
-    }
-
-    /// Un escalón de un BPM.
-    ///
-    /// **Uno, no cinco.** `Transport.setTempo` acota a 20–300 y devuelve `false`
-    /// fuera de rango, así que los extremos se defienden solos; lo que decide el
-    /// tamaño del paso es que ajustar a mano un tempo es afinar, no barrer.
-    private func step(_ delta: Double, symbol: String) -> some View {
-        Button {
-            model.setTempo(model.beatsPerMinute + delta)
-        } label: {
-            Image(systemName: symbol)
-                .font(.system(size: 16))
-                .foregroundStyle(Palette.text)
-                .frame(width: 56, height: 44)
-        }
-        .buttonStyle(.plain)
-        .brutalistControl(accent: Palette.offWhite, isSelected: false, isPopulated: true)
     }
 }
 
