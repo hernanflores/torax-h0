@@ -414,7 +414,10 @@ public final class ControlInput: @unchecked Sendable {
     /// movieron nada— no publica, con el mismo criterio que un giro nulo.
     ///
     /// El overlay se vacía siempre, hubiera o no algo dentro: el hold terminó.
-    private func releaseTemp() -> Bool {
+    /// - Parameter publishing: si publica el snapshot restaurado. Solo
+    ///   `releaseModifiers()` lo pone a `false`, para que soltar los dos a la vez
+    ///   no enseñe un estado intermedio que nunca existió.
+    private func releaseTemp(publishing: Bool = true) -> Bool {
         holdingTempModifier = false
         guard !overlay.isEmpty, let track = pattern.track(at: selectedTrackIndex) else {
             overlay = ParameterOverlay()
@@ -423,7 +426,7 @@ public final class ControlInput: @unchecked Sendable {
 
         pattern = pattern.replacing(overlay.restored(into: track), at: selectedTrackIndex)
         overlay = ParameterOverlay()
-        publish(pattern)
+        if publishing { publish(pattern) }
         return true
     }
 
@@ -443,7 +446,8 @@ public final class ControlInput: @unchecked Sendable {
     /// nada— no publica, con el mismo criterio que un giro nulo.
     ///
     /// El snapshot se vacía siempre, hubiera o no algo dentro: el hold terminó.
-    private func releaseCtrlAll() -> Bool {
+    /// - Parameter publishing: ver `releaseTemp(publishing:)`.
+    private func releaseCtrlAll(publishing: Bool = true) -> Bool {
         holdingCtrlAllModifier = false
         guard !ctrlAll.isEmpty else {
             ctrlAll = CtrlAllOffset()
@@ -452,7 +456,7 @@ public final class ControlInput: @unchecked Sendable {
 
         pattern = ctrlAll.restored(into: pattern)
         ctrlAll = CtrlAllOffset()
-        publish(pattern)
+        if publishing { publish(pattern) }
         return true
     }
 
@@ -475,7 +479,22 @@ public final class ControlInput: @unchecked Sendable {
     public func releaseModifiers() {
         holdingMuteModifier = false
         holdingSoloModifier = false
-        _ = releaseTemp()
+        // **Temp antes que Ctrl All**, con la misma prioridad que rige mientras
+        // los dos están hundidos (FR13): si Temp tenía algo superpuesto, se
+        // devuelve primero, y Ctrl All restaura después sobre el Pattern ya
+        // devuelto. Al revés, Ctrl All escribiría sus bases sobre un Pattern que
+        // todavía lleva el fill de Temp encima.
+        //
+        // **Como mucho publica una vez**, aunque los dos tuvieran algo: el
+        // segundo restaura sin publicar y la publicación la hace quien cierra.
+        // Dos snapshots seguidos por el `PatternHandoff` no romperían nada, pero
+        // el primero enseñaría un estado intermedio que nunca existió para el
+        // usuario.
+        let temp = releaseTemp(publishing: false)
+        let ctrlAll = releaseCtrlAll(publishing: false)
+        if temp || ctrlAll {
+            publish(pattern)
+        }
     }
 
     /// Un giro de knob mueve un parámetro del Track, sea de la familia que sea.

@@ -186,7 +186,7 @@ seguir.
   - [x] Implementación (Green): un guard compartido; documentar que Temp no tiene
         este requisito y por qué Ctrl All sí (una escritura permanente colada
         dentro de un gesto que promete no escribir).
-- [ ] Task: Reconexión y modificadores atascados (FR15)
+- [~] Task: Reconexión y modificadores atascados (FR15)
   - [ ] Tests (Red): `releaseModifiers()` con Ctrl All hundido restaura y publica
         una vez.
   - [ ] Tests (Red): con Ctrl All y Temp hundidos a la vez, `releaseModifiers()`
