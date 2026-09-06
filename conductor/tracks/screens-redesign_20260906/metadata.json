@@ -1,0 +1,18 @@
+{
+  "id": "screens-redesign_20260906",
+  "title": "Rediseño de las cuatro pantallas: track, scale, midi y banks",
+  "type": "Feature",
+  "status": "new",
+  "created_at": "2026-09-06",
+  "updated_at": "2026-09-06",
+  "phases": 6,
+  "tasks": 34,
+  "depends_on": [
+    "ctrl-all_20260905",
+    "controller-feedback_20260904",
+    "ui-declutter_20260902",
+    "mute-solo_20260902",
+    "cycles_20260901",
+    "screen-handoff_20260901"
+  ]
+}

@@ -565,6 +565,41 @@ escalón es el que se nota.
   de control**, aunque un clic reescriba hasta doce Tracks contra el único de
   Temp. Las dos decisiones quedan anotadas con su coste delante.
 
+---
+
+- [ ] **Track: Rediseño de las cuatro pantallas — track, scale, midi y banks**
+  *Link: [conductor/tracks/screens-redesign_20260906/index.md](./tracks/screens-redesign_20260906/index.md)*
+
+  El chrome creció rebanada a rebanada y lo acusa: una fila mezclando pestañas,
+  estado y transporte; pantallas con prefijo numérico; dos pestañas discontinuas
+  porque no existían; y un panel de jitter que sobrevive a una medición suspendida.
+  Este track lo sustituye por el rediseño del handoff — chrome compartido y
+  **cuatro pantallas completas**.
+
+  **Cambia el dibujo, no el motor.** `Engine` y `MIDI` quedan intactos; un diff que
+  alcance el camino de tiempo real es error de alcance.
+
+  **Doce playheads, no uno.** El PNG dibuja una aguja porque su mock tiene los doce
+  Tracks en la misma Division; con divisiones distintas eso mentiría sobre once de
+  los doce. Donde el handoff y el estado real se separan, gana el estado.
+
+  **La rejilla del pool son 14 pads de nota y 2 de octava**, no dieciséis notas: es
+  el espejo literal de `PadSurface`, y los de octava enseñan en qué octava se está
+  — información que hoy no aparece en ningún otro sitio.
+
+  **`banks` es cáscara visual y se declara como tal:** la selección se mueve y no
+  altera lo que suena. Queda como limitación conocida hasta la rebanada 4 de la v2,
+  que es la que trae Banks de verdad.
+
+  **Dos desviaciones documentadas antes de escribir código.** El fondo pasa a
+  `#111211` contra un lenguaje visual cerrado el 2026-09-02 —cambia el fondo, no
+  los acentos ni el tratamiento— y la interfaz pasa a minúsculas —cambia la caja,
+  no el término—.
+
+  **Reabre una pregunta ya escrita:** la separación entre el mauve de Groove y el
+  violeta de Tonal se juzgó contra el fondo violeta oscuro, y sobre el neutro esa
+  comprobación no vale.
+
 ## Defectos conocidos
 
 Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres
