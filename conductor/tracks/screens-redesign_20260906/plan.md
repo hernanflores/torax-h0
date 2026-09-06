@@ -220,9 +220,9 @@ lo que separa esta pantalla de una maqueta que miente.
     - [x] Confirmar que el camino de tiempo real no aparece en el diff
     - [x] Ejecutar la suite completa; el flake de CoreMIDI en `MIDITests` es ruido conocido y no se atribuye a este track
 
-- [ ] Task: Repaso de los trece criterios de aceptación del spec
-    - [ ] Recorrerlos uno a uno contra la app corriendo
-    - [ ] Registrar cualquiera que no se cumpla como tarea, no como nota al pie
+- [x] Task: Repaso de los trece criterios de aceptación del spec `62724f9`
+    - [x] Recorrerlos uno a uno contra la app corriendo
+    - [x] Registrar cualquiera que no se cumpla como tarea, no como nota al pie
 
 - [ ] Task: Abrir el Pull Request
     - [ ] Rama propia contra `main`, sin push directo
