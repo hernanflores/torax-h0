@@ -89,25 +89,25 @@ seguir.
         superpuesto**: es lo único que hace la ida y vuelta exacta cuando un Track
         topa (FR4).
   - [x] `Engine` sigue sin importar nada más allá de la stdlib.
-- [~] Task: Aplicar el offset al Pattern, acotando sin destruir (FR2, FR4, FR6)
-  - [ ] Tests (Red): un delta desplaza el mismo parámetro en los doce Tracks y en
+- [x] Task: Aplicar el offset al Pattern, acotando sin destruir (FR2, FR4, FR6) — `9130a9a`
+  - [x] Tests (Red): un delta desplaza el mismo parámetro en los doce Tracks y en
         todos sus Cycles activos, **conservando las diferencias** — Pulses 4 y 9
         siguen a distancia 5.
-  - [ ] Tests (Red): un Track topado no arrastra a los demás; el resto sigue
+  - [x] Tests (Red): un Track topado no arrastra a los demás; el resto sigue
         moviéndose.
-  - [ ] Tests (Red): la ida y vuelta es exacta — subir hasta el tope y bajar el
+  - [x] Tests (Red): la ida y vuelta es exacta — subir hasta el tope y bajar el
         mismo número de clics devuelve todos los valores de partida, y el Track
         topado vuelve a **su** valor exacto en cuanto el desplazamiento reentra
         en su rango — no en el primer clic de vuelta, que es lo que el plan
         afirmaba antes del 2026-09-05 y era falso.
-  - [ ] Tests (Red): Rotate envuelve con el `steps.count` de **cada** Cycle; dos
+  - [x] Tests (Red): Rotate envuelve con el `steps.count` de **cada** Cycle; dos
         Tracks con Steps 16 y 12 se desfasan entre sí bajo el mismo offset.
-  - [ ] Tests (Red): un Track muteado recibe el offset igual que los demás (FR3)
+  - [x] Tests (Red): un Track muteado recibe el offset igual que los demás (FR3)
         — el offset no consulta la máscara.
-  - [ ] Implementación (Green): apoyarse en `Cycle.setting(_:to:)` y
+  - [x] Implementación (Green): apoyarse en `Cycle.setting(_:to:)` y
         `Cycle.applying(_:to:)`; **no duplicar la aritmética de parámetros** ni la
         del envolvimiento de Rotate.
-  - [ ] Documentar por qué el valor se recalcula desde la base y nunca desde el
+  - [x] Documentar por qué el valor se recalcula desde la base y nunca desde el
         valor ya escrito.
 - [ ] Task: El tope del offset acumulado (FR5, FR6)
   - [ ] Tests (Red): cuarenta clics contra el extremo y **un** clic de vuelta
