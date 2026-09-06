@@ -1,0 +1,44 @@
+Task: Temp y Ctrl All se ceden el paso (Fase 4, ctrl-all_20260905)
+
+QUE SE HIZO
+FR13, con 7 tests escritos primero (Red: 3 tests fallando).
+
+FICHEROS
+- Packages/MIDI/Sources/MIDI/ControlInput.swift: el guard de los step buttons
+  deja pasar los dos modificadores; isTakenOver; isCtrlAllActive redefinido.
+- Packages/MIDI/Tests/MIDITests/TempAndCtrlAllTests.swift (nuevo).
+
+CORRIGE LA TAREA ANTERIOR, QUE CONTRADECIA FR13
+El corte que se escribio en "Con Ctrl All hundido, Ctrl All manda" ignoraba el
+step 14 ENTERO mientras Temp estaba hundido. Lo justifique en su git note como
+una virtud —"soltar el 13 no deja un Ctrl All armado que nadie pidio"— y es justo
+lo contrario de lo que FR13 pide, que el usuario eligio explicitamente al
+planificar: "Temp restaura y Ctrl All arranca ahi".
+
+Lo destaparon los tests de esta tarea al fallar. La consecuencia del corte viejo
+era un boton fisicamente hundido que no hacia nada, ni siquiera al soltarse, y
+eso no tiene forma de explicarse a quien lo tiene bajo el dedo.
+
+Ahora los dos modificadores SE REGISTRAN siempre; lo que se suprime es que
+actuen. El corte pasa a preguntarse por isTakenOver —"hay algun modificador
+apoderado"— en vez de por cada uno, asi que el dia que haya un tercero no puede
+olvidarse de la mitad de lo que hay que callar.
+
+isCtrlAllActive DICE QUIEN MANDA, NO QUE BOTON ESTA HUNDIDO
+Con el 14 registrandose durante Temp, la lectura cruda diria que los dos gestos
+estan activos a la vez y la pantalla tendria que desempatar. Se define como
+"hundido Y Temp no hundido", asi que isTempActive y este nunca son ciertos a la
+vez. El desempate vive en un solo sitio: repartido entre la entrada y la vista,
+las dos acabarian diciendo cosas distintas.
+
+OTRA VEZ EL SEMBRADO
+Cinco asertos fallaron por lo mismo que en la tarea del gesto: ControlInput
+(track:) siembra con ese Cycle solo el Track 1 y los otros once arrancan con el
+por defecto, que trae Pulses 1. Los asertos suponian que los doce partian de 4.
+Queda anotado en el helper para no tropezar una tercera vez.
+
+TESTS
+  swift test --package-path Packages/MIDI -> 583 tests, 7 fallos, todos
+  VirtualLoopback (flake midi-test-flake_20260826). Temp sigue en verde pese a
+  compartir el guard que se cambio.
+swift format limpio.
