@@ -67,8 +67,18 @@ struct BankGrid: View {
     let tempo: String
     let patternsWithMaterial: Int
 
-    /// Cuántos declara la Pre Spec. Es una constante del dominio y no de la
-    /// rejilla que la dibuja; cuando exista `Bank` en `Engine`, sale de allí.
+    /// Cuántos Banks declara la Pre Spec.
+    ///
+    /// > **Se queda en la vista a propósito, y la auditoría de la fase lo
+    /// > revisó.** Es una constante de dominio, y este track ha bajado media
+    /// > docena de cosas así a `Engine` por la misma razón —`Scale.name`,
+    /// > `ParameterFamily.name`, `ClockSource.name`—. Ésta no, porque bajarla
+    /// > exigiría **inventar un tipo `Bank` que no existe** solo para tener
+    /// > dónde ponerla: sería meter el andamiaje de la cáscara dentro del motor
+    /// > puro, que es exactamente lo que el alcance de este track excluye.
+    /// >
+    /// > Cuando `Bank` exista —rebanada 4 de la v2— esta constante y la de
+    /// > `PatternGrid` se van con él.
     static let count = 16
 
     var body: some View {
@@ -108,6 +118,11 @@ struct BankGrid: View {
         .brutalistPanel()
     }
 
+    /// **No reusa `PitchPool.countDescription` aunque tenga la misma forma.**
+    /// Aquella se movió a `Engine` porque el *mismo* concepto se escribía en
+    /// tres sitios con tres redacciones distintas; ésta cuenta otra cosa y se
+    /// escribe una vez. Compartirlas pediría una plantilla genérica de
+    /// singular y plural, que es más maquinaria que la que ahorra.
     private var patterns: String {
         switch patternsWithMaterial {
         case 0: "no patterns"
@@ -124,6 +139,8 @@ struct PatternGrid: View {
     let hasMaterial: Bool
     let isPlaying: Bool
 
+    /// Cuántos Patterns tiene un Bank. Se queda aquí por la misma razón que
+    /// `BankGrid.count`, y se va con él.
     static let count = 16
 
     var body: some View {
@@ -165,6 +182,17 @@ struct PatternGrid: View {
         }
     }
 
+    /// **Se queda en la vista, y la auditoría lo miró.** La sub-tarea del plan
+    /// avisaba: «clasificar el estado de un pattern es lógica; si no es una
+    /// lectura directa del `Pattern`, baja a `Engine` con test».
+    ///
+    /// Lo que decide el estado son dos lecturas directas —si el Pattern tiene
+    /// material, si el transporte suena— **y la premisa de la cáscara**: que solo
+    /// existe el índice 0. Esa premisa es una limitación temporal de esta
+    /// pantalla, no una propiedad del dominio, y meterla en `Engine` sería grabar
+    /// en el motor puro algo que va a dejar de ser cierto.
+    ///
+    /// Cuando exista `Bank`, esto pasa a ser una lectura directa y se va con él.
     private func state(_ index: Int) -> State {
         guard index == 0, hasMaterial else { return .empty }
         return isPlaying ? .playing : .ready
