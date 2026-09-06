@@ -103,10 +103,10 @@ animaciones derivan del reloj musical.
     - [x] Girar un knob resalta el card de su familia con su acento
     - [x] El card tonal muestra `scale`, `root` y el pool, **sin mapear alturas a steps**
 
-- [ ] Task: `trackPill` — la franja de doce tracks (FR13, FR14)
-    - [ ] `01`–`12` con `m` / `s` bajo cada uno; refleja mute y solo vigentes
-    - [ ] Táctil: seleccionar track, mute, solo
-    - [ ] **Auditar la pantalla entera:** ningún gesto altera un parámetro generativo
+- [x] Task: `trackPill` — la franja de doce tracks (FR13, FR14) `ad76d73`
+    - [x] `01`–`12` con `m` / `s` bajo cada uno; refleja mute y solo vigentes
+    - [x] Táctil: seleccionar track, mute, solo
+    - [x] **Auditar la pantalla entera:** ningún gesto altera un parámetro generativo
 
 - [ ] Task: Estado sin hardware en `track` (FR29)
     - [ ] Anillos, playheads y cards siguen visibles sin controlador ni destino
