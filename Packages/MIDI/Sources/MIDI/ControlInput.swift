@@ -616,7 +616,37 @@ public final class ControlInput: @unchecked Sendable {
     /// tipo.
     private func press(_ note: MIDINote) -> Bool {
         guard let index = mapping.padIndex(for: note) else { return false }
+        return press(padAt: index)
+    }
 
+    /// El mismo pad, pulsado en la pantalla.
+    ///
+    /// **Es la misma vía, no una segunda.** La pantalla `scale` dibuja la rejilla
+    /// de pads como espejo del controlador, y si tocarla ejecutara su propia
+    /// versión de la regla las dos podrían separarse sin que nada lo dijera. Aquí
+    /// solo se añade la puerta que la pantalla necesita y el cuerpo es el que ya
+    /// había.
+    ///
+    /// **La puerta es `isTakenOver`, no `isTouchFrozen`, y la diferencia
+    /// importa.**
+    ///
+    /// El primer intento usó la congelación táctil —solo Ctrl All— por analogía
+    /// con `selectTrack`. Un test lo tumbó: los pads del controlador callan con
+    /// **cualquiera** de los dos modificadores hundido, y la razón vale igual
+    /// para el dedo — *ni el snapshot de Temp ni el de Ctrl All guardan el pool*,
+    /// así que una nota metida a media superposición no se desharía al soltar.
+    ///
+    /// Con la puerta equivocada, tocar un pad durante Temp habría escrito algo
+    /// irreversible mientras el mismo pad del controlador no hacía nada. La
+    /// pantalla es el espejo: si el pad de hardware calla, el de la pantalla
+    /// también.
+    @discardableResult
+    public func pressPad(at index: Int) -> Bool {
+        guard !isTakenOver else { return false }
+        return press(padAt: index)
+    }
+
+    private func press(padAt index: Int) -> Bool {
         // Los dos pads de octava se despachan antes de llegar al pool: mueven la
         // superficie, no el material.
         switch index {

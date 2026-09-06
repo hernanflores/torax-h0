@@ -195,12 +195,7 @@ struct ContentView: View {
     }
 
     private var scaleScreen: some View {
-        TonalView(
-            frame: model.frame,
-            pool: model.track.pool,
-            surface: model.surface,
-            onFrameChange: { model.setFrame($0) }
-        )
+        ScaleScreen(model: model)
     }
 
     /// La pantalla `3 · MIDI`: por dónde sale cada Track.

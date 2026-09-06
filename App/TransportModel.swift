@@ -126,6 +126,18 @@ final class TransportModel {
         syncFromControlInput()
     }
 
+    /// Toca un pad de la rejilla de la pantalla `scale`.
+    ///
+    /// **Va por la misma puerta que el pad del controlador.** `pressPad(at:)`
+    /// vive en `MIDI` y es el mismo cuerpo que atiende al hardware, así que la
+    /// regla —alternar en el pool, mover la octava, callar con un modificador
+    /// hundido— no existe dos veces.
+    func pressPad(at index: Int) {
+        controlInput.pressPad(at: index)
+        syncFromControlInput()
+    }
+
+
     /// Copia el estado de la entrada de control al modelo observable.
     ///
     /// Es un solo sitio a propósito: cada camino que edita —knob, pad, pantalla—

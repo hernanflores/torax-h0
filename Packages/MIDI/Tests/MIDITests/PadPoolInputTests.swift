@@ -186,4 +186,93 @@ final class PadPoolInputTests: XCTestCase {
             velocity: MIDIVelocity(0)!
         )
     }
+
+    // MARK: - El mismo pad, desde la pantalla
+
+    // **La pantalla `scale` toca los pads igual que el controlador** (FR18 de
+    // screens-redesign_20260906), así que `pressPad(at:)` no puede ser una
+    // segunda implementación de la regla: es la misma, con la puerta de la
+    // pantalla delante. Estos tests fijan que las dos vías coinciden y en qué se
+    // separan a propósito.
+
+    func testTouchingAPadDoesTheSameAsPressingIt() {
+        let touched = makeInput()
+        let played = makeInput()
+
+        XCTAssertTrue(touched.pressPad(at: 0))
+        XCTAssertTrue(played.receive(pad(0)))
+
+        XCTAssertEqual(touched.track.pool, played.track.pool)
+    }
+
+    func testTouchingTheSamePadTakesThePitchBackOut() {
+        let input = makeInput()
+        input.pressPad(at: 0)
+        XCTAssertTrue(input.pressPad(at: 0))
+        XCTAssertFalse(input.track.pool.contains(Pitch(48)!))
+    }
+
+    func testTouchingTheOctavePadsShiftsTheSurface() {
+        let input = makeInput()
+        XCTAssertTrue(input.pressPad(at: PadSurface.octaveUpIndex))
+        XCTAssertEqual(input.surface.octaveShift, 1)
+        XCTAssertTrue(input.pressPad(at: PadSurface.octaveDownIndex))
+        XCTAssertEqual(input.surface.octaveShift, 0)
+    }
+
+    func testTouchingAPadOutsideTheSurfaceDoesNothing() {
+        let input = makeInput()
+        XCTAssertFalse(input.pressPad(at: -1))
+        XCTAssertFalse(input.pressPad(at: PadSurface.padCount))
+    }
+
+    func testTouchingAPadWithoutADegreeDoesNothing() {
+        // Con cinco grados los pads 6 y 7 se quedan sin altura. No es un error:
+        // no publican, igual que un CC sin asignar.
+        let input = makeInput(frame: TonalFrame(scale: .pentatonic, root: Root(0)!))
+        XCTAssertFalse(input.pressPad(at: 5))
+        XCTAssertFalse(input.pressPad(at: 6))
+    }
+
+    // **Las dos vías callan con los dos modificadores, y no se separan en
+    // nada.** El primer intento dio a la pantalla una puerta más laxa —solo Ctrl
+    // All, por analogía con `selectTrack`— y este test lo tumbó: los pads del
+    // controlador ya callaban con Temp también, porque *ni el snapshot de Temp
+    // ni el de Ctrl All guardan el pool* y una nota metida a media superposición
+    // no se desharía al soltar. La razón vale igual para el dedo.
+    func testNeitherPathTouchesThePoolWhileAModifierIsHeld() {
+        for modifier in [ctrlAll(), temp()] {
+            let touched = makeInput()
+            touched.receive(modifier)
+            XCTAssertFalse(touched.pressPad(at: 0))
+            XCTAssertTrue(touched.track.pool.isEmpty)
+
+            let played = makeInput()
+            played.receive(modifier)
+            XCTAssertFalse(played.receive(pad(0)))
+            XCTAssertTrue(played.track.pool.isEmpty)
+        }
+    }
+
+    /// El step button 14, que es el modificador Ctrl All.
+    private func ctrlAll(value: Int = 127) -> MIDIMessage {
+        .controlChange(
+            channel: MIDIChannel(1)!,
+            controller: MIDIController(
+                ControlMapping.beatStepPro.stepButtonBlock.number
+                    + ControlInput.ctrlAllModifierIndex)!,
+            value: UInt8(value)
+        )
+    }
+
+    /// El step button 13, que es el modificador Temp.
+    private func temp(value: Int = 127) -> MIDIMessage {
+        .controlChange(
+            channel: MIDIChannel(1)!,
+            controller: MIDIController(
+                ControlMapping.beatStepPro.stepButtonBlock.number
+                    + ControlInput.tempModifierIndex)!,
+            value: UInt8(value)
+        )
+    }
 }
