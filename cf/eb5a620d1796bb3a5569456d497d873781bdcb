@@ -36,3 +36,38 @@ TESTS Y COBERTURA
   Engine total: 98,56% de lineas (umbral >=90%).
   CtrlAllOffset.swift: 97,75% de lineas.
 swift format limpio.
+
+--- VERIFICACION DE FASE 3 (checkpoint) ---
+
+TESTS AUTOMATICOS
+  swift test --package-path Packages/Engine  -> 534 tests, 0 fallos
+  swift test --package-path Packages/MIDI    -> 7 fallos, todos VirtualLoopback
+    (flake midi-test-flake_20260826, aplazado a despues de la v2)
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS -> SUCCEEDED
+  swift format limpio.
+
+COBERTURA
+  Engine total: 98,56% de lineas / 94,15% de regiones (umbral >=90%)
+  CtrlAllOffset.swift: 97,75% de lineas
+  TrackParameter.swift: 100%
+
+COBERTURA DE TESTS PARA LOS CAMBIOS DE LA FASE
+Diff 3240033..HEAD: dos ficheros de codigo —CtrlAllOffset.swift y
+TrackParameter.swift— cubiertos por CtrlAllOffsetTests, 34 casos en cuatro clases
+(CtrlAllOffsetTests, CtrlAllApplyTests, CtrlAllOffsetLimitTests,
+CtrlAllRestoreTests). El tercer fichero del diff es la Pre Spec.
+
+VERIFICACION MANUAL PROPUESTA
+El gesto todavia no existe —ControlInput no sabe del step 14— asi que no hay nada
+que tocar en el iPad. Se revisa la logica:
+1. El porque escrito en CtrlAllOffset.swift: base y offset separados, y headroom
+   medido contra las bases y no contra el parametro, cada uno con su caso.
+2. Las dos correcciones del spec: FR4 ya no promete despegue inmediato, FR5
+   calcula con las bases, FR5b dice que topar cuesta reversibilidad en el
+   recorrido pero no en la restauracion.
+3. Saturado (60 arriba, 60 abajo), soltar devuelve la base exacta.
+4. Rotate desfasa dos Tracks de 16 y 12 steps y su offset no se acota.
+5. Sin cambios en MIDI, App ni preset/.
+
+CONFIRMACION DEL USUARIO
+Confirmado ("OK") el 2026-09-05.
