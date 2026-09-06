@@ -163,17 +163,17 @@ seguir.
   - [x] Implementación (Green): extender el corte que Temp ya tiene en
         `receive(_:)`, **en un solo sitio**. Repartirlo por rama dejaría cuatro
         sitios donde olvidarlo.
-- [~] Task: Temp y Ctrl All se ceden el paso (FR13)
-  - [ ] Tests (Red): con 13 y 14 hundidos, los giros son Temp — el 14 no
+- [x] Task: Temp y Ctrl All se ceden el paso (FR13) — `5a64406`
+  - [x] Tests (Red): con 13 y 14 hundidos, los giros son Temp — el 14 no
         interfiere.
-  - [ ] Tests (Red): soltar el 13 con el 14 hundido **restaura el Temp,
+  - [x] Tests (Red): soltar el 13 con el 14 hundido **restaura el Temp,
         publica**, y el giro siguiente es Ctrl All con base tomada del Pattern ya
         restaurado — no de la que Temp tenía.
-  - [ ] Tests (Red): soltar el 14 antes que el 13 no deja nada pegado ni restaura
+  - [x] Tests (Red): soltar el 14 antes que el 13 no deja nada pegado ni restaura
         el Temp por adelantado.
-  - [ ] Tests (Red): el orden inverso de pulsación —14 y luego 13— llega al mismo
+  - [x] Tests (Red): el orden inverso de pulsación —14 y luego 13— llega al mismo
         sitio.
-  - [ ] Implementación (Green): un solo punto de decisión sobre qué modificador
+  - [x] Implementación (Green): un solo punto de decisión sobre qué modificador
         está al mando; documentar que ninguno hereda el estado del otro.
 - [ ] Task: Las vías táctiles que escriben callan (FR11)
   - [ ] Tests (Red): `selectTrack`, `setChannel`, `setChannel(forTrack:)`,
