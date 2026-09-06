@@ -1,0 +1,32 @@
+Task: Reconexión y modificadores atascados (Fase 4, ctrl-all_20260905)
+
+QUE SE HIZO
+FR15, con 6 tests escritos primero (Red: 3 tests fallando).
+
+FICHEROS
+- Packages/MIDI/Sources/MIDI/ControlInput.swift: releaseModifiers() reescrito;
+  releaseTemp y releaseCtrlAll ganan el parametro `publishing`.
+- Packages/MIDI/Tests/MIDITests/CtrlAllReleaseModifiersTests.swift (nuevo).
+
+DOS DECISIONES, LAS DOS DE ORDEN
+1. TEMP SE RESTAURA PRIMERO. Misma prioridad que rige mientras los dos estan
+   hundidos (FR13). Al reves, Ctrl All escribiria sus bases sobre un Pattern que
+   todavia lleva el fill de Temp encima, y el fill quedaria escrito — que es
+   exactamente lo que los dos snapshots existen para impedir.
+2. PUBLICA COMO MUCHO UNA VEZ. Los dos releases aceptan publishing: false y la
+   publicacion la hace quien cierra. Dos snapshots seguidos por el PatternHandoff
+   no romperian nada, pero el primero enseñaria un estado intermedio —el Pattern
+   con Temp devuelto y Ctrl All todavia puesto— que nunca existio para el usuario.
+
+POR QUE LA RESTAURACION VIVE AQUI Y NO EN UN METODO APARTE
+Es la razon que temp-parameters ya dejo escrita y que aqui pesa mas: el sitio
+donde habria que acordarse de llamar a una restauracion separada es precisamente
+el de la reconexion, que nadie prueba a mano.
+
+TESTS Y COBERTURA
+  swift test --package-path Packages/MIDI -> 597 tests, 7 fallos, todos
+  VirtualLoopback (flake midi-test-flake_20260826).
+  TempReleaseModifiersTests sigue en verde pese a que releaseTemp cambio de firma.
+  MIDI total: 84,23% de lineas (umbral >=80%).
+  ControlInput.swift: 100% de lineas y de funciones.
+swift format limpio.
