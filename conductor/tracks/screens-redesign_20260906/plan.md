@@ -51,12 +51,12 @@ haya que perseguirlas.
     - [x] `xcodebuild clean` — el plist generado queda cacheado, según `tech-stack.md`
     - [x] Verificar que el `Info.plist` de Release sigue sin `UIBackgroundModes`
 
-- [ ] Task: `appChrome` — la barra superior (FR4, FR5, FR6)
-    - [ ] `torax h-0`, módulo activo centrado, punto de conexión, entrada MIDI, fuente de clock, tempo y transporte
-    - [ ] El `bpm` es tocable y edita el tempo interno; con reloj externo es lectura, no escritura
-    - [ ] `no midi device` aparece en la barra solo cuando no hay destino
-    - [ ] Todo el texto en minúsculas
-    - [ ] La barra no crece: el estado cede primero ante un nombre largo de endpoint
+- [x] Task: `appChrome` — la barra superior (FR4, FR5, FR6) `3b95ec5`
+    - [x] `torax h-0`, módulo activo centrado, punto de conexión, entrada MIDI, fuente de clock, tempo y transporte
+    - [x] El `bpm` es tocable y edita el tempo interno; con reloj externo es lectura, no escritura
+    - [x] `no midi device` aparece en la barra solo cuando no hay destino
+    - [x] Todo el texto en minúsculas
+    - [x] La barra no crece: el estado cede primero ante un nombre largo de endpoint
 
 - [ ] Task: `moduleNavigation` — la navegación persistente (FR7, FR8)
     - [ ] Cuatro entradas, subrayado off-white de 3 pt en la activa
