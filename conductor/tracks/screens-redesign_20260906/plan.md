@@ -63,10 +63,10 @@ haya que perseguirlas.
     - [x] Retirar los prefijos numéricos y el borde discontinuo: las cuatro pantallas existen
     - [x] Verificar que cambiar de pantalla no reinicia el transporte ni el playhead
 
-- [ ] Task: Reducir `ContentView` a contenedor (FR31)
-    - [ ] Sacar el panel de jitter de la interfaz; **conservar `JitterMeasurementModel`** y su acceso por argumento de lanzamiento
-    - [ ] Retirar los tabs de familia y la regla «el giro cambia el tab»; su sustituto llega en la Fase 2
-    - [ ] `ContentView` queda como chrome más conmutador de pantalla, sin layout propio
+- [x] Task: Reducir `ContentView` a contenedor (FR31) `95a754d`
+    - [x] Sacar el panel de jitter de la interfaz; **conservar `JitterMeasurementModel`** y su acceso por argumento de lanzamiento
+    - [x] Retirar los tabs de familia y la regla «el giro cambia el tab»; su sustituto llega en la Fase 2
+    - [x] `ContentView` queda como chrome más conmutador de pantalla, sin layout propio
 
 - [ ] Task: Auditar que no se escapó lógica a las vistas
     - [ ] Revisar lo escrito en esta fase: si hay una regla que no sea dibujo, bajarla a `Engine` o `MIDI` con test
