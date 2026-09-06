@@ -1,0 +1,31 @@
+Task: Auditar que no se escapó lógica a las vistas (Fase 5)
+
+Track: screens-redesign_20260906
+
+Resultado: tres candidatos, ninguno se mueve
+Es distinto de las cuatro auditorías anteriores, que movieron algo cada una, así
+que la razón de no mover va escrita en el propio código y no solo en la nota.
+
+1. BankGrid.count y PatternGrid.count, los dos dieciséis. Son constantes de
+   dominio. Bajarlas exigiría inventar un tipo Bank que no existe solo para
+   tener dónde ponerlas: andamiaje de la cáscara dentro del motor puro.
+2. La clasificación playing/ready/empty. La sub-tarea del plan avisaba
+   explícitamente de ésta. Combina dos lecturas directas con la premisa de la
+   cáscara —solo existe el índice 0—, que es temporal. Grabarla en Engine sería
+   fijar allí algo que va a dejar de ser cierto.
+3. El recuento de patterns, que tiene la misma forma que
+   PitchPool.countDescription. Aquélla se movió porque el mismo concepto se
+   escribía en tres sitios con tres redacciones distintas; ésta cuenta otra cosa
+   y se escribe una vez. Compartirlas pediría una plantilla genérica de singular
+   y plural: más maquinaria que la que ahorra.
+
+Los tres se van con el modelo de Bank cuando llegue.
+
+Qué sí se comprobó y estaba bien
+- TrackAssignments usa Pattern.trackCount, no un doce escrito a mano.
+- patternHasMaterial deriva de tracksWithMaterial; no reimplementa nada.
+- El estado de selección vive en la vista porque no hay dónde guardarlo, y eso
+  es exacto, no una omisión.
+
+Verificación
+- Engine 578/0. xcodebuild iOS: BUILD SUCCEEDED.
