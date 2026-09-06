@@ -68,9 +68,9 @@ haya que perseguirlas.
     - [x] Retirar los tabs de familia y la regla «el giro cambia el tab»; su sustituto llega en la Fase 2
     - [x] `ContentView` queda como chrome más conmutador de pantalla, sin layout propio
 
-- [ ] Task: Auditar que no se escapó lógica a las vistas
-    - [ ] Revisar lo escrito en esta fase: si hay una regla que no sea dibujo, bajarla a `Engine` o `MIDI` con test
-    - [ ] Ejecutar la suite de `Engine` y `MIDI` y confirmar que sigue verde
+- [x] Task: Auditar que no se escapó lógica a las vistas `794062a`
+    - [x] Revisar lo escrito en esta fase: si hay una regla que no sea dibujo, bajarla a `Engine` o `MIDI` con test
+    - [x] Ejecutar la suite de `Engine` y `MIDI` y confirmar que sigue verde
 
 - [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`)
 
