@@ -72,23 +72,23 @@ seguir.
 
 ## FASE 3: EL OFFSET COMO VALOR DE DOMINIO
 
-- [~] Task: `CtrlAllOffset` — la base de los doce y el desplazamiento acumulado (FR2, FR3, FR7, FR18, NFR3)
-  - [ ] Tests (Red): capturar un parámetro guarda su base **por Track y por Cycle
+- [x] Task: `CtrlAllOffset` — la base de los doce y el desplazamiento acumulado (FR2, FR3, FR7, FR18, NFR3) — `b165a2e`
+  - [x] Tests (Red): capturar un parámetro guarda su base **por Track y por Cycle
         activo**; capturarlo dos veces no re-guarda la base; un parámetro no
         tocado no aparece en el snapshot.
-  - [ ] Tests (Red): los Cycles inactivos no se capturan ni se tocan.
-  - [ ] Tests (Red): dos parámetros en el mismo hold acumulan offsets
+  - [x] Tests (Red): los Cycles inactivos no se capturan ni se tocan.
+  - [x] Tests (Red): dos parámetros en el mismo hold acumulan offsets
         independientes.
-  - [ ] Tests (Red): el tipo acepta cualquier caso de `TrackParameter` — barrido
+  - [x] Tests (Red): el tipo acepta cualquier caso de `TrackParameter` — barrido
         sobre `allCases`, sin enumerar los nueve.
-  - [ ] Tests (Red): el snapshot vacío es el estado de reposo y restaurar desde él
+  - [x] Tests (Red): el snapshot vacío es el estado de reposo y restaurar desde él
         no cambia nada.
-  - [ ] Implementación (Green): `CtrlAllOffset` en `Packages/Engine`, valor puro
+  - [x] Implementación (Green): `CtrlAllOffset` en `Packages/Engine`, valor puro
         con base por `(parámetro, Track, Cycle)` y offset por parámetro.
-  - [ ] Documentar **por qué guarda base y offset por separado y no el valor
+  - [x] Documentar **por qué guarda base y offset por separado y no el valor
         superpuesto**: es lo único que hace la ida y vuelta exacta cuando un Track
         topa (FR4).
-  - [ ] `Engine` sigue sin importar nada más allá de la stdlib.
+  - [x] `Engine` sigue sin importar nada más allá de la stdlib.
 - [ ] Task: Aplicar el offset al Pattern, acotando sin destruir (FR2, FR4, FR6)
   - [ ] Tests (Red): un delta desplaza el mismo parámetro en los doce Tracks y en
         todos sus Cycles activos, **conservando las diferencias** — Pulses 4 y 9
