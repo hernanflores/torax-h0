@@ -1,0 +1,32 @@
+Task: Auditar que no se escapó lógica a las vistas (Fase 4)
+
+Track: screens-redesign_20260906
+
+Qué encontró
+1. clockStatus: la tabla de cuatro mensajes del reloj externo, en App y sin
+   tests. -> MIDI, como ClockStatus, con nueve tests.
+2. 'internal' y 'external' como literales en tres sitios. -> ClockSource.name.
+
+El primero no lo introdujo esta fase
+clockStatus estaba en TransportModel desde external-clock_20260903. La auditoría
+lo alcanza ahora porque esta pantalla es la primera que lo consume de verdad, y
+la regla de workflow.md no distingue quién lo escribió: si algo en App merece un
+test, está en el sitio equivocado.
+
+Un comportamiento que el test hizo explícito
+Con el transporte parado, hasDropped no se miraba — el switch caía en
+(false, _). Era correcto y no estaba dicho en ninguna parte. Ahora hay un test
+que lo fija y una línea que explica por qué: hasDropped describe una pérdida en
+marcha.
+
+Qué NO se movió
+- El '\(Pattern.trackCount) tracks routed' del pie ya usa la constante de Engine.
+- EndpointRow, Card y el desplegable de canal son composición.
+- La elección de cuándo va borde discontinuo y cuándo no es una decisión de
+  dibujo, y está documentada en las propias vistas.
+
+Verificación
+- MIDI: 615 tests, 7 fallos, todos VirtualLoopbackTests. Eran 606.
+- Engine 578/0. xcodebuild iOS: BUILD SUCCEEDED.
+- grep confirma cero literales de 'internal'/'external' y de los cuatro mensajes
+  del reloj fuera de MIDI.
