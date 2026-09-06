@@ -1,0 +1,28 @@
+Task: Verificación en iPad con BeatStep Pro (Fase 6, ctrl-all_20260905)
+
+QUE SE HIZO
+Verificacion en dispositivo, ejecutada por el usuario. Las nueve secciones de
+device-verification.md pasan. Reportado como "todo ok", sin incidencias.
+
+HARDWARE
+iPad + Arturia BeatStep Pro, preset version 3, encoders en Relative #2.
+
+QUE CIERRA, POR SER LO QUE ESTABA ABIERTO DE VERDAD
+1. EL STEP 14 ES MOMENTARY Y NO TOGGLE. Era el unico supuesto del track que no se
+   probo en ningun sitio: se acepto por el precedente del 13 —contiguo y
+   verificado— y el spec lo listaba como riesgo, con la decision explicita de no
+   meter una fase de sonda. Confirmado. Con el, los cuatro modificadores del
+   bloque 102-117 quedan verificados.
+2. LOS DOS DISTINTIVOS SE DISTINGUEN POR EL ANCHO. Primera vez que se veian
+   juntos: el simulador no pudo enseñarlo porque sin fuentes MIDI la app arranca
+   en read-only, y quedo anotado como no verificado al cerrar la Fase 5. No hizo
+   falta gastar un color, que era la alternativa y obligaba a decidir cual.
+3. EL REMAPEO DE KNOBS, incluido que la linea de Groove en pantalla ya no sigue
+   el orden de la fila de knobs. Se confirma legible asi.
+
+LO QUE SIGUE SIN MEDIRSE, CON SU COSTE DELANTE
+- Jitter (NFR6): suspendido desde el 2026-09-02. El track no lo retomo pese a que
+  Timing y Delay son desplazables con el gesto.
+- Coste del hilo de control (NFR4): decidido sin numero. Un clic reescribe hasta
+  doce Tracks contra el unico de Temp. El gesto no se reporto pastoso al girar
+  rapido, que era el sintoma que habria obligado a mirarlo.
