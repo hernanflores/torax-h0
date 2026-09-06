@@ -211,7 +211,7 @@ lo que separa esta pantalla de una maqueta que miente.
 
 ---
 
-## Fase 6 — Cierre
+## Fase 6 — Cierre [checkpoint: f3112a6]
 
 - [x] Task: Auditoría del sistema de tokens (FR1, criterio 3) `12b92c9`
     - [x] `grep` en `App/` buscando literales de color, `Font.custom`, grosores, radios y sombras fuera de `Palette`, `Typography` y `Brutalist`
@@ -235,4 +235,4 @@ lo que separa esta pantalla de una maqueta que miente.
     - [x] Rama propia contra `main`, sin push directo
     - [x] Descripción con las dos desviaciones documentadas y las dos limitaciones conocidas
 
-- [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`)
+- [x] Task: Phase Verification & Checkpoint (ver `workflow.md`) `f3112a6`
