@@ -150,6 +150,21 @@ public final class ControlInput: @unchecked Sendable {
     /// vez evita que un tercer modificador, algún día, se olvide de la mitad.
     private var isTakenOver: Bool { holdingTempModifier || holdingCtrlAllModifier }
 
+    /// Si la pantalla tiene prohibido escribir ahora mismo (FR11).
+    ///
+    /// **Es de Ctrl All y no de los modificadores en general**, y la asimetría
+    /// con Temp es deliberada. Los dos gestos prometen no escribir en el Pattern,
+    /// pero Temp acota su promesa a un Track y a los parámetros que la mano toca;
+    /// Ctrl All la extiende a los doce. Una escritura colada por la pantalla
+    /// mientras el desplazamiento está puesto **no se deshace al soltar**, porque
+    /// el snapshot no la guarda: `setFrame(_:)` reencuadra el pool, que no está
+    /// dentro; `setActiveCycleCount(_:)` activa Cycles sin base, que se quedarían
+    /// desplazados para siempre.
+    ///
+    /// Con Temp esas mismas vías siguen abiertas, y es correcto: su overlay ya
+    /// convive con ellas desde `temp-parameters_20260904`.
+    private var isTouchFrozen: Bool { holdingCtrlAllModifier }
+
     /// Cuánto se lleva desplazado en el Ctrl All en curso, y qué había debajo.
     ///
     /// **Vacío es el estado de reposo**, no un caso aparte: mientras nadie
@@ -601,6 +616,7 @@ public final class ControlInput: @unchecked Sendable {
     /// que llevar al mismo sitio o la pantalla mentiría.
     @discardableResult
     public func selectTrack(_ index: Int) -> Bool {
+        guard !isTouchFrozen else { return false }
         guard index < trackCount, index != selectedTrackIndex else { return false }
 
         selectedTrackIndex = index
@@ -681,6 +697,7 @@ public final class ControlInput: @unchecked Sendable {
     /// knob.
     @discardableResult
     public func setChannel(_ channel: Channel, forTrack index: Int) -> Bool {
+        guard !isTouchFrozen else { return false }
         guard let cycle = pattern.editingCycle(at: index), channel != cycle.channel else {
             return false
         }
@@ -710,6 +727,7 @@ public final class ControlInput: @unchecked Sendable {
     /// publicar, el cambio no llegaría hasta el giro siguiente de cualquier knob.
     @discardableResult
     public func setActiveCycleCount(_ count: Int) -> Bool {
+        guard !isTouchFrozen else { return false }
         guard let current = pattern.track(at: selectedTrackIndex) else { return false }
 
         let adjusted = current.withActiveCount(count)
@@ -727,6 +745,7 @@ public final class ControlInput: @unchecked Sendable {
     /// del marco nuevo.
     @discardableResult
     public func setFrame(_ frame: TonalFrame) -> Bool {
+        guard !isTouchFrozen else { return false }
         // El marco es del Track seleccionado, y el registro de sus pads se
         // conserva: cambiar de escala no mueve a nadie de octava.
         let reframed = track.with(pool: track.pool.reframed(to: frame)).with(frame: frame)

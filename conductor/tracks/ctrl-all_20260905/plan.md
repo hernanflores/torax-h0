@@ -175,7 +175,7 @@ seguir.
         sitio.
   - [x] Implementación (Green): un solo punto de decisión sobre qué modificador
         está al mando; documentar que ninguno hereda el estado del otro.
-- [ ] Task: Las vías táctiles que escriben callan (FR11)
+- [~] Task: Las vías táctiles que escriben callan (FR11)
   - [ ] Tests (Red): `selectTrack`, `setChannel`, `setChannel(forTrack:)`,
         `setFrame` y `setActiveCycleCount` devuelven `false` y no publican durante
         el hold.
