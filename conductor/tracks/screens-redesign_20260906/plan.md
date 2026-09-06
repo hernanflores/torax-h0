@@ -76,7 +76,7 @@ haya que perseguirlas.
 
 ---
 
-## Fase 2 — Pantalla `track`
+## Fase 2 — Pantalla `track` [checkpoint: ce92e29]
 
 La pantalla principal y la que más restricciones tiene: es feedback, y sus
 animaciones derivan del reloj musical.
@@ -114,7 +114,7 @@ animaciones derivan del reloj musical.
 
 - [x] Task: Auditar que no se escapó lógica a las vistas `fd7f565`
 
-- [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `track.png`
+- [x] Task: Phase Verification & Checkpoint (ver `workflow.md`) — captura contra `track.png` `ce92e29`
 
 ---
 
