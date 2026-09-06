@@ -109,21 +109,21 @@ seguir.
         del envolvimiento de Rotate.
   - [x] Documentar por qué el valor se recalcula desde la base y nunca desde el
         valor ya escrito.
-- [~] Task: El tope del offset acumulado (FR5, FR6)
-  - [ ] Tests (Red): cuarenta clics contra el extremo y **un** clic de vuelta
+- [x] Task: El tope del offset acumulado (FR5, FR6) — `ac84cce`
+  - [x] Tests (Red): cuarenta clics contra el extremo y **un** clic de vuelta
         mueven algo; el offset no guardó los cuarenta.
   - [x] Tests (Red): el tope sale del **recorrido real de las bases
         capturadas**, no del ancho del parámetro ni del Track seleccionado — un
         Track con recorrido restante sigue moviéndose mientras otro está topado, y
         el tope es distinto en cada sentido si las bases están repartidas.
-  - [ ] Tests (Red): Rotate **no** se acota; su offset crece libre y sigue
+  - [x] Tests (Red): Rotate **no** se acota; su offset crece libre y sigue
         produciendo movimiento indefinidamente.
-  - [ ] Tests (Red): el tope no rompe la restauración — con el offset saturado,
+  - [x] Tests (Red): el tope no rompe la restauración — con el offset saturado,
         soltar devuelve exactamente la base.
   - [x] Implementación (Green): los extremos por parámetro salen de
         `TrackParameter.displacementRange`, leídos de los `validRange` que cada
         tipo ya declara; el tope se calcula contra las bases en `CtrlAllOffset`.
-  - [ ] Documentar el porqué con el síntoma delante: sin tope, un knob queda
+  - [x] Documentar el porqué con el síntoma delante: sin tope, un knob queda
         muerto durante decenas de clics, que es lo que la nota del 2026-08-28
         enseñó a reconocer como avería.
 - [ ] Task: Restaurar el Pattern entero (FR8, FR9)
