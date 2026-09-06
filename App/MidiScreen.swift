@@ -54,8 +54,12 @@ struct ClockSourceCard: View {
             // cosas que FR2 deja fuera. Dos botones con el mismo lenguaje que el
             // resto dicen lo mismo.
             HStack(spacing: 0) {
-                segment("internal", isExternal: false)
-                segment("external", isExternal: true)
+                // **Los dos casos de `ClockSource`, no dos literales.** Los
+                // nombres los pone `MIDI`; recorrer el tipo además garantiza que
+                // una tercera fuente, si alguna vez la hay, aparezca aquí sola
+                // en vez de faltar en silencio.
+                segment(.internal)
+                segment(.external)
             }
             .background(Palette.inset, in: RoundedRectangle(cornerRadius: Brutalist.radius))
             .overlay {
@@ -78,11 +82,12 @@ struct ClockSourceCard: View {
         return "internal clock · \(model.tempoDescription)"
     }
 
-    private func segment(_ title: String, isExternal: Bool) -> some View {
+    private func segment(_ source: ClockSource) -> some View {
+        let isExternal = source == .external
         let isSelected = model.followsExternalClock == isExternal
 
         return Button(action: { model.setFollowsExternalClock(isExternal) }) {
-            Text(display: title)
+            Text(display: source.name)
                 .font(isSelected ? Typography.bodyStrong : Typography.body)
                 .foregroundStyle(isSelected ? Palette.onAccent : Palette.mutedBright)
                 .frame(maxWidth: .infinity, minHeight: 48)

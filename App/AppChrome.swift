@@ -158,7 +158,7 @@ struct AppChrome: View {
     /// Es lectura, no control. El segmentado que lo cambia vive en la pantalla
     /// `midi`, como en el handoff.
     private var clockSource: some View {
-        Text(display: model.followsExternalClock ? "external" : "internal")
+        Text(display: model.clockSourceName)
             .font(Typography.caption)
             .foregroundStyle(Palette.mutedBright)
     }

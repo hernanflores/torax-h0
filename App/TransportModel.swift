@@ -434,14 +434,23 @@ final class TransportModel {
     ///
     /// En inglés y sin traducir, como el resto del vocabulario de interfaz.
     var clockStatus: String? {
-        guard let transport, transport.clockSource == .external else { return nil }
+        guard let transport else { return nil }
 
-        return switch (transport.isPlaying, transport.clockHasDropped()) {
-        case (true, true): "Clock lost — holding last tempo"
-        case (true, false): "Following external clock"
-        case (false, _):
-            transport.isFollowingEstablishedClock ? "External clock detected" : "No clock"
-        }
+        // **La tabla la decide `MIDI`, con tests.** Aquí solo se leen los tres
+        // estados del transporte y se pide el texto: qué mensaje va con qué
+        // combinación es una regla, y una regla mal escrita en `App` no falla —
+        // enseña el mensaje equivocado, que es peor.
+        return ClockStatus(
+            source: transport.clockSource,
+            isPlaying: transport.isPlaying,
+            hasDropped: transport.clockHasDropped(),
+            isEstablished: transport.isFollowingEstablishedClock
+        )?.description
+    }
+
+    /// Quién manda el tempo, con su nombre. El nombre lo pone `MIDI`.
+    var clockSourceName: String {
+        (followsExternalClock ? ClockSource.external : .internal).name
     }
 
     /// La marca de la barra: quién manda el tempo, en dos letras.
