@@ -567,7 +567,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: Rediseño de las cuatro pantallas — track, scale, midi y banks**
+- [x] **Track: Rediseño de las cuatro pantallas — track, scale, midi y banks** — las cuatro pantallas sobre el chrome nuevo; verificado en dispositivo fase a fase
   *Link: [conductor/tracks/screens-redesign_20260906/index.md](./tracks/screens-redesign_20260906/index.md)*
 
   El chrome creció rebanada a rebanada y lo acusa: una fila mezclando pestañas,
