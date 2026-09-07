@@ -232,12 +232,12 @@ revisar antes de seguir (NFR1).
   - [x] Tests (Red): `SchedulerMaterial.everyStep` devuelve el `NoteRepeater`
         neutro y no emite ninguna repetición.
   - [x] Implementación (Green): la propiedad, junto a la de `groove`.
-- [~] Task: No regresión de punta a punta (FR16)
-  - [ ] Tests (Red): un Pattern completo con Repeats en 0 produce **la misma
+- [x] Task: No regresión de punta a punta (FR16) — 3787177
+  - [x] Tests (Red): un Pattern completo con Repeats en 0 produce **la misma
         secuencia de mensajes y los mismos instantes** que la referencia
         —instantes, velocities, gates y tiradas—, con Groove, Timing, Delay,
         Probability y varios Cycles dentro.
-  - [ ] Implementación (Green): si algo falla aquí, es un fallo de las tareas
+  - [x] Implementación (Green): si algo falla aquí, es un fallo de las tareas
         anteriores y se arregla ahí, no con un caso especial para Repeats 0.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
