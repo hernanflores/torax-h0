@@ -74,14 +74,14 @@ revisar antes de seguir (NFR1).
   - [x] `Time` envuelve una fracción y **no amplía `Division.ordered`**: la lista
         de Time es suya, y meter tresillos en la de Division cambiaría por dónde
         pasa otro knob.
-- [~] Task: La velocity de cada repetición (FR7)
-  - [ ] Tests (Red): con Ramp 0, las `n` repeticiones suenan a la Velocity del
+- [x] Task: La velocity de cada repetición (FR7) — 0050326
+  - [x] Tests (Red): con Ramp 0, las `n` repeticiones suenan a la Velocity del
         Track. Con +100 y V=100, la última llega a 127; con −100, **a 1 y no a
         0**. Con |ramp| intermedio, la última se queda a medio camino.
-  - [ ] Tests (Red): el **Pulse original no participa de la rampa** — siempre a
+  - [x] Tests (Red): el **Pulse original no participa de la rampa** — siempre a
         la Velocity del Track, en los dos sentidos.
-  - [ ] Tests (Red): mover la Velocity del Track mueve la rampa entera con ella.
-  - [ ] Implementación (Green): aritmética entera, acotada a
+  - [x] Tests (Red): mover la Velocity del Track mueve la rampa entera con ella.
+  - [x] Implementación (Green): aritmética entera, acotada a
         `Velocity.validRange`.
 - [ ] Task: El hueco de cada repetición (FR6, FR8)
   - [ ] Tests (Red): con Pace 0 los `n` huecos son iguales y valen Time. Con
