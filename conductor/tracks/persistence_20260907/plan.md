@@ -73,7 +73,7 @@ su test de que el fichero anterior sigue ahí.
         `Reload`, `queued`. Ni «preset», ni «song», ni «slot».
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: EL MODELO — `Bank` Y `Project` EN `Engine`
+## FASE 2: EL MODELO — `Bank` Y `Project` EN `Engine` [checkpoint: 2655e43]
 
 - [x] Task: `Bank`, dieciséis Patterns y un tempo (FR1, FR2, FR4) — `f7415cc`
   - [ ] Tests (Red): un `Bank` recién creado tiene 16 Patterns **vacíos**
@@ -107,7 +107,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Implementación (Green) en `Engine`, para que la pantalla lo lea en vez de
         calcularlo: `BanksScreen` tiene hoy dos constantes y una clasificación de
         estado esperando bajar aquí.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: EL FORMATO — DTO `Codable` EN `Engine`
 
