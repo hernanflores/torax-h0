@@ -124,7 +124,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Un test enumera los campos esperados de cada DTO. Es lo que hace que
         añadir un parámetro al `Cycle` —rebanadas 5 y 6— rompa un test en vez de
         perder un dato en silencio.
-- [ ] Task: El Pattern vacío se escribe como marca (FR18)
+- [x] Task: El Pattern vacío se escribe como marca (FR18) — `c4c9613`
   - [ ] Tests (Red): un Bank de dieciséis Patterns vacíos produce un JSON
         **órdenes de magnitud** menor que uno lleno, y releerlo devuelve los
         dieciséis vacíos.
