@@ -146,13 +146,13 @@ final class RecordRoundTripTests: XCTestCase {
             .withClockSource(.external)
             .remembering(destinationNamed: "Digitakt", sourceNamed: "BeatStep Pro")
 
-        XCTAssertEqual(ProjectRecord(project).project, project)
+        XCTAssertEqual(ProjectRecord(project).project(with: banks(of: project)), project)
     }
 
     /// Un Project sin hardware recordado también: `nil` es un estado, no un
     /// campo que falte.
     func testAProjectWithNoRememberedHardwareSurvives() {
-        let returned = ProjectRecord(Project()).project
+        let returned = ProjectRecord(Project()).project(with: banks(of: Project()))
         XCTAssertNil(returned.destinationName)
         XCTAssertNil(returned.sourceName)
         XCTAssertEqual(returned, Project())
@@ -241,7 +241,7 @@ final class RecordRoundTripTests: XCTestCase {
 
     func testTheProjectJSONHasExactlyTheseKeys() throws {
         let expected: Set<String> = [
-            "schemaVersion", "banks", "selectedBank", "selectedPattern", "selectedTrack",
+            "schemaVersion", "selectedBank", "selectedPattern", "selectedTrack",
             "clockSource", "destinationName", "sourceName",
         ]
         let record = ProjectRecord(
@@ -268,5 +268,11 @@ final class RecordRoundTripTests: XCTestCase {
     private func dictionary(from record: some Encodable) throws -> [String: Any] {
         let data = try JSONEncoder().encode(record)
         return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+
+    /// Los dieciséis Banks de un Project, que es lo que la cabecera necesita
+    /// para reconstruirlo: en disco viven en ficheros aparte (FR18).
+    private func banks(of project: Project) -> [Bank] {
+        (0..<Project.bankCount).compactMap { project.bank(at: $0) }
     }
 }

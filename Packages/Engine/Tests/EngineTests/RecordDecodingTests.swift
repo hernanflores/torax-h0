@@ -79,14 +79,15 @@ final class RecordDecodingTests: XCTestCase {
             .withClockSource(.external)
             .remembering(destinationNamed: "Digitakt", sourceNamed: "BeatStep Pro")
 
-        XCTAssertEqual(try decoded(ProjectRecord(project)).project, project)
+        XCTAssertEqual(
+            try decoded(ProjectRecord(project)).project(with: banks(of: project)), project)
     }
 
     /// **Los dos opcionales ausentes se decodifican como `nil`**, no como error.
     /// Es lo que ocurre la primera vez que se abre la app y en cualquier fichero
     /// escrito sin hardware conectado.
     func testAProjectWithNoHardwareSurvivesEncodingAndDecoding() throws {
-        let returned = try decoded(ProjectRecord(Project())).project
+        let returned = try decoded(ProjectRecord(Project())).project(with: banks(of: Project()))
         XCTAssertNil(returned.destinationName)
         XCTAssertNil(returned.sourceName)
     }
@@ -163,5 +164,11 @@ final class RecordDecodingTests: XCTestCase {
 
     private func decoded<T: Codable>(_ record: T) throws -> T {
         try JSONDecoder().decode(T.self, from: JSONEncoder().encode(record))
+    }
+
+    /// Los dieciséis Banks de un Project, que es lo que la cabecera necesita
+    /// para reconstruirlo: en disco viven en ficheros aparte (FR18).
+    private func banks(of project: Project) -> [Bank] {
+        (0..<Project.bankCount).compactMap { project.bank(at: $0) }
     }
 }

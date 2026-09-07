@@ -29,7 +29,10 @@ final class SchemaVersionTests: XCTestCase {
     /// Un fichero de la versión vigente se valida y pasa.
     func testTheCurrentVersionValidates() throws {
         let record = ProjectRecord(Project.initial)
-        XCTAssertEqual(try record.validated().project, Project.initial)
+        XCTAssertEqual(
+            try record.validated().project(with: banks(of: Project.initial)),
+            Project.initial
+        )
     }
 
     /// **Una versión futura falla con un error propio, no con uno de
@@ -73,5 +76,11 @@ final class SchemaVersionTests: XCTestCase {
         let error = SchemaError.unsupportedSchemaVersion(found: 7, supported: 1)
         XCTAssertTrue(error.description.contains("7"))
         XCTAssertTrue(error.description.contains("1"))
+    }
+
+    /// Los dieciséis Banks de un Project, que es lo que la cabecera necesita
+    /// para reconstruirlo: en disco viven en ficheros aparte (FR18).
+    private func banks(of project: Project) -> [Bank] {
+        (0..<Project.bankCount).compactMap { project.bank(at: $0) }
     }
 }

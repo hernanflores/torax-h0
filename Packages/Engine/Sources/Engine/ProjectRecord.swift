@@ -252,8 +252,13 @@ public struct BankRecord: Codable, Equatable, Sendable {
 /// El `Project` en disco: los dieciséis Banks, dónde se estaba mirando y los
 /// ajustes de sesión.
 ///
+/// **No lleva los Banks dentro, y eso es el formato de disco** (FR18): cada Bank
+/// es su propio fichero de ~600 KB, y éste es la cabecera. Así el Autosave
+/// reescribe solo el Bank tocado en vez de los dieciséis, y `Save Bank` puede
+/// copiar un fichero en vez de recortar un árbol.
+///
 /// **Es el único record con `schemaVersion`**, porque es la raíz: un fichero de
-/// Bank sin Project no se abre solo.
+/// Bank sin cabecera no se abre solo.
 public struct ProjectRecord: Codable, Equatable, Sendable {
 
     /// La versión que esta app escribe.
@@ -264,7 +269,6 @@ public struct ProjectRecord: Codable, Equatable, Sendable {
     public static let currentSchemaVersion = 1
 
     public let schemaVersion: Int
-    public let banks: [BankRecord]
     public let selectedBank: Int
     public let selectedPattern: Int
     public let selectedTrack: Int
@@ -282,7 +286,6 @@ public struct ProjectRecord: Codable, Equatable, Sendable {
     /// camino de la versión no soportada sin fabricar JSON a mano.
     public init(_ project: Project, schemaVersion: Int = ProjectRecord.currentSchemaVersion) {
         self.schemaVersion = schemaVersion
-        banks = (0..<Project.bankCount).compactMap { project.bank(at: $0).map(BankRecord.init) }
         selectedBank = project.selectedBank
         selectedPattern = project.selectedPattern
         selectedTrack = project.selectedTrack
@@ -291,14 +294,18 @@ public struct ProjectRecord: Codable, Equatable, Sendable {
         sourceName = project.sourceName
     }
 
-    /// El Project que describe.
+    /// El Project que describe, **con los Banks que le den**.
+    ///
+    /// Los Banks vienen de sus propios ficheros: esta cabecera solo sabe dónde
+    /// se estaba mirando y qué reloj mandaba. Los que falten quedan vacíos, que
+    /// es lo que hace que un Project a medio escribir no impida arrancar.
     ///
     /// Los índices pasan por los métodos que los acotan, así que un índice
     /// corrupto en disco produce el borde y no una selección plausible.
-    public var project: Project {
+    public func project(with banks: [Bank]) -> Project {
         var result = Project()
-        for (index, record) in banks.enumerated() {
-            result = result.replacing(record.bank, at: index)
+        for (index, bank) in banks.enumerated() {
+            result = result.replacing(bank, at: index)
         }
         return
             result

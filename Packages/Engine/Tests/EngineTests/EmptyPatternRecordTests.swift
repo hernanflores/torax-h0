@@ -94,7 +94,7 @@ final class EmptyPatternRecordTests: XCTestCase {
 
     /// Y el Project de arranque sigue teniendo su material donde debe.
     func testTheInitialProjectSurvivesTheCollapse() {
-        let returned = ProjectRecord(Project.initial).project
+        let returned = ProjectRecord(Project.initial).project(with: banks(of: Project.initial))
         XCTAssertEqual(returned.bank(at: 0)?.pattern(at: 0), Pattern.initial)
         XCTAssertEqual(returned, Project.initial)
     }
@@ -103,5 +103,11 @@ final class EmptyPatternRecordTests: XCTestCase {
 
     private func size(of record: some Encodable) throws -> Int {
         try JSONEncoder().encode(record).count
+    }
+
+    /// Los dieciséis Banks de un Project, que es lo que la cabecera necesita
+    /// para reconstruirlo: en disco viven en ficheros aparte (FR18).
+    private func banks(of project: Project) -> [Bank] {
+        (0..<Project.bankCount).compactMap { project.bank(at: $0) }
     }
 }
