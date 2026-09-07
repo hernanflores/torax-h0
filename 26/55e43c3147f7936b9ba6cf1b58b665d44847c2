@@ -24,3 +24,40 @@ Decisiones
   clasificación de estado de la pantalla; esto es la duplicación del criterio, y
   dejarla viva cinco fases es dejar dos fuentes de verdad que pueden discrepar
   justo mientras se construye encima.
+
+--- Verificación de fase: FASE 2 — EL MODELO: Bank Y Project EN Engine (2026-09-07) ---
+
+Comandos ejecutados
+  swift test --package-path Packages/Engine --enable-code-coverage
+    → 640 tests, 0 fallos. Cobertura de líneas 98,55% (umbral 90%).
+      Bank 100% · Project 100% · ClockSource 100% · Material 85%
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    → 21 tests, 1 saltado, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    → 593 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+Sin rastro del flake clientCreationFailed(-50).
+
+Sobre el 85% de Material.swift
+Los tres huecos son los thunks de autoclosure de '?? false': la rama por defecto
+de un opcional que no puede ser nil por construcción, porque el índice viene de
+0..<count. Código defensivo inalcanzable, no un camino sin probar. Se deja como
+está: quitarlo exigiría un '!' donde hoy hay una guarda.
+
+Cobertura de los cambios de la fase
+Cada fuente nueva tiene su fichero de tests: Bank/BankTests, Project/ProjectTests,
+Material/MaterialTests, ClockSource/ClockSourceNameTests, y PatternCopyTests
+cubre los cuatro métodos de copia y borrado. App/TransportModel.swift no lleva
+test por diseño (App no se mide) y su cambio es delegar en Engine.
+
+Verificación manual
+1. Simulador iPad Pro 11', arranque de la app: capturado. La pantalla track abre
+   idéntica — 5/16, division 1/16, groove intacto, minor/C con el pool c3,
+   cycle 01/01, doce Tracks con sus pares m/s, 120 bpm e internal.
+2. Pantalla banks, pattern 01 en 'ready': NO verificable por captura desde esta
+   sesión — simctl no sabe tocar la pantalla y no hay idb ni fbsimctl. Lo
+   comprobó el usuario a mano.
+
+Confirmación del usuario
+Confirmada el 2026-09-07: «Patterns dice ready. Validado».
