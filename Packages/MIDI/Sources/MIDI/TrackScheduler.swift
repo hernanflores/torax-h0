@@ -397,7 +397,10 @@ public struct TrackScheduler {
             // reparto euclidiano, y no debe consumir una tirada. Si la
             // consumiera, mover el knob de Pulses desplazaría las omisiones de
             // un patrón que nadie tocó.
-            guard material.groove.probability.sounds(drawingFrom: &random) else { continue }
+            // **Una tirada por evento, y el Pulse va primero** (FR13). La tirada
+            // se consume aunque el Cycle esté mudo, como antes de la rebanada:
+            // llenarle el pool mientras suena no debe mover las omisiones.
+            let pulseSounds = material.groove.probability.sounds(drawingFrom: &random)
 
             // El instante de emisión es el de la rejilla más lo que Groove lo
             // aparta. Los dos salen del mismo snapshot, recogido una vez por
@@ -414,21 +417,26 @@ public struct TrackScheduler {
             // cambiar cuánta aleatoriedad consume un Cycle mudo: si la
             // consumiera distinto, llenarle el pool mientras suena movería las
             // omisiones de un patrón que nadie tocó.
-            guard material.emitsAnything else { continue }
-
             let groove = material.groove
             let pulseOffset =
                 lookAhead.timeline.nanosecondOffset(forStep: step)
                 + groove.shiftNanoseconds(
                     atStep: cycleStep, stepDurationNanoseconds: stepDurationNanoseconds)
-            emit(
-                material.cycle,
-                step,
-                material.pitch(atStep: cycleStep),
-                groove,
-                pulseOffset
-            )
 
+            if pulseSounds, material.emitsAnything {
+                emit(
+                    material.cycle,
+                    step,
+                    material.pitch(atStep: cycleStep),
+                    groove,
+                    pulseOffset
+                )
+            }
+
+            // **Un Pulse callado no se lleva sus repeticiones.** Son eventos
+            // independientes, así que la tirada se hace por cada uno: bajar
+            // Probability con Repeats altos perfora la textura en vez de borrar
+            // tiradas enteras.
             emitRepetitions(
                 after: cycleStep, at: step, offset: pulseOffset, emit: emitRepetition)
         }
@@ -456,7 +464,7 @@ public struct TrackScheduler {
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin coma flotante, sin arrays temporales: un bucle
     /// acotado por Repeats, que llega hasta ocho.
-    private func emitRepetitions(
+    private mutating func emitRepetitions(
         after cycleStep: Int,
         at step: Int,
         offset pulseOffset: Int64,
@@ -487,7 +495,14 @@ public struct TrackScheduler {
             // **Estrictamente antes del corte.** Una repetición que cayera justo
             // en el Pulse siguiente sonaría encima de él, que es la nota que el
             // corte existe para no duplicar.
+            //
+            // **El corte se decide antes que la tirada**, con el mismo criterio
+            // que ya separa «primero dispara, después decide si suena»: una
+            // repetición descartada no consume aleatoriedad, así que girar Time
+            // o Pace no desplaza las omisiones de un patrón que nadie tocó.
             guard elapsed < window else { return }
+
+            guard groove.probability.sounds(drawingFrom: &random) else { continue }
 
             emit(
                 cycle,

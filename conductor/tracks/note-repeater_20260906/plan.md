@@ -216,7 +216,7 @@ revisar antes de seguir (NFR1).
   - [x] Comprobar que **`advanceBudgetNanoseconds` no cambia**: las repeticiones
         van siempre *después* del Pulse, así que no adelantan ningún instante y
         el presupuesto sigue siendo cosa de Delay.
-- [ ] Task: Probability decide sobre todas las notas (FR13)
+- [~] Task: Probability decide sobre todas las notas (FR13)
   - [ ] Tests (Red): cada evento consume **una** tirada, en orden — primero el
         Pulse, después las repeticiones.
   - [ ] Tests (Red): **un Pulse callado no se lleva sus repeticiones**.
