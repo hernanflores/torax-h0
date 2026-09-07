@@ -1,0 +1,30 @@
+Tarea: `Bank`, dieciséis Patterns y un tempo (FR1, FR2, FR4)
+
+Qué cambia
+- Packages/Engine/Sources/Engine/Bank.swift (nuevo)
+- Packages/Engine/Tests/EngineTests/BankTests.swift (nuevo, 11 tests)
+
+Ciclo TDD
+Rojo confirmado antes de implementar: 'cannot find Bank in scope', los 11 tests
+sin compilar. Verde con la implementación, sin tocar los tests.
+
+Decisiones
+- Array y no tupla. Es la primera vez en el proyecto que un contenedor del
+  modelo NO usa almacenamiento inline, y va contra el idioma que Pattern y Track
+  establecieron. La razón es que ese idioma nunca fue una preferencia estética:
+  lo impone que el valor se copie en el hilo de audio. El Bank no se copia ahí,
+  así que pagar 592 KB de tupla sería copiar el coste sin copiar el motivo.
+- El test testTheBankIsNotTrivialAndThePatternStillIs afirma las dos cosas en la
+  misma función, en vez de dos tests separados. Lo que hay que preservar no es
+  que el Bank sea no-POD —eso no le importa a nadie— sino la relación: la
+  restricción de tiempo real no sube de nivel. Si alguien intenta publicar un
+  Bank en el handoff, ese test es la primera línea que se lo explica.
+- tempo es 'let' y se cambia con withTempo(_:), como el resto del motor: valores,
+  no mutación.
+- El init completo es interno, con precondition sobre el conteo, siguiendo lo que
+  Track ya hace con su init de dieciséis Cycles.
+
+Nota de higiene
+swift format reformateó de paso FamilyReadoutTests y ParameterChangeTests, que ya
+estaban sin formatear en main. Revertidos: no son de esta tarea y ensuciarían el
+diff del track.
