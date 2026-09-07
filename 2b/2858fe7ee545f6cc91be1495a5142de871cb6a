@@ -3,7 +3,7 @@ Tarea: `Project`, dieciséis Banks y los índices de sesión (FR1, FR23)
 Qué cambia
 - Packages/Engine/Sources/Engine/Project.swift (nuevo)
 - Packages/Engine/Tests/EngineTests/ProjectTests.swift (nuevo, 20 tests)
-Precedido por el commit 9912b54, que bajó ClockSource a Engine para que este
+Precedido por el commit 27320f0, que bajó ClockSource a Engine para que este
 tipo pudiera nombrarlo.
 
 Ciclo TDD
