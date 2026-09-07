@@ -1,0 +1,27 @@
+Tarea: Copiar y borrar un Pattern (FR13)
+
+Qué cambia
+- Bank.copyingPattern(from:to:) y Bank.clearingPattern(at:)
+- Project.copyingSelectedPattern(to:) y Project.clearingPattern(at:)
+- PatternCopyTests.swift (nuevo, 17 tests)
+
+Ciclo TDD
+Rojo confirmado: 40 errores de compilación, ninguno de los cuatro métodos existía.
+
+Decisiones
+- Las operaciones viven en Bank y el Project delega. Bank es quien tiene los
+  dieciséis huecos; el Project solo sabe cuál se está mirando. Partirlo así es
+  lo que permite que los tests de la mecánica no tengan que construir un Project
+  entero, y que la pantalla llame a una sola función sin decir dos índices que ya
+  sabe.
+- copyingPattern se implementa como pattern(at:) + replacing(_:at:), así que
+  hereda el criterio de fuera-de-rango de los dos sin repetir una guarda. El
+  test de fuera de rango prueba los dos extremos por separado a propósito: son
+  dos guardas distintas aunque el código no las escriba dos veces.
+- Copiar un hueco vacío NO es un caso especial. Deja el destino vacío porque eso
+  es lo que significa copiar vacío, y tratarlo aparte habría añadido una rama
+  para producir el mismo resultado.
+- clearingPattern es replacing(Pattern(), at:). 'Vacío' no es una bandera ni un
+  agujero: es el mismo Pattern() con el que arranca un Bank, así que borrar y
+  no-haber-tenido-nunca son indistinguibles — que es lo que hace que la pantalla
+  pueda decir 'empty' con una sola lectura.
