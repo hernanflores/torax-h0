@@ -1,0 +1,27 @@
+Tarea: El Pattern vacío se escribe como marca (FR18)
+
+Qué cambia
+- BankRecord.patterns pasa de [PatternRecord] a [PatternRecord?], con nil en los
+  huecos sin material.
+- EmptyPatternRecordTests.swift (nuevo, 7 tests).
+
+Ciclo TDD
+Rojo confirmado con números, que es lo que da la medida del problema:
+  Bank vacío   675 498 bytes   (uno lleno: 675 530)
+  Project vacío 10 808 093 bytes
+Verde: el Project vacío baja de 10,8 MB a menos de 4 KB.
+
+Decisiones
+- null y no un centinela. Un campo 'empty: true' o un objeto vacío serían
+  inventar vocabulario donde JSON ya tiene el suyo, y el fichero se quiere leer
+  con los ojos.
+- La lista mantiene dieciséis entradas. Omitir los vacíos habría ahorrado un
+  poco más y habría desplazado los llenos: el Pattern 10 volvería en la posición
+  2. Hay un test dedicado a eso porque es el fallo que un cambio 'obvio' de
+  optimización reintroduciría.
+- El criterio de 'vacío' es Pattern.hasMaterial, el mismo que la pantalla usa
+  para decir 'empty'. No se inventa un segundo criterio: si la pantalla dice
+  vacío, el disco escribe null.
+- El test de tamaño compara órdenes de magnitud (×100) y no un porcentaje. Un
+  umbral relativo pasaría con una mejora cosmética; lo que se quiere afirmar es
+  que no se escribe, no que se escribe menos.
