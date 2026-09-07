@@ -1,0 +1,34 @@
+Task: `NoteRepeater` dentro del `Cycle` (FR1, NFR2)
+
+Qué cambia:
+- NoteRepeater, el valor con los cuatro parámetros, en NoteRepeater.swift.
+- Cycle gana el campo noteRepeater, con su parámetro de init (default neutro) y
+  su rama en with(...).
+
+Decisión de diseño — cuatro Int8, no cuatro tipos:
+NFR2 presupone ~768 bytes sobre los ~37 KB del snapshot con 12 Tracks × 16
+Cycles, o sea cuatro bytes por Cycle. Guardar los tipos tal cual no cabe en eso:
+RepeatTime envuelve una Division, que son dos palabras, así que el campo pasaría
+de 4 a 40 bytes y el snapshot subiría un 21% en vez de un 2%. Se guardan cuatro
+Int8 —Repeats 0…8, el índice de Time 0…8, Ramp y Pace −100…100— y los tipos se
+exponen como propiedades calculadas.
+
+Consecuencia, documentada en el tipo: Time se guarda como la POSICIÓN del knob y
+no como la fracción, así que una RepeatTime fuera de RepeatTime.ordered cae en el
+default al entrar en un Cycle. No se pierde ningún valor alcanzable: el knob solo
+pasa por las nueve.
+
+Ficheros modificados:
+- Packages/Engine/Sources/Engine/NoteRepeater.swift (+80 líneas)
+- Packages/Engine/Sources/Engine/Shape.swift (campo, init y with)
+Ficheros creados:
+- Packages/Engine/Tests/EngineTests/NoteRepeaterInCycleTests.swift (8 tests)
+
+Verificación: Engine 758 tests, MIDI 21 + 640, Persistence 62, 0 fallos.
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS': SUCCEEDED.
+_isPOD(NoteRepeater), _isPOD(Cycle) y _isPOD(Pattern) siguen pasando, y hay un
+test que fija MemoryLayout<NoteRepeater>.size en 4.
+
+Nota de entorno: los tres paquetes necesitaron borrar debug.yaml y build.db para
+replanificar. SwiftPM servía un plan de build viejo y fallaba con 'fatalError' y
+un símbolo de Cycle.init sin resolver — cache, no código.
