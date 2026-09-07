@@ -200,6 +200,12 @@ public final class PatternScheduler {
     public func advance(
         toHorizon horizonNanoseconds: Int64,
         refreshingFrom handoff: PatternHandoff?,
+        emitRepetition: (
+            (
+                _ track: Int, _ source: Cycle, _ step: Int, _ pitch: Pitch?, _ velocity: Velocity,
+                _ gateNanoseconds: Int64, _ offsetNanoseconds: Int64
+            ) -> Void
+        )? = nil,
         emit: (
             _ track: Int, _ source: Cycle, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
             _ offsetNanoseconds: Int64
@@ -219,7 +225,9 @@ public final class PatternScheduler {
         if let handoff, handoff.hasArmedPattern {
             let boundary = bars.nextBoundary(after: lastHorizonNanoseconds)
             if boundary <= horizonNanoseconds {
-                emitWindow(toHorizon: boundary, refreshingFrom: handoff, emit: emit)
+                emitWindow(
+                    toHorizon: boundary, refreshingFrom: handoff, emitRepetition: emitRepetition,
+                    emit: emit)
                 handoff.adoptArmedPattern()
 
                 // **El Pattern entra por el principio de su desarrollo** (FR8).
@@ -237,13 +245,17 @@ public final class PatternScheduler {
                 }
 
                 lastHorizonNanoseconds = boundary
-                emitWindow(toHorizon: horizonNanoseconds, refreshingFrom: handoff, emit: emit)
+                emitWindow(
+                    toHorizon: horizonNanoseconds, refreshingFrom: handoff,
+                    emitRepetition: emitRepetition, emit: emit)
                 lastHorizonNanoseconds = horizonNanoseconds
                 return
             }
         }
 
-        emitWindow(toHorizon: horizonNanoseconds, refreshingFrom: handoff, emit: emit)
+        emitWindow(
+            toHorizon: horizonNanoseconds, refreshingFrom: handoff, emitRepetition: emitRepetition,
+            emit: emit)
         lastHorizonNanoseconds = horizonNanoseconds
     }
 
@@ -256,6 +268,12 @@ public final class PatternScheduler {
     private func emitWindow(
         toHorizon horizonNanoseconds: Int64,
         refreshingFrom handoff: PatternHandoff?,
+        emitRepetition: (
+            (
+                _ track: Int, _ source: Cycle, _ step: Int, _ pitch: Pitch?, _ velocity: Velocity,
+                _ gateNanoseconds: Int64, _ offsetNanoseconds: Int64
+            ) -> Void
+        )?,
         emit: (
             _ track: Int, _ source: Cycle, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
             _ offsetNanoseconds: Int64
@@ -300,8 +318,18 @@ public final class PatternScheduler {
             // en vez de al principio del anillo.
             let audible = mix?.isAudible(index) ?? true
 
-            schedulers[index].advance(toHorizon: horizonNanoseconds, refreshingFrom: nil) {
-                source, step, pitch, groove, offset in
+            schedulers[index].advance(
+                toHorizon: horizonNanoseconds,
+                refreshingFrom: nil,
+                // **Un literal y no `emitRepetition.map { … }`.** El `map`
+                // construye un cierre nuevo por Track y por ventana, que es una
+                // asignación en el hilo de tiempo real (NFR1). Este literal es
+                // no-escapante y captura solo valores triviales.
+                emitRepetition: { source, step, pitch, velocity, gate, offset in
+                    guard audible, let emitRepetition else { return }
+                    emitRepetition(index, source ?? fallback, step, pitch, velocity, gate, offset)
+                }
+            ) { source, step, pitch, groove, offset in
                 guard audible else { return }
                 emit(index, source ?? fallback, step, pitch, groove, offset)
             }

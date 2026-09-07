@@ -584,7 +584,22 @@ public final class Transport: @unchecked Sendable {
             cyclePlaybackClock: cyclePlaybackClock,
             pattern: starting,
             mutes: mutes,
-            clock: clockHandoff
+            clock: clockHandoff,
+            repetitionHandler: {
+                [emitter, send] _, source, _, pitch, velocity, gateNanoseconds, hostTime in
+                // **Las repeticiones no vuelven a calcular nada.** Su velocity
+                // sale de la rampa y su gate de su propio hueco, los dos
+                // resueltos en el hilo del scheduler y ya en tiempo de reloj.
+                // Aquí solo se convierte la altura y se sella el par.
+                emitter.emit(
+                    pitch: pitch,
+                    velocity: velocity,
+                    gateNanoseconds: gateNanoseconds,
+                    on: MIDIChannel(source.channel),
+                    atHostTime: hostTime,
+                    send: send
+                )
+            }
         ) {
             [emitter, send, tempo = configuration.timeline.tempo, clockHandoff]
             _, source, _, pitch, groove, hostTime in
