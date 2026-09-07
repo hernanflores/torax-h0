@@ -273,12 +273,12 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Tests (Red): Stop con un pendiente lo deja vigente; el Play siguiente
         arranca con él; no queda estado armado que persistir.
   - [ ] Implementación (Green).
-- [ ] Task: Cambiar de Bank, y el tempo (FR11, FR12)
+- [x] Task: Cambiar de Bank, y el tempo (FR11, FR12) — `a624bd0`
   - [ ] Tests (Red): cambiar de Bank entra en el compás con el Pattern
         seleccionado del destino y adopta su tempo con reloj `Internal`; con
         `External` el tempo **no** se toca y el dato guardado sobrevive.
   - [ ] Implementación (Green).
-- [ ] Task: `Reload` cuantizado sobre el mismo mecanismo (FR17)
+- [x] Task: `Reload` cuantizado sobre el mismo mecanismo (FR17) — `a624bd0`
   - [ ] Tests (Red): con el transporte corriendo, recargar entra en el compás,
         por el mismo camino que un cambio de Pattern y no por otro.
   - [ ] Implementación (Green).
