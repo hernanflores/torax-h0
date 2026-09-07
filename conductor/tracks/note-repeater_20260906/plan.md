@@ -78,7 +78,7 @@ revisar antes de seguir (NFR1).
         eso no es una regresión: con Repeats en 0 los dos conjuntos coinciden.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: EL VALOR PURO — `NoteRepeater` EN `Engine`
+## FASE 2: EL VALOR PURO — `NoteRepeater` EN `Engine` [checkpoint: e71bfc0]
 
 - [x] Task: Los cuatro tipos y sus rangos (FR5, FR6, FR7, FR8) — f5c7339
   - [x] Tests (Red): `Repeats` acota 0…8 y **se detiene en los extremos**, no
@@ -156,7 +156,7 @@ revisar antes de seguir (NFR1).
         cuatro de siempre y los cuatro nuevos — y el test que compara lo que
         anuncia un giro con lo que dice el card sigue pasando para los trece.
   - [x] Implementación (Green): la segunda línea, mismo acento.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: LA EMISIÓN APRENDE VELOCITY Y GATE PROPIOS
 
