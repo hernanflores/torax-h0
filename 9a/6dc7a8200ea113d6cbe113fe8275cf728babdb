@@ -1,0 +1,37 @@
+Task: El hueco de cada repetición (FR6, FR8)
+
+Qué cambia: dos funciones en NoteRepeater.swift.
+
+- RepeatTime.gapNanoseconds(forStep:division:): hueco = duraciónDelStep ×
+  (Time / Division). La Division entra dividiendo y sale del resultado, que es
+  lo que hace a Time un valor de nota absoluto — un Track en 1/4 y otro en 1/16
+  con el mismo Time repiten al mismo ritmo, y hay un test que lo fija.
+- Pace.gapNanoseconds(forRepetition:of:base:): la curva de espaciado.
+    r = pace ≥ 0 ? (100 + pace) / 100 : 100 / (100 − pace)
+    hueco(i) = Time × (1 + (r − 1) × (i − 1) / (n − 1))
+  Se calcula como fracción y no con una exponencial: r queda exactamente
+  recíproco entre +p y −p (+50 da ×1,5 y −50 da ÷1,5) y no entra coma flotante
+  en el camino de tiempo real.
+
+Decisiones:
+- El multiplicador se aplica sobre el hueco base y no sobre la duración
+  acumulada: el primer hueco vale siempre Time, así que subir Pace no desplaza
+  la primera repetición.
+- n = 1 sale por el guard, porque la interpolación divide por n − 1.
+- Se calcula desde la duración del Step y no volviendo al tempo: hereda la
+  rejilla que la MusicalTimeline fija al pulsar Play, sin inventar una vía nueva.
+
+Ficheros modificados:
+- Packages/Engine/Sources/Engine/NoteRepeater.swift (+72 líneas)
+Ficheros creados:
+- Packages/Engine/Tests/EngineTests/RepeatGapTests.swift (10 tests)
+
+Un test recorre el rango entero de Pace (201 valores) × n 1…8 y comprueba que
+ningún hueco colapsa a cero: dos repeticiones en el mismo instante serían una
+nota perdida.
+
+Verificación: Engine 750 tests, 0 fallos (740 antes). Cobertura de Engine 98,52%
+de líneas; NoteRepeater.swift al 100%.
+
+Sin medición de jitter (NFR6): aritmética pura, todavía no cableada al camino de
+emisión.
