@@ -351,3 +351,83 @@ extension Pace {
             / (denominator * span)
     }
 }
+
+/// Los cuatro parámetros del Note Repeater de un Cycle.
+///
+/// **Vive dentro del `Cycle`**, junto a Shape, Groove y el pool, por la misma
+/// razón que ellos: el hilo del scheduler necesita los cuatro para decidir qué
+/// emite un Pulse, y lo único que ese hilo lee es el snapshot publicado. Cada
+/// Cycle tiene el suyo, así que un desarrollo A/B puede ratchetear solo en el B.
+///
+/// **Guarda cuatro `Int8` y no los cuatro tipos**, que es lo único que hace que
+/// el campo cueste cuatro bytes por Cycle —~768 bytes sobre los ~37 KB del
+/// snapshot con 12 Tracks × 16 Cycles, el 2% que NFR2 presupone—. `RepeatTime`
+/// envuelve una fracción, que son dos palabras: almacenarla entera multiplicaría
+/// por diez el coste del campo sin añadir ni un valor alcanzable, porque el knob
+/// solo pasa por las nueve de `RepeatTime.ordered`. Los tres restantes caben de
+/// sobra en un byte —0…8 y −100…100—.
+///
+/// De ahí que Time se guarde como **la posición del knob** y no como la
+/// fracción: una Time que no esté en la lista cae en el default al entrar aquí.
+public struct NoteRepeater: Equatable, Sendable {
+
+    /// El neutro: sin repeticiones. Con él, la salida es la de antes de la
+    /// rebanada — instantes, velocities, gates y consumo de aleatoriedad.
+    public static let `default` = NoteRepeater()
+
+    private let storedRepeats: Int8
+    private let storedTimeIndex: Int8
+    private let storedRamp: Int8
+    private let storedPace: Int8
+
+    public init(
+        repeats: Repeats = .default,
+        time: RepeatTime = .default,
+        ramp: Ramp = .default,
+        pace: Pace = .default
+    ) {
+        storedRepeats = Int8(repeats.count)
+        storedTimeIndex = Int8(Self.index(of: time))
+        storedRamp = Int8(ramp.percent)
+        storedPace = Int8(pace.percent)
+    }
+
+    /// Cuántos triggers extra genera cada Pulse.
+    public var repeats: Repeats { Repeats(unchecked: Int(storedRepeats)) }
+
+    /// La separación entre repeticiones, como valor de nota.
+    public var time: RepeatTime { RepeatTime.ordered[Int(storedTimeIndex)] }
+
+    /// La curva de velocity a través de las repeticiones.
+    public var ramp: Ramp { Ramp(unchecked: Int(storedRamp)) }
+
+    /// La curva de espaciado a lo largo de la tirada.
+    public var pace: Pace { Pace(unchecked: Int(storedPace)) }
+
+    /// El mismo `NoteRepeater` con lo que se le cambie, y todo lo demás intacto.
+    ///
+    /// Mismo idioma que `Cycle.with(...)`, y por la misma razón: reconstruirlo a
+    /// mano pierde en silencio lo que no se nombre.
+    public func with(
+        repeats: Repeats? = nil,
+        time: RepeatTime? = nil,
+        ramp: Ramp? = nil,
+        pace: Pace? = nil
+    ) -> NoteRepeater {
+        NoteRepeater(
+            repeats: repeats ?? self.repeats,
+            time: time ?? self.time,
+            ramp: ramp ?? self.ramp,
+            pace: pace ?? self.pace
+        )
+    }
+
+    /// La posición de una Time en la lista del knob, y la del default si no está
+    /// en ella. No puede devolver un índice inválido, que es lo que hace segura
+    /// la lectura de `time`.
+    private static func index(of time: RepeatTime) -> Int {
+        RepeatTime.ordered.firstIndex(of: time)
+            ?? RepeatTime.ordered.firstIndex(of: RepeatTime.default)
+            ?? 0
+    }
+}

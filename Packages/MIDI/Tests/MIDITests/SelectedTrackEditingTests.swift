@@ -253,7 +253,8 @@ final class SelectedTrackEditingTests: XCTestCase {
                 ))
         }
 
-        XCTAssertEqual((0..<Pattern.trackCount).map { input.pattern.cycle(at: $0)!.channel }, before)
+        XCTAssertEqual(
+            (0..<Pattern.trackCount).map { input.pattern.cycle(at: $0)!.channel }, before)
     }
 
     /// Cambiar el canal publica: el scheduler lo usa en el evento siguiente.

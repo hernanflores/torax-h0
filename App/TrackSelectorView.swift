@@ -26,7 +26,6 @@ struct TrackSelectorView: View {
     let onToggleMute: (Int) -> Void
     let onToggleSolo: (Int) -> Void
 
-
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             // **El par M/S va pegado a su pastilla**, con menos aire del que

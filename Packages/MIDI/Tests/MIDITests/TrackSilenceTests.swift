@@ -121,8 +121,12 @@ final class TrackSilenceTests: XCTestCase {
         transport.silence(tracks: [0], atHostTime: 0)
 
         let messages = recorder.captured
-        let firstSweep = messages.firstIndex { if case .noteOff = $0 { return true } else { return false } }
-        let lastControl = messages.lastIndex { if case .controlChange = $0 { return true } else { return false } }
+        let firstSweep = messages.firstIndex {
+            if case .noteOff = $0 { return true } else { return false }
+        }
+        let lastControl = messages.lastIndex {
+            if case .controlChange = $0 { return true } else { return false }
+        }
         XCTAssertNotNil(firstSweep)
         XCTAssertNotNil(lastControl)
         XCTAssertLessThan(lastControl!, firstSweep!)

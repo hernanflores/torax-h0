@@ -142,10 +142,13 @@ struct CycleStrip: View {
                         .font(Typography.parameterLine)
                         .foregroundStyle(Palette.muted)
 
-                    Text(display: "\(current(sounding).paddedForDisplay) / \(activeCount.paddedForDisplay)")
-                        .font(Typography.valueTitle)
-                        .monospacedDigit()
-                        .foregroundStyle(Palette.text)
+                    Text(
+                        display:
+                            "\(current(sounding).paddedForDisplay) / \(activeCount.paddedForDisplay)"
+                    )
+                    .font(Typography.valueTitle)
+                    .monospacedDigit()
+                    .foregroundStyle(Palette.text)
                 }
 
                 Spacer(minLength: 12)
@@ -174,7 +177,9 @@ struct CycleStrip: View {
             //
             // Dos filas y no una: en la columna estrecha, dieciséis celdas
             // seguidas quedarían por debajo del objetivo táctil.
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 8), spacing: 6) {
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 8), spacing: 6
+            ) {
                 ForEach(1...Track.cycleCount, id: \.self) { number in
                     cell(number, sounding: sounding)
                 }
