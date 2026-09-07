@@ -23,3 +23,38 @@ parece completo. Se ve en el número.
 Diez tests contra un directorio temporal que se borra al terminar, incluido uno
 que corre el almacén entero contra el disco real sin el doble — si la costura y
 su implementación se separaran, se vería ahí.
+
+--- Verificación de fase: FASE 4 — EL PAQUETE Persistence (2026-09-07) ---
+
+Comandos ejecutados
+  swift test --package-path Packages/Engine                → 679 tests, 0 fallos
+  swift test --package-path Packages/Persistence           → 36 tests, 0 fallos
+    con --enable-code-coverage: 99,22% de líneas (umbral 90%)
+    FileSystem.swift 100% · ProjectStore.swift 99,12%
+  swift test --package-path Packages/MIDI (partición CI)   → 21 + 593, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS
+                                                           → BUILD SUCCEEDED
+Sin rastro del flake clientCreationFailed(-50).
+
+Cobertura de los cambios de la fase
+El paso 2 del protocolo destapó FileSystem.swift al 0% y el paquete al 87,60%,
+por debajo del umbral: la costura había hecho testeable todo menos su propia
+implementación. Se escribieron diez tests contra un directorio temporal antes de
+cerrar la fase (commit 6019af3).
+
+Números anotados
+  Bank lleno     676 458 bytes (660 KB)   guardar 15,5 ms
+  Bank vacío     106 bytes
+  Project entero                          243,6 ms
+El último decide el diseño del Autosave de la Fase 5: escribe el Bank tocado y no
+el Project.
+
+Verificación manual
+Ninguna en pantalla, y es correcto: nada de esta fase llega a la interfaz hasta
+la Fase 7, y TransportModel todavía no llama al almacén. Se enseñó al usuario la
+forma del disco y las cuatro decisiones que aguantan el día malo: load() no lanza
+nunca, sin cabecera legible los Banks se conservan, un Bank ilegible no se lleva
+a los otros quince, y el fichero apartado nunca se borra.
+
+Confirmación del usuario
+Confirmada el 2026-09-07: «Sí — cerrar y seguir con la Fase 5».
