@@ -1,0 +1,20 @@
+Escrito durante el protocolo de checkpoint de la Fase 3, paso 2 (cobertura de los cambios de la fase).
+
+Por qué no estaba antes
+El plan pedía 'ida y vuelta de POD a DTO y de vuelta', y eso es literalmente lo
+que se escribió: CycleRecord(cycle).cycle. Es la traducción, y se puede probar
+sin serializar nada. La consecuencia es que el Codable sintetizado —el que lee un
+fichero real— no lo ejecutaba ningún test, y no se veía en el número de líneas
+(92%) sino en el de funciones (64,86%).
+
+Lo que se añade que no es solo cobertura
+- Un CycleRecord decodificado desde un JSON escrito a mano. Es la única forma de
+  afirmar que las claves del formato son las que la documentación promete: un
+  test que codifica y decodifica con el mismo tipo pasa igual aunque las claves
+  cambien todas a la vez.
+- Un fichero con los quince campos fuera de rango, que verifica la decisión de
+  la tarea 1: los valores inválidos caen en su default en vez de reventar. Estaba
+  implementada y sin probar.
+- La separación entre error de decodificación y SchemaError, afirmada desde los
+  dos lados. Es el contrato del que depende la Fase 4 para apartar un fichero
+  diciendo lo correcto.
