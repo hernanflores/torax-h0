@@ -258,7 +258,7 @@ extension Ramp {
     /// disfrazado de nota — la misma razón por la que `Velocity` excluye el cero.
     ///
     /// Aritmética entera y multiplicando antes de dividir, como
-    /// `Sustain.gateNanoseconds(forStep:)`: esto acaba corriendo en el hilo del
+    /// `Sustain.gateNanoseconds(over:)`: esto acaba corriendo en el hilo del
     /// scheduler. La división trunca hacia cero, así que el redondeo acerca la
     /// curva a la Velocity del Track por menos de una unidad — inaudible, y
     /// simétrico entre subir y bajar.
@@ -294,7 +294,7 @@ extension RepeatTime {
     /// Division entra dividiendo y sale del resultado.
     ///
     /// Entera y multiplicando antes de dividir, como
-    /// `Sustain.gateNanoseconds(forStep:)`.
+    /// `Sustain.gateNanoseconds(over:)`.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.

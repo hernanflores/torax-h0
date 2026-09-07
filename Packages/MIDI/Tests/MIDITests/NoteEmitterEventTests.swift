@@ -147,7 +147,7 @@ final class NoteEmitterEventTests: XCTestCase {
         let fromGroove = emittedFromGroove(groove)
         let fromEvent = emitted(
             velocity: Velocity(90)!,
-            gateNanoseconds: groove.sustain.gateNanoseconds(forStep: stepNanoseconds)
+            gateNanoseconds: groove.sustain.gateNanoseconds(over: stepNanoseconds)
         )
 
         XCTAssertEqual(fromGroove.count, 2)
@@ -167,7 +167,7 @@ final class NoteEmitterEventTests: XCTestCase {
             let fromGroove = emittedFromGroove(groove)
             let fromEvent = emitted(
                 velocity: Velocity(64)!,
-                gateNanoseconds: groove.sustain.gateNanoseconds(forStep: stepNanoseconds)
+                gateNanoseconds: groove.sustain.gateNanoseconds(over: stepNanoseconds)
             )
 
             XCTAssertEqual(fromGroove.map(\.hostTime), fromEvent.map(\.hostTime), "\(percent)%")

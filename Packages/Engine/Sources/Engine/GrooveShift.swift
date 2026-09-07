@@ -8,7 +8,7 @@
 /// **Aritmética entera, en nanosegundos, sin coma flotante.** Esto corre en el
 /// hilo del scheduler. El orden de las operaciones —multiplicar antes de
 /// dividir— conserva la precisión que dividir primero perdería, igual que en
-/// `Sustain.gateNanoseconds(forStep:)`.
+/// `Sustain.gateNanoseconds(over:)`.
 extension Groove {
 
     /// Cuánto se aparta de la rejilla el Step indicado.

@@ -174,7 +174,7 @@ revisar antes de seguir (NFR1).
   - [x] Documentar el porqué: el Pulse y sus repeticiones tienen que viajar por
         **el mismo camino**. Un camino aparte para las repeticiones duplicaría la
         regla del note-off, que es la que evita notas colgadas.
-- [ ] Task: El gate de una repetición se mide sobre su hueco (FR12)
+- [~] Task: El gate de una repetición se mide sobre su hueco (FR12)
   - [ ] Tests (Red): con Sustain 100% y Repeats 3, cada repetición dura
         exactamente su hueco; con Pace ≠ 0, cada una dura **el suyo** y no el
         primero.

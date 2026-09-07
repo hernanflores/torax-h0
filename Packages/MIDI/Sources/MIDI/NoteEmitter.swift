@@ -70,7 +70,7 @@ public struct NoteEmitter: Equatable, Sendable {
         emit(
             pitch: pitch,
             velocity: groove.velocity,
-            gateNanoseconds: groove.sustain.gateNanoseconds(forStep: stepDurationNanoseconds),
+            gateNanoseconds: groove.sustain.gateNanoseconds(over: stepDurationNanoseconds),
             on: channel,
             atHostTime: hostTime,
             send: send

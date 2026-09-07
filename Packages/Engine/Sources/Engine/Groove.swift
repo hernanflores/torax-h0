@@ -209,7 +209,15 @@ public struct Delay: Equatable, Sendable {
 
 extension Sustain {
 
-    /// Cuánto dura la nota, dado lo que dura un Step.
+    /// Cuánto dura la nota, dado lo que dura la rejilla que habita.
+    ///
+    /// > **El argumento se llamaba `forStep` hasta el 2026-09-07.** Sustain es un
+    /// > porcentaje sobre una duración, y esa duración es la del Step para un
+    /// > Pulse y la del **hueco** para una repetición del Note Repeater: con
+    /// > Sustain 100% cada repetición llega justo a la siguiente, que es la misma
+    /// > regla que ya regía entre Steps aplicada a la rejilla de la tirada. La
+    /// > aritmética no cambia; lo que cambia es que el nombre deje de mentir en
+    /// > la mitad de las llamadas.
     ///
     /// **La aritmética vive en `Engine` y no en la capa MIDI** por la razón de
     /// siempre: `workflow.md` dice que si algo merece un test está donde se
@@ -224,8 +232,8 @@ extension Sustain {
     /// Calculates the gate duration for a step using the sustain percentage.
     /// - Parameter stepDurationNanoseconds: The step duration in nanoseconds.
     /// - Returns: The gate duration in nanoseconds.
-    public func gateNanoseconds(forStep stepDurationNanoseconds: Int64) -> Int64 {
-        stepDurationNanoseconds * Int64(percent) / 100
+    public func gateNanoseconds(over durationNanoseconds: Int64) -> Int64 {
+        durationNanoseconds * Int64(percent) / 100
     }
 }
 
