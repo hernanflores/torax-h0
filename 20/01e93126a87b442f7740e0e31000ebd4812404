@@ -1,0 +1,31 @@
+Tareas de la Fase 7: cuenta atrás, quitar el @State local, controles de guardado, aviso de fallo y ciclo de vida.
+
+Van en un commit porque son una pantalla: partirlas habría dejado estados
+intermedios donde BanksScreen no compila o enseña un modelo a medio enchufar.
+
+El fallo que solo se vio mirando
+Con el disco vacío la app abría muda: '1 / 16' y 'pool empty' donde tenía que
+haber '5 / 16' y 'c3'. store.load() devuelve un Project vacío cuando no hay nada
+—correcto para el almacén, que no se inventa material que nadie guardó— y quien
+decide con qué abre la app es el modelo, que tenía que elegir Project.initial.
+
+Ningún test lo habría cazado, y conviene entender por qué: todos los tests del
+track construyen el Project que quieren probar, así que ninguno ejerce 'qué pasa
+cuando no hay nada'. El caso solo existe en el arranque real. Es exactamente el
+tipo de fallo por el que el protocolo de checkpoint pide verificación manual.
+
+Decisiones de pantalla
+- Copiar y borrar debajo de la rejilla, operando sobre el hueco elegido. Un par
+  de botones por celda serían treinta y dos objetivos diminutos en una pantalla
+  que se usa con el dedo mientras suena.
+- La cuenta atrás solo aparece cuando hay algo esperando, y en negras. Un
+  contador permanente sería ruido en la pantalla que más se mira de reojo.
+- El aviso de guardado va ANTES que el de MIDI. Sin destino MIDI no se oye nada y
+  eso se nota solo; un Autosave fallando no se nota hasta perder el trabajo.
+- El modelo sube de ContentView a la escena. scenePhase se observa en App, y sin
+  eso no hay forma de forzar la escritura al pasar a segundo plano. La nota que
+  explicaba por qué vivía en ContentView se reescribió en vez de borrarse: lo que
+  decía sigue siendo cierto, ahora lo garantiza estar más arriba.
+- El tick del Autosave es un Task con sleep de un segundo, no un onChange del
+  playhead. El Autosave decide solo si toca escribir; esto solo le da ocasión de
+  mirar.
