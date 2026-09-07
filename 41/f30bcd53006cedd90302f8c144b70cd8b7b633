@@ -1,0 +1,27 @@
+Tareas de la Fase 4: 'El JSON se lee con los ojos' (NFR7), 'Escribir y leer un Bank' (FR18, FR20), 'La escritura es atómica' (FR21), 'El fallo de guardado se propaga' (FR21) y 'Un fichero ilegible se aparta' (FR22).
+
+Van en un commit porque son un tipo. Partirlas habría dejado cuatro commits que
+no compilan por separado o un ProjectStore creciendo por trozos sin que ninguno
+sea un estado entregable.
+
+Decisiones
+- ProjectStore es una clase y no un valor. Lleva lastSaveFailure, que es estado
+  con dueño: FR21 pide que el aviso no se calle hasta que un guardado funcione, y
+  eso no se puede expresar con un valor que se copia.
+- Toda escritura pasa por un único método privado. Es lo que hace que el estado
+  de fallo sea correcto sin repetir la lógica en cada punto de guardado, y lo que
+  hará que el Autosave de la Fase 5 no tenga que acordarse de ponerlo.
+- load() no lanza nunca, y esa es la promesa entera de FR22. La app siempre abre.
+  Lo que devuelve dice qué se apartó, para que la pantalla pueda contarlo.
+- Sin cabecera legible, los Banks que sí se leyeron se conservan. Se pierde dónde
+  se estaba mirando, que es lo barato. La alternativa —devolver un Project vacío
+  porque falta la cabecera— habría convertido un fichero pequeño corrupto en la
+  pérdida de todo el material.
+- Apartar usa move y nunca delete. El fichero es la única copia de lo que el
+  usuario tenía, y aunque esta app no sepa leerlo, otra versión o una persona con
+  un editor pueden.
+- El timestamp es inyectable. Sin eso, el test del nombre del fichero apartado
+  dependería del reloj.
+- .sortedKeys no es cosmético: sin él, dos guardados del mismo material producen
+  ficheros distintos y el diff deja de servir, que es la mitad de la razón por la
+  que tech-stack.md eligió JSON.
