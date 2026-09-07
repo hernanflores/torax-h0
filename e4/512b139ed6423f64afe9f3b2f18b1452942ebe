@@ -1,0 +1,20 @@
+Tarea: Anotar en la Pre Spec qué se entrega de §Guardado (FR14, FR16, FR17)
+
+Qué cambia
+- Nota fechada 2026-09-07 bajo §Guardado: qué entra de los tres modos, con el
+  comportamiento concreto del Autosave (debounce, background, solo el Bank
+  tocado, también sonando) y de Save/Reload (cuantizado, sin confirmación, no
+  disponible sin punto de retorno).
+- La limitación que deja Backup Project fuera, escrita donde se lee: el estado
+  vive en el contenedor de la app.
+- Vocabulario cerrado.
+
+Por qué
+La Pre Spec promete tres modos de guardado en tres viñetas y la rebanada entrega
+dos. Sin la nota, la página seguiría prometiendo un Backup Project que la app no
+hace — que es la misma situación que product.md tuvo con MIDI Learn y que se
+resolvió igual.
+
+El vocabulario se fija ahora porque es barato ahora. 'Slot' y 'preset' son las
+dos palabras que se cuelan solas al escribir una rejilla de dieciséis huecos, y
+el proyecto ya tiene la regla de no inventar sinónimos del dominio.
