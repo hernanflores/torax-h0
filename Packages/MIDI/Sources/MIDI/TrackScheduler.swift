@@ -96,6 +96,22 @@ public enum SchedulerMaterial: Equatable, Sendable {
         }
     }
 
+    /// Cuántos triggers extra cuelgan de cada Pulse.
+    ///
+    /// **El arnés usa el neutro y no repite** (FR14), por la misma razón por la
+    /// que usa el `Groove` por defecto: mide la rejilla temporal, no el material
+    /// musical. Una tirada de repeticiones metería nueve eventos donde el
+    /// histograma espera uno y mediría otra cosa.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    var noteRepeater: NoteRepeater {
+        switch self {
+        case .cycle(let cycle): cycle.noteRepeater
+        case .everyStep: .default
+        }
+    }
+
     /// Con qué altura suena el Step.
     ///
     /// **Quien conoce el material decide la altura.** Podría hacerlo el
@@ -476,7 +492,9 @@ public struct TrackScheduler {
         )?
     ) {
         guard let emit, let cycle = material.cycle else { return }
-        let repeater = cycle.noteRepeater
+        // Se pregunta al material y no al Cycle, para que la vía del arnés tenga
+        // una respuesta escrita —el neutro— y no dependa de que `cycle` sea nil.
+        let repeater = material.noteRepeater
         let count = repeater.repeats.count
         guard count > 0 else { return }
 

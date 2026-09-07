@@ -239,6 +239,19 @@ final class RepetitionEmissionTests: XCTestCase {
 
     // MARK: - El arnés
 
+    /// El arnés declara el `NoteRepeater` neutro, junto a su `Groove` por
+    /// defecto: mide la rejilla temporal, no el material musical (FR14).
+    func testTheHarnessDeclaresTheNeutralRepeater() {
+        XCTAssertEqual(SchedulerMaterial.everyStep.noteRepeater, NoteRepeater.default)
+    }
+
+    /// Y un Cycle declara el suyo.
+    func testACycleDeclaresItsOwnRepeater() {
+        let ratcheted = cycle(repeats: 5)
+        XCTAssertEqual(
+            SchedulerMaterial.cycle(ratcheted).noteRepeater, ratcheted.noteRepeater)
+    }
+
     /// El arnés de medición no repite: mide la rejilla temporal, no el material.
     func testTheMeasurementHarnessDoesNotRepeat() {
         var scheduler = TrackScheduler(timeline: timeline(), material: .everyStep)
