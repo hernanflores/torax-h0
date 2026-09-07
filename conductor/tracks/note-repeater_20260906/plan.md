@@ -26,6 +26,24 @@ rebanada cree instantes nuevos entre los Steps. Queda anotado en la Fase 1 que e
 el segundo cambio desde la suspensión que toca la rejilla temporal y que aquí no
 se abre excepción.
 
+> **Enmienda del 2026-09-07 — la persistencia ya existe, y este plan la daba por
+> inexistente.** El plan y su `spec.md` se escribieron el 2026-09-06, cuando la
+> rebanada 4 de la v2 estaba «por planificar»; el `spec.md` la lista en *Out of
+> Scope* con la frase «Persistencia. No existe». Entró a `main` el 2026-09-07, y
+> `ProjectRecord.swift` deja escrito lo que eso implica: «añadir un parámetro al
+> `Cycle` tiene que romper un test», nombrando a esta rebanada.
+>
+> **Añadir el `NoteRepeater` al `Cycle` sin tocar `CycleRecord` haría que guardar
+> un Bank perdiera los cuatro parámetros en silencio**, que es exactamente lo que
+> la rebanada 4 existió para impedir. Entra por eso una tarea nueva en la Fase 2,
+> decidida con el usuario.
+>
+> **`schemaVersion` se queda en 1.** `ProjectRecord.validated()` exige igualdad
+> exacta, así que subirla sin migrador dejaría ilegibles los ficheros ya escritos
+> en el iPad. Las cuatro claves se decodifican con default neutro, y un fichero
+> sin ellas se lee como el estado de antes de la rebanada — que es la misma
+> promesa que FR16 hace para la salida MIDI, aplicada al disco.
+
 **Nada nuevo cruza al hilo del scheduler que no sea trivialmente copiable.** Si
 una tarea empuja hacia un array temporal de eventos o hacia coma flotante dentro
 del bucle de ventana, es la señal de que el diseño se está torciendo: parar y
@@ -120,6 +138,19 @@ revisar antes de seguir (NFR1).
   - [ ] Documentar por qué el caso se llama `.repeatTime` y el usuario lee
         `Time`: desambiguación de Swift frente a `MusicalTime`, no un término
         nuevo (NFR7).
+- [ ] Task: El `NoteRepeater` sobrevive al disco (enmienda del 2026-09-07)
+  - [ ] Tests (Red): `CycleRecord` gana cuatro claves —`repeats`, `repeatTime`,
+        `ramp` y `pace`— y el test que enumera las claves esperadas las exige.
+  - [ ] Tests (Red): round-trip completo — un Cycle con los cuatro movidos vuelve
+        del JSON idéntico, con los literales escritos a mano que usa
+        `RecordRoundTripTests`.
+  - [ ] Tests (Red): **un fichero sin las claves nuevas se lee como el estado de
+        antes de la rebanada** — Repeats 0, Time 1/32, Ramp 0, Pace 0—, y
+        `schemaVersion` **sigue siendo 1**.
+  - [ ] Tests (Red): un valor fuera de rango cae en su default en vez de
+        reventar, como el resto de las claves.
+  - [ ] Implementación (Green): las cuatro claves, con decodificación tolerante.
+
 - [ ] Task: El texto de la familia Shape, en dos líneas (FR15)
   - [ ] Tests (Red): `FamilyReadout` de Shape devuelve **dos líneas** — los
         cuatro de siempre y los cuatro nuevos — y el test que compara lo que
