@@ -114,13 +114,13 @@ revisar antes de seguir (NFR1).
         ritmo.
   - [x] Implementación (Green): aritmética entera en nanosegundos, multiplicando
         antes de dividir, como `Sustain.gateNanoseconds`.
-- [ ] Task: `NoteRepeater` dentro del `Cycle` (FR1, NFR2)
-  - [ ] Tests (Red): el `Cycle` por defecto trae el `NoteRepeater` neutro;
+- [x] Task: `NoteRepeater` dentro del `Cycle` (FR1, NFR2) — 8508ac1
+  - [x] Tests (Red): el `Cycle` por defecto trae el `NoteRepeater` neutro;
         `with(...)` lo conserva al cambiar Shape, Groove o pool.
-  - [ ] Tests (Red): **`_isPOD(Cycle.self)` sigue pasando**, y el test de coste
+  - [x] Tests (Red): **`_isPOD(Cycle.self)` sigue pasando**, y el test de coste
         del snapshot se actualiza con el tamaño nuevo — cuatro enteros por Cycle.
-  - [ ] Tests (Red): cada Cycle tiene el suyo; editar el B no toca al A.
-  - [ ] Implementación (Green): el campo en `Cycle`, su `with(noteRepeater:)` y
+  - [x] Tests (Red): cada Cycle tiene el suyo; editar el B no toca al A.
+  - [x] Implementación (Green): el campo en `Cycle`, su `with(noteRepeater:)` y
         el default.
 - [ ] Task: Los cuatro `TrackParameter` (FR2, FR3, FR17)
   - [ ] Tests (Red): `.repeats`, `.repeatTime`, `.ramp` y `.pace` existen, caen
