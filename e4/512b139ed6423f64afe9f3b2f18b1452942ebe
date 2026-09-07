@@ -18,3 +18,30 @@ resolvió igual.
 El vocabulario se fija ahora porque es barato ahora. 'Slot' y 'preset' son las
 dos palabras que se cuelan solas al escribir una rejilla de dieciséis huecos, y
 el proyecto ya tiene la regla de no inventar sinónimos del dominio.
+
+--- Verificación de fase: FASE 1 — LAS DESVIACIONES QUEDAN ESCRITAS (2026-09-07) ---
+
+Comandos ejecutados
+  swift test --package-path Packages/Engine
+    → 578 tests, 0 fallos
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    → 21 tests, 1 saltado, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    → 594 tests, 0 fallos
+Sin rastro del flake clientCreationFailed(-50).
+
+Cobertura de la fase
+Los ficheros tocados son todos .md, que el protocolo excluye de la exigencia de
+tests. No se escribió ningún test porque no se escribió código.
+
+Verificación manual propuesta
+Leer las seis notas: la entrada [~] del registro con su enmienda de alcance; la
+nota de Success Criteria con la doble justificación de la no-medición; la línea
+de Fuera de v1 y la enmienda a la frontera del tacto; el paquete Persistence en
+Estructura de módulos y la enmienda de Persistencia en tech-stack.md; la fila
+Persistence ≥90% en workflow.md; y la nota de §Guardado en la Pre Spec.
+
+Confirmación del usuario
+Confirmada el 2026-09-07: «Sí — cerrar la fase», tras señalarle que el punto a
+mirar con lupa era la enmienda de la frontera del tacto, por ser la única nota
+que corrige una afirmación anterior en vez de añadir una nueva.
