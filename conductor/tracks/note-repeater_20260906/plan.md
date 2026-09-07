@@ -160,18 +160,18 @@ revisar antes de seguir (NFR1).
 
 ## FASE 3: LA EMISIÓN APRENDE VELOCITY Y GATE PROPIOS
 
-- [~] Task: `NoteEmitter` recibe la velocity y el gate del evento (FR7, FR12)
-  - [ ] Tests (Red): emitir con una velocity distinta de la del Groove produce
+- [x] Task: `NoteEmitter` recibe la velocity y el gate del evento (FR7, FR12) — b74ac73
+  - [x] Tests (Red): emitir con una velocity distinta de la del Groove produce
         ese note-on; el note-off sigue con velocity 0, que es la convención de
         MIDI 1.0.
-  - [ ] Tests (Red): emitir con un gate explícito sella el note-off a esa
+  - [x] Tests (Red): emitir con un gate explícito sella el note-off a esa
         distancia, sin volver a mirar el Step.
-  - [ ] Tests (Red, FR16): **la vía de hoy no cambia** — un Pulse sin
+  - [x] Tests (Red, FR16): **la vía de hoy no cambia** — un Pulse sin
         repeticiones emite exactamente el mismo par de mensajes, con la Velocity
         del Groove y el gate de Sustain sobre el Step.
-  - [ ] Implementación (Green): la velocity y el gate pasan a ser argumentos del
+  - [x] Implementación (Green): la velocity y el gate pasan a ser argumentos del
         evento, no cosas que el emisor deduce del `Groove`.
-  - [ ] Documentar el porqué: el Pulse y sus repeticiones tienen que viajar por
+  - [x] Documentar el porqué: el Pulse y sus repeticiones tienen que viajar por
         **el mismo camino**. Un camino aparte para las repeticiones duplicaría la
         regla del note-off, que es la que evita notas colgadas.
 - [ ] Task: El gate de una repetición se mide sobre su hueco (FR12)
