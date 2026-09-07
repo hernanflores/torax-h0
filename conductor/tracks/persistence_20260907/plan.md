@@ -225,7 +225,7 @@ su test de que el fichero anterior sigue ahí.
 
 ## FASE 6: EL CAMBIO CUANTIZADO — LA RANURA ARMADA
 
-- [ ] Task: Medir antes de construir encima (NFR2)
+- [x] Task: Medir antes de construir encima (NFR2) — `0891721`
   - [ ] Medir el tamaño del handoff con la ranura armada dentro y el coste de la
         lectura extra por ventana, con el método de `cycles_20260901`: tipo de
         prueba con la forma real, 200 000 lecturas por pasada, tres pasadas.
