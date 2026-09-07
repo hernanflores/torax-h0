@@ -20,3 +20,45 @@ Ficheros modificados:
 - Packages/Engine/Tests/EngineTests/FamilyReadoutTests.swift (4 tests nuevos)
 
 Verificación: Engine 779 · MIDI 640, 0 fallos. xcodebuild iOS SUCCEEDED.
+
+--- Verificación de la FASE 2: EL VALOR PURO — NoteRepeater EN Engine (2026-09-07) ---
+
+Tests automáticos ejecutados:
+  swift test --package-path Packages/Engine
+    Executed 779 tests, with 0 failures (709 al abrir la fase)
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    Executed 21 tests, with 1 test skipped and 0 failures
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    Executed 640 tests, with 0 failures
+  swift test --package-path Packages/Persistence
+    Executed 62 tests, with 0 failures
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    ** BUILD SUCCEEDED **
+
+Cobertura: Engine 98,52% de líneas (umbral 90). MIDI 93,19% medida en un proceso
+y excluyendo Engine/Sources (umbral 80). Sin flake clientCreationFailed(-50) en
+ninguna pasada.
+
+Cobertura de los ficheros de la fase: NoteRepeater.swift 98,92%,
+TrackParameter.swift 100%, FamilyReadout.swift 100%, ProjectRecord.swift 98,97%.
+
+Los dos ficheros de App/ que aparecen en el diff de la fase (TrackReadout.swift,
+TrackSelectorView.swift) son reflow de swift format, sin cambio de
+comportamiento.
+
+Verificación manual propuesta: reconfigurar el preset (versión 4, cuatro knobs
+nuevos), y en el iPad con el BeatStep Pro comprobar que los knobs 10, 11, 12 y 14
+mueven Repeats, Time, Ramp y Pace con valor grande transitorio y sin envolver en
+los topes; que el knob 13 sigue siendo el Cycle en edición; que con cualquier
+valor de los cuatro el Pattern suena IGUAL que antes, porque la emisión no se
+cablea hasta la Fase 4; y que Save/Reload devuelve los cuatro, mientras un Bank
+guardado antes del cambio sigue abriendo con los cuatro en su neutro.
+
+Confirmación del usuario: «OK» (2026-09-07).
+
+Desviaciones de la fase, ya anotadas en el plan y en las git notes:
+- Enmienda: entra una tarea de persistencia que el plan no tenía, porque la
+  rebanada 4 llegó a main después de escribirse el plan.
+- Trabajo arrastrado de la Fase 5: el invariante 'todo TrackParameter tiene su
+  controlador' obligó a asignar los CC 79, 80, 81 y 83 y a actualizar el preset
+  JSON y el README ya. Lo que queda de la Fase 5 es el resto de esa fase.
