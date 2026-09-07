@@ -29,3 +29,34 @@ Decisiones de pantalla
 - El tick del Autosave es un Task con sleep de un segundo, no un onChange del
   playhead. El Autosave decide solo si toca escribir; esto solo le da ocasión de
   mirar.
+
+--- Verificación de fase: FASE 7 — LA PANTALLA banks (2026-09-07) ---
+
+Comandos ejecutados
+  swift test --package-path Packages/Engine       → 704 tests, 0 fallos
+  swift test --package-path Packages/Persistence  → 62 tests, 0 fallos
+  swift test --package-path Packages/MIDI (partición CI) → 640 + 21, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS
+                                                  → BUILD SUCCEEDED
+
+Cobertura de los cambios de la fase
+Lo que se pudo bajar a Engine tiene tests: PatternSlotState (9) y la cuenta atrás
+(6). Lo que queda en App —BanksScreen, AppChrome, TransportModel— no se mide, por
+la regla de Coverage Requirements, y su cambio es cableado: la clasificación de
+estado y el cálculo de negras ya no están ahí.
+
+Verificación manual: lo que SÍ se comprobó
+Simulador iPad Pro 11', arranque de la app, capturado dos veces. La primera
+captura destapó una regresión real —la app abría con '1 / 16' y 'pool empty'— y
+la segunda, tras el arreglo, muestra la pantalla track idéntica a antes de la
+rebanada: 5/16, division 1/16, minor/C con el pool c3, cycle 01/01, 120 bpm.
+
+Verificación manual: lo que NO se comprobó, dicho
+La pantalla banks no se llegó a ver. simctl no sabe tocar la pantalla y no hay
+idb ni fbsimctl instalados, así que no se pudo navegar hasta la pestaña. Quedan
+sin verificar visualmente: los cuatro estados de hueco, la cuenta atrás en
+negras, los botones save/reload con su motivo, copy/clear, y que las asignaciones
+digan el Pattern real. Todo eso entra en el guion de la Fase 8, en dispositivo.
+
+Confirmación del usuario
+Confirmada el 2026-09-07: «OK, avancemos», con lo no verificado sobre la mesa.
