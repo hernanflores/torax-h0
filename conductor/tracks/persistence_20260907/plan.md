@@ -85,7 +85,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Test de que `Bank` **no** pretende ser POD y de que
         `_isPOD(Pattern.self)` sigue pasando: la restricción de tiempo real no
         sube de nivel, y conviene que un test lo diga en voz alta.
-- [x] Task: `Project`, dieciséis Banks y los índices de sesión (FR1, FR23) — `9912b54`, `2b2858f`
+- [x] Task: `Project`, dieciséis Banks y los índices de sesión (FR1, FR23) — `27320f0`, `2b2858f`
   - [ ] Tests (Red): 16 Banks vacíos; los índices de Bank, Pattern y Track
         seleccionados se acotan a su rango y no envuelven.
   - [ ] Tests (Red): `Project.initial` deja el material de arranque de hoy
