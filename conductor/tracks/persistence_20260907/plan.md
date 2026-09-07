@@ -263,7 +263,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Tests (Red): el Pattern entrante empieza por el primer Cycle activo de
         cada Track; el cursor de **edición** viaja con el Pattern y no se toca.
   - [ ] Implementación (Green).
-- [ ] Task: Las notas que cruzan el límite terminan (FR9)
+- [x] Task: Las notas que cruzan el límite terminan (FR9) — `72ad555`
   - [ ] Tests (Red), sobre el loopback: una nota con Sustain que cruza el cambio
         **recibe su note-off**; no hay all-notes-off en el límite; ninguna nota
         queda colgada tras diez cambios seguidos.
