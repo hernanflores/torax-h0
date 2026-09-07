@@ -34,7 +34,7 @@ su test de que el fichero anterior sigue ahí.
 
 ## FASE 1: LAS DESVIACIONES QUEDAN ESCRITAS
 
-- [ ] Task: Anotar que la rebanada sí toca el motor (Overview, FR6, FR7)
+- [x] Task: Anotar que la rebanada sí toca el motor (Overview, FR6, FR7) — `e6dcd6e`
   - [ ] Nota fechada el 2026-09-07 en `conductor/tracks.md`, sobre la entrada de
         la rebanada 4: donde dice «no es una rebanada de motor», decir qué dejó
         de ser cierto y por qué se elige igualmente — un Pattern que solo entra
