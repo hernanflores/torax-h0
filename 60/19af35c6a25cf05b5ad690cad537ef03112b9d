@@ -1,0 +1,25 @@
+Tarea: Coste de guardar, medido (NFR3). Y la cobertura de DiskFileSystem.
+
+Números en host, con el sistema de ficheros en memoria (lo que miden es la
+serialización; el disco real se mide en dispositivo, Fase 8):
+
+  Bank lleno         676 458 bytes (660 KB)     guardar: 15,5 ms
+  Bank vacío         106 bytes
+  Project entero     dieciséis Banks llenos:    243,6 ms
+
+El de 243,6 ms es el que decide algo: es lo que costaría un Autosave que
+escribiera el Project entero, y por eso FR14 dice que escriba solo el Bank
+tocado. La Fase 5 elige su cadencia con este número delante en vez de a ciegas.
+
+Los tests de tamaño afirman el orden de magnitud y no el dígito, para no fallar
+cada vez que se añada un campo al Cycle — que va a pasar en las rebanadas 5 y 6.
+
+Sobre DiskFileSystem
+Estaba al 0% y el paquete al 87,60%, por debajo del umbral de 90%. La costura
+había hecho testeable todo menos su propia implementación, que es la única pieza
+que en producción toca ficheros de verdad. No se ve leyendo el código: el diseño
+parece completo. Se ve en el número.
+
+Diez tests contra un directorio temporal que se borra al terminar, incluido uno
+que corre el almacén entero contra el disco real sin el doble — si la costura y
+su implementación se separaran, se vería ahí.
