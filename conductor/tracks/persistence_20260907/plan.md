@@ -284,7 +284,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Implementación (Green).
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 7: LA PANTALLA `banks` DEJA DE SER CÁSCARA
+## FASE 7: LA PANTALLA `banks` DEJA DE SER CÁSCARA [checkpoint: 2001e93]
 
 - [x] Task: Bajar a `Engine` lo que la cáscara dejó arriba (FR25) — `3c95de0`
   - [ ] `BankGrid.count` y `PatternGrid.count` se van con `Bank`, como su propia
@@ -315,7 +315,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] El Autosave escribe también con el transporte corriendo (FR15): fuera del
         hilo principal y lejos del scheduler.
   - [ ] Verificar en simulador que un fichero apartado se anuncia y la app abre.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 8: DISPOSITIVO Y CIERRE
 
