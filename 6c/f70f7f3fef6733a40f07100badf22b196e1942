@@ -1,0 +1,20 @@
+Tarea: Sacar Patterns y Banks de «Fuera de v1» en product.md (FR1, FR25)
+
+Qué cambia
+- Fuera de v1: la línea de Patterns/Banks/guardado queda tachada salvo Backup
+  Project, con el porqué inline, siguiendo el formato que ya usan Cycles y los
+  múltiples Tracks.
+- Nota fechada 2026-09-07 tras la lista: qué entrega la rebanada, el cambio
+  cuantizado como razón de producto y no de implementación, y qué se queda fuera
+  con su motivo — Backup Project, Program Change, encadenado, disparo desde el
+  controlador (no quedan step buttons libres), nombres y copiar Banks.
+- Enmienda a la nota del 2026-09-06 sobre las cuatro pantallas.
+
+Por qué
+La enmienda de la frontera del tacto es la parte que importa. La nota del
+2026-09-06 dividía las pantallas en 'se lee mientras suena' y 'se configura antes
+de tocar', y elegir un Pattern rompe esa línea: es un gesto de directo en una
+pantalla del lado táctil. En vez de dejar la contradicción o mover banks de lado,
+se corrige el criterio — la frontera nunca fue temporal, fue qué se edita con el
+dedo. track sigue sin editar un parámetro generativo al tacto y sus cuatro
+escrituras auditadas siguen siendo cuatro.
