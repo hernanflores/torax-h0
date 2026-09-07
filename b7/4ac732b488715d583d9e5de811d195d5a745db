@@ -1,0 +1,28 @@
+Task: NoteEmitter recibe la velocity y el gate del evento (FR7, FR12)
+
+Qué cambia: NoteEmitter gana emit(pitch:velocity:gateNanoseconds:on:atHostTime:send:).
+La firma de siempre —la que recibe un Groove y la duración del Step— se conserva
+y ahora es un envoltorio: calcula la velocity del Groove y el gate de Sustain
+sobre el Step, y llama a la nueva.
+
+Por qué así y no un camino aparte para las repeticiones: la regla del note-off
+—sellarlo un gate más tarde, con velocity 0— es la única que impide notas
+colgadas. Duplicarla en dos caminos es exactamente cómo se cuelgan: dos sitios
+que sellan apagados y uno que se olvida al cambiar el otro.
+
+FR16 con test propio: la vía del Groove y la del evento producen los mismos dos
+mensajes y los mismos instantes, comprobado además recorriendo Sustain al 1, 25,
+50, 100, 150 y 200% — que es donde se vería un redondeo que se hubiera movido de
+sitio al mover el cálculo.
+
+El clamp del gate a cero se conserva y ahora vive en un solo sitio, con su test.
+
+Ficheros modificados:
+- Packages/MIDI/Sources/MIDI/NoteEmitter.swift
+Ficheros creados:
+- Packages/MIDI/Tests/MIDITests/NoteEmitterEventTests.swift (9 tests)
+
+El sitio de llamada de Transport.swift no cambia: sigue usando la firma con
+Groove, y lo hará hasta que la Fase 4 tenga repeticiones que emitir.
+
+Verificación: MIDI 649 tests, 0 fallos (640 antes).
