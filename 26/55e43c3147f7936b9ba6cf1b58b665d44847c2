@@ -1,0 +1,26 @@
+Tarea: Qué Patterns tienen material (FR25)
+
+Qué cambia
+- Packages/Engine/Sources/Engine/Material.swift (nuevo): Pattern.hasMaterial,
+  Bank.patternsWithMaterial / patternsHavingMaterial / hasMaterial,
+  Project.banksWithMaterial.
+- MaterialTests.swift (nuevo, 12 tests)
+- App/TransportModel.swift: patternHasMaterial delega en Engine.
+
+Ciclo TDD
+Rojo confirmado: 31 errores de compilación antes de implementar.
+
+Decisiones
+- Un fichero de extensiones y no métodos dentro de cada tipo. Lo que se está
+  escribiendo es un mismo concepto leído en tres niveles, y tenerlo junto es lo
+  que hace evidente que el de arriba se define por el de abajo. Repartido en tres
+  ficheros, la definición del Pattern quedaría a cien líneas de la del Bank.
+- patternsHavingMaterial devuelve el array y patternsWithMaterial lo cuenta,
+  en vez de dos recorridos. La rejilla necesita 'cuáles' para pintar y el pie
+  necesita 'cuántos'; derivar el segundo del primero evita que puedan discrepar.
+- Se mira el Cycle en edición y no el que suena. Es el criterio que la pantalla
+  ya usaba: lo que se está construyendo cuenta como material aunque suene otro.
+- El rewiring de TransportModel se hace aquí y no en la Fase 7. La Fase 7 baja la
+  clasificación de estado de la pantalla; esto es la duplicación del criterio, y
+  dejarla viva cinco fases es dejar dos fuentes de verdad que pueden discrepar
+  justo mientras se construye encima.
