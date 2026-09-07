@@ -149,7 +149,7 @@ su test de que el fichero anterior sigue ahí.
 
 ## FASE 4: EL PAQUETE `Persistence` — DISCO, ATOMICIDAD Y RESCATE
 
-- [ ] Task: Crear el paquete SPM `Persistence` (NFR6)
+- [x] Task: Crear el paquete SPM `Persistence` (NFR6) — `06cbb1e`
   - [ ] `Packages/Persistence` con dependencia a `Engine`, target de tests, y
         añadido al proyecto de la app.
   - [ ] Una **costura de sistema de ficheros** inyectable desde el primer
