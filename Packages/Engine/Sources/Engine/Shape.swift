@@ -358,9 +358,12 @@ extension Shape {
     /// - Returns: An updated shape with steps, pulses, and division constrained to their valid ranges, rotation wrapped to the step count, or the original shape for track-level parameters.
     public func applying(_ delta: Int, to parameter: TrackParameter) -> Shape {
         switch parameter {
-        case .velocity, .sustain, .probability, .timing, .delay:
+        case .velocity, .sustain, .probability, .timing, .delay,
+            .repeats, .repeatTime, .ramp, .pace:
             // No son suyos: los ajusta `Cycle.applying(_:to:)`, que es quien
-            // conoce las dos familias. Devolver el Shape intacto es la respuesta
+            // conoce las familias. Los cuatro del Note Repeater están en la
+            // familia Shape y aun así no viven en `Shape`: son una capa sobre el
+            // ritmo, no el ritmo. Devolver el Shape intacto es la respuesta
             // correcta y no un caso olvidado.
             return self
 

@@ -122,7 +122,7 @@ revisar antes de seguir (NFR1).
   - [x] Tests (Red): cada Cycle tiene el suyo; editar el B no toca al A.
   - [x] Implementación (Green): el campo en `Cycle`, su `with(noteRepeater:)` y
         el default.
-- [ ] Task: Los cuatro `TrackParameter` (FR2, FR3, FR17)
+- [~] Task: Los cuatro `TrackParameter` (FR2, FR3, FR17)
   - [ ] Tests (Red): `.repeats`, `.repeatTime`, `.ramp` y `.pace` existen, caen
         en `ParameterFamily.shape` y describen `"Repeats"`, `"Time"`, `"Ramp"` y
         `"Pace"`.

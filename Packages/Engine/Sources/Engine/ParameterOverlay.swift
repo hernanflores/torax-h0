@@ -171,6 +171,12 @@ extension Cycle {
         case .pulses: shape.pulses.count
         case .rotate: shape.rotate.amount
         case .division: Division.ordered.firstIndex(of: shape.division) ?? 0
+        case .repeats: noteRepeater.repeats.count
+        // Como Division, y por lo mismo: el knob recorre una lista, así que su
+        // posición es el índice y no el denominador.
+        case .repeatTime: RepeatTime.ordered.firstIndex(of: noteRepeater.time) ?? 0
+        case .ramp: noteRepeater.ramp.percent
+        case .pace: noteRepeater.pace.percent
         case .velocity: groove.velocity.value
         case .sustain: groove.sustain.percent
         case .probability: groove.probability.percent

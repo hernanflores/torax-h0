@@ -45,6 +45,14 @@ public struct ControlMapping: Equatable, Sendable {
         .delay: 76,
         .timing: 77,
         .probability: 78,
+        // Los cuatro del Note Repeater, desde el 2026-09-07. El 79 lo dejó libre
+        // a propósito `ctrl-all_20260905` al mover el knob del Cycle al 82; el
+        // 80, el 81 y el 83 no pisan nada con significado asignado en la
+        // especificación MIDI. El 82 se salta porque es el knob del Cycle.
+        .repeats: 79,
+        .repeatTime: 80,
+        .ramp: 81,
+        .pace: 83,
     ])
 
     /// CC por defecto del primer knob; los dieciséis van seguidos desde ahí.

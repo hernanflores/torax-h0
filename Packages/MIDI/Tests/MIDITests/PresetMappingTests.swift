@@ -58,10 +58,15 @@ final class PresetMappingTests: XCTestCase {
     /// —`Velocity · Sustain · Probability · Timing · Delay`—: el orden de lectura
     /// es del dominio y el de los knobs es de la mano, y desde esta fecha son dos
     /// cosas distintas.
-    func testTheFirstNineKnobsCarryTheDeclaredParameters() {
+    ///
+    /// > **Trece desde el 2026-09-07.** Los cuatro del Note Repeater entran en
+    /// > los CC 79, 80, 81 y 83, saltando el 82 porque ahí está el Cycle en
+    /// > edición. El nombre del test deja de decir «nueve».
+    func testEveryKnobCarriesItsDeclaredParameter() {
         let expected: [Int: TrackParameter] = [
             70: .steps, 71: .pulses, 72: .rotate, 73: .division,
             74: .velocity, 75: .sustain, 76: .delay, 77: .timing, 78: .probability,
+            79: .repeats, 80: .repeatTime, 81: .ramp, 83: .pace,
         ]
         for (number, parameter) in expected {
             XCTAssertEqual(mapping.controller(for: parameter)?.number, number, "\(parameter)")
@@ -90,11 +95,16 @@ final class PresetMappingTests: XCTestCase {
         }
     }
 
-    /// **Los siete restantes están declarados y sin asignar.** No es un olvido:
-    /// su sitio es de v2, y hasta entonces girarlos no publica nada.
-    func testTheLastSevenKnobsCarryNoParameter() throws {
+    /// **Los dos restantes están declarados y sin asignar.** No es un olvido: su
+    /// sitio es de v2 —Accent, Voicing, Range—, y hasta entonces girarlos no
+    /// publica nada.
+    ///
+    /// > **Eran siete hasta el 2026-09-07.** Cuatro se los llevó el Note
+    /// > Repeater y el quinto es el knob del Cycle en edición, que nunca fue
+    /// > libre.
+    func testTheLastTwoKnobsCarryNoParameter() throws {
         let knobs = mapping.declaredNumbers.knobs
-        for number in knobs.suffix(7) {
+        for number in knobs.suffix(2) {
             let controller = try XCTUnwrap(MIDIController(number))
             XCTAssertNil(mapping.parameter(for: controller), "CC \(number)")
         }
@@ -106,7 +116,7 @@ final class PresetMappingTests: XCTestCase {
             track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
             publish: { _ in }
         )
-        for number in mapping.declaredNumbers.knobs.suffix(7) {
+        for number in mapping.declaredNumbers.knobs.suffix(2) {
             let controller = try XCTUnwrap(MIDIController(number))
             XCTAssertFalse(
                 input.receive(
@@ -128,21 +138,22 @@ final class PresetMappingTests: XCTestCase {
         XCTAssertEqual(mapping.declaredNumbers.knobs[12], 82)
     }
 
-    /// **El CC 79 quedó libre y se ignora en silencio**, con el mismo criterio
-    /// que los otros cinco: no es un olvido, y girarlo no es un error.
-    func testTheTenthKnobIsNowFree() throws {
+    /// **El CC 79 dejó de ser el knob del Cycle, y desde el 2026-09-07 es
+    /// Repeats.** Quedó libre el 2026-09-05 al mover el Cycle al 82, y el Note
+    /// Repeater lo ocupó: es el sitio que se le había dejado.
+    func testTheTenthKnobIsRepeatsAndNotTheCycleKnob() throws {
         let seventyNine = try XCTUnwrap(MIDIController(79))
-        XCTAssertNil(mapping.parameter(for: seventyNine))
+        XCTAssertEqual(mapping.parameter(for: seventyNine), .repeats)
         XCTAssertNotEqual(mapping.editingCycleController, seventyNine)
 
         let input = ControlInput(
             track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
             publish: { _ in }
         )
-        XCTAssertFalse(
+        XCTAssertTrue(
             input.receive(
                 .controlChange(channel: MIDIChannel(1)!, controller: seventyNine, value: 1)),
-            "el knob 10 movió algo")
+            "el knob 10 no movió Repeats")
     }
 
     /// **El número sigue al bloque, no está clavado al 82.** Es lo que separa un

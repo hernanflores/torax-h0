@@ -62,6 +62,8 @@ public struct ParameterChange: Equatable, Sendable {
         let shape = current.shape
         let previousGroove = previous.groove
         let groove = current.groove
+        let previousRepeater = previous.noteRepeater
+        let repeater = current.noteRepeater
 
         // **La cadena decide a cuál se le da voz, no cómo se escribe.** Los
         // nueve cuerpos eran idénticos desde que `TrackParameter.value(in:)`
@@ -77,6 +79,14 @@ public struct ParameterChange: Equatable, Sendable {
             moved = .rotate
         } else if previousShape.division != shape.division {
             moved = .division
+        } else if previousRepeater.repeats != repeater.repeats {
+            moved = .repeats
+        } else if previousRepeater.time != repeater.time {
+            moved = .repeatTime
+        } else if previousRepeater.ramp != repeater.ramp {
+            moved = .ramp
+        } else if previousRepeater.pace != repeater.pace {
+            moved = .pace
         } else if previousGroove.velocity != groove.velocity {
             moved = .velocity
         } else if previousGroove.sustain != groove.sustain {

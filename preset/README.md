@@ -22,7 +22,7 @@ Se configura en MIDI Control Center, por encoder o para todos a la vez.
 
 ## Los dieciséis knobs — CC 70 a 85
 
-Los nueve primeros son los nueve parámetros del Track.
+Trece de los dieciséis mueven un parámetro del Track.
 
 | Knob | CC | Parámetro |
 |---|---|---|
@@ -35,17 +35,29 @@ Los nueve primeros son los nueve parámetros del Track.
 | 7 | 76 | Delay |
 | 8 | 77 | Timing |
 | 9 | 78 | Probability |
-| 10–12 | 79–81 | **Sin asignar.** Se ignoran en silencio |
+| 10 | 79 | Repeats |
+| 11 | 80 | Time |
+| 12 | 81 | Ramp |
 | 13 | 82 | **Cycle en edición** del Track seleccionado |
-| 14–16 | 83–85 | **Sin asignar.** Se ignoran en silencio |
+| 14 | 83 | Pace |
+| 15–16 | 84–85 | **Sin asignar.** Se ignoran en silencio |
 
 El knob 13 mueve el cursor de edición del Track seleccionado. **Cuántos Cycles
 están activos no se toca aquí**, sino en la pantalla — la nota del 2026-09-02 en
 la Pre Spec explica por qué el gesto de CTRL se partió en dos.
 
-Los seis libres están declarados a propósito, no olvidados: su sitio es de v2
-—Accent, Repeats, Time, Voicing, Range—. Girarlos no hace nada y no es un
-error.
+Los dos libres están declarados a propósito, no olvidados: su sitio es de v2
+—Accent, Voicing, Range—. Girarlos no hace nada y no es un error.
+
+> **Nota del 2026-09-07 — entran los cuatro del Note Repeater.** Repeats, Time,
+> Ramp y Pace ocupan los CC 79, 80, 81 y 83, saltando el 82 porque ahí está el
+> Cycle en edición. El 79 lo había dejado libre a propósito `ctrl-all_20260905`,
+> y el 80, el 81 y el 83 no pisan nada con significado asignado en la
+> especificación MIDI.
+>
+> **Ramp y Pace son knobs propios y no secundarios de CTRL**, que es lo que la
+> Pre Spec describía: el BeatStep Pro no tiene CTRL. Es el mismo caso que la nota
+> del 2026-09-02 resolvió con los Cycles.
 
 > **Nota del 2026-09-05 — tres knobs cambiaron de sitio.** Delay pasó del 78 al
 > **76** y Probability del 76 al **78**; el Cycle en edición se fue del knob 10
