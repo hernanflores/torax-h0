@@ -216,17 +216,17 @@ revisar antes de seguir (NFR1).
   - [x] Comprobar que **`advanceBudgetNanoseconds` no cambia**: las repeticiones
         van siempre *después* del Pulse, así que no adelantan ningún instante y
         el presupuesto sigue siendo cosa de Delay.
-- [~] Task: Probability decide sobre todas las notas (FR13)
-  - [ ] Tests (Red): cada evento consume **una** tirada, en orden — primero el
+- [x] Task: Probability decide sobre todas las notas (FR13) — bdb6a74
+  - [x] Tests (Red): cada evento consume **una** tirada, en orden — primero el
         Pulse, después las repeticiones.
-  - [ ] Tests (Red): **un Pulse callado no se lleva sus repeticiones**.
-  - [ ] Tests (Red): una repetición **descartada por el corte no consume
+  - [x] Tests (Red): **un Pulse callado no se lleva sus repeticiones**.
+  - [x] Tests (Red): una repetición **descartada por el corte no consume
         tirada**, así que girar Time o Pace no desplaza las omisiones.
-  - [ ] Tests (Red): misma semilla, misma secuencia de omisiones.
-  - [ ] Tests (Red, FR16): **con Repeats en 0 el consumo de aleatoriedad es
+  - [x] Tests (Red): misma semilla, misma secuencia de omisiones.
+  - [x] Tests (Red, FR16): **con Repeats en 0 el consumo de aleatoriedad es
         idéntico al de antes de la rebanada** — mismo número de tiradas, mismas
         omisiones, misma semilla.
-  - [ ] Implementación (Green): la tirada por evento, después del corte y no
+  - [x] Implementación (Green): la tirada por evento, después del corte y no
         antes.
 - [ ] Task: El arnés no repite (FR14)
   - [ ] Tests (Red): `SchedulerMaterial.everyStep` devuelve el `NoteRepeater`
