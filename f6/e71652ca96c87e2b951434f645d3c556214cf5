@@ -1,0 +1,37 @@
+Tarea: Los DTO espejo y la traducción (FR18)
+
+Qué cambia
+- Packages/Engine/Sources/Engine/ProjectRecord.swift (nuevo): CycleRecord,
+  TrackRecord, PatternRecord, BankRecord, ProjectRecord.
+- RecordRoundTripTests.swift (nuevo, 16 tests).
+
+Ciclo TDD
+Rojo confirmado: los cinco records sin existir. Después, un fallo real de
+implementación que el test cazó — ver abajo.
+
+El fallo que el test cazó, que es lo que hace la tarea
+TrackRecord.track reconstruía el Track llamando a withActiveCount DESPUÉS de
+escribir los dieciséis Cycles. Ese método copia el Cycle en edición en los huecos
+que activa (FR3 de cycles_20260901): correcto cuando lo sube un usuario —el Cycle
+nuevo suena igual hasta que se edita— y destructivo al leer un fichero, porque
+pisa lo que se acaba de leer. Un Track con seis Cycles activos y material
+distinto en el quinto volvía del disco con el primero repetido.
+
+No se ve leyendo el código: withActiveCount parece un setter. Se ve porque el
+test construía un Track con material en un hueco no trivial. El mismo error
+estaba en el setup del test y también hubo que corregirlo ahí.
+
+Decisiones
+- Records planos y no anidados. Un Cycle son quince números y una cadena; anidar
+  Shape, Groove y TonalFrame añadiría tres niveles de llaves a un fichero que se
+  quiere leer con los ojos, sin ganar nada — no hay ningún sitio donde se
+  necesite medio Cycle.
+- El pool se guarda como [Int] y no como el UInt64 que lo empaqueta. Guardar el
+  entero sería exactamente el error que esta capa existe para evitar.
+- Clave de escala propia ('minor') y no Scale.name ('Minor'). Son dos
+  vocabularios: uno se lee en pantalla, otro se guarda. El switch es exhaustivo
+  sin default, así que añadir una escala al motor no compila hasta que alguien
+  decida su clave.
+- Los valores fuera de rango caen en su default en vez de reventar. Un Sustain de
+  900 en el fichero no es razón para no abrir la app: fallar la carga entera
+  convertiría un byte malo en la pérdida de un Bank.
