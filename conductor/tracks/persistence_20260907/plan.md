@@ -194,7 +194,7 @@ su test de que el fichero anterior sigue ahí.
         dispositivo en la Fase 8; aquí se establece la línea base.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 5: AUTOSAVE, SAVE BANK Y RELOAD
+## FASE 5: AUTOSAVE, SAVE BANK Y RELOAD [checkpoint: 7641d27]
 
 - [x] Task: El Autosave y su debounce (FR14) — `7641d27`
   - [ ] Tests (Red): N cambios seguidos producen **una** escritura, no N; la
@@ -221,7 +221,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Implementación (Green). La cuantización de `Reload` con el transporte
         corriendo se conecta en la Fase 6, sobre el mismo mecanismo que el cambio
         de Pattern.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: EL CAMBIO CUANTIZADO — LA RANURA ARMADA
 
