@@ -234,7 +234,7 @@ su test de que el fichero anterior sigue ahí.
         alternativa escrita es que el hilo principal publique al cruzar (FR7,
         opción descartada), y reabrirla exige que el número lo justifique.
   - [ ] Anotar el resultado en la spec, como hizo la Fase 1 de `cycles`.
-- [ ] Task: El compás como rejilla (FR6)
+- [x] Task: El compás como rejilla (FR6) — `52c5cff`
   - [ ] Tests (Red): dado un tempo y un instante, el próximo límite de compás
         —cuatro negras— cae donde debe; el caso de estar exactamente encima del
         límite es el que hay que fijar por test y no por intuición.
