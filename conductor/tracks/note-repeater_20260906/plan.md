@@ -187,18 +187,18 @@ revisar antes de seguir (NFR1).
 
 ## FASE 4: LA TIRADA — EL `TrackScheduler` REPITE
 
-- [~] Task: El límite de la tirada (FR9)
-  - [ ] Tests (Red): dado un Cycle y un Step que dispara, el límite es el
+- [x] Task: El límite de la tirada (FR9) — 290a6ac
+  - [x] Tests (Red): dado un Cycle y un Step que dispara, el límite es el
         **instante de emisión** del Pulse siguiente de la vuelta, con su Timing y
         su Delay dentro — no la rejilla recta.
-  - [ ] Tests (Red): sin más Pulses por delante, el límite es **el cierre de la
+  - [x] Tests (Red): sin más Pulses por delante, el límite es **el cierre de la
         vuelta**, y la vuelta se mide desde `turnStartStep` para que cada Cycle
         cierre con su propia longitud.
-  - [ ] Tests (Red): las repeticiones **cruzan Steps vacíos** del reparto
+  - [x] Tests (Red): las repeticiones **cruzan Steps vacíos** del reparto
         euclidiano; solo las corta un Pulse.
-  - [ ] Tests (Red): el límite **nunca mira dentro del Cycle siguiente**, porque
+  - [x] Tests (Red): el límite **nunca mira dentro del Cycle siguiente**, porque
         cuál es lo decide este hilo al cerrar la vuelta.
-  - [ ] Implementación (Green): la búsqueda del Pulse siguiente sobre el Shape
+  - [x] Implementación (Green): la búsqueda del Pulse siguiente sobre el Shape
         vigente, con aritmética entera y sin recorrer más de una vuelta.
 - [ ] Task: Las repeticiones se emiten (FR9, FR10, FR11, NFR1, NFR3)
   - [ ] Tests (Red): con Repeats 3 y Time 1/32 sobre un Track en 1/16, cada Pulse
