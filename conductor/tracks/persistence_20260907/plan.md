@@ -75,7 +75,7 @@ su test de que el fichero anterior sigue ahí.
 
 ## FASE 2: EL MODELO — `Bank` Y `Project` EN `Engine`
 
-- [ ] Task: `Bank`, dieciséis Patterns y un tempo (FR1, FR2, FR4)
+- [x] Task: `Bank`, dieciséis Patterns y un tempo (FR1, FR2, FR4) — `f7415cc`
   - [ ] Tests (Red): un `Bank` recién creado tiene 16 Patterns **vacíos**
         —iguales a `Pattern()`— y un tempo por defecto de 120 BPM; `pattern(at:)`
         devuelve `nil` fuera de 0…15 con el mismo criterio que `Pattern.track(at:)`.
