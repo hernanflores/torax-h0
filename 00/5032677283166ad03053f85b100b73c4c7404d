@@ -1,0 +1,30 @@
+Task: La velocity de cada repetición (FR7)
+
+Qué cambia: Ramp.velocity(forRepetition:of:from:) en NoteRepeater.swift.
+
+La fórmula es la de la spec:
+  objetivo = ramp > 0 ? 127 : 1
+  v(k) = V + (objetivo − V) × (|ramp| / 100) × (k / n)
+acotada a Velocity.validRange.
+
+Decisiones:
+- El Pulse original es k = 0 y devuelve la Velocity del Track intacta. Codificar
+  así «el Pulse no participa de la rampa» deja la regla en el tipo en vez de en
+  el sitio de llamada, donde nadie la testea.
+- Con Ramp negativo el objetivo es 1, no 0: velocity 0 es note-off en MIDI 1.0.
+- Aritmética entera, multiplicando antes de dividir, como
+  Sustain.gateNanoseconds(forStep:). La división trunca hacia cero, así que el
+  redondeo acerca la curva a la Velocity del Track por menos de una unidad —
+  simétrico entre subir y bajar.
+- Ramp 0 y n = 0 salen por el guard: con Repeats en 0 no se ejecuta nada.
+
+Ficheros modificados:
+- Packages/Engine/Sources/Engine/NoteRepeater.swift (+41 líneas)
+Ficheros creados:
+- Packages/Engine/Tests/EngineTests/RampVelocityTests.swift (10 tests)
+
+Verificación: Engine 740 tests, 0 fallos (730 antes). Cobertura de Engine 98,51%
+de líneas; NoteRepeater.swift al 100%.
+
+Sin medición de jitter (NFR6): aritmética pura, todavía no cableada al camino de
+emisión.
