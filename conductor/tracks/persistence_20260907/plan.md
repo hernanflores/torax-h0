@@ -269,7 +269,7 @@ su test de que el fichero anterior sigue ahí.
         queda colgada tras diez cambios seguidos.
   - [ ] Implementación (Green) si hiciera falta. Puede que no: el note-off ya
         viaja sellado, y confirmarlo con un test es parte del trabajo.
-- [ ] Task: Stop adopta lo armado (FR10)
+- [x] Task: Stop adopta lo armado (FR10) — `3f05eef`
   - [ ] Tests (Red): Stop con un pendiente lo deja vigente; el Play siguiente
         arranca con él; no queda estado armado que persistir.
   - [ ] Implementación (Green).
