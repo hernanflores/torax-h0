@@ -252,19 +252,43 @@ escalón es el que se nota.
 ---
 
 - [ ] **Track: v2 rebanada 4 — Persistencia: Patterns y Banks**
+  *Link: [conductor/tracks/persistence_20260907/index.md](./tracks/persistence_20260907/index.md)*
 
-  Por planificar. Es el escalón que la Pre Spec pone encima —dieciséis Patterns
-  por Bank— y **el primero que necesita disco**: hasta ahora cerrar la app pierde
-  todo, y con Cycles dentro eso son dieciséis veces más trabajo que se pierde.
+  **Planificado el 2026-09-07**, en ocho fases. Es el escalón que la Pre Spec
+  pone encima —dieciséis Patterns por Bank— y **el primero que necesita disco**:
+  hasta ahora cerrar la app pierde todo, y con Cycles dentro eso son dieciséis
+  veces más trabajo que se pierde.
 
-  **No es una rebanada de motor.** Lo que cruza al hilo del scheduler sigue
-  siendo un Pattern de 37 KB; lo que cambia es cuántos hay y de dónde salen. Por
-  eso el detector de tamaño del snapshot no le aplica: guardar no es copiar en
-  tiempo real.
+  **Sí es una rebanada de motor, y esta entrada decía que no.** Decía: «lo que
+  cruza al hilo del scheduler sigue siendo un Pattern de 37 KB; lo que cambia es
+  cuántos hay y de dónde salen». Al planificarla se decidió que **cambiar de
+  Pattern con el transporte corriendo sea cuantizado al próximo compás**, y esa
+  decisión la toma el hilo del scheduler en el límite. Lo que la frase acertaba
+  se conserva —el snapshot no crece ni un byte y no hay trabajo nuevo por
+  evento—; lo que se añade ahí dentro es una lectura atómica más por ventana y
+  una adopción de ranura.
+
+  **Se elige igualmente porque la alternativa vacía el concepto.** Un Pattern que
+  solo entra con el transporte parado es un fichero, no la «sección de live» que
+  la Pre Spec promete. La Fase 1 escribe las notas fechadas en `product.md` y en
+  `tech-stack.md` antes de tocar código.
+
+  **Entra un paquete SPM nuevo, `Persistence`**, y eso es un cambio de tech stack
+  que la Fase 1 documenta: `Engine` no importa nada fuera de la stdlib y
+  `JSONEncoder` es Foundation, `MIDI` es CoreMIDI, y `App` no se mide — dejar el
+  guardado ahí sería dejar sin cobertura la única pieza capaz de perder el
+  trabajo del usuario.
+
+  **Sin medición de jitter**, por dos vías independientes: la suspensión del
+  2026-09-02, y que la rebanada no mueve ningún instante — cambia qué material se
+  emite en un límite que ya existía.
 
   Arrastra las tres pantallas que la rebanada 2 dejó fuera —Banks, Patterns y la
   lista de Tracks— y la limitación 1 de Cycles, que era «sin persistencia».
 
+  **Deja fuera** Backup Project, Program Change, el encadenado de Patterns, el
+  disparo desde el controlador —no quedan step buttons libres— y los nombres
+  editables.
 ---
 
 - [x] **Track: Doce Tracks, pantalla MIDI y limpieza del selector** — doce anillos más anchos, el canal en su pantalla y la pastilla con un solo número; verificado en dispositivo
