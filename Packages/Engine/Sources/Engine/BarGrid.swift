@@ -61,4 +61,33 @@ public struct BarGrid: Equatable, Sendable {
     public func remainingNanoseconds(at nanoseconds: Int64) -> Int64 {
         nextBoundary(after: nanoseconds) - Swift.max(nanoseconds, 0)
     }
+
+    /// Cuántas negras faltan para el próximo límite, **redondeando hacia
+    /// arriba**.
+    ///
+    /// **Es lo que la pantalla enseña mientras un Pattern espera** (FR25), y va
+    /// en negras y no en segundos a propósito: «entra en 2» es una instrucción
+    /// que se sigue tocando, «en 1,4 s» es un dato que hay que interpretar. Y a
+    /// un metro, un número que baja de cuatro a uno se lee de un vistazo.
+    ///
+    /// Redondear hacia arriba es lo que impide enseñar un 0 durante media negra:
+    /// mientras quede algo de la negra en curso, esa negra cuenta. Un 0 que no
+    /// entra es peor que no enseñar nada.
+    ///
+    /// El número no depende del tempo —siempre entre 1 y 4—; lo que cambia es lo
+    /// que dura cada negra.
+    public func beatsUntilNextBoundary(at nanoseconds: Int64) -> Int {
+        // **Antes del origen falta el compás entero**, no cero: el origen es el
+        // primer límite, y decir «entra ya» de algo que ni siquiera ha empezado
+        // sería mentir.
+        let remaining =
+            nanoseconds < 0 ? durationNanoseconds : remainingNanoseconds(at: nanoseconds)
+
+        // **La división se hace contra el compás, no contra la negra.** Dividir
+        // primero la duración entre cuatro trunca —a 174 BPM el compás son
+        // 1 379 310 345 ns y la negra 344 827 586, con 1 ns perdido por negra—
+        // y el redondeo hacia arriba convertía esa pérdida en una quinta negra.
+        let duration = durationNanoseconds
+        return Int((remaining * Int64(Self.beatsPerBar) + duration - 1) / duration)
+    }
 }
