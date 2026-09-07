@@ -1,0 +1,31 @@
+Task: El límite de la tirada (FR9)
+
+Qué cambia: Cycle.repeatWindowNanoseconds(fromStep:stepDurationNanoseconds:) en
+NoteRepeater.swift. Devuelve cuánto dura la ventana en la que caben las
+repeticiones, medida desde el instante de emisión del Pulse.
+
+Decisiones:
+- El límite es el instante de emisión del Pulse siguiente, no su rejilla. Con
+  swing, medir contra la rejilla cortaría de más o de menos según el paso. Hay
+  test de las dos direcciones sobre 16/5, donde los Pulses 3 y 9 son impares:
+  el swing del Pulse siguiente alarga la ventana y el del Pulse de partida la
+  acorta, exactamente en el desplazamiento.
+- Delay no mueve el límite y hay test: desplaza a los dos Pulses por igual, así
+  que la tirada viaja con el Pulse.
+- El cierre de la vuelta se mide en rejilla, sin desplazar, porque qué Cycle
+  viene después lo decide el hilo al cerrar. Con swing al 75% desde el último
+  Pulse la ventana sigue siendo de cuatro Steps.
+- La búsqueda va hacia delante y se para en stepCount: no envuelve, así que el
+  límite nunca mira dentro de la vuelta siguiente aunque su primer Step dispare.
+- Un Step que no dispara devuelve 0. El scheduler solo pregunta sobre Pulses;
+  devolver 0 lo deja inofensivo si alguna vez pregunta por otro.
+
+Coste en el hilo de tiempo real: un recorrido acotado por el número de Steps del
+Cycle, aritmética entera, sin asignaciones.
+
+Ficheros modificados:
+- Packages/Engine/Sources/Engine/NoteRepeater.swift (+60 líneas)
+Ficheros creados:
+- Packages/Engine/Tests/EngineTests/RepeatCutoffTests.swift (12 tests)
+
+Verificación: Engine 797 tests, 0 fallos (785 antes).
