@@ -65,7 +65,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Añadir `Persistence` a la tabla de *Coverage Requirements* de
         `workflow.md` con umbral ≥90%, y el porqué: es la pieza que puede perder
         el trabajo del usuario.
-- [ ] Task: Anotar en la Pre Spec qué se entrega de §Guardado (FR14, FR16, FR17)
+- [x] Task: Anotar en la Pre Spec qué se entrega de §Guardado (FR14, FR16, FR17) — `e4512b1`
   - [ ] Nota fechada: entran Autosave y Save Bank/Reload; **Backup Project no**,
         con la razón (UI de documentos, no modelo) y la limitación que deja — el
         estado vive en el contenedor de la app y desinstalarla lo borra.
