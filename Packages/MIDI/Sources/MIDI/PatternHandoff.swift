@@ -235,6 +235,12 @@ public final class PatternHandoff: @unchecked Sendable {
     /// Sin asignaciones, sin locks, sin await.
     public var hasArmedPattern: Bool { armedGeneration.value & 1 == 1 }
 
+    /// Lo que está armado, o lo publicado si no hay nada.
+    ///
+    /// **Lo lee el hilo principal**, no el del scheduler: existe para que Stop
+    /// pueda quedarse con lo pendiente sin volver a leerlo del anillo.
+    public var armedPattern: Pattern { armedSlot.pointee }
+
     /// Publica lo armado, si lo hay. Devuelve si hizo algo.
     ///
     /// **Es lo que el scheduler llama en cada límite de compás**, y casi siempre
