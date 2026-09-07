@@ -207,21 +207,40 @@ public struct PatternRecord: Codable, Equatable, Sendable {
 /// Un `Bank` en disco: dieciséis Patterns y su tempo.
 public struct BankRecord: Codable, Equatable, Sendable {
 
-    public let patterns: [PatternRecord]
+    /// Los dieciséis, **con `null` donde no hay nada**.
+    ///
+    /// **Un Pattern vacío son ~42 KB de ceros**: doce Tracks por dieciséis
+    /// Cycles de quince campos cada uno, todos en su valor por defecto.
+    /// Escribirlos deja un Bank recién creado ocupando lo mismo que uno lleno
+    /// —675 498 bytes contra 675 530, medidos— y un Project vacío en 10,8 MB.
+    /// Con la marca, un Project vacío no llega a 4 KB.
+    ///
+    /// **La marca es `null` y no un centinela inventado**: el formato ya tiene
+    /// una forma de decir «aquí no hay nada», y un hueco `null` se lee con los
+    /// ojos igual de bien que un objeto.
+    ///
+    /// **Los huecos ocupan su sitio en la lista.** Es el riesgo real de
+    /// colapsar: si los vacíos se omitieran, el Pattern 10 volvería en la
+    /// posición 2. La lista siempre tiene dieciséis entradas.
+    public let patterns: [PatternRecord?]
+
     public let tempo: Double
 
     public init(_ bank: Bank) {
-        patterns = (0..<Bank.patternCount).compactMap {
-            bank.pattern(at: $0).map(PatternRecord.init)
+        patterns = (0..<Bank.patternCount).map { index in
+            guard let pattern = bank.pattern(at: index), pattern.hasMaterial else { return nil }
+            return PatternRecord(pattern)
         }
         tempo = bank.tempo.beatsPerMinute
     }
 
     /// El Bank que describe. Un tempo fuera de rango cae en el default, con el
-    /// mismo criterio que el resto de esta capa.
+    /// mismo criterio que el resto de esta capa. Un hueco `null` queda como el
+    /// `Pattern()` con el que arranca un Bank.
     public var bank: Bank {
         var result = Bank().withTempo(Tempo(beatsPerMinute: tempo) ?? Bank.defaultTempo)
         for (index, record) in patterns.enumerated() {
+            guard let record else { continue }
             result = result.replacing(record.pattern, at: index)
         }
         return result
