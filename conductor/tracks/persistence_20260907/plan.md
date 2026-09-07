@@ -259,7 +259,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Tests (Red): con el transporte parado, elegir un Pattern es inmediato
         (FR5).
   - [ ] Implementación (Green) en el bucle de ventana.
-- [ ] Task: Los cursores de Cycle arrancan al entrar (FR8)
+- [x] Task: Los cursores de Cycle arrancan al entrar (FR8) — `b92570f`
   - [ ] Tests (Red): el Pattern entrante empieza por el primer Cycle activo de
         cada Track; el cursor de **edición** viaja con el Pattern y no se toca.
   - [ ] Implementación (Green).
