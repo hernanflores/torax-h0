@@ -172,6 +172,21 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > código, no solo escrita: la pantalla `track` tiene exactamente cuatro
 > escrituras táctiles —seleccionar Track, mute, solo y cuántos Cycles están
 > activos— y ninguna toca Steps, Pulses, Rotate, Division ni Groove.
+>
+> **Enmienda del 2026-09-07 — `banks` deja de ser cáscara, y la frontera se
+> mueve un poco.** La rebanada 4 de la v2 le pone detrás lo que le faltaba: el
+> modelo de `Bank`, los 256 Patterns y el disco. **La forma no cambia**, que es
+> lo que esta nota prometió: los tres cards siguen donde están y lo que aparece
+> es un cuarto estado —`queued`— con la cuenta atrás hasta el compás en que entra
+> el Pattern.
+>
+> **Lo que sí cambia es la frase de arriba.** «`scale`, `midi` y `banks` se
+> configuran antes de tocar» deja de ser exacta: elegir un Pattern es un gesto
+> que se usa **tocando**, en mitad de la pasada, y por eso está cuantizado. La
+> frontera real no era «antes o durante», era **qué se edita con el dedo**:
+> `track` sigue sin editar un solo parámetro generativo al tacto, y las cuatro
+> escrituras auditadas siguen siendo cuatro. Lo que `banks` añade no es edición
+> de material: es elegir cuál suena.
 
 > **Nota del 2026-09-03 — el reloj puede ser de otro.** La línea de arriba dice
 > «transporte (play/stop) y **reloj interno**», y sigue siendo cierta: el reloj
@@ -218,9 +233,32 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 **Fuera de v1:**
 
 - Acordes polifónicos simultáneos (Style *Poly*) — explícitamente fuera de scope en la Pre Spec.
-- Patterns, Banks; guardado/Autosave/Backup Project. *(Múltiples Tracks salieron de aquí el 2026-09-01: la v2 rebanada 1 entregó dieciséis, que el 2026-09-02 pasaron a **doce** por legibilidad de los anillos — ver la nota del Core Model.)*
+- ~~Patterns, Banks; guardado/Autosave~~; **Backup Project**. *(Múltiples Tracks salieron de aquí el 2026-09-01: la v2 rebanada 1 entregó dieciséis, que el 2026-09-02 pasaron a **doce** por legibilidad de los anillos — ver la nota del Core Model. Patterns, Banks, Autosave y Save/Reload salen el 2026-09-07: los entrega la v2 rebanada 4 — ver la nota de abajo. **Backup Project se queda**: exportar e importar por la app Files es UI de documentos, no modelo.)*
 - Note Repeater (Repeats/Time/Ramp/Pace); Harmony; Voicing/Style; Range/Phrase; LFO y Random Modulation. *(Cycles salió de aquí el 2026-09-02: la v2 rebanada 3 lo entrega — hasta dieciséis por Track, recorridos a cada vuelta del anillo.)*
 - Ableton Link, MIDI Program Change, encadenado de Patterns.
+
+> **Nota del 2026-09-07 — Patterns, Banks y guardado salen de «Fuera de v1».**
+> Salen por la misma vía por la que salieron los múltiples Tracks y los Cycles:
+> los entrega una rebanada de la v2, la 4 (`persistence_20260907`), y la lista de
+> arriba deja de describir lo que la app hace.
+>
+> **Es el primer track del proyecto que escribe un fichero.** Aparecen los dos
+> niveles que la Pre Spec pone encima del Pattern —**16 Banks de 16 Patterns**,
+> cada Bank con su tempo— y el disco: **Autosave** para el trabajo en curso y
+> **`Save Bank` / `Reload`** como punto de retorno intencional. Cerrar la app deja
+> de perderlo todo.
+>
+> **Cambiar de Pattern con el transporte corriendo entra en el próximo compás.**
+> No es un detalle de implementación: es lo que hace del Bank la «sección de
+> live» que la Pre Spec promete, en vez de un fichero que solo se abre parando.
+>
+> **Lo que se queda fuera, y por qué.** *Backup Project* —exportar e importar por
+> Files— es UI de documentos y no toca el modelo. *Program Change* y el
+> *encadenado de Patterns* siguen en la línea de abajo. Y **no se dispara desde
+> el controlador**: no quedan step buttons libres —1–12 seleccionan Track, 13 es
+> Temp, 14 Ctrl All, 15 y 16 solo y mute— así que meter Patterns en el hardware
+> exige un modificador nuevo, que es una decisión de mapeo y toca el preset
+> cerrado en la rebanada 7. Tampoco entran nombres editables ni copiar Banks.
 
 ## Success Criteria
 
