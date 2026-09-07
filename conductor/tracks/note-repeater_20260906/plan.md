@@ -160,7 +160,7 @@ revisar antes de seguir (NFR1).
 
 ## FASE 3: LA EMISIÓN APRENDE VELOCITY Y GATE PROPIOS
 
-- [ ] Task: `NoteEmitter` recibe la velocity y el gate del evento (FR7, FR12)
+- [~] Task: `NoteEmitter` recibe la velocity y el gate del evento (FR7, FR12)
   - [ ] Tests (Red): emitir con una velocity distinta de la del Groove produce
         ese note-on; el note-off sigue con velocity 0, que es la convención de
         MIDI 1.0.

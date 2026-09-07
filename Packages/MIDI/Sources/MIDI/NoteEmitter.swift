@@ -67,6 +67,52 @@ public struct NoteEmitter: Equatable, Sendable {
         atHostTime hostTime: UInt64,
         send: (_ message: MIDIMessage, _ hostTime: UInt64) -> Void
     ) {
+        emit(
+            pitch: pitch,
+            velocity: groove.velocity,
+            gateNanoseconds: groove.sustain.gateNanoseconds(forStep: stepDurationNanoseconds),
+            on: channel,
+            atHostTime: hostTime,
+            send: send
+        )
+    }
+
+    /// El par de mensajes, con la velocity y el gate **del evento**.
+    ///
+    /// **El Pulse y sus repeticiones viajan por aquí, los dos.** Una repetición
+    /// no suena a la Velocity del Track —la recorre la rampa— ni dura lo que un
+    /// Step —dura su propio hueco—, así que las dos cosas dejan de deducirse del
+    /// `Groove` y pasan a llegar con el evento. La firma de arriba se queda: es
+    /// la que usa el Pulse cuando no hay repeticiones, y con ella la salida es
+    /// idéntica a la de antes de la rebanada (FR16).
+    ///
+    /// **Un camino aparte para las repeticiones habría duplicado la regla del
+    /// note-off**, que es la única que impide notas colgadas. Duplicarla es
+    /// exactamente cómo se cuelgan: dos sitios que sellan apagados, y uno que se
+    /// olvida al cambiar el otro.
+    ///
+    /// La velocity del note-off es 0 y no la del note-on: es la convención de
+    /// MIDI 1.0 para el apagado.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    ///
+    /// Emits a MIDI note-on and its note-off using the event's own velocity and gate.
+    /// - Parameters:
+    ///   - pitch: The pitch to emit, or `nil` to emit nothing.
+    ///   - velocity: The velocity of this event, which a repetition takes from the ramp.
+    ///   - gateNanoseconds: How long the note lasts; negative values are clamped to zero.
+    ///   - channel: The channel the emitting cycle sends on.
+    ///   - hostTime: The host clock time for the note-on.
+    ///   - send: A callback that receives each MIDI message and its host clock time.
+    public func emit(
+        pitch: Pitch?,
+        velocity: Velocity,
+        gateNanoseconds: Int64,
+        on channel: MIDIChannel,
+        atHostTime hostTime: UInt64,
+        send: (_ message: MIDIMessage, _ hostTime: UInt64) -> Void
+    ) {
         guard let pitch else { return }
 
         // `Pitch` y `MIDINote` comparten el rango 0–127 por definición del
@@ -78,13 +124,11 @@ public struct NoteEmitter: Equatable, Sendable {
         // `Velocity` y `MIDIVelocity` comparten rango por construcción —el tipo
         // del motor se validó contra el del protocolo—, así que la conversión no
         // puede fallar. Se hace aquí, en la capa que conoce los dos tipos.
-        let velocity = MIDIVelocity(unchecked: UInt8(groove.velocity.value))
+        let midiVelocity = MIDIVelocity(unchecked: UInt8(velocity.value))
 
-        send(.noteOn(channel: channel, note: note, velocity: velocity), hostTime)
+        send(.noteOn(channel: channel, note: note, velocity: midiVelocity), hostTime)
 
-        let gateTicks = HostClock.hostTicks(
-            fromNanoseconds: UInt64(
-                max(0, groove.sustain.gateNanoseconds(forStep: stepDurationNanoseconds))))
+        let gateTicks = HostClock.hostTicks(fromNanoseconds: UInt64(max(0, gateNanoseconds)))
         send(
             .noteOff(channel: channel, note: note, velocity: MIDIVelocity(unchecked: 0)),
             hostTime &+ gateTicks
