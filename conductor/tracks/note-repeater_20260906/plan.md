@@ -151,11 +151,11 @@ revisar antes de seguir (NFR1).
         reventar, como el resto de las claves.
   - [x] Implementación (Green): las cuatro claves, con decodificación tolerante.
 
-- [ ] Task: El texto de la familia Shape, en dos líneas (FR15)
-  - [ ] Tests (Red): `FamilyReadout` de Shape devuelve **dos líneas** — los
+- [x] Task: El texto de la familia Shape, en dos líneas (FR15) — e71bfc0
+  - [x] Tests (Red): `FamilyReadout` de Shape devuelve **dos líneas** — los
         cuatro de siempre y los cuatro nuevos — y el test que compara lo que
         anuncia un giro con lo que dice el card sigue pasando para los trece.
-  - [ ] Implementación (Green): la segunda línea, mismo acento.
+  - [x] Implementación (Green): la segunda línea, mismo acento.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: LA EMISIÓN APRENDE VELOCITY Y GATE PROPIOS
