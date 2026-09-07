@@ -1,0 +1,29 @@
+Refactor de habilitación dentro de la tarea 'Project, dieciséis Banks y los índices de sesión'.
+
+Qué cambia
+- Packages/Engine/Sources/Engine/ClockSource.swift (nuevo): el enum y su name.
+- Packages/MIDI/Sources/MIDI/ClockSource.swift: se queda con ClockStatus, e
+  importa Engine.
+- Los dos tests del nombre y de la distinción pasan a Engine
+  (ClockSourceNameTests); los de conducta del Transport se quedan en MIDI.
+
+Por qué
+El Project guarda qué reloj manda (FR23) y vive en Engine, que no puede importar
+MIDI — la regla de que Engine no sale de la stdlib la vigila
+DependencyBoundaryTests, con Foundation en la lista de prohibidos.
+
+El enum no tenía nada de CoreMIDI: dos casos y un nombre. Estaba en MIDI por
+dónde se usó primero. Es el tercer movimiento de esta clase en el proyecto y el
+segundo de este mismo tipo — su name bajó de App el 2026-09-06 por el mismo
+argumento.
+
+Lo que no se movió, y es la parte que importa
+El fichero ClockSourceTests entero se intentó mover y hubo que devolverlo: sus
+tests no prueban el enum sino cómo responde el Transport según la fuente, y el
+Transport es de MIDI. Se repartieron por lo que prueban en vez de por el fichero
+del que salían.
+
+Verificación
+Engine 591 tests, MIDI 593, xcodebuild para iOS: BUILD SUCCEEDED.
+Se amendó el commit para sacar cinco ficheros que swift format reformateó de paso
+y que no son de esta tarea.
