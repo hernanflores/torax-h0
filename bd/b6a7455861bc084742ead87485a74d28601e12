@@ -1,0 +1,31 @@
+Task: Probability decide sobre todas las notas (FR13)
+
+Qué cambia en TrackScheduler.advance:
+- La tirada del Pulse deja de ser un guard que se lleva el Step entero: ahora
+  decide solo si el Pulse suena, y la tirada de cada repetición se hace dentro
+  del bucle de la tirada.
+- El orden es Pulse primero, repeticiones después, que es el que fija FR13.
+- El corte se decide ANTES que la tirada: una repetición descartada no consume
+  aleatoriedad.
+- emitRepetitions pasa a ser mutating porque toca el generador.
+
+Prueba de no regresión, y es la que importa: la secuencia de omisiones con
+semilla 7 y Probability al 50% se capturó ANTES de este cambio, ejecutando el
+código de entonces, y está escrita como literal en el test —19 Pulses sobre 64
+Steps—. Con Repeats en 0 el consumo de aleatoriedad sigue siendo idéntico, así
+que un Pattern hecho antes de la rebanada omite exactamente lo mismo (FR16).
+
+El test que estaba en rojo antes de implementar: 'un Pulse callado no se lleva
+sus repeticiones'. Con el guard viejo, omitir el Pulse saltaba el Step entero y
+las repeticiones desaparecían con él.
+
+El test del corte que no tira: pedir Repeats 8 con Time 1/8 sobre 16/4 —donde
+solo cabe una— produce EXACTAMENTE la misma secuencia que pedir Repeats 1. Si
+las descartadas tirasen, la de 8 desplazaría todas las omisiones siguientes.
+
+Ficheros modificados:
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift
+Ficheros creados:
+- Packages/MIDI/Tests/MIDITests/RepetitionProbabilityTests.swift (9 tests)
+
+Verificación: MIDI 672 tests, 0 fallos (663 antes).
