@@ -157,38 +157,38 @@ su test de que el fichero anterior sigue ahí.
         disco lleno y fichero corrupto sin ceremonia.
   - [ ] Verificar que `swift test --package-path Packages/Persistence` corre en
         host, sin simulador, como los otros dos.
-- [ ] Task: El JSON se lee con los ojos (NFR7) *(movida desde la Fase 3 el 2026-09-07)*
+- [x] Task: El JSON se lee con los ojos (NFR7) *(movida desde la Fase 3 el 2026-09-07)* — `41f30bc`
   - [ ] Test: el encoder del almacén produce salida **indentada y con claves
         ordenadas**, comprobada sobre un fichero pequeño literal. Es la mitad de
         la razón por la que `tech-stack.md` eligió JSON: «inspeccionable,
         diffeable».
-- [ ] Task: Escribir y leer un Bank (FR18, FR20)
+- [x] Task: Escribir y leer un Bank (FR18, FR20) — `fd56209`, `41f30bc`
   - [ ] Tests (Red): escribir un Bank y releerlo devuelve un árbol igual;
         escribir el Bank 3 no toca los ficheros de los otros quince.
   - [ ] Tests (Red): las rutas cuelgan de Application Support y no de Documents.
   - [ ] Implementación (Green).
-- [ ] Task: La escritura es atómica (FR21)
+- [x] Task: La escritura es atómica (FR21) — `41f30bc`
   - [ ] Tests (Red): si la escritura falla a mitad, **el fichero anterior sigue
         intacto y legible**; no queda ningún temporal huérfano tras un fallo.
   - [ ] Implementación (Green): temporal más renombrado.
-- [ ] Task: El fallo de guardado se propaga, no se traga (FR21)
+- [x] Task: El fallo de guardado se propaga, no se traga (FR21) — `41f30bc`
   - [ ] Tests (Red): un disco lleno produce un error que llega a quien llamó, y
         un guardado posterior con éxito lo limpia. La barra de estado es de la
         Fase 7; lo que se prueba aquí es que el estado existe y es correcto.
   - [ ] Implementación (Green).
-- [ ] Task: Un fichero ilegible se aparta y no se pierde (FR22)
+- [x] Task: Un fichero ilegible se aparta y no se pierde (FR22) — `41f30bc`
   - [ ] Tests (Red): JSON corrupto y `schemaVersion` futura toman **el mismo
         camino**; el fichero original sigue existiendo con marca de tiempo en el
         nombre; la carga devuelve un Project vacío y una señal de que ocurrió.
   - [ ] Tests (Red): apartar dos veces el mismo día no pisa el primero.
   - [ ] Implementación (Green).
-- [ ] Task: Cargar el Project completo (FR20, FR23)
+- [x] Task: Cargar el Project completo (FR20, FR23) — `41f30bc`
   - [ ] Tests (Red): se cargan los Banks que existen y los que faltan salen
         vacíos —un Project a medio escribir no impide arrancar—; los índices y
         los ajustes de sesión se restauran; un endpoint MIDI guardado **que ya no
         existe** se tolera y no es un error.
   - [ ] Implementación (Green).
-- [ ] Task: Coste de guardar, medido (NFR3)
+- [x] Task: Coste de guardar, medido (NFR3) — `6019af3`
   - [ ] Test de rendimiento en host: serializar y escribir un Bank lleno, con su
         número anotado en la git note. El presupuesto de 100 ms se verifica en
         dispositivo en la Fase 8; aquí se establece la línea base.
