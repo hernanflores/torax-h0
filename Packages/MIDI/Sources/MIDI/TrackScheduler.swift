@@ -211,6 +211,16 @@ public struct TrackScheduler {
     /// los ocho que quedaran hasta el múltiplo siguiente de dieciséis.
     private var turnStartStep: Int
 
+    /// Que el Step siguiente abra vuelta nueva desde el Cycle 1.
+    ///
+    /// **Existe porque el límite de compás cae encima de un cierre de vuelta.**
+    /// Cuando entra un Pattern armado (FR8) hay que empezar por su primer Cycle,
+    /// y poner el cursor a cero no basta: el Step siguiente vería que la vuelta
+    /// se cerró —`turnStartStep` sigue donde estaba— y avanzaría el cursor otra
+    /// vez, dejando el Pattern nuevo empezando por su segundo Cycle. Anclar la
+    /// vuelta al Step que llega es lo que evita ese avance de más.
+    private var restartsTurnAtNextStep = false
+
     /// Salida lock-free del cursor para la interfaz. `nil` en los schedulers
     /// aislados y en la vía directa del arnés.
     private var playbackClock: CyclePlaybackClock?
@@ -287,6 +297,19 @@ public struct TrackScheduler {
             turnStartStep: turnStartStep)
     }
 
+    /// Pone la reproducción en el primer Cycle **y ancla la vuelta al Step que
+    /// venga**.
+    ///
+    /// Es lo que llama la adopción de un Pattern armado (FR8), y se diferencia
+    /// de `restartCycles()` en que aquélla la llama Play, cuando la rejilla
+    /// arranca de cero y no hay ninguna vuelta en curso que reanclar.
+    mutating func restartCyclesAtNextStep() {
+        cursor = 0
+        previousCursor = 0
+        restartsTurnAtNextStep = true
+        if let track, let first = track.cycle(at: 0) { material = .cycle(first) }
+    }
+
     /// Cuánto tiempo hay que reservar por delante para que ningún evento
     /// adelantado se pida para un instante que ya pasó.
     ///
@@ -353,7 +376,12 @@ public struct TrackScheduler {
         let budget = advanceBudgetNanoseconds
 
         for step in lookAhead.advance(toHorizon: horizonNanoseconds + budget) {
-            advanceCycleIfTheTurnClosed(before: step)
+            if restartsTurnAtNextStep {
+                restartsTurnAtNextStep = false
+                turnStartStep = step
+            } else {
+                advanceCycleIfTheTurnClosed(before: step)
+            }
             let cycleStep = step - turnStartStep
 
             guard material.triggers(atStep: cycleStep) else { continue }

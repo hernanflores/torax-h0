@@ -221,6 +221,21 @@ public final class PatternScheduler {
             if boundary <= horizonNanoseconds {
                 emitWindow(toHorizon: boundary, refreshingFrom: handoff, emit: emit)
                 handoff.adoptArmedPattern()
+
+                // **El Pattern entra por el principio de su desarrollo** (FR8).
+                //
+                // El material nuevo lo recoge `emitWindow` en la llamada de
+                // abajo, pero el cursor de reproducción es de este hilo y no
+                // viene en el snapshot: hay que ponerlo a cero aquí. Sin esto,
+                // el Pattern entrante empieza por el Cycle en el que se hubiera
+                // quedado el anterior, que es un número sin significado para él.
+                //
+                // Es la misma llamada que hace Play, y por la misma razón:
+                // disparar el break tiene que sonar igual las dos veces.
+                for index in 0..<Pattern.trackCount {
+                    schedulers[index].restartCyclesAtNextStep()
+                }
+
                 lastHorizonNanoseconds = boundary
                 emitWindow(toHorizon: horizonNanoseconds, refreshingFrom: handoff, emit: emit)
                 lastHorizonNanoseconds = horizonNanoseconds
