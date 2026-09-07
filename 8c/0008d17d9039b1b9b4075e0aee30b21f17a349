@@ -1,0 +1,33 @@
+Task: El NoteRepeater sobrevive al disco (enmienda del 2026-09-07)
+
+Por qué existe esta tarea: el plan y el spec de la rebanada se escribieron el
+2026-09-06 y dan la persistencia por inexistente ('Out of Scope: Persistencia. No
+existe'). La rebanada 4 entró a main el 2026-09-07. Sin esta tarea, guardar un
+Bank perdería Repeats, Time, Ramp y Pace en silencio — justo lo que
+ProjectRecord.swift avisaba por escrito.
+
+Qué cambia: CycleRecord pasa de quince claves a diecinueve.
+- repeats, ramp y pace guardan su número.
+- repeatTimeDenominator guarda el DENOMINADOR de Time y no su posición en
+  RepeatTime.ordered. El índice es disposición del knob: insertar una fracción en
+  la lista movería lo que suena un Bank ya guardado, mientras que 128 seguirá
+  siendo 1/128.
+
+Decisiones, tomadas con el usuario:
+- Las cuatro claves son opcionales. Un fichero sin ellas decodifica nil y se lee
+  como el neutro —Repeats 0, Time 1/32, Ramp 0, Pace 0—, que es el estado que ese
+  fichero describía. Es la promesa de FR16 aplicada al disco.
+- schemaVersion se queda en 1. ProjectRecord.validated() exige igualdad exacta,
+  así que subirla sin migrador dejaría sin abrir los Banks ya escritos en el iPad.
+- Se escriben siempre, también el neutro: un 0 explícito dice 'sin
+  repeticiones'; una clave ausente solo dice 'esto lo escribió otra versión'.
+- Un valor fuera de rango cae en su default, como el resto de las claves.
+
+Ficheros modificados:
+- Packages/Engine/Sources/Engine/ProjectRecord.swift
+- Packages/Engine/Tests/EngineTests/RecordRoundTripTests.swift (la lista de
+  claves esperadas, que es el test que esto tenía que romper)
+Ficheros creados:
+- Packages/Engine/Tests/EngineTests/NoteRepeaterRecordTests.swift (7 tests)
+
+Verificación: Engine 775 · MIDI 640 · Persistence 62, 0 fallos.
