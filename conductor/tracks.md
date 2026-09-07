@@ -289,6 +289,46 @@ escalón es el que se nota.
   **Deja fuera** Backup Project, Program Change, el encadenado de Patterns, el
   disparo desde el controlador —no quedan step buttons libres— y los nombres
   editables.
+
+  **No es el primer intento.** Hay uno anterior, `persistence_20260904`,
+  abandonado sin mergear — la entrada de abajo.
+
+---
+
+- [x] **Track: Persistencia — primer intento (un Bank, sin `Project`)** — **abandonado sin mergear el 2026-09-07**; el trabajo sigue en la rama `feat/persistence`
+  *Sin enlace: el track `persistence_20260904` nunca llegó a `main`. Vive en la
+  rama `feat/persistence`, en `conductor/tracks/persistence_20260904/`.*
+
+  **Planificado y trabajado el 2026-09-04, y nunca registrado aquí** — por eso la
+  entrada de arriba siguió diciendo «Por planificar» durante tres días. Se anota
+  el 2026-09-07, al descubrirlo empezando el track que lo sustituye.
+
+  **Llegó lejos: siete de ocho fases, con checkpoint en cada una.** 43 ficheros y
+  ~4300 líneas — el paquete `Persistence` con siete ficheros de tests, `Bank` en
+  `Engine`, los DTO con versión de esquema, el almacén, el rescate de ficheros
+  ilegibles, el Autosave y dos pantallas. **Se paró en la puerta de la Fase 8**:
+  `device-verification.md` está escrito y su cabecera todavía dice
+  `Fecha: (pendiente)`. Nunca se verificó en iPad y nunca se abrió PR.
+
+  **Lo que lo dejó atrás no fue un fallo, fue el calendario.** Dos días después,
+  `screens-redesign_20260906` sustituyó el esquema de **cinco** pantallas por uno
+  de **cuatro**, y las dos que este track construyó —`4 · Banks` y `5 · Tracks`,
+  en `BankView.swift` y `PatternMatrixView.swift`— dejaron de tener dónde
+  aterrizar. Hoy la rama está **145 commits por detrás de `main`**, con merge-base
+  en el PR #32.
+
+  **Y su alcance es menor que el aprobado el 2026-09-07, en dos puntos que no son
+  de detalle.** Tiene **un** Bank y no dieciséis, sin `Project` encima; y
+  **descarta explícitamente el cambio cuantizado** —«seleccionar Pattern exige el
+  transporte parado… mete trabajo nuevo en el hilo del scheduler»—, que es justo
+  la decisión que `persistence_20260907` toma al revés.
+
+  **Decidido el 2026-09-07: no se rescata.** Se evaluó portar el núcleo —el
+  paquete y los DTO son directamente reutilizables— y se eligió reescribirlo con
+  el spec nuevo delante, para no heredar decisiones tomadas para otro alcance.
+  **La rama no se borra**: es la única copia de siete fases de trabajo y de un
+  guion de verificación en dispositivo que sigue sirviendo.
+
 ---
 
 - [x] **Track: Doce Tracks, pantalla MIDI y limpieza del selector** — doce anillos más anchos, el canal en su pantalla y la pastilla con un solo número; verificado en dispositivo
