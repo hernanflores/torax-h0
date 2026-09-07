@@ -147,7 +147,7 @@ su test de que el fichero anterior sigue ahí.
 > probar Foundation en vez de código propio. Se mueve a la tarea que crea el
 > almacén, donde el encoder existe.
 
-## FASE 4: EL PAQUETE `Persistence` — DISCO, ATOMICIDAD Y RESCATE
+## FASE 4: EL PAQUETE `Persistence` — DISCO, ATOMICIDAD Y RESCATE [checkpoint: 6019af3]
 
 - [x] Task: Crear el paquete SPM `Persistence` (NFR6) — `06cbb1e`
   - [ ] `Packages/Persistence` con dependencia a `Engine`, target de tests, y
@@ -192,7 +192,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Test de rendimiento en host: serializar y escribir un Bank lleno, con su
         número anotado en la git note. El presupuesto de 100 ms se verifica en
         dispositivo en la Fase 8; aquí se establece la línea base.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: AUTOSAVE, SAVE BANK Y RELOAD
 
