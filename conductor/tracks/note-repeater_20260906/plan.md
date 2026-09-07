@@ -138,7 +138,7 @@ revisar antes de seguir (NFR1).
   - [x] Documentar por qué el caso se llama `.repeatTime` y el usuario lee
         `Time`: desambiguación de Swift frente a `MusicalTime`, no un término
         nuevo (NFR7).
-- [ ] Task: El `NoteRepeater` sobrevive al disco (enmienda del 2026-09-07)
+- [~] Task: El `NoteRepeater` sobrevive al disco (enmienda del 2026-09-07)
   - [ ] Tests (Red): `CycleRecord` gana cuatro claves —`repeats`, `repeatTime`,
         `ramp` y `pace`— y el test que enumera las claves esperadas las exige.
   - [ ] Tests (Red): round-trip completo — un Cycle con los cuatro movidos vuelve

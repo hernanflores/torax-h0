@@ -223,6 +223,8 @@ final class RecordRoundTripTests: XCTestCase {
             "steps", "pulses", "rotate", "divisionNumerator", "divisionDenominator",
             "pool", "velocity", "sustain", "probability", "timing", "delay",
             "channel", "scale", "root", "padOctaveShift",
+            // Los cuatro del Note Repeater, desde el 2026-09-07.
+            "repeats", "repeatTimeDenominator", "ramp", "pace",
         ]
         let cycle = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!))
         XCTAssertEqual(Set(try dictionary(from: CycleRecord(cycle)).keys), expected)
