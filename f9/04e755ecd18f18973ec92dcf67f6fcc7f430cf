@@ -1,0 +1,22 @@
+Tarea: El scheduler adopta en el límite (FR6, FR7)
+
+Ciclo TDD
+Rojo confirmado y elocuente: el Pattern armado no entraba nunca, y el fallo lo
+decía instante a instante ('en 2000000000 ns sonó 60 y tocaba 72').
+
+Decisiones
+- Partir la ventana en dos llamadas en vez de adoptar al principio o al final.
+  Es la única de las tres que pone el cambio en el instante correcto. Las otras
+  dos son más simples y meten hasta 20 ms de error, que con Steps de 125 ms se
+  oye.
+- lastHorizonNanoseconds es estado nuevo del scheduler. Hace falta para saber si
+  un límite cae dentro de esta ventana; preguntárselo a los Tracks no sirve,
+  porque cuentan Steps y el compás son negras.
+- BarGrid se construye en el init con el tempo que ya recibía. No se pasa por el
+  handoff: no es material, es rejilla.
+- La comprobación va antes de leer lo publicado. Si no hay nada armado —el caso
+  de casi todas las ventanas— el coste es una lectura atómica y una comparación,
+  y el camino de siempre queda intacto.
+- El test con ventanas de 20 ms existe porque el de una ventana de 4 s no prueba
+  lo mismo: el caso real es que el límite caiga dentro de una ventana, y ahí es
+  donde la partición tiene que ocurrir.
