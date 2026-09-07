@@ -631,6 +631,43 @@ escalón es el que se nota.
   2026-09-02 que toca la rejilla temporal. Aquí no se abre excepción —el primero,
   `external-clock_20260903`, sí la abrió—: se verifica tocando.
 
+---
+
+- [ ] **Track: v2 rebanada 6 — LFO Modulation: waveform y accent**
+  *Link: [conductor/tracks/modulation_20260906/index.md](./tracks/modulation_20260906/index.md)*
+
+  Abierto el 2026-09-06. **Saca el LFO de «Fuera de v1»** de `product.md` —la
+  primera mitad de «LFO y Random Modulation», y solo sobre velocity—. Velocity es
+  hoy un número fijo para todos los Steps del Cycle: la modulación le añade
+  **movimiento cíclico**, sincronizado con la vuelta del anillo del Track. No
+  cambia qué notas suenan ni cuándo, cambia con cuánta fuerza.
+
+  **Con `accent` en 0 —el default— no cambia nada de lo entregado**, y ese es el
+  requisito que sostiene la rebanada.
+
+  **Un ciclo por vuelta del anillo del propio Track.** La fase sale del índice de
+  Step dentro de la vuelta; no hay reloj de modulación ni estado que mantener, así
+  que la sincronía es una consecuencia de cómo se calcula la fase y no algo que
+  haya que vigilar. Cada Track modula a su velocidad, porque cada uno tiene sus
+  Steps y su Division.
+
+  **Tres desviaciones, escritas antes de implementar.** La forma se llama
+  `waveform` y no `Groove`, porque el motor ya gastó ese término en la familia de
+  Velocity, Sustain, Probability, Timing y Delay. La longitud **no** es ajustable
+  —la Pre Spec dice que sí, y el brief pedía 4 compases por defecto—: queda fija a
+  un ciclo por vuelta. Y `accent` **no tiene knob**: se edita con el dedo en la
+  quinta pantalla, que cae del lado táctil de la frontera del 2026-09-06.
+
+  **El coste de no tener knob está escrito y es real:** Ctrl All, Temp y la
+  lectura transitoria grande no alcanzan a `accent`, porque los tres operan sobre
+  `TrackParameter`. Se acepta a cambio de no gastar dos de los cuarenta y ocho
+  controles del BeatStep Pro antes de saber si la forma del parámetro es la
+  definitiva.
+
+  **No lleva medición de jitter**, y a diferencia de la rebanada 5 aquí ni
+  siquiera se plantea: cambia el *cuánto* y no el *cuándo*, que es literalmente el
+  caso que la nota del 2026-08-28 excluye.
+
 ## Defectos conocidos
 
 Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres
