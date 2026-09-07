@@ -228,10 +228,10 @@ revisar antes de seguir (NFR1).
         omisiones, misma semilla.
   - [x] Implementación (Green): la tirada por evento, después del corte y no
         antes.
-- [~] Task: El arnés no repite (FR14)
-  - [ ] Tests (Red): `SchedulerMaterial.everyStep` devuelve el `NoteRepeater`
+- [x] Task: El arnés no repite (FR14) — 3b6c3f7
+  - [x] Tests (Red): `SchedulerMaterial.everyStep` devuelve el `NoteRepeater`
         neutro y no emite ninguna repetición.
-  - [ ] Implementación (Green): la propiedad, junto a la de `groove`.
+  - [x] Implementación (Green): la propiedad, junto a la de `groove`.
 - [ ] Task: No regresión de punta a punta (FR16)
   - [ ] Tests (Red): un Pattern completo con Repeats en 0 produce **la misma
         secuencia de mensajes y los mismos instantes** que la referencia
