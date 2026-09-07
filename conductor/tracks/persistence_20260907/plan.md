@@ -286,7 +286,7 @@ su test de que el fichero anterior sigue ahí.
 
 ## FASE 7: LA PANTALLA `banks` DEJA DE SER CÁSCARA
 
-- [ ] Task: Bajar a `Engine` lo que la cáscara dejó arriba (FR25)
+- [x] Task: Bajar a `Engine` lo que la cáscara dejó arriba (FR25) — `3c95de0`
   - [ ] `BankGrid.count` y `PatternGrid.count` se van con `Bank`, como su propia
         documentación promete; el estado de un Pattern pasa a ser **lectura
         directa** y se prueba en `Engine`.
