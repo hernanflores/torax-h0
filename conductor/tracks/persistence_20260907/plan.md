@@ -223,7 +223,7 @@ su test de que el fichero anterior sigue ahí.
         de Pattern.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 6: EL CAMBIO CUANTIZADO — LA RANURA ARMADA
+## FASE 6: EL CAMBIO CUANTIZADO — LA RANURA ARMADA [checkpoint: a624bd0]
 
 - [x] Task: Medir antes de construir encima (NFR2) — `0891721`
   - [ ] Medir el tamaño del handoff con la ranura armada dentro y el coste de la
@@ -282,7 +282,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Tests (Red): con el transporte corriendo, recargar entra en el compás,
         por el mismo camino que un cambio de Pattern y no por otro.
   - [ ] Implementación (Green).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 7: LA PANTALLA `banks` DEJA DE SER CÁSCARA
 
