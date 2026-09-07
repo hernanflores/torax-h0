@@ -1,0 +1,26 @@
+Task: Sacar el Note Repeater de «Fuera de v1» en `product.md` (FR19)
+
+Qué cambia: tres sitios de conductor/product.md.
+
+1. MVP Scope, lista «Fuera de v1»: «Note Repeater (Repeats/Time/Ramp/Pace)» pasa
+   a tachado, con el puntero a la nota — misma forma que se usó con los
+   múltiples Tracks, Cycles y la persistencia.
+2. Interaction Model: bullet nuevo. El Note Repeater es una capa sobre el ritmo
+   y no toca Steps, Pulses ni Rotate; con Repeats en 0 nada cambia.
+3. MVP Scope: nota fechada el 2026-09-07 con lo que entra —los cuatro knobs, la
+   herencia de Velocity/Sustain/swing/Delay, FR16— y lo que no —Repeats>8, el
+   «infinito», Choke/Tail, avanzar el pool, swing dentro de la tirada, dibujar
+   las repeticiones—. Incluye por qué Probability pasando a todas las notas no
+   es una regresión: con Repeats en 0 los dos conjuntos coinciden.
+4. Success Criteria: nota fechada. Este es el segundo cambio desde la suspensión
+   del 2026-09-02 que toca la rejilla temporal, y a diferencia de
+   external-clock_20260903 aquí no se abre excepción. Deja escrito el coste: sin
+   arnés no hay número para la cola con 108 eventos por Step, y por eso el tope
+   se razona en 8 en vez de los 48 de la Pre Spec.
+
+Por qué: FR19 y el Task Workflow §8. La lista de «Fuera de v1» describiría algo
+falso en cuanto la Fase 2 escriba la primera línea de NoteRepeater.
+
+Ficheros modificados: conductor/product.md (+59 −1)
+
+Sin tests: documentación.
