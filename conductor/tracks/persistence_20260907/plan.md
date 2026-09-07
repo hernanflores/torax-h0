@@ -32,7 +32,7 @@ abre excepción, a diferencia de `external-clock_20260903`.
 ilegibles son los dos únicos caminos que tocan datos existentes, y los dos tienen
 su test de que el fichero anterior sigue ahí.
 
-## FASE 1: LAS DESVIACIONES QUEDAN ESCRITAS
+## FASE 1: LAS DESVIACIONES QUEDAN ESCRITAS [checkpoint: e4512b1]
 
 - [x] Task: Anotar que la rebanada sí toca el motor (Overview, FR6, FR7) — `e6dcd6e`
   - [ ] Nota fechada el 2026-09-07 en `conductor/tracks.md`, sobre la entrada de
@@ -71,7 +71,7 @@ su test de que el fichero anterior sigue ahí.
         estado vive en el contenedor de la app y desinstalarla lo borra.
   - [ ] Fijar el vocabulario: `Bank`, `Pattern`, `Project`, `Save Bank`,
         `Reload`, `queued`. Ni «preset», ni «song», ni «slot».
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: EL MODELO — `Bank` Y `Project` EN `Engine`
 
