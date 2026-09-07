@@ -1,0 +1,30 @@
+Tareas de la Fase 5: 'El Autosave y su debounce' (FR14), 'Forzar la escritura pendiente' (FR14), 'Save Bank fija el punto de retorno' (FR16) y 'Reload vuelve, y sabe cuándo no puede' (FR17).
+
+Qué cambia
+- Sources/Persistence/Autosave.swift (nuevo)
+- Sources/Persistence/RestorePoint.swift (nuevo, extensión de ProjectStore)
+- Tests: AutosaveTests (13), RestorePointTests (13), TestClock
+- ProjectStore: fileSystem, directory, decoder y write pasan de private a
+  internal, para que la extensión comparta el directorio y el codec.
+
+Decisiones
+- El Autosave no tiene temporizador. Expone tick() y flush(), y quien lo usa
+  decide cuándo. Meter un Timer aquí habría metido ciclo de vida en un paquete
+  que solo sabe de ficheros, y habría hecho los tests dependientes del reloj de
+  verdad.
+- El reloj es inyectable y los tests usan un TestClock que es una clase. La
+  closure es @Sendable y no puede capturar una var local ni el XCTestCase; una
+  referencia sí. Sin esto, los tests del debounce dormirían dos segundos cada
+  uno.
+- Lo pendiente es un diccionario índice → Bank, así que el último cambio de cada
+  Bank gana por construcción. No hace falta lógica para 'quedarse con el último'.
+- Un flush fallido conserva lo pendiente y borra solo lo que sí se escribió. La
+  alternativa —limpiar todo— perdería en silencio justo lo que el disco no pudo
+  aceptar.
+- El punto de retorno es un fichero aparte en restore/, no un campo dentro del
+  fichero de trabajo. Es lo que hace imposible que una escritura de trabajo lo
+  pise, y hay dos tests dedicados a esa independencia: uno por edición directa y
+  otro por Autosave.
+- reloadAvailability devuelve el motivo y no un Bool. Un botón deshabilitado sin
+  explicación se lee como un fallo; el motivo es información sobre cómo funciona
+  el guardado, y hay un test de que es texto legible y no un código.
