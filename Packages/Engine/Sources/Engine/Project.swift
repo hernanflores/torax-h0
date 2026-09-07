@@ -148,6 +148,27 @@ public struct Project: Equatable, Sendable {
         copy(destinationName: .some(destination), sourceName: .some(source))
     }
 
+    /// El Project con el **Pattern vigente** copiado en otro hueco del **Bank
+    /// vigente** (FR13).
+    ///
+    /// Es la forma en que lo llama la pantalla: el origen no se elige, es lo que
+    /// se está mirando. Fuera de rango devuelve el Project tal cual.
+    public func copyingSelectedPattern(to destination: Int) -> Project {
+        guard let bank = bank(at: selectedBank) else { return self }
+        return replacing(
+            bank.copyingPattern(from: selectedPattern, to: destination),
+            at: selectedBank
+        )
+    }
+
+    /// El Project con ese hueco del Bank vigente vacío.
+    ///
+    /// Fuera de rango devuelve el Project tal cual.
+    public func clearingPattern(at index: Int) -> Project {
+        guard let bank = bank(at: selectedBank) else { return self }
+        return replacing(bank.clearingPattern(at: index), at: selectedBank)
+    }
+
     /// Acota a `0..<count`. No envuelve.
     private static func clamped(_ index: Int, to count: Int) -> Int {
         min(max(index, 0), count - 1)

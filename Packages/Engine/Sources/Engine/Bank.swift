@@ -83,6 +83,33 @@ public struct Bank: Equatable, Sendable {
         return Bank(patterns: updated, tempo: tempo)
     }
 
+    /// El Bank con el Pattern de `origin` copiado en `destination`.
+    ///
+    /// **Es lo que hace que dieciséis huecos sirvan para algo.** Una variante se
+    /// hace partiendo del groove que ya funciona y quitándole algo; sin copiar,
+    /// haría falta reconstruir doce Tracks a mano desde vacío.
+    ///
+    /// **Copia un valor, no comparte uno.** Editar el destino después no toca al
+    /// origen, que es lo que separa una variante de una segunda vista del mismo
+    /// material.
+    ///
+    /// Copiar sobre un hueco con material lo **sustituye**, sin confirmación y
+    /// sin mezcla. Copiar un hueco vacío deja el destino vacío: es lo mismo que
+    /// borrarlo, y no se trata como un caso especial porque no lo es. Fuera de
+    /// rango, en cualquiera de los dos extremos, devuelve el Bank tal cual.
+    public func copyingPattern(from origin: Int, to destination: Int) -> Bank {
+        guard let material = pattern(at: origin) else { return self }
+        return replacing(material, at: destination)
+    }
+
+    /// El Bank con ese hueco vacío — un `Pattern()`, doce Tracks sin pool.
+    ///
+    /// No deja un agujero ni una bandera: el hueco sigue existiendo, como los
+    /// dieciséis existen siempre. Fuera de rango devuelve el Bank tal cual.
+    public func clearingPattern(at index: Int) -> Bank {
+        replacing(Pattern(), at: index)
+    }
+
     /// El mismo Bank a otro tempo, con sus dieciséis Patterns intactos.
     public func withTempo(_ tempo: Tempo) -> Bank {
         Bank(patterns: patterns, tempo: tempo)
