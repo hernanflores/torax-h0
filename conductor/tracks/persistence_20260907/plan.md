@@ -100,7 +100,7 @@ su test de que el fichero anterior sigue ahí.
         intacto, sin fallar.
   - [ ] Implementación (Green), en `Engine` y como valores: son dos funciones
         puras y ahí se cubren.
-- [ ] Task: Qué Patterns tienen material (FR25)
+- [x] Task: Qué Patterns tienen material (FR25) — `2655e43`
   - [ ] Tests (Red): un Bank sabe cuántos de sus Patterns tienen material,
         reusando el criterio que `TransportModel.patternHasMaterial` ya usa —hay
         pool en algún Track— y no inventando otro.
