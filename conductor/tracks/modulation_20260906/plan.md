@@ -1,0 +1,236 @@
+# Plan — v2 rebanada 6: LFO Modulation
+
+Sigue el `workflow.md`: tests antes de implementación, un commit por tarea, git
+note por commit y checkpoint verificado al cerrar cada fase.
+
+**El orden va de dentro afuera.** Primero la nota de la desviación, que el Task
+Workflow §8 exige *antes* de implementar porque la Pre Spec promete un Accent
+distinto del que se entrega. Después el valor puro en `Engine` —toda la
+matemática de las cuatro ondas y del offset, que se prueba sin relojes—; luego
+el `Cycle`, que aprende a llevarlo encima sin dejar de ser POD; luego la emisión,
+que es donde suena por primera vez; y por último la pantalla, que es lo único
+que no se testea.
+
+**El riesgo de esta rebanada no está en la matemática, está en el `Cycle`.** Las
+cuatro ondas se prueban con números y se acabó. Lo que hay que vigilar es que
+meter un campo más en un valor que cruza al hilo del scheduler dieciséis veces
+por Track no rompa `_isPOD` ni engorde el snapshot: por eso la Fase 3 existe
+separada de la 2 y no se resuelve de pasada.
+
+**Todas las fases cargan con el criterio 1.** Con `accent = 0` la salida tiene
+que ser idéntica a la de antes de la rebanada —instantes, velocities y consumo de
+aleatoriedad—. No es una comprobación del final: cada fase que toque el camino de
+emisión deja su test de no regresión dentro.
+
+**Ninguna fase mide jitter** (NFR3). Es el caso que la nota del 2026-08-28 de
+`workflow.md` excluye explícitamente —cambia el *cuánto*, no el *cuándo*— y
+además la medición está suspendida desde el 2026-09-02. Queda anotado en la Fase
+1 para que la ausencia sea una decisión leída y no un olvido.
+
+**Nada de coma flotante entra en el hilo del scheduler** (NFR1). Si una tarea
+empuja hacia `sin()`, hacia un `Double` de fase o hacia una tabla que haya que
+asignar, es la señal de que el diseño se está torciendo: parar y revisar antes de
+seguir.
+
+## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
+
+- [ ] Task: Anotar la modulación en la Pre Spec (NFR7)
+  - [ ] Nota fechada en `Pre Spec Torax H-0.md`, §4 «Modulación LFO y Random» y
+        en la fila `Accent` de §5: qué se entrega y qué no.
+  - [ ] **La forma se llama `waveform`, no `Groove`.** La Pre Spec usa *Groove*
+        para dos cosas —la familia de parámetros y el knob que elige la forma— y
+        el motor ya gastó el término en la primera. Escribir el porqué:
+        `product-guidelines.md` pide un solo término por concepto.
+  - [ ] **La longitud no se puede cambiar.** La Pre Spec dice «se puede cambiar
+        su longitud»; se entrega fija a un ciclo por vuelta del anillo, y el
+        default de 4 compases del brief de producto no se implementa.
+  - [ ] **Accent no tiene knob.** La §5 lo lista entre los parámetros de Groove,
+        que son todos de knob; aquí es táctil. Con el coste delante: Ctrl All,
+        Temp y la lectura transitoria grande no lo alcanzan.
+  - [ ] **Retrigger reiniciaría Accent y Retrigger no existe.** Anotarlo donde la
+        Pre Spec lo promete, para que la deuda esté escrita y no se descubra.
+  - [ ] Fijar el vocabulario: `modulation`, `waveform`, `accent`, `saw`,
+        `triangle`, `sine`, `pulse`. Ni «LFO» como nombre de parámetro, ni
+        «shape» —que ya es una familia—, ni «amount».
+- [ ] Task: Sacar el LFO de «Fuera de v1» en `product.md` (NFR7)
+  - [ ] Nota fechada en `conductor/product.md`: de «LFO y Random Modulation»
+        entra **solo la primera mitad, y solo sobre velocity**, por la misma vía
+        que salieron Cycles y los múltiples Tracks.
+  - [ ] Describirlo en *Interaction Model*: **capa sobre la dinámica, no sobre el
+        material**. Steps, Pulses, Rotate y el pool no cambian.
+  - [ ] Anotar que la app pasa a tener **cinco pantallas**, y de qué lado de la
+        frontera del tacto cae `modulation`: se configura antes de tocar, como
+        `scale`, `midi` y `banks`.
+  - [ ] Anotar que **no se mide jitter** y por qué la regla del 2026-08-28 lo
+        excluye, para que la ausencia se lea como decisión.
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## FASE 2: EL VALOR PURO — `Modulation` EN `Engine`
+
+- [ ] Task: `Waveform` y `Accent`, con sus rangos (FR2, FR3)
+  - [ ] Tests (Red): `Accent` acota −100…100 y **se detiene en los extremos**, no
+        envuelve, como `Velocity` y `Sustain`; el `init?` devuelve `nil` fuera de
+        rango; el default es 0.
+  - [ ] Tests (Red): `Waveform` recorre sus cuatro casos y su `description` es el
+        término en minúscula (`saw`, `triangle`, `sine`, `pulse`).
+  - [ ] Implementar (Green) en `Packages/Engine/Sources/Engine/Modulation.swift`.
+  - [ ] Documentar el porqué del bipolar y del 0 dentro del rango: es el valor
+        que apaga la modulación, no un extremo.
+- [ ] Task: La onda muestreada por Step (FR4, FR5)
+  - [ ] Tests (Red): las cuatro ondas valen **0 en el Step 0** —salvo `pulse`,
+        que vale +100— para 1, 9 y 16 Steps.
+  - [ ] Tests (Red): `triangle` sobre 16 Steps da el pico en el cuarto de vuelta,
+        vuelve a 0 a media vuelta y es simétrico en la segunda mitad.
+  - [ ] Tests (Red): `saw` sube hasta el cuarto de vuelta, **salta** a −100 y
+        vuelve a subir; el salto cae exactamente donde dice el spec.
+  - [ ] Tests (Red): `pulse` produce exactamente dos valores y cambia a media
+        vuelta; con Steps impares, la mitad se resuelve por la misma regla y
+        queda escrita.
+  - [ ] Tests (Red): `sine` es monótona donde debe serlo y su pico no se desvía
+        del de `triangle` — la tabla aproxima la forma, no otra cosa.
+  - [ ] Tests (Red): con `stepCount` de 1 la fase es siempre 0 y no se divide por
+        cero.
+  - [ ] Implementar (Green): tabla estática de enteros para `sine`, aritmética
+        entera para las otras tres. Marca `/// Realtime:` en la función.
+- [ ] Task: El offset de velocity y su acotado (FR6, FR7)
+  - [ ] Tests (Red): `accent = 0` da offset 0 en los Steps de la vuelta, para las
+        cuatro ondas.
+  - [ ] Tests (Red): `accent = ±100` sobre el pico da ±63 unidades MIDI.
+  - [ ] Tests (Red): `accent = −n` es el complemento exacto de `accent = +n`
+        respecto de la base, salvo donde el acotado muerde.
+  - [ ] Tests (Red): con `Velocity 127` y accent positivo nada supera 127; con
+        `Velocity 1` y accent negativo nada baja de 1 — reutilizando
+        `Velocity.advanced(by:)`, no un segundo acotado.
+  - [ ] Tests (Red): la aritmética es entera y el redondeo está fijado por test
+        en los valores que caen a mitad de unidad.
+  - [ ] Implementar (Green).
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## FASE 3: EL `Cycle` LLEVA SU `Modulation`
+
+- [ ] Task: `Modulation` dentro del `Cycle`, sin dejar de ser POD (FR1, NFR2)
+  - [ ] Tests (Red): `_isPOD(Cycle.self)` sigue siendo cierto con el campo nuevo.
+  - [ ] Tests (Red): un `Cycle` recién creado tiene `accent = 0` y
+        `waveform = .triangle`.
+  - [ ] Tests (Red): `Cycle.with(modulation:)` devuelve un valor nuevo y no toca
+        nada más; la igualdad distingue dos Cycles que solo difieren en la onda.
+  - [ ] Tests (Red): los dieciséis Cycles de un `Track` llevan el suyo — cambiar
+        el del Cycle en edición no toca a los otros quince.
+  - [ ] Implementar (Green), con el campo entrando **por default** en el
+        inicializador, como entraron Timing y Delay: código que no lo pide sigue
+        compilando y sonando igual.
+- [ ] Task: El coste del snapshot, medido y no supuesto (NFR2)
+  - [ ] Tests (Red): extender `CycleSnapshotCostTests` con el tamaño nuevo del
+        `Pattern` de doce Tracks × dieciséis Cycles.
+  - [ ] Anotar la cifra en la git note del commit, junto a la anterior (~37 KB,
+        `load()` ~870 ns), para que la serie siga siendo comparable.
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## FASE 4: EL ACENTO SUENA
+
+- [ ] Task: El `TrackScheduler` aplica la modulación (FR4, FR8)
+  - [ ] Tests (Red): con `accent = 0` la secuencia emitida es **idéntica** a la
+        de antes —instantes, velocities y consumo de aleatoriedad—. Es el
+        criterio 1 y se queda dentro de la suite.
+  - [ ] Tests (Red): con `triangle` y `accent = +100`, las velocities de una
+        vuelta siguen la forma; el Step 0 de cada vuelta vuelve a la base.
+  - [ ] Tests (Red): la fase usa `cycleStep`, no el Step absoluto: dos vueltas
+        seguidas emiten la misma serie de velocities.
+  - [ ] Tests (Red): un Step apagado por Probability **no desplaza la fase** —
+        los siguientes valen lo mismo que si hubiera sonado.
+  - [ ] Tests (Red): un Step que no es pulso euclidiano tampoco la desplaza.
+  - [ ] Tests (Red): al avanzar de Cycle en el límite de vuelta, la modulación
+        que se aplica es la del Cycle nuevo desde su Step 0.
+  - [ ] Implementar (Green): componer el `Groove` modulado donde el scheduler ya
+        tiene `cycleStep` y `stepCount` a mano, sin releer el snapshot.
+  - [ ] Verificar a mano que no entra ninguna asignación, bloqueo ni coma
+        flotante en el bucle de ventana (NFR1, Quality Gates).
+- [ ] Task: Cada Track modula con su propio anillo (FR4)
+  - [ ] Tests (Red): dos Tracks con Steps distintos completan su ciclo en vueltas
+        distintas, cada uno con la suya.
+  - [ ] Tests (Red): un Track muteado sigue avanzando su fase — la rejilla del
+        muteado avanza, y la modulación va con ella.
+  - [ ] Implementar (Green) si hace falta; si los tests pasan sin tocar nada, la
+        tarea es el test y queda dicho en la git note.
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## FASE 5: LA QUINTA PESTAÑA Y LAS CUATRO ONDAS
+
+- [ ] Task: `Module.modulation` y la navegación de cinco (FR10)
+  - [ ] Añadir el caso a `Module` y comprobar que `ModuleNavigation` reparte los
+        cinco sin apretar la fila.
+  - [ ] Verificar que navegar a `modulation` y volver **no** interrumpe el
+        transporte ni mueve el playhead: el modelo lo posee `ContentView`.
+- [ ] Task: `WaveformPreview` y `WaveformCard` (FR11, FR19, FR20)
+  - [ ] El dibujo de cada onda: trazo geométrico simple, sin relleno, sin
+        degradado, dos ciclos como en el handoff.
+  - [ ] Seleccionado: relleno mauve plano, etiqueta oscura, borde de 3 pt y
+        sombra dura sin desenfoque. Los otros tres, oscuros con borde neutro de
+        2 pt.
+  - [ ] Cadenas en minúscula, radios de 3 a 8 pt, Figtree 400/600/700.
+- [ ] Task: `WaveformSelector` y la etiqueta de contexto (FR11, FR16, FR17)
+  - [ ] Rejilla 2×2, escritura sobre el **Cycle en edición**.
+  - [ ] La etiqueta dice `track 04 · cycle 02`; el Track lo elige el controlador
+        y esta pantalla no lo escribe (FR17).
+  - [ ] Área táctil suficiente y legible sin zoom (Code Review Process §6).
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## FASE 6: EL ACENTO SE VE
+
+- [ ] Task: El formato de la lectura vive en `Engine` (NFR6)
+  - [ ] Tests (Red): `+34`, `−12` y `0` — el signo se ve en el positivo, como
+        `Rotate`, y el 0 va sin signo.
+  - [ ] Implementar (Green) junto a `Accent`, no en la vista.
+- [ ] Task: `BipolarAccentSlider` (FR11, FR18, FR19)
+  - [ ] Arrastre continuo, `+100` arriba, `0` en el centro exacto, `−100` abajo.
+  - [ ] Imantado al 0 cerca del centro y toque simple sobre la pista.
+  - [ ] Pulgar mauve, marcador de centro off-white, etiqueta `bipolar velocity`.
+- [ ] Task: `VelocityResponseView` (FR12, FR13, FR14, FR15)
+  - [ ] Tests (Red, en `Engine`): la serie de velocities finales de una vuelta —
+        con base, accent, onda y **recorte**— para 9 y 16 Steps. Es el dato que
+        el panel dibuja, y por eso se testea aquí y no mirándolo.
+  - [ ] Barras: tantas como Steps, altura = velocity final, off-white con
+        realces mauve; los Steps que no son pulso, atenuados.
+  - [ ] La onda seleccionada trazada sobre una línea de centro discreta.
+  - [ ] Playhead off-white, **un redibujo por Step**, oculto con el transporte
+        parado; las barras se quedan.
+  - [ ] Pie: `1 cycle per pattern`.
+- [ ] Task: `ModulationSummaryCard` y el montaje de `ModulationView` (FR11, FR19)
+  - [ ] Card resumen: `waveform` / la onda, `accent` / el valor con signo.
+  - [ ] Dos columnas ~70/30, el card alto `accent` a la derecha.
+  - [ ] Repasar que en `App` no haya quedado lógica que merezca un test
+        (`workflow.md`, *Coverage Requirements*).
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## FASE 7: SIMULADOR, DISPOSITIVO Y CIERRE
+
+- [ ] Task: Verificar la pantalla en simulador (criterio 13)
+  - [ ] Captura con `simctl` de la pantalla `modulation` con cada una de las
+        cuatro ondas seleccionada.
+  - [ ] Comprobar contra el handoff: rejilla, columnas, mauve, minúsculas,
+        bordes y sombra dura.
+  - [ ] Comprobar el panel con un Track de 9 Steps: nueve barras, no dieciséis.
+  - [ ] Comprobar el imantado del slider y que la etiqueta de contexto sigue al
+        Cycle en edición.
+  - [ ] Anotar en la git note lo que el simulador **no** puede verificar: sin
+        destinos MIDI no hay transporte, así que ni playhead ni acento audible.
+- [ ] Task: Verificar en iPad con BeatStep Pro (criterios 3, 5, 13)
+  - [ ] Con un sinte externo: `triangle` y `accent` alto **se oye** como una
+        respiración a lo largo de la vuelta.
+  - [ ] `pulse` acentúa media vuelta entera y la otra media suena por debajo.
+  - [ ] `accent = 0` suena exactamente como antes de la rebanada.
+  - [ ] Con `Velocity` alta y accent alto, comprobar que el recorte se **ve** en
+        el panel y anotar cómo suena.
+  - [ ] Comprobar que el playhead del panel va con el del anillo, sin retraso
+        visible.
+  - [ ] Legibilidad a un metro del panel y de la lectura grande.
+- [ ] Task: Cobertura, estilo y cierre del track
+  - [ ] `Engine` ≥90% y `MIDI` ≥80%, esta última medida como dice `workflow.md`:
+        un solo proceso, `.profdata` fusionado a mano, `Engine/Sources` fuera del
+        informe.
+  - [ ] `swift format` sobre `App` y `Packages`.
+  - [ ] Repasar los Quality Gates uno a uno, incluido que `Engine` no importe
+        nada fuera de la stdlib.
+  - [ ] Actualizar `conductor/tracks.md` y abrir el PR contra `main` — cuerpo
+        corto, cinco líneas y la tabla de verificación (`workflow.md`).
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
