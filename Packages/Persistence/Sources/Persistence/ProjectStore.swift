@@ -28,8 +28,11 @@ import Foundation
 /// funcione, y eso es estado con dueño.
 public final class ProjectStore: @unchecked Sendable {
 
-    private let fileSystem: FileSystem
-    private let directory: URL
+    /// **`internal` y no `private` porque los puntos de retorno viven en una
+    /// extensión** (`RestorePoint.swift`): son la otra capa de guardado y
+    /// merecen su fichero, pero comparten el directorio, la costura y el codec.
+    let fileSystem: FileSystem
+    let directory: URL
 
     /// Cómo se nombra un fichero apartado. Inyectable para que los tests no
     /// dependan del reloj.
@@ -54,7 +57,7 @@ public final class ProjectStore: @unchecked Sendable {
         return encoder
     }()
 
-    private let decoder = JSONDecoder()
+    let decoder = JSONDecoder()
 
     public init(
         fileSystem: FileSystem = DiskFileSystem(),
@@ -121,7 +124,7 @@ public final class ProjectStore: @unchecked Sendable {
 
     /// **Un solo sitio por el que pasa toda escritura**, que es lo que permite
     /// que el estado de fallo sea correcto sin repetirlo en cada método.
-    private func write(_ record: some Encodable, to url: URL) throws {
+    func write(_ record: some Encodable, to url: URL) throws {
         do {
             try fileSystem.createDirectory(url.deletingLastPathComponent())
             try fileSystem.write(try encoder.encode(record), to: url)
