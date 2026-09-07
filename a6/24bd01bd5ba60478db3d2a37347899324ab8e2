@@ -1,0 +1,24 @@
+Tareas: 'Cambiar de Bank, y el tempo' (FR11, FR12) y 'Reload cuantizado sobre el mismo mecanismo' (FR17).
+
+Van juntas porque la segunda no añade código: Reload usa select(_:pattern:) y por
+eso hereda la cuantización. Eso ES la tarea — que no exista un segundo camino por
+el que el material pueda entrar.
+
+Decisiones
+- select(_:pattern:) delega en select(_:) para el material y solo decide aparte
+  el tempo. Duplicar la lógica de armar habría sido la forma de que un día una de
+  las dos se desincronizara del compás.
+- El tempo se aplica DESPUÉS del material y solo con reloj interno. El orden no
+  se nota hoy —setTempo no toca el handoff— y deja el código diciendo lo que la
+  spec dice: el Bank trae material y, si le dejan, tempo.
+- Un índice de Pattern fuera de rango no hace nada y tampoco cambia el tempo. Es
+  todo o nada: aplicar el tempo de un Bank cuyo material no entró dejaría la app
+  en un estado que nadie pidió.
+
+Un test que no probaba nada, y se dice
+La primera versión del test de Reload sonando llamaba a play() y salía por un
+guard cuando el transporte no arrancaba — que es siempre en host, donde no hay
+destino MIDI. Pasaba sin afirmar una sola cosa. Se reescribió para comprobar lo
+que sí se puede comprobar sin hardware: que parado publica y que armado espera.
+La cuantización con el instante medido sobre el offset está en
+QuantizedPatternChangeTests, al nivel del scheduler.
