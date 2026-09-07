@@ -252,7 +252,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Implementación (Green): un contador de generación para lo armado, sin
         tocar el protocolo de ranura publicado. **Sin asignar, sin lock, sin
         `await`** (NFR1).
-- [ ] Task: El scheduler adopta en el límite (FR6, FR7)
+- [x] Task: El scheduler adopta en el límite (FR6, FR7) — `f904e75`
   - [ ] Tests (Red): con el transporte corriendo, un Pattern armado entra en el
         primer Step del compás siguiente —comprobado **sobre el índice de Step**
         y no de oído—, ni antes ni después.
