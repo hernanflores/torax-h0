@@ -74,7 +74,7 @@ revisar antes de seguir (NFR1).
   - [x] `Time` envuelve una fracción y **no amplía `Division.ordered`**: la lista
         de Time es suya, y meter tresillos en la de Division cambiaría por dónde
         pasa otro knob.
-- [ ] Task: La velocity de cada repetición (FR7)
+- [~] Task: La velocity de cada repetición (FR7)
   - [ ] Tests (Red): con Ramp 0, las `n` repeticiones suenan a la Velocity del
         Track. Con +100 y V=100, la última llega a 127; con −100, **a 1 y no a
         0**. Con |ramp| intermedio, la última se queda a medio camino.

@@ -236,3 +236,46 @@ extension RepeatTime: CustomStringConvertible {
     /// Se lee como la fracción que es: `1/32`. Mismo criterio que `Division`.
     public var description: String { fraction.description }
 }
+
+extension Ramp {
+
+    /// Velocity de la repetición `k` de una tirada de `n`.
+    ///
+    /// **El Pulse original es `k = 0` y devuelve la Velocity del Track intacta**,
+    /// en los dos sentidos: la curva recorre solo las repeticiones, que van de 1
+    /// a `n`. Es lo que hace que con Repeats en 0 no cambie nada de lo entregado.
+    ///
+    /// La curva es la de la Pre Spec, «relativo a la Velocity general del
+    /// Track»: mover el knob de VELOCITY mueve la rampa entera con él.
+    ///
+    /// ```
+    /// objetivo = ramp > 0 ? 127 : 1
+    /// v(k) = V + (objetivo − V) × (|ramp| / 100) × (k / n)
+    /// ```
+    ///
+    /// **Con Ramp negativo el objetivo es 1 y no 0.** Velocity 0 es note-off en
+    /// MIDI 1.0, así que una rampa que llegara a cero emitiría un apagado
+    /// disfrazado de nota — la misma razón por la que `Velocity` excluye el cero.
+    ///
+    /// Aritmética entera y multiplicando antes de dividir, como
+    /// `Sustain.gateNanoseconds(forStep:)`: esto acaba corriendo en el hilo del
+    /// scheduler. La división trunca hacia cero, así que el redondeo acerca la
+    /// curva a la Velocity del Track por menos de una unidad — inaudible, y
+    /// simétrico entre subir y bajar.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    ///
+    /// Calculates the velocity of one repetition along the ramp.
+    /// - Parameters:
+    ///   - k: The repetition index, from 1 to `n`; 0 is the originating pulse.
+    ///   - n: How many repetitions the burst has.
+    ///   - base: The velocity of the track.
+    /// - Returns: A velocity clamped to `Velocity.validRange`.
+    public func velocity(forRepetition k: Int, of n: Int, from base: Velocity) -> Velocity {
+        guard k > 0, n > 0, percent != 0 else { return base }
+        let target = percent > 0 ? Velocity.validRange.upperBound : Velocity.validRange.lowerBound
+        let travel = (target - base.value) * abs(percent) * k / (100 * n)
+        return Velocity(unchecked: Velocity.validRange.clamping(base.value + travel))
+    }
+}
