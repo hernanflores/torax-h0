@@ -24,3 +24,30 @@ falso en cuanto la Fase 2 escriba la primera línea de NoteRepeater.
 Ficheros modificados: conductor/product.md (+59 −1)
 
 Sin tests: documentación.
+
+--- Verificación de la FASE 1: LA DESVIACIÓN QUEDA ESCRITA (2026-09-07) ---
+
+Tests automáticos ejecutados:
+  swift test --package-path Packages/Engine
+    Executed 709 tests, with 0 failures
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    Executed 21 tests, with 1 test skipped and 0 failures
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    Executed 640 tests, with 0 failures
+  swift test --package-path Packages/Persistence
+    Executed 62 tests, with 0 failures
+
+Sin flake clientCreationFailed(-50) en esta pasada. Sin xcodebuild: la fase no
+toca código de la app.
+
+Sin tests nuevos: el diff de la fase son dos ficheros .md, excluidos por el
+protocolo de verificación de fase.
+
+Verificación manual propuesta: leer las notas fechadas del 2026-09-07 en
+'Pre Spec Torax H-0.md' §4 y en conductor/product.md (MVP Scope «Fuera de v1»,
+Interaction Model y Success Criteria), y comprobar que recogen las tres
+desviaciones —Repeats 0-8 sin «infinito», Ramp y Pace como knobs propios,
+Choke/Tail fuera—, el vocabulario fijado, FR16 y que Probability sobre todas las
+notas no es regresión.
+
+Confirmación del usuario: «OK» (2026-09-07).
