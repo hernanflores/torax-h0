@@ -242,7 +242,7 @@ su test de que el fichero anterior sigue ahí.
         pura y ahí se cubre.
   - [ ] Dejar escrito en el código que **cuatro negras es una decisión** y no una
         lectura del modelo: la app no tiene métrica.
-- [ ] Task: La ranura armada en `PatternHandoff` (FR7)
+- [x] Task: La ranura armada en `PatternHandoff` (FR7) — `9b7c6cc`
   - [ ] Tests (Red): armar no cambia lo que devuelve `load()`; adoptar publica lo
         armado; armar dos veces seguidas deja lo último; adoptar sin nada armado
         no hace nada.
