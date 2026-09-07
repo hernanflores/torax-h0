@@ -293,23 +293,23 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Tests (Red) del cuarto estado: `playing`, `queued`, `ready`, `empty`, y
         cuál gana cuando coinciden —el que suena manda sobre el elegido, que es
         la regla que la pantalla ya tiene.
-- [ ] Task: La cuenta atrás hasta el compás (FR25)
+- [x] Task: La cuenta atrás hasta el compás (FR25) — `2001e93`
   - [ ] Tests (Red) en `Engine`: cuánto falta para el límite, en la forma en que
         la pantalla lo va a pintar. La vista no calcula tiempo.
   - [ ] Implementación (Green) de la vista: el hueco `queued` y su cuenta atrás.
         Legible a un metro, que es condición de uso.
-- [ ] Task: Elegir Bank y Pattern deja de ser `@State` local (FR5, FR11, FR25)
+- [x] Task: Elegir Bank y Pattern deja de ser `@State` local (FR5, FR11, FR25) — `2001e93`
   - [ ] Quitar los dos `@State private var selected` de `BanksScreen` y leerlos
         del modelo: la nota que dice «no hay dónde guardarlo» deja de ser cierta
         y se sustituye por lo que ahora hace.
   - [ ] `TrackAssignments` deja de decir doce veces `pattern 01`.
-- [ ] Task: Los controles de guardado (FR13, FR16, FR17)
+- [x] Task: Los controles de guardado (FR13, FR16, FR17) — `2001e93`
   - [ ] `Save Bank`, `Reload` —deshabilitado y explicado sin punto de retorno—,
         copiar y borrar Pattern, sobre el chrome brutalista existente.
   - [ ] Ningún modal mientras el transporte corre, que `workflow.md` prohíbe.
-- [ ] Task: El aviso de guardado fallido (FR21)
+- [x] Task: El aviso de guardado fallido (FR21) — `2001e93`
   - [ ] En la barra de estado, y **persistente hasta que un guardado funcione**.
-- [ ] Task: Enganchar Autosave y arranque al ciclo de vida (FR14, FR20, FR23)
+- [x] Task: Enganchar Autosave y arranque al ciclo de vida (FR14, FR20, FR23) — `2001e93`
   - [ ] Cargar el Project al arrancar y restaurar índices y ajustes; forzar el
         volcado al pasar a segundo plano.
   - [ ] El Autosave escribe también con el transporte corriendo (FR15): fuera del
