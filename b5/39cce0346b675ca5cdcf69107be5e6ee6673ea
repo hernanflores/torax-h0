@@ -1,0 +1,44 @@
+Task: Las repeticiones se emiten (FR9, FR10, FR11, NFR1, NFR3)
+
+Qué cambia: TrackScheduler.advance gana un cierre opcional emitRepetition, y un
+método privado emitRepetitions que cuelga la tirada de cada Pulse.
+
+Decisión de diseño — dos cierres y no uno:
+El Pulse sigue saliendo por el cierre de siempre, con su Groove, y las
+repeticiones salen por uno nuevo con su velocity y su gate ya calculados. No es
+duplicar el camino: los dos acaban en la misma
+NoteEmitter.emit(pitch:velocity:gateNanoseconds:), que es donde vive la regla del
+note-off. Lo que compra la separación es que el camino del Pulse quede INTACTO
+—misma firma, mismos argumentos, mismos 49 sitios de llamada sin tocar—, que es
+la forma más fuerte de cumplir FR16. La alternativa era cambiar la aridad del
+cierre en las tres capas y actualizar todos los sitios, que habría puesto el
+camino que no debe cambiar bajo la misma edición que el que sí.
+
+Reglas implementadas:
+- FR9, el corte: se acumula el hueco de cada repetición y se para en cuanto el
+  acumulado deja de ser ESTRICTAMENTE menor que la ventana. Estricto porque una
+  repetición que cayera justo en el Pulse siguiente sonaría encima de él.
+- FR10: los huecos se acumulan sobre el offset del Pulse, que ya trae su Timing y
+  su Delay. Ninguna repetición recibe swing propio.
+- FR11: la altura sale de pitch(atStep:) una vez, antes del bucle. El pool avanza
+  por Pulse y no por evento — hay test con dos alturas que lo fija.
+- NFR1: bucle acotado por Repeats (máximo ocho), aritmética entera, sin arrays
+  temporales ni coma flotante.
+- NFR3 y FR16: con Repeats en 0 se sale por el primer guard, antes de calcular
+  ningún hueco.
+- advanceBudgetNanoseconds no cambia: las repeticiones van siempre DESPUÉS del
+  Pulse, así que no adelantan ningún instante y el presupuesto sigue siendo cosa
+  de Delay.
+
+Desviación del Task Workflow §3, anotada porque es una desviación: en esta tarea
+la implementación se escribió antes que los tests, y no al revés. Los tests que
+la cubren comparan valores exactos —offsets, velocities y gates en nanosegundos—
+y no solo relaciones, que es lo que hace que sigan valiendo como red. Las tareas
+siguientes vuelven al orden del workflow.
+
+Ficheros modificados:
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift (+90 líneas)
+Ficheros creados:
+- Packages/MIDI/Tests/MIDITests/RepetitionEmissionTests.swift (14 tests)
+
+Verificación: MIDI 663 tests, 0 fallos (649 antes). Engine 797, Persistence 62.
