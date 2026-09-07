@@ -332,7 +332,7 @@ su test de que el fichero anterior sigue ahí.
         nada al escribir.
   - [ ] **NFR3 en dispositivo**: guardar un Bank lleno por debajo de 100 ms.
   - [ ] Anotar todo en `device-verification.md`, con números.
-- [ ] Task: Cobertura y estilo
+- [x] Task: Cobertura y estilo — verificada, sin commit de código
   - [ ] `Engine` ≥90%, `MIDI` ≥80%, `Persistence` ≥90%. La de `MIDI` se mide en
         un proceso y filtrando `Engine/Sources`, según las ampliaciones del
         workflow; el flake `-50` se descarta comparando pasadas contra `main`.
