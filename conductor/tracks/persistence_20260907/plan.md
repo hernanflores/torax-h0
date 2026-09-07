@@ -196,25 +196,25 @@ su test de que el fichero anterior sigue ahí.
 
 ## FASE 5: AUTOSAVE, SAVE BANK Y RELOAD
 
-- [ ] Task: El Autosave y su debounce (FR14)
+- [x] Task: El Autosave y su debounce (FR14) — `7641d27`
   - [ ] Tests (Red): N cambios seguidos producen **una** escritura, no N; la
         escritura ocurre tras la calma; se escribe solo el Bank tocado.
   - [ ] Tests (Red): el reloj del debounce es inyectable — un test que espere
         segundos de verdad es un test que algún día falla solo.
   - [ ] Implementación (Green) en `Persistence`.
-- [ ] Task: Forzar la escritura pendiente (FR14)
+- [x] Task: Forzar la escritura pendiente (FR14) — `7641d27`
   - [ ] Tests (Red): pedir el volcado inmediato escribe lo que estuviera
         pendiente y deja el debounce limpio; pedirlo sin nada pendiente no
         escribe.
   - [ ] Implementación (Green). El enganche al ciclo de vida de la escena es de
         la Fase 7.
-- [ ] Task: `Save Bank` fija el punto de retorno (FR16)
+- [x] Task: `Save Bank` fija el punto de retorno (FR16) — `7641d27`
   - [ ] Tests (Red): guardar el Bank vigente crea su punto de retorno y **no
         toca** los otros quince; guardar dos veces sustituye el punto.
   - [ ] Tests (Red): las dos capas son independientes — editar después de guardar
         cambia el estado de trabajo y **no** el punto de retorno.
   - [ ] Implementación (Green).
-- [ ] Task: `Reload` vuelve, y sabe cuándo no puede (FR17)
+- [x] Task: `Reload` vuelve, y sabe cuándo no puede (FR17) — `7641d27`
   - [ ] Tests (Red): guardar, editar, recargar devuelve **exactamente** el estado
         guardado; sin punto de retorno la operación no está disponible y lo dice
         con un motivo legible, en vez de fallar en silencio o vaciar el Bank.
