@@ -1,0 +1,32 @@
+Task: El gate de una repetición se mide sobre su hueco (FR12)
+
+Qué cambia: Sustain.gateNanoseconds(forStep:) pasa a llamarse
+gateNanoseconds(over:). La aritmética es la misma; lo que cambia es que el
+nombre deje de mentir en la mitad de las llamadas — Sustain es un porcentaje
+sobre una duración, y esa duración es la del Step para un Pulse y la del hueco
+para una repetición.
+
+Se renombran los cinco sitios de uso: NoteEmitter, GrooveShift, NoteRepeater (en
+documentación), y dos ficheros de tests.
+
+Tests nuevos (RepeatGateTests, 6 tests):
+- Con Sustain 100% y Repeats 3, cada repetición dura exactamente su hueco:
+  62,5 ms sobre un Step de 1/16 a 120 BPM con Time 1/32.
+- Con Pace +100 los cuatro gates crecen —62,5 / 83,3 / 104,2 / 125 ms— y con
+  Pace −100 decrecen: cada repetición dura EL SUYO y no el primero, que es lo
+  que impide que una tirada que acelera deje las últimas colgando.
+- Sustain por debajo y por encima del 100% escala dentro del hueco con la misma
+  proporción que sobre un Step.
+- FR16: el Pulse mide su gate sobre el Step con Repeats en 0 y con Repeats en 3.
+  La tirada que cuelga de él no toca su duración.
+- El gate de una repetición no depende de la Division, porque su hueco tampoco.
+
+Ficheros modificados:
+- Packages/Engine/Sources/Engine/Groove.swift (nombre del argumento y nota)
+- Packages/Engine/Sources/Engine/GrooveShift.swift, NoteRepeater.swift
+- Packages/MIDI/Sources/MIDI/NoteEmitter.swift
+- Tests: GrooveTypesTests, NoteEmitterEventTests
+Ficheros creados:
+- Packages/Engine/Tests/EngineTests/RepeatGateTests.swift
+
+Verificación: Engine 785 · MIDI 649, 0 fallos. xcodebuild iOS SUCCEEDED.
