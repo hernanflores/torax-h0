@@ -109,7 +109,7 @@ su test de que el fichero anterior sigue ahí.
         estado esperando bajar aquí.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: EL FORMATO — DTO `Codable` EN `Engine`
+## FASE 3: EL FORMATO — DTO `Codable` EN `Engine` [checkpoint: 8a5d684]
 
 - [x] Task: Los DTO espejo y la traducción (FR18) — `f6e7165`
   - [ ] Tests (Red): **ida y vuelta** de `Cycle`, `Track`, `Pattern`, `Bank` y
@@ -137,7 +137,7 @@ su test de que el fichero anterior sigue ahí.
         fichero corrupto.
   - [ ] Implementación (Green): la versión, su lectura y una función de migración
         vacía con su punto de llamada. Sin migradores (FR19).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 > **Enmienda del 2026-09-07 — «El JSON se lee con los ojos» se va a la Fase 4.**
 > La tarea prueba que la salida esté indentada y con las claves ordenadas, y eso
