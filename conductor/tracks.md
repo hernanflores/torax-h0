@@ -701,7 +701,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: v2 rebanada 5 — Note Repeater: Repeats, Time, Ramp y Pace**
+- [~] **Track: v2 rebanada 5 — Note Repeater: Repeats, Time, Ramp y Pace**
   *Link: [conductor/tracks/note-repeater_20260906/index.md](./tracks/note-repeater_20260906/index.md)*
 
   Abierto el 2026-09-06. **Saca el Note Repeater de «Fuera de v1»** de
