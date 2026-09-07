@@ -277,8 +277,11 @@ public struct ProjectRecord: Codable, Equatable, Sendable {
     public let destinationName: String?
     public let sourceName: String?
 
-    public init(_ project: Project) {
-        schemaVersion = Self.currentSchemaVersion
+    /// **El segundo parámetro existe para poder construir un record con una
+    /// versión que no es la vigente**, que es lo único que permite probar el
+    /// camino de la versión no soportada sin fabricar JSON a mano.
+    public init(_ project: Project, schemaVersion: Int = ProjectRecord.currentSchemaVersion) {
+        self.schemaVersion = schemaVersion
         banks = (0..<Project.bankCount).compactMap { project.bank(at: $0).map(BankRecord.init) }
         selectedBank = project.selectedBank
         selectedPattern = project.selectedPattern
@@ -304,5 +307,58 @@ public struct ProjectRecord: Codable, Equatable, Sendable {
             .selectingTrack(selectedTrack)
             .withClockSource(clockSource == "external" ? .external : .internal)
             .remembering(destinationNamed: destinationName, sourceNamed: sourceName)
+    }
+}
+
+extension ProjectRecord {
+
+    /// El mismo record si su versión es la que esta app entiende, o un error si
+    /// no.
+    ///
+    /// **El error tiene que ser distinguible de uno de decodificación**, y esa
+    /// es toda la razón de que exista este método. La Fase 4 decide qué hacer
+    /// con el fichero según de qué falle, y `DecodingError` no separa «esto no
+    /// es JSON válido» de «esto lo escribió una app más nueva». Los dos acaban
+    /// en el mismo sitio —el fichero se aparta y la app arranca— pero lo que se
+    /// le dice al usuario no es lo mismo.
+    public func validated() throws -> ProjectRecord {
+        guard schemaVersion == Self.currentSchemaVersion else {
+            throw SchemaError.unsupportedSchemaVersion(
+                found: schemaVersion,
+                supported: Self.currentSchemaVersion
+            )
+        }
+        return self
+    }
+
+    /// El punto donde enchufar la primera migración. **Hoy no hace nada**, y
+    /// eso es deliberado (FR19).
+    ///
+    /// Escribir un migrador de v1 a v2 antes de que exista v2 es probar una
+    /// migración inventada, que envejece con el esquema real. Lo que hace falta
+    /// ahora es que el sitio esté decidido y que la llamada esté puesta, para
+    /// que quien escriba la primera no tenga además que decidir dónde va.
+    ///
+    /// **El primer caso ya está fechado**: las rebanadas 5 y 6 añaden campos al
+    /// `Cycle`.
+    public static func migrated(_ record: ProjectRecord) throws -> ProjectRecord {
+        try record.validated()
+    }
+}
+
+/// Lo que puede ir mal con la versión de un fichero.
+public enum SchemaError: Error, Equatable, CustomStringConvertible, Sendable {
+
+    /// El fichero declara una versión que esta app no entiende.
+    ///
+    /// **Lleva los dos números dentro** porque un mensaje que solo diga «versión
+    /// no soportada» obliga a abrir el fichero a mano para saber cuál.
+    case unsupportedSchemaVersion(found: Int, supported: Int)
+
+    public var description: String {
+        switch self {
+        case .unsupportedSchemaVersion(let found, let supported):
+            "El fichero declara la versión de esquema \(found) y esta app entiende la \(supported)."
+        }
     }
 }
