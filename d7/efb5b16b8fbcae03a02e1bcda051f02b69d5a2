@@ -1,0 +1,26 @@
+Tarea: schemaVersion y el punto de enchufe (FR19)
+
+Qué cambia
+- ProjectRecord.init gana un parámetro de versión con default, para poder
+  construir un record con una versión que no es la vigente.
+- ProjectRecord.validated() y ProjectRecord.migrated(_:).
+- SchemaError, con los dos números dentro.
+- SchemaVersionTests.swift (nuevo, 7 tests).
+
+Ciclo TDD
+Rojo confirmado: SchemaError sin existir y el init sin el parámetro.
+
+Decisiones
+- El error propio es la razón de ser de la tarea, no la versión. La versión sola
+  es un número en un fichero; lo que la hace útil es que leerla mal se pueda
+  distinguir de un fichero corrupto, porque la Fase 4 aparta los dos igual pero
+  no dice lo mismo.
+- Se prueba por separado la versión futura y la anterior. Parecen el mismo caso y
+  no lo son: la anterior dejará de fallar en cuanto exista el primer migrador, y
+  la futura no dejará de fallar nunca. Tenerlos separados es lo que hará que
+  escribir ese migrador rompa exactamente un test.
+- migrated(_:) hoy es validated() y nada más. Queda como el punto de llamada, no
+  como maquinaria: un migrador vacío con estructura de cadena de migradores sería
+  andamiaje sin caso que lo ejerza.
+- El parámetro de versión en el init tiene default, así que ningún sitio de uso
+  cambia y solo los tests lo pasan.
