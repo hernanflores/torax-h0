@@ -45,7 +45,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Anotar en `product.md`, *Success Criteria*, que este es el tercer cambio
         desde la suspensión del 2026-09-02 que roza el hilo del scheduler, que
         **no se abre excepción** y por qué: no mueve instantes, sólo material.
-- [ ] Task: Sacar Patterns y Banks de «Fuera de v1» en `product.md` (FR1, FR25)
+- [x] Task: Sacar Patterns y Banks de «Fuera de v1» en `product.md` (FR1, FR25) — `6cf70f7`
   - [ ] Nota fechada: Patterns, Banks y guardado salen de la lista de *Fuera de
         v1* por la misma vía por la que salieron Cycles y los múltiples Tracks.
   - [ ] Actualizar la nota del 2026-09-06 sobre las cuatro pantallas: `banks`
