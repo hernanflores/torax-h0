@@ -317,7 +317,7 @@ su test de que el fichero anterior sigue ahí.
   - [ ] Verificar en simulador que un fichero apartado se anuncia y la app abre.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 8: DISPOSITIVO Y CIERRE
+## FASE 8: DISPOSITIVO Y CIERRE [checkpoint: 100710c]
 
 - [~] Task: Verificación en iPad con el BeatStep Pro — **parcial**
 
@@ -358,8 +358,8 @@ su test de que el fichero anterior sigue ahí.
   - [ ] `spec.md` del track: limitaciones confirmadas o corregidas con lo que se
         haya aprendido, en especial la 3 —el primer migrador— para que las
         rebanadas 5 y 6 lo encuentren escrito.
-- [ ] Task: Pull Request
+- [x] Task: Pull Request — [#39](https://github.com/hernanflores/torax-h0/pull/39)
   - [ ] `gh pr create --base main`. Cuerpo corto: qué cambia, cómo se verificó en
         números, qué queda pendiente. Sin medición de jitter, con la razón de
         NFR4 en una línea.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
