@@ -62,7 +62,7 @@ revisar antes de seguir (NFR1).
 
 ## FASE 2: EL VALOR PURO — `NoteRepeater` EN `Engine`
 
-- [ ] Task: Los cuatro tipos y sus rangos (FR5, FR6, FR7, FR8)
+- [~] Task: Los cuatro tipos y sus rangos (FR5, FR6, FR7, FR8)
   - [ ] Tests (Red): `Repeats` acota 0…8 y **se detiene en los extremos**, no
         envuelve; `Time` recorre las nueve fracciones de más lenta a más rápida y
         se detiene; `Ramp` y `Pace` acotan −100…100; los cuatro defaults son
