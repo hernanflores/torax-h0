@@ -1,0 +1,21 @@
+Tarea: La ranura armada en PatternHandoff (FR7)
+
+Ciclo TDD
+Rojo confirmado: los cuatro miembros sin existir.
+
+Decisiones
+- Una ranura, no otro anillo. El anillo de cuatro existe porque el lector puede
+  quedarse copiando mientras el escritor da la vuelta; lo armado se lee una vez
+  por límite de compás —cada dos segundos a 120 BPM— y solo hay un pendiente.
+  Un anillo ahí sería maquinaria sin caso que la ejerza.
+- Paridad en vez de opcional. Un Pattern? en el camino de tiempo real es un
+  opcional de 28 KB que hay que desempaquetar; un bit de un entero atómico no.
+- adoptArmedPattern devuelve Bool y es @discardableResult. El scheduler lo llama
+  en cada límite y casi siempre sin nada pendiente: el caso vacío tiene que ser
+  una lectura y una comparación. Que devuelva si hizo algo es lo que permitirá a
+  la tarea siguiente afirmar el instante exacto del cambio.
+- publish() no toca lo armado, y hay un test de ello. Son dos caminos: publicar
+  es el de siempre —transporte parado, FR5—, armar es el cuantizado.
+- El test de concurrencia afirma que todo lo que sale de load() es uno de los
+  Patterns armados entero. No afirma cuál: eso sería afirmar un orden que el
+  protocolo no promete.
