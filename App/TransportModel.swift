@@ -2,6 +2,7 @@ import CoreMIDI
 import Engine
 import MIDI
 import Observation
+import Persistence
 
 /// Estado de la pantalla de transporte.
 ///
@@ -121,6 +122,120 @@ final class TransportModel {
     /// **Hace lo mismo que su step button.** Sin controlador conectado es la
     /// única vía, y con controlador las dos tienen que coincidir o la pantalla
     /// mentiría.
+    // MARK: - Banks y Patterns
+
+    var selectedBankIndex: Int { project.selectedBank }
+    var selectedPatternIndex: Int { project.selectedPattern }
+
+    /// El Bank vigente.
+    var bank: Bank { project.bank(at: project.selectedBank) ?? Bank() }
+
+    /// El estado de los dieciséis huecos del Bank vigente (FR25).
+    var patternSlotStates: [PatternSlotState] {
+        bank.slotStates(
+            playing: project.selectedPattern,
+            queued: armedPatternIndex,
+            isRunning: isPlaying
+        )
+    }
+
+    /// Qué hueco espera al compás, si alguno.
+    private(set) var armedPatternIndex: Int?
+
+    /// Cuántas negras faltan para que entre el Pattern armado, o `nil` si no hay
+    /// ninguno esperando.
+    var beatsUntilPatternChange: Int? {
+        guard armedPatternIndex != nil, let elapsed = transport?.elapsedNanoseconds else {
+            return nil
+        }
+        return BarGrid(tempo: Tempo(beatsPerMinute: beatsPerMinute) ?? .init(beatsPerMinute: 120)!)
+            .beatsUntilNextBoundary(at: elapsed)
+    }
+
+    /// Elige un Pattern del Bank vigente.
+    ///
+    /// **La regla de cómo entra la decide el transporte** (FR5, FR6): parado es
+    /// inmediato, sonando espera al compás. Aquí solo se anota qué hueco es el
+    /// que entra, para que la pantalla pueda decir `queued`.
+    func selectPattern(_ index: Int) {
+        guard let material = bank.pattern(at: index) else { return }
+
+        if isPlaying {
+            transport?.armForNextBar(material)
+            armedPatternIndex = index
+        } else {
+            project = project.selectingPattern(index)
+            pattern = material
+            transport?.publish(material)
+            armedPatternIndex = nil
+        }
+        autosave.changedHeader(project)
+    }
+
+    /// Elige otro Bank: su Pattern seleccionado y su tempo (FR11).
+    func selectBank(_ index: Int) {
+        guard let target = project.bank(at: index) else { return }
+
+        project = project.selectingBank(index)
+        transport?.select(target, pattern: project.selectedPattern)
+
+        if !isPlaying {
+            pattern = target.pattern(at: project.selectedPattern) ?? Pattern()
+            armedPatternIndex = nil
+        } else {
+            armedPatternIndex = project.selectedPattern
+        }
+        autosave.changedHeader(project)
+    }
+
+    /// Copia el Pattern vigente en otro hueco (FR13).
+    func copyPattern(to index: Int) {
+        project = project.copyingSelectedPattern(to: index)
+        autosave.changed(bank, at: project.selectedBank)
+    }
+
+    /// Vacía un hueco (FR13).
+    func clearPattern(at index: Int) {
+        project = project.clearingPattern(at: index)
+        autosave.changed(bank, at: project.selectedBank)
+    }
+
+    // MARK: - Guardado
+
+    /// Si `Reload` se puede pulsar, y por qué no cuando no (FR17).
+    var reloadAvailability: ReloadAvailability {
+        store.reloadAvailability(at: project.selectedBank)
+    }
+
+    /// Fija el punto de retorno del Bank vigente (FR16).
+    func saveBank() {
+        try? store.saveRestorePoint(bank, at: project.selectedBank)
+    }
+
+    /// Vuelve al punto de retorno. **Cuantizado**, por el mismo camino que un
+    /// cambio de Pattern (FR17).
+    func reloadBank() {
+        guard let saved = try? store.restorePoint(at: project.selectedBank) else { return }
+
+        project = project.replacing(saved, at: project.selectedBank)
+        transport?.select(saved, pattern: project.selectedPattern)
+
+        if !isPlaying {
+            pattern = saved.pattern(at: project.selectedPattern) ?? Pattern()
+        }
+        autosave.changed(saved, at: project.selectedBank)
+    }
+
+    /// Escribe lo pendiente ahora. La llama el paso a segundo plano (FR14).
+    func flushPendingSaves() {
+        try? autosave.flush()
+    }
+
+    /// Mira si toca escribir. La llama la pantalla, una vez por segundo.
+    func tickAutosave() {
+        try? autosave.tick()
+    }
+
     func selectTrack(_ index: Int) {
         controlInput.selectTrack(index)
         syncFromControlInput()
@@ -137,7 +252,6 @@ final class TransportModel {
         syncFromControlInput()
     }
 
-
     /// Copia el estado de la entrada de control al modelo observable.
     ///
     /// Es un solo sitio a propósito: cada camino que edita —knob, pad, pantalla—
@@ -148,6 +262,37 @@ final class TransportModel {
         gesture =
             controlInput.isTempActive
             ? .temp : (controlInput.isCtrlAllActive ? .ctrlAll : .none)
+
+        recordEdit()
+    }
+
+    /// Escribe el Pattern vigente en su hueco del Project, y lo pone en cola
+    /// para el Autosave.
+    ///
+    /// **Es el fallo que la pantalla `banks` destapó**: `pattern` y `project`
+    /// eran dos estados separados y solo el primero recibía las ediciones. El
+    /// Project se quedaba con lo que se cargó del disco, así que el card de
+    /// bancos decía «no patterns» con una pieza sonando, el hueco activo decía
+    /// `empty`, y —lo peor— **`Save Bank` guardaba el Bank viejo**: el punto de
+    /// retorno se fijaba sobre material que ya no existía.
+    ///
+    /// **Va en `syncFromControlInput` porque ése ya era el sitio único.** Su
+    /// propia documentación lo dice: «cada camino que edita —knob, pad,
+    /// pantalla— termina aquí, y así no hay ninguno que se olvide de refrescar
+    /// la mitad». Refrescaba media mitad.
+    ///
+    /// **El gesto en curso no se guarda.** Temp y Ctrl All superponen valores
+    /// que vuelven solos al soltar, y escribirlos dejaría en disco un fill que
+    /// nadie pidió conservar — que es justo lo que esos dos gestos existen para
+    /// evitar.
+    private func recordEdit() {
+        guard gesture == .none else { return }
+
+        project = project.replacing(
+            bank.replacing(pattern, at: project.selectedPattern),
+            at: project.selectedBank
+        )
+        autosave.changed(bank, at: project.selectedBank)
     }
 
     /// Con qué material arranca la app.
@@ -181,6 +326,38 @@ final class TransportModel {
     private(set) var sourceSelection = MIDIEndpointSelection(.source)
 
     /// Los dieciséis Tracks, con los giros ya aplicados.
+    /// El árbol entero: dieciséis Banks, dónde se está mirando y los ajustes de
+    /// sesión.
+    ///
+    /// **Es la fuente de verdad del material desde el 2026-09-07.** `pattern`
+    /// pasa a derivarse de aquí: el Pattern vigente es el del Bank y el hueco
+    /// seleccionados.
+    private(set) var project = Project.initial
+
+    /// Los ficheros. **Es el único que toca disco.**
+    private let store = ProjectStore()
+
+    /// El guardado automático del trabajo en curso.
+    ///
+    /// **No es `lazy`**: `@Observable` no admite propiedades diferidas, y además
+    /// no hay nada que diferir — construirlo no toca disco.
+    @ObservationIgnored private let autosave: Autosave
+
+    /// Qué ficheros se apartaron al arrancar por ilegibles, si alguno.
+    ///
+    /// **La app abre igual** (FR22); esto es lo que la pantalla cuenta para que
+    /// el usuario sepa que su fichero sigue ahí, apartado, y no borrado.
+    private(set) var rescuedFiles: [String] = []
+
+    /// Por qué falló el último guardado, si falló.
+    ///
+    /// **Persistente hasta que uno funcione** (FR21). Un Autosave silencioso que
+    /// lleva diez minutos fallando es la peor forma de perder trabajo.
+    var saveFailure: String? {
+        store.lastSaveFailure.map { _ in "No se pudo guardar" }
+    }
+
+    /// El Pattern vigente, derivado del Project.
     private(set) var pattern = Pattern.initial
 
     /// Cuál se está editando y mostrando.
@@ -208,7 +385,10 @@ final class TransportModel {
     /// Lo usa la pantalla `banks` para decidir si el único pattern que existe
     /// está `ready` o `empty`. Sale del Pattern real, así que esa parte de esa
     /// pantalla no es cáscara.
-    var patternHasMaterial: Bool { tracksWithMaterial.contains(true) }
+    /// **Lo decide `Engine` desde el 2026-09-07.** Se calculaba aquí, y con 256
+    /// Patterns que preguntar habría dos definiciones de «tiene material» en dos
+    /// paquetes — una de ellas donde no hay tests.
+    var patternHasMaterial: Bool { pattern.hasMaterial }
 
     var tracksWithMaterial: [Bool] {
         (0..<Pattern.trackCount).map { !(pattern.editingCycle(at: $0)?.pool.isEmpty ?? true) }
@@ -513,12 +693,48 @@ final class TransportModel {
     private(set) var clockRevision: UInt64 = 0
 
     init() {
+        autosave = Autosave(store: store)
+
+        // **El disco se lee antes que nada** (FR20, FR23).
+        //
+        // `load()` no lanza nunca: si el fichero está corrupto o es de una
+        // versión desconocida, se aparta con marca de tiempo y esto devuelve un
+        // Project vacío diciendo qué se apartó. La app abre siempre.
+        let restored = store.load()
+
+        // **Disco vacío arranca con el material de siempre, no con silencio.**
+        //
+        // `load()` devuelve un Project vacío cuando no hay nada que leer, que es
+        // correcto para el almacén: no se inventa material que nadie guardó. Lo
+        // que decide con qué abre la app es esto, y `Project.initial` es el
+        // requisito de que meter dos niveles no cambie lo que se oye — la app
+        // abre con 16/5 sobre c3, como abría antes de la rebanada.
+        //
+        // Se descubrió mirando el simulador: la primera versión abría muda con
+        // `pool empty`, y ningún test lo habría visto porque todos construyen el
+        // Project que quieren probar.
+        let loaded = restored.wasEmpty ? Project.initial : restored.project
+        project = loaded
+        rescuedFiles = restored.rescuedFiles
+        let restoredPattern =
+            loaded.bank(at: loaded.selectedBank)?
+            .pattern(at: loaded.selectedPattern) ?? Pattern.initial
+        pattern = restoredPattern
+        selectedTrackIndex = loaded.selectedTrack
+
         // La entrada de control se construye primero y publica por el relevo:
         // así no depende de que el transporte exista, ni de que llegue a
         // existir.
         let relay = self.relay
         controlInput = ControlInput(
-            pattern: .initial,
+            // **Con el Pattern restaurado, no con `.initial`.**
+            //
+            // Arrancaba con `.initial` y el disco se leía después, así que la
+            // entrada de control quedaba con material distinto del que enseñaba
+            // la pantalla: **el primer giro de knob publicaba `.initial` y se
+            // llevaba por delante lo restaurado**. Se descubrió persiguiendo por
+            // qué el Bank decía «no patterns» con una pieza sonando.
+            pattern: restoredPattern,
             publish: { [relay] updated in relay.publish(updated) },
             mix: { [relay] gesture in relay.apply(gesture) }
         )
@@ -540,10 +756,10 @@ final class TransportModel {
             output.onSetupChanged = { [weak watcher] in watcher?.setupChanged() }
 
             let timeline = MusicalTimeline(
-                tempo: Self.tempo, division: Pattern.initial.cycle(at: 0)!.shape.division)
+                tempo: Self.tempo, division: pattern.cycle(at: 0)!.shape.division)
             let createdTransport = Transport(
                 configuration: SchedulerConfiguration(timeline: timeline),
-                pattern: .initial,
+                pattern: restoredPattern,
                 emitter: Self.voice()
             ) { [output, activeDestination] message, hostTime in
                 Self.send(message, at: hostTime, through: output, to: activeDestination)

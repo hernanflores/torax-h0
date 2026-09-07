@@ -59,6 +59,7 @@
 |---|---|---|
 | `Engine` | **≥90%** | Puro y determinista: sin excusa para no cubrirlo. Es donde vive la corrección musical. |
 | `MIDI` | **≥80%** | La lógica de scheduling es testeable; la entrega real de CoreMIDI se valida con el arnés de jitter. |
+| `Persistence` | **≥90%** | Lógica pura con una costura de sistema de ficheros inyectable, y **la única pieza capaz de perder el trabajo del usuario**. Entra el 2026-09-07 con `persistence_20260907`; el porqué del paquete está en `tech-stack.md`, *Estructura de módulos*. |
 | `App` (SwiftUI) | **no se mide** | Ver la nota de abajo. Estado y presentación. No se escriben UI tests de bajo valor solo para subir el número. |
 
 > **Nota del 2026-08-27 — por qué `App` no lleva umbral.**
@@ -208,7 +209,7 @@ All tasks follow a strict lifecycle:
 Before marking any task complete:
 
 -   [ ] All tests pass
--   [ ] Coverage meets the module's threshold (Engine ≥90%, MIDI ≥80%; `App` no se mide)
+-   [ ] Coverage meets the module's threshold (Engine ≥90%, MIDI ≥80%, Persistence ≥90%; `App` no se mide)
 -   [ ] Code follows `code_styleguides/general.md` and `code_styleguides/swift.md`
 -   [ ] No allocations, locks, or `await` introduced on the scheduler path
 -   [ ] ~~Jitter harness shows no regression (if the change touches timing)~~ — suspendido el 2026-09-02

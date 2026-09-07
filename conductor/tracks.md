@@ -251,19 +251,114 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: v2 rebanada 4 — Persistencia: Patterns y Banks**
+- [x] **Track: v2 rebanada 4 — Persistencia: Patterns y Banks** — el árbol y el disco entregados y verificados en dispositivo; **cerrado con un defecto abierto**: el cambio de Pattern no llega a la pantalla
+  *Link: [conductor/tracks/persistence_20260907/index.md](./tracks/persistence_20260907/index.md)*
 
-  Por planificar. Es el escalón que la Pre Spec pone encima —dieciséis Patterns
-  por Bank— y **el primero que necesita disco**: hasta ahora cerrar la app pierde
-  todo, y con Cycles dentro eso son dieciséis veces más trabajo que se pierde.
+  **Planificado el 2026-09-07**, en ocho fases. Es el escalón que la Pre Spec
+  pone encima —dieciséis Patterns por Bank— y **el primero que necesita disco**:
+  hasta ahora cerrar la app pierde todo, y con Cycles dentro eso son dieciséis
+  veces más trabajo que se pierde.
 
-  **No es una rebanada de motor.** Lo que cruza al hilo del scheduler sigue
-  siendo un Pattern de 37 KB; lo que cambia es cuántos hay y de dónde salen. Por
-  eso el detector de tamaño del snapshot no le aplica: guardar no es copiar en
-  tiempo real.
+  **Sí es una rebanada de motor, y esta entrada decía que no.** Decía: «lo que
+  cruza al hilo del scheduler sigue siendo un Pattern de 37 KB; lo que cambia es
+  cuántos hay y de dónde salen». Al planificarla se decidió que **cambiar de
+  Pattern con el transporte corriendo sea cuantizado al próximo compás**, y esa
+  decisión la toma el hilo del scheduler en el límite. Lo que la frase acertaba
+  se conserva —el snapshot no crece ni un byte y no hay trabajo nuevo por
+  evento—; lo que se añade ahí dentro es una lectura atómica más por ventana y
+  una adopción de ranura.
+
+  **Se elige igualmente porque la alternativa vacía el concepto.** Un Pattern que
+  solo entra con el transporte parado es un fichero, no la «sección de live» que
+  la Pre Spec promete. La Fase 1 escribe las notas fechadas en `product.md` y en
+  `tech-stack.md` antes de tocar código.
+
+  **Entra un paquete SPM nuevo, `Persistence`**, y eso es un cambio de tech stack
+  que la Fase 1 documenta: `Engine` no importa nada fuera de la stdlib y
+  `JSONEncoder` es Foundation, `MIDI` es CoreMIDI, y `App` no se mide — dejar el
+  guardado ahí sería dejar sin cobertura la única pieza capaz de perder el
+  trabajo del usuario.
+
+  **Sin medición de jitter**, por dos vías independientes: la suspensión del
+  2026-09-02, y que la rebanada no mueve ningún instante — cambia qué material se
+  emite en un límite que ya existía.
 
   Arrastra las tres pantallas que la rebanada 2 dejó fuera —Banks, Patterns y la
   lista de Tracks— y la limitación 1 de Cycles, que era «sin persistencia».
+
+  **Deja fuera** Backup Project, Program Change, el encadenado de Patterns, el
+  disparo desde el controlador —no quedan step buttons libres— y los nombres
+  editables.
+
+  **No es el primer intento.** Hay uno anterior, `persistence_20260904`,
+  abandonado sin mergear — la entrada de abajo.
+
+  **Cerrado el 2026-09-07**, en ocho fases. `Engine` 709 tests al 98,47%, `MIDI`
+  640 al 93,19%, `Persistence` 62 al 97,52%, más un paquete SPM nuevo.
+
+  **Lo que entrega:** el árbol entero —16 Banks × 16 Patterns con su tempo—, el
+  disco con un fichero por Bank en Application Support, escritura atómica,
+  `schemaVersion` y rescate de ficheros ilegibles; Autosave con debounce, `Save
+  Bank` y `Reload`; el cambio de Pattern **cuantizado al compás**, adoptado por el
+  hilo del scheduler; y la pantalla `banks`, que deja de ser cáscara sin cambiar
+  de forma.
+
+  **Los números que decidieron diseño.** La comprobación de la ranura armada
+  cuesta el **0,0232%** de la ventana contra un presupuesto del 1% —por debajo del
+  ruido de medición— así que la adopción se quedó en el hilo del scheduler.
+  Guardar un Bank son 15,5 ms y el Project entero 243,6 ms, que es por qué el
+  Autosave escribe solo el Bank tocado. Un Project vacío pasó de 10,8 MB a menos
+  de 4 KB con la marca de hueco.
+
+  **Cerrado con un defecto abierto**, y por decisión explícita: el cambio de
+  Pattern suena pero no llega a la pantalla ni al Project. Tiene track propio
+  arriba, incluida la consecuencia que destruye trabajo. **Cambiar de Bank sí
+  funciona.**
+
+  **La verificación en dispositivo quedó parcial.** Se comprobó el arranque y el
+  cambio de Bank —y ahí salieron cuatro fallos de cableado del modelo, tres
+  arreglados y uno abierto—; la cuenta atrás, los cuatro estados con el
+  transporte corriendo, `Save`/`Reload` de punta a punta, el reloj externo y el
+  presupuesto de 100 ms de NFR3 **no se llegaron a comprobar**. El guion está en
+  `device-verification.md`.
+
+  **Sin medición de jitter**, por las dos vías escritas en la Fase 1.
+
+---
+
+- [x] **Track: Persistencia — primer intento (un Bank, sin `Project`)** — **abandonado sin mergear el 2026-09-07**; el trabajo sigue en la rama `feat/persistence`
+  *Sin enlace: el track `persistence_20260904` nunca llegó a `main`. Vive en la
+  rama `feat/persistence`, en `conductor/tracks/persistence_20260904/`.*
+
+  **Planificado y trabajado el 2026-09-04, y nunca registrado aquí** — por eso la
+  entrada de arriba siguió diciendo «Por planificar» durante tres días. Se anota
+  el 2026-09-07, al descubrirlo empezando el track que lo sustituye.
+
+  **Llegó lejos: siete de ocho fases, con checkpoint en cada una.** 43 ficheros y
+  ~4300 líneas — el paquete `Persistence` con siete ficheros de tests, `Bank` en
+  `Engine`, los DTO con versión de esquema, el almacén, el rescate de ficheros
+  ilegibles, el Autosave y dos pantallas. **Se paró en la puerta de la Fase 8**:
+  `device-verification.md` está escrito y su cabecera todavía dice
+  `Fecha: (pendiente)`. Nunca se verificó en iPad y nunca se abrió PR.
+
+  **Lo que lo dejó atrás no fue un fallo, fue el calendario.** Dos días después,
+  `screens-redesign_20260906` sustituyó el esquema de **cinco** pantallas por uno
+  de **cuatro**, y las dos que este track construyó —`4 · Banks` y `5 · Tracks`,
+  en `BankView.swift` y `PatternMatrixView.swift`— dejaron de tener dónde
+  aterrizar. Hoy la rama está **145 commits por detrás de `main`**, con merge-base
+  en el PR #32.
+
+  **Y su alcance es menor que el aprobado el 2026-09-07, en dos puntos que no son
+  de detalle.** Tiene **un** Bank y no dieciséis, sin `Project` encima; y
+  **descarta explícitamente el cambio cuantizado** —«seleccionar Pattern exige el
+  transporte parado… mete trabajo nuevo en el hilo del scheduler»—, que es justo
+  la decisión que `persistence_20260907` toma al revés.
+
+  **Decidido el 2026-09-07: no se rescata.** Se evaluó portar el núcleo —el
+  paquete y los DTO son directamente reutilizables— y se eligió reescribirlo con
+  el spec nuevo delante, para no heredar decisiones tomadas para otro alcance.
+  **La rama no se borra**: es la única copia de siete fases de trabajo y de un
+  guion de verificación en dispositivo que sigue sirviendo.
 
 ---
 
@@ -674,6 +769,43 @@ Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres
 están encadenados: `midi-test-flake` bloquea a `scheduler-lifecycle`, no al
 revés. `network-session-source` es independiente de esa cadena y se puede tomar
 en cualquier momento.
+
+---
+
+- [ ] **Track: El cambio de Pattern no llega a la pantalla ni al Project**
+
+  Encontrado el 2026-09-07 verificando `persistence_20260907` en dispositivo.
+  **Cambiar de Bank funciona; cambiar de Pattern con el transporte corriendo,
+  no.**
+
+  **Lo que suena sí cambia.** La adopción en el límite de compás funciona y está
+  probada sobre el índice de Step (`QuantizedPatternChangeTests`). Lo que falla
+  es todo lo demás: **nadie avisa al modelo de que la adopción ocurrió**.
+
+  La adopción la hace el hilo del scheduler dentro de `PatternScheduler.advance`,
+  y no hay camino de vuelta hacia `TransportModel`. Consecuencias, de menos a más
+  grave:
+
+  - `armedPatternIndex` **no se limpia nunca**, así que el hueco se queda en
+    `queued` para siempre y la cuenta atrás no desaparece.
+  - `project.selectedPattern` **no se mueve**, así que la rejilla sigue marcando
+    como elegido el Pattern anterior y el card de bancos cuenta sobre el Bank
+    equivocado.
+  - **Y la que destruye trabajo:** suena el Pattern B mientras el Project cree
+    que el vigente es el A, así que el siguiente giro de knob escribe el material
+    de B **en el hueco de A**.
+
+  `selectBank` no tiene el problema porque mueve `project.selectingBank(index)`
+  en el acto; `selectPattern`, con el transporte corriendo, solo arma.
+
+  **Dónde está la pieza que falta.** El cursor de Cycle ya resolvió este mismo
+  problema —el hilo del scheduler publicando hacia la interfaz sin locks— con
+  `CyclePlaybackClock`. Lo que falta es el equivalente para «qué Pattern está
+  vigente»: una palabra atómica que el scheduler escriba al adoptar y que el
+  modelo lea, no una llamada de vuelta.
+
+  **No bloquea a nadie más**, y el resto de la rebanada 4 está entregado y
+  verificado.
 
 ---
 

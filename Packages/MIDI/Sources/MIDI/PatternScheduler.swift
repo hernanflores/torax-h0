@@ -44,6 +44,20 @@ public final class PatternScheduler {
     /// no un snapshot de decenas de kilobytes.
     private let mutes: MuteMask?
 
+    /// La rejilla de compás, para el cambio de Pattern cuantizado (FR6).
+    ///
+    /// **Es del scheduler y no del Track** porque el compás es lo único común a
+    /// los doce: cada Track tiene su propia longitud de anillo y esperar a que
+    /// cierren todos no converge.
+    private let bars: BarGrid
+
+    /// Hasta dónde llegó la ventana anterior.
+    ///
+    /// **Es lo que permite saber si un límite de compás cae dentro de esta
+    /// ventana.** Sin él habría que preguntárselo a los Tracks, que cuentan
+    /// Steps y no negras.
+    private var lastHorizonNanoseconds: Int64 = 0
+
     /// Cada Track lleva su propia rejilla porque lleva su propia Division.
     ///
     /// Se construyen aquí, con el tempo compartido: **el origen es el mismo para
@@ -78,6 +92,7 @@ public final class PatternScheduler {
     ) {
         self.pattern = pattern
         self.mutes = mutes
+        self.bars = BarGrid(tempo: tempo)
         schedulers = .allocate(capacity: Pattern.trackCount)
 
         for index in 0..<Pattern.trackCount {
@@ -183,6 +198,62 @@ public final class PatternScheduler {
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
     public func advance(
+        toHorizon horizonNanoseconds: Int64,
+        refreshingFrom handoff: PatternHandoff?,
+        emit: (
+            _ track: Int, _ source: Cycle, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
+            _ offsetNanoseconds: Int64
+        ) -> Void
+    ) {
+        // **El cambio de Pattern cuantizado parte la ventana** (FR6).
+        //
+        // Si hay un Pattern armado y un límite de compás cae dentro de esta
+        // ventana, se emite hasta el límite con el material viejo, se adopta, y
+        // se sigue hasta el horizonte con el nuevo. Emitir la ventana entera y
+        // adoptar después dejaría el cambio hasta 20 ms tarde; adoptar antes lo
+        // dejaría hasta 20 ms pronto. Las dos son audibles a la escala de un
+        // Step de 125 ms.
+        //
+        // Realtime: la comprobación es una lectura atómica y una comparación,
+        // medidas en `ArmedSlotCostTests` — 0,0232% de la ventana.
+        if let handoff, handoff.hasArmedPattern {
+            let boundary = bars.nextBoundary(after: lastHorizonNanoseconds)
+            if boundary <= horizonNanoseconds {
+                emitWindow(toHorizon: boundary, refreshingFrom: handoff, emit: emit)
+                handoff.adoptArmedPattern()
+
+                // **El Pattern entra por el principio de su desarrollo** (FR8).
+                //
+                // El material nuevo lo recoge `emitWindow` en la llamada de
+                // abajo, pero el cursor de reproducción es de este hilo y no
+                // viene en el snapshot: hay que ponerlo a cero aquí. Sin esto,
+                // el Pattern entrante empieza por el Cycle en el que se hubiera
+                // quedado el anterior, que es un número sin significado para él.
+                //
+                // Es la misma llamada que hace Play, y por la misma razón:
+                // disparar el break tiene que sonar igual las dos veces.
+                for index in 0..<Pattern.trackCount {
+                    schedulers[index].restartCyclesAtNextStep()
+                }
+
+                lastHorizonNanoseconds = boundary
+                emitWindow(toHorizon: horizonNanoseconds, refreshingFrom: handoff, emit: emit)
+                lastHorizonNanoseconds = horizonNanoseconds
+                return
+            }
+        }
+
+        emitWindow(toHorizon: horizonNanoseconds, refreshingFrom: handoff, emit: emit)
+        lastHorizonNanoseconds = horizonNanoseconds
+    }
+
+    /// Emite un tramo con el material vigente. Es el cuerpo de siempre de
+    /// `advance`, extraído para poder llamarlo dos veces cuando un límite de
+    /// compás parte la ventana.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    private func emitWindow(
         toHorizon horizonNanoseconds: Int64,
         refreshingFrom handoff: PatternHandoff?,
         emit: (

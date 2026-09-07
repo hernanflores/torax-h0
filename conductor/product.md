@@ -24,7 +24,7 @@ Project (estado completo + ajustes)
             └── hasta 16 Cycles por Track
 ```
 
-- **Project:** estado completo: 16 Banks, sus Patterns/Tracks y ajustes asociados.
+- **Project:** estado completo: 16 Banks, sus Patterns/Tracks y ajustes asociados. **Existe desde el 2026-09-07**, con los dieciséis Banks y sus 256 Patterns en disco.
 - **Bank:** contenedor musical de alto nivel (canción, setup o sección de live). 16 Patterns y tempo propio.
 - **Pattern:** sección musical que reproduce el estado de sus 16 Tracks en conjunto (groove principal, break, fill, variante). Disparable cuantizado, encadenable, seleccionable por MIDI Program Change.
 - **Track:** una voz/carril musical y de control. Donde residen los parámetros generativos.
@@ -165,6 +165,12 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > más honesto que una pestaña que no lleva a ninguna parte; deja de ser cáscara
 > con la rebanada 4 de la v2, sin cambiar de forma.
 >
+> **Dejó de serlo el 2026-09-07**, y la promesa se cumplió al pie de la letra:
+> los tres cards siguen donde estaban. Lo que cambia es que detrás hay dieciséis
+> Banks de dieciséis Patterns que existen, se eligen y se guardan, más un cuarto
+> estado de hueco —`queued`— con la cuenta atrás hasta el compás en que entra.
+> **Las cuatro pantallas son estado real.**
+>
 > **Y la frontera del tacto queda dicha**, que es lo que el principio rector
 > implicaba sin concretar: `track` se lee mientras suena y ahí **no se edita
 > ningún parámetro generativo con el dedo**; `scale`, `midi` y `banks` se
@@ -172,6 +178,21 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > código, no solo escrita: la pantalla `track` tiene exactamente cuatro
 > escrituras táctiles —seleccionar Track, mute, solo y cuántos Cycles están
 > activos— y ninguna toca Steps, Pulses, Rotate, Division ni Groove.
+>
+> **Enmienda del 2026-09-07 — `banks` deja de ser cáscara, y la frontera se
+> mueve un poco.** La rebanada 4 de la v2 le pone detrás lo que le faltaba: el
+> modelo de `Bank`, los 256 Patterns y el disco. **La forma no cambia**, que es
+> lo que esta nota prometió: los tres cards siguen donde están y lo que aparece
+> es un cuarto estado —`queued`— con la cuenta atrás hasta el compás en que entra
+> el Pattern.
+>
+> **Lo que sí cambia es la frase de arriba.** «`scale`, `midi` y `banks` se
+> configuran antes de tocar» deja de ser exacta: elegir un Pattern es un gesto
+> que se usa **tocando**, en mitad de la pasada, y por eso está cuantizado. La
+> frontera real no era «antes o durante», era **qué se edita con el dedo**:
+> `track` sigue sin editar un solo parámetro generativo al tacto, y las cuatro
+> escrituras auditadas siguen siendo cuatro. Lo que `banks` añade no es edición
+> de material: es elegir cuál suena.
 
 > **Nota del 2026-09-03 — el reloj puede ser de otro.** La línea de arriba dice
 > «transporte (play/stop) y **reloj interno**», y sigue siendo cierta: el reloj
@@ -218,9 +239,32 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 **Fuera de v1:**
 
 - Acordes polifónicos simultáneos (Style *Poly*) — explícitamente fuera de scope en la Pre Spec.
-- Patterns, Banks; guardado/Autosave/Backup Project. *(Múltiples Tracks salieron de aquí el 2026-09-01: la v2 rebanada 1 entregó dieciséis, que el 2026-09-02 pasaron a **doce** por legibilidad de los anillos — ver la nota del Core Model.)*
+- ~~Patterns, Banks; guardado/Autosave~~; **Backup Project**. *(Múltiples Tracks salieron de aquí el 2026-09-01: la v2 rebanada 1 entregó dieciséis, que el 2026-09-02 pasaron a **doce** por legibilidad de los anillos — ver la nota del Core Model. Patterns, Banks, Autosave y Save/Reload salen el 2026-09-07: los entrega la v2 rebanada 4 — ver la nota de abajo. **Backup Project se queda**: exportar e importar por la app Files es UI de documentos, no modelo.)*
 - Note Repeater (Repeats/Time/Ramp/Pace); Harmony; Voicing/Style; Range/Phrase; LFO y Random Modulation. *(Cycles salió de aquí el 2026-09-02: la v2 rebanada 3 lo entrega — hasta dieciséis por Track, recorridos a cada vuelta del anillo.)*
 - Ableton Link, MIDI Program Change, encadenado de Patterns.
+
+> **Nota del 2026-09-07 — Patterns, Banks y guardado salen de «Fuera de v1».**
+> Salen por la misma vía por la que salieron los múltiples Tracks y los Cycles:
+> los entrega una rebanada de la v2, la 4 (`persistence_20260907`), y la lista de
+> arriba deja de describir lo que la app hace.
+>
+> **Es el primer track del proyecto que escribe un fichero.** Aparecen los dos
+> niveles que la Pre Spec pone encima del Pattern —**16 Banks de 16 Patterns**,
+> cada Bank con su tempo— y el disco: **Autosave** para el trabajo en curso y
+> **`Save Bank` / `Reload`** como punto de retorno intencional. Cerrar la app deja
+> de perderlo todo.
+>
+> **Cambiar de Pattern con el transporte corriendo entra en el próximo compás.**
+> No es un detalle de implementación: es lo que hace del Bank la «sección de
+> live» que la Pre Spec promete, en vez de un fichero que solo se abre parando.
+>
+> **Lo que se queda fuera, y por qué.** *Backup Project* —exportar e importar por
+> Files— es UI de documentos y no toca el modelo. *Program Change* y el
+> *encadenado de Patterns* siguen en la línea de abajo. Y **no se dispara desde
+> el controlador**: no quedan step buttons libres —1–12 seleccionan Track, 13 es
+> Temp, 14 Ctrl All, 15 y 16 solo y mute— así que meter Patterns en el hardware
+> exige un modificador nuevo, que es una decisión de mapeo y toca el preset
+> cerrado en la rebanada 7. Tampoco entran nombres editables ni copiar Banks.
 
 ## Success Criteria
 
@@ -300,6 +344,26 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > regresión se descubrirá tocando. El arnés y su procedimiento se quedan en el
 > repositorio, listos por si se retoma; el porqué y el coste están en
 > `workflow.md`, en *Medición de jitter: suspendida*.
+
+> **Persistencia (2026-09-07): el tercer cambio que roza el hilo del scheduler, y
+> tampoco se mide.** La rebanada 4 de la v2 hace que **cambiar de Pattern con el
+> transporte corriendo entre en el próximo compás**, y esa decisión la toma el
+> hilo del scheduler en el límite. Es la tercera vez desde la suspensión que un
+> cambio llega ahí —las otras dos son `note-repeater` y `modulation`, todavía sin
+> empezar— y aquí **no se abre excepción**, a diferencia de
+> `external-clock_20260903`.
+>
+> **La razón no es el cansancio de medir, es que la regla no aplica.** La nota
+> del 2026-08-28 del *Task Workflow* dice que se mide cuando cambia el **cuándo**,
+> no el **cuánto**: esta rebanada **no mueve ningún instante**. Cambia qué
+> material se emite en un límite que ya existía, el snapshot no crece ni un byte
+> y no hay trabajo nuevo por evento. Lo que se añade al hilo de tiempo real es
+> una lectura atómica más por ventana y una comparación de enteros. Bajo la regla
+> anterior a la suspensión tampoco habría exigido arnés.
+>
+> **Lo que sí se verifica, y tocando:** que el Pattern entre en el compás y no
+> antes ni después —comprobado sobre el índice de Step, no de oído— y que ninguna
+> nota quede colgada al cruzar el límite. Track `persistence_20260907`.
 
 Secundarios:
 

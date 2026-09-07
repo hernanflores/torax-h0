@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1A0000000000000000000014 /* Engine in Frameworks */ = {isa = PBXBuildFile; productRef = 1A0000000000000000000012 /* Engine */; };
 		1A0000000000000000000015 /* MIDI in Frameworks */ = {isa = PBXBuildFile; productRef = 1A0000000000000000000013 /* MIDI */; };
+		1A0000000000000000000017 /* Persistence in Frameworks */ = {isa = PBXBuildFile; productRef = 1A0000000000000000000016 /* Persistence */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -74,6 +75,7 @@
 			packageProductDependencies = (
 				1A0000000000000000000012 /* Engine */,
 				1A0000000000000000000013 /* MIDI */,
+				1A0000000000000000000016 /* Persistence */,
 			);
 			productName = ToraxH0;
 			productReference = 1A0000000000000000000005 /* ToraxH0.app */;
@@ -106,6 +108,7 @@
 			packageReferences = (
 				1A0000000000000000000010 /* XCLocalSwiftPackageReference "Packages/Engine" */,
 				1A0000000000000000000011 /* XCLocalSwiftPackageReference "Packages/MIDI" */,
+				1A0000000000000000000018 /* XCLocalSwiftPackageReference "Packages/Persistence" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 1A0000000000000000000003 /* Products */;
@@ -266,6 +269,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/MIDI;
 		};
+		1A0000000000000000000018 /* XCLocalSwiftPackageReference "Packages/Persistence" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/Persistence;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -276,6 +283,10 @@
 		1A0000000000000000000013 /* MIDI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MIDI;
+		};
+		1A0000000000000000000016 /* Persistence */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Persistence;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

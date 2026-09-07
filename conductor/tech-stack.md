@@ -17,7 +17,7 @@ iPadOS 17 como mínimo: cubre iPads desde ~2018 y da acceso a SwiftUI maduro (`O
 | MIDI | CoreMIDI |
 | Reloj | Scheduler look-ahead + timestamps de CoreMIDI; interno o esclavo de un clock MIDI externo |
 | Concurrencia | Snapshot inmutable, sin locks en el camino de timing |
-| Persistencia | `Codable` → JSON en disco |
+| Persistencia | `Codable` → JSON en disco, en el paquete `Persistence` |
 | Módulos | Paquetes SPM separados |
 | Tests | XCTest sobre motor puro + arnés de medición de jitter |
 | Dependencias de terceros | Ninguna en v1 |
@@ -167,7 +167,31 @@ Esto no es organización cosmética: **el compilador garantiza que el motor es p
 - **Engine** — motor generativo puro. Sin dependencias de plataforma.
 - **MIDI** — CoreMIDI: scheduler, salida, entrada de control.
 - **CToraxAtomics** — target C con atómicos sin lock, dentro del paquete `MIDI`.
+- **Persistence** — el disco: encoder JSON, escritura atómica, Autosave y
+  rescate de ficheros ilegibles. Depende de `Engine` y de Foundation.
 - **App** — SwiftUI, presentación y estado de aplicación.
+
+> **Nota del 2026-09-07 — por qué el disco es un paquete y no cabe en los que
+> hay.** Lo pide la rebanada 4 de la v2 (`persistence_20260907`), que es el
+> primer track que escribe un fichero. Ninguno de los tres paquetes puede
+> alojarlo:
+>
+> - **`Engine` no importa nada fuera de la stdlib**, y es una regla de calidad
+>   con casilla propia en `workflow.md`. `Codable` es stdlib y los DTO se quedan
+>   ahí; `JSONEncoder`, `FileManager` y `URL` son Foundation y no entran.
+> - **`MIDI` es CoreMIDI.** Guardar no tiene nada que ver con emitir.
+> - **`App` no se mide.** Meter ahí el guardado dejaría sin cobertura la única
+>   pieza del proyecto capaz de **perder el trabajo del usuario**, que es
+>   exactamente el criterio con el que la nota del 2026-08-27 justificó que `App`
+>   no llevara umbral: si algo ahí merece un test, está en el sitio equivocado.
+>
+> **El reparto:** los DTO `Codable` y la traducción desde y hacia los POD viven
+> en `Engine`; el encoder, la atomicidad, el debounce del Autosave y el apartado
+> de ficheros ilegibles viven en `Persistence`. Umbral de cobertura **≥90%**,
+> como `Engine`: es lógica pura con una costura de sistema de ficheros
+> inyectable, así que no hay excusa para no cubrirla.
+>
+> **No añade dependencias de terceros.** Foundation viene con la plataforma.
 
 **Sobre `CToraxAtomics`:** el hilo del scheduler necesita comunicarse con el hilo de control sin bloquearse, y en iPadOS 17 no hay forma de hacerlo sin salir de la stdlib — `Synchronization.Atomic` de Swift 6 exige iOS 18 y `swift-atomics` sería una dependencia de terceros. Un target C propio con `<stdatomic.h>` resuelve el problema sin violar la regla de cero dependencias: es código del proyecto. Un test verifica que los atómicos son realmente lock-free y no una emulación con lock interno.
 
@@ -270,6 +294,43 @@ Nota de implementación: `INFOPLIST_KEY_UIBackgroundModes` **no funciona** — X
 `Codable` → JSON en disco. El árbol completo (Project › Banks › Patterns › Tracks › Cycles) es estado pequeño y estructurado: JSON es inspeccionable, diffeable y **da el Backup Project (exportar/importar) prácticamente gratis**. Autosave por escritura atómica.
 
 Toda estructura persistida lleva versión de esquema desde el primer commit — el modelo va a crecer al incorporar lo que v1 dejó fuera.
+
+### Enmienda — 2026-09-07: el formato en disco no es el modelo en memoria
+
+**Qué se concreta.** La sección de arriba decía «`Codable` → JSON en disco» y no
+decía sobre qué. La rebanada 4 de la v2 lo fija:
+
+- **DTO espejo, no `Codable` sobre los POD.** `Pattern`, `Track` y `Cycle` son
+  tipos triviales con almacenamiento inline —tuplas, y el pool de ocho alturas
+  empaquetado en un entero— y esa disposición está elegida por una exigencia de
+  tiempo real que `_isPOD` vigila, no por ser un buen formato de fichero. Un
+  `Codable` sintetizado sobre ellos ataría el JSON a esa disposición: mover un
+  campo por razones de scheduler rompería los ficheros ya guardados. Los DTO
+  viven en `Engine` con claves explícitas y estables.
+- **Un fichero por Bank, más uno de Project.** El Project guarda índices y
+  ajustes de sesión; cada Bank su tempo y sus dieciséis Patterns (~600 KB). Es el
+  gránulo que la Pre Spec le da al punto de retorno —«el punto de retorno
+  intencional de *un* Bank»— y lo que permite que el Autosave reescriba solo el
+  Bank tocado en vez de los dieciséis.
+- **Un Pattern vacío se escribe como una marca**, no como 37 KB de ceros. Sin
+  eso, un Bank recién creado ocupa lo mismo que uno lleno.
+- **En Application Support**, no en Documents. El estado de trabajo no es un
+  documento que el usuario administre: es la memoria del instrumento. `Backup
+  Project` —cuando entre— será la puerta explícita a Files.
+- **Escritura atómica**, a temporal y renombrado, y **el fallo se dice en
+  pantalla y no se calla** hasta que un guardado funcione. Un Autosave silencioso
+  que lleva diez minutos fallando es la peor forma de perder trabajo.
+- **`schemaVersion` desde el primer commit, y sin migradores.** Se escribe, se
+  lee, y una versión desconocida toma el mismo camino que un fichero corrupto:
+  **se aparta con marca de tiempo** y la app arranca vacía diciéndolo. Nunca se
+  pierde el fichero del usuario y nunca se queda la app sin abrir. El punto donde
+  enchufar una migración queda hecho y vacío: escribir un migrador de v1 a v2
+  antes de que exista v2 es probar una migración inventada.
+
+**Cuándo llega el primer migrador de verdad.** Enseguida: las rebanadas 5 y 6
+—`note-repeater` y `modulation`— añaden campos al `Cycle`. Está previsto y por
+eso la versión entra ahora, que es lo que la frase de arriba quería decir con
+«el modelo va a crecer».
 
 ## Testing
 

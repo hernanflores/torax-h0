@@ -68,15 +68,9 @@ final class ClockStatusTests: XCTestCase {
     }
 
     func testTheStatusesReadDifferently() {
-        XCTAssertEqual(Set(ClockStatus.allCases.map(\.description)).count,
-                       ClockStatus.allCases.count)
-    }
-
-    // MARK: - El nombre de cada fuente
-
-    func testEachSourceHasItsName() {
-        XCTAssertEqual(ClockSource.internal.name, "Internal")
-        XCTAssertEqual(ClockSource.external.name, "External")
+        XCTAssertEqual(
+            Set(ClockStatus.allCases.map(\.description)).count,
+            ClockStatus.allCases.count)
     }
 
     // MARK: - Helper

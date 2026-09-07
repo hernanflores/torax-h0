@@ -478,6 +478,65 @@ public final class Transport: @unchecked Sendable {
         handoff.publish(pattern)
     }
 
+    /// Elige un Pattern, **y decide por sí solo cómo entra**.
+    ///
+    /// Con el transporte parado publica —no hay rejilla que respetar, FR5—; con
+    /// el transporte corriendo arma y espera al próximo compás (FR6).
+    ///
+    /// **La regla vive aquí y no en la pantalla.** Es una decisión del
+    /// transporte, que es quien sabe si está sonando; repartirla por la interfaz
+    /// sería pedirle a cada sitio que se acuerde de ella.
+    public func select(_ pattern: Pattern) {
+        if isPlaying {
+            armForNextBar(pattern)
+        } else {
+            publish(pattern)
+        }
+    }
+
+    /// Deja un Pattern esperando al próximo límite de compás.
+    ///
+    /// **No cambia lo que suena**: hasta el límite sigue el de antes. Armar dos
+    /// veces deja el último.
+    public func armForNextBar(_ pattern: Pattern) {
+        handoff.arm(pattern)
+    }
+
+    /// Si hay un Pattern esperando al compás.
+    public var hasArmedPattern: Bool { handoff.hasArmedPattern }
+
+    /// Cuánto lleva sonando, en nanosegundos desde el origen de la rejilla, o
+    /// `nil` si está parado.
+    ///
+    /// **Existe para la cuenta atrás del compás** (FR25): la pantalla necesita
+    /// saber dónde está la rejilla para decir cuántas negras faltan, y el
+    /// `Playhead` da la posición dentro del anillo de un Track, que no es lo
+    /// mismo.
+    public var elapsedNanoseconds: Int64? { playheadClock.elapsedNanoseconds() }
+
+    /// Cambia de Bank: **su Pattern seleccionado, más su tempo** (FR11).
+    ///
+    /// **Una sola regla de cuantización en el producto.** El material entra por
+    /// donde entra un cambio de Pattern —inmediato si está parado, en el compás
+    /// si suena— y el tempo entra con él, en vez de saltar a media frase.
+    ///
+    /// **Con reloj externo el tempo del Bank no manda** (FR12). Lo pone el
+    /// maestro, y el dato guardado no desaparece: vuelve a mandar en cuanto la
+    /// fuente sea `Internal`. Lo que el reloj externo decide es el tempo, no si
+    /// se puede cambiar de Bank — el material entra igual.
+    ///
+    /// Un índice fuera de rango no hace nada, con el mismo criterio que el resto
+    /// del motor.
+    public func select(_ bank: Bank, pattern index: Int) {
+        guard let material = bank.pattern(at: index) else { return }
+
+        select(material)
+
+        if clockSource == .internal {
+            setTempo(beatsPerMinute: bank.tempo.beatsPerMinute)
+        }
+    }
+
     /// Arranca el reloj.
     ///
     /// El hilo se crea aquí y no en `init` para que la reproducción empiece
@@ -611,6 +670,18 @@ public final class Transport: @unchecked Sendable {
     /// - Does nothing when playback is already stopped.
     public func stop() {
         gridOriginNanoseconds = 0
+
+        // **Stop se lleva lo pendiente** (FR10).
+        //
+        // Parado no hay rejilla que respetar y el usuario ya dijo qué quiere.
+        // Descartarlo haría que pulsar un Pattern y luego Stop no hiciera nada
+        // —dos gestos deliberados anulándose— y dejarlo armado guardaría estado
+        // de ejecución entre pasadas, que es justo lo que FR8 evita con los
+        // cursores.
+        if handoff.hasArmedPattern {
+            lastPublishedPattern = handoff.armedPattern
+            handoff.adoptArmedPattern()
+        }
 
         guard let scheduler else { return }
         scheduler.stop()
