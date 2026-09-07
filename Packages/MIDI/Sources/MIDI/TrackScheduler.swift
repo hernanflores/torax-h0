@@ -352,6 +352,12 @@ public struct TrackScheduler {
     public mutating func advance(
         toHorizon horizonNanoseconds: Int64,
         refreshingFrom handoff: PatternHandoff?,
+        emitRepetition: (
+            (
+                _ source: Cycle?, _ step: Int, _ pitch: Pitch?, _ velocity: Velocity,
+                _ gateNanoseconds: Int64, _ offsetNanoseconds: Int64
+            ) -> Void
+        )? = nil,
         emit: (
             _ source: Cycle?, _ step: Int, _ pitch: Pitch?, _ groove: Groove,
             _ offsetNanoseconds: Int64
@@ -411,14 +417,85 @@ public struct TrackScheduler {
             guard material.emitsAnything else { continue }
 
             let groove = material.groove
+            let pulseOffset =
+                lookAhead.timeline.nanosecondOffset(forStep: step)
+                + groove.shiftNanoseconds(
+                    atStep: cycleStep, stepDurationNanoseconds: stepDurationNanoseconds)
             emit(
                 material.cycle,
                 step,
                 material.pitch(atStep: cycleStep),
                 groove,
-                lookAhead.timeline.nanosecondOffset(forStep: step)
-                    + groove.shiftNanoseconds(
-                        atStep: cycleStep, stepDurationNanoseconds: stepDurationNanoseconds)
+                pulseOffset
+            )
+
+            emitRepetitions(
+                after: cycleStep, at: step, offset: pulseOffset, emit: emitRepetition)
+        }
+    }
+
+    /// Cuelga del Pulse las repeticiones que quepan antes del corte.
+    ///
+    /// **Con Repeats en 0 no se ejecuta nada de aquí**, que es lo que sostiene
+    /// FR16: se sale por el primer `guard`, antes de calcular ningún hueco. Es
+    /// también NFR3 — el coste crece con lo que suena.
+    ///
+    /// **Las repeticiones van siempre después del Pulse**, así que no adelantan
+    /// ningún instante y `advanceBudgetNanoseconds` no cambia: el presupuesto de
+    /// adelanto sigue siendo cosa de Delay.
+    ///
+    /// **La tirada arranca en el Pulse ya desplazado.** El offset que llega es
+    /// el del Pulse con su Timing y su Delay dentro, y los huecos se acumulan
+    /// desde ahí: ninguna repetición recibe swing propio, porque el swing opera
+    /// sobre la rejilla de Steps y no sobre la de repeticiones (FR10).
+    ///
+    /// **La altura es la del Pulse** (FR11): sale de `pitch(atStep:)`, que es
+    /// función de la posición en el anillo, así que un ratchet no acelera el
+    /// recorrido del pool.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin coma flotante, sin arrays temporales: un bucle
+    /// acotado por Repeats, que llega hasta ocho.
+    private func emitRepetitions(
+        after cycleStep: Int,
+        at step: Int,
+        offset pulseOffset: Int64,
+        emit: (
+            (
+                _ source: Cycle?, _ step: Int, _ pitch: Pitch?, _ velocity: Velocity,
+                _ gateNanoseconds: Int64, _ offsetNanoseconds: Int64
+            ) -> Void
+        )?
+    ) {
+        guard let emit, let cycle = material.cycle else { return }
+        let repeater = cycle.noteRepeater
+        let count = repeater.repeats.count
+        guard count > 0 else { return }
+
+        let window = cycle.repeatWindowNanoseconds(
+            fromStep: cycleStep, stepDurationNanoseconds: stepDurationNanoseconds)
+        let base = repeater.time.gapNanoseconds(
+            forStep: stepDurationNanoseconds, division: cycle.shape.division)
+        let pitch = cycle.pitch(atStep: cycleStep)
+        let groove = cycle.groove
+
+        var elapsed: Int64 = 0
+        for index in 1...count {
+            let gap = repeater.pace.gapNanoseconds(forRepetition: index, of: count, base: base)
+            elapsed += gap
+
+            // **Estrictamente antes del corte.** Una repetición que cayera justo
+            // en el Pulse siguiente sonaría encima de él, que es la nota que el
+            // corte existe para no duplicar.
+            guard elapsed < window else { return }
+
+            emit(
+                cycle,
+                step,
+                pitch,
+                repeater.ramp.velocity(forRepetition: index, of: count, from: groove.velocity),
+                groove.sustain.gateNanoseconds(over: gap),
+                pulseOffset + elapsed
             )
         }
     }

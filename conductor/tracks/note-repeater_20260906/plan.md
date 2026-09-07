@@ -200,7 +200,7 @@ revisar antes de seguir (NFR1).
         cuál es lo decide este hilo al cerrar la vuelta.
   - [x] Implementación (Green): la búsqueda del Pulse siguiente sobre el Shape
         vigente, con aritmética entera y sin recorrer más de una vuelta.
-- [ ] Task: Las repeticiones se emiten (FR9, FR10, FR11, NFR1, NFR3)
+- [~] Task: Las repeticiones se emiten (FR9, FR10, FR11, NFR1, NFR3)
   - [ ] Tests (Red): con Repeats 3 y Time 1/32 sobre un Track en 1/16, cada Pulse
         entrega **cuatro** note-on, el primero en la rejilla.
   - [ ] Tests (Red): la tirada arranca en el **Pulse ya desplazado** por Timing y
