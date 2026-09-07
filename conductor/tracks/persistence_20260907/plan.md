@@ -130,7 +130,7 @@ su test de que el fichero anterior sigue ahí.
         dieciséis vacíos.
   - [ ] Implementación (Green): el hueco vacío se codifica como marca y no como
         el árbol entero en ceros.
-- [ ] Task: `schemaVersion` y el punto de enchufe (FR19)
+- [x] Task: `schemaVersion` y el punto de enchufe (FR19) — `d7efb5b`
   - [ ] Tests (Red): el fichero de Project lleva su versión; leer una versión
         **futura** falla con un error distinguible —no con un error genérico de
         decodificación— porque la Fase 4 tiene que poder tratarla igual que un
