@@ -305,10 +305,26 @@ Los tres cards se quedan donde están. Lo que cambia:
   `_isPOD(Pattern.self)` sigue pasando sin cambios: el snapshot no crece.
 
 - **NFR2 — El handoff no crece.** El Pattern armado ocupa **una** ranura más, no
-  un anillo nuevo: el handoff pasa de ~148 KB a ~185 KB. El Project entero
-  —256 Patterns, ~9,5 MB— vive en el hilo principal y **no se acerca** al hilo del
-  scheduler. La Fase 2 lo mide antes de construir encima, con el mismo método que
-  `cycles_20260901` usó para su snapshot.
+  un anillo nuevo. El Project entero —256 Patterns— vive en el hilo principal y
+  **no se acerca** al hilo del scheduler. La Fase 6 lo mide antes de construir
+  encima, con el mismo método que `cycles_20260901` usó para su snapshot.
+
+  > **Medido el 2026-09-07, y la puerta se pasa de largo.** `Pattern` son
+  > **27 936 bytes**, el anillo de cuatro **111 744**, y con la ranura armada
+  > **139 680** — no los ~148 KB y ~185 KB que esta spec estimaba antes de
+  > medir; el `Pattern` real es menor que el que la rebanada de Cycles proyectó.
+  >
+  > **El coste de la comprobación no es medible.** Con 200 000 lecturas por
+  > pasada y tres pasadas: **4 637 ns** con la ranura armada contra **4 847 ns**
+  > sin ella, en la misma pasada. La versión con el cheque sale *más rápida*, lo
+  > que solo puede significar que la diferencia está por debajo del ruido. Es el
+  > **0,0232%** de la ventana de 20 ms, contra un presupuesto del 1%.
+  >
+  > **Consecuencia: FR7 no cambia.** La adopción se queda en el hilo del
+  > scheduler. La alternativa que el plan tenía escrita para el caso contrario
+  > —que el hilo principal publique al cruzar— **queda descartada aquí y no se
+  > vuelve a abrir a mitad de fase**: harían falta tres órdenes de magnitud para
+  > que el presupuesto se rozara.
 
 - **NFR3 — El coste de guardar está medido y acotado.** Un Bank son ~600 KB de
   JSON. Presupuesto: serializar y escribir un Bank por debajo de **100 ms**, y
