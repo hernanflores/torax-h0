@@ -24,3 +24,37 @@ Decisiones
   andamiaje sin caso que lo ejerza.
 - El parámetro de versión en el init tiene default, así que ningún sitio de uso
   cambia y solo los tests lo pasan.
+
+--- Verificación de fase: FASE 3 — EL FORMATO: DTO Codable EN Engine (2026-09-07) ---
+
+Comandos ejecutados
+  swift test --package-path Packages/Engine --enable-code-coverage
+    → 679 tests, 0 fallos. Cobertura de líneas 98,58% (umbral 90%).
+      ProjectRecord.swift: 98,84% líneas, 94,59% funciones.
+
+Cobertura de los cambios de la fase
+El paso 2 del protocolo destapó un hueco real: ProjectRecord estaba al 64,86% de
+funciones con el 92% de líneas porque ningún test decodificaba desde bytes. Se
+escribieron nueve tests (RecordDecodingTests, commit 8a5d684) antes de cerrar la
+fase.
+
+No se ejecutan MIDI ni xcodebuild: la fase no toca ninguno de los dos. Sus
+ficheros no aparecen en el diff desde el checkpoint 2655e43.
+
+Números de la fase
+  Project vacío en disco: 10 808 093 bytes → menos de 4 096.
+  Bank vacío: 675 498 bytes → colapsado a marcas null.
+
+Verificación manual
+Ninguna en pantalla, y es correcto: la fase entrega formato y nada de esto llega
+todavía a la interfaz. Forzar una verificación visual habría sido inventarla.
+Se enseñó al usuario el JSON de un Cycle y el 'patterns':[null,{...}] de un Bank
+con huecos, que es la mitad del argumento por el que tech-stack.md eligió JSON.
+
+Se señalaron al usuario las dos decisiones que envejecen: la clave de escala en
+disco ('minor') separada del nombre de pantalla ('Minor'), y que un valor
+corrupto caiga en su default en vez de fallar la carga — con su contrapartida
+dicha, que un fichero medio corrupto se abre silenciosamente distinto.
+
+Confirmación del usuario
+Confirmada el 2026-09-07: «Sí — cerrar y seguir con la Fase 4».
