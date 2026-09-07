@@ -174,13 +174,13 @@ revisar antes de seguir (NFR1).
   - [x] Documentar el porqué: el Pulse y sus repeticiones tienen que viajar por
         **el mismo camino**. Un camino aparte para las repeticiones duplicaría la
         regla del note-off, que es la que evita notas colgadas.
-- [~] Task: El gate de una repetición se mide sobre su hueco (FR12)
-  - [ ] Tests (Red): con Sustain 100% y Repeats 3, cada repetición dura
+- [x] Task: El gate de una repetición se mide sobre su hueco (FR12) — 4d8e959
+  - [x] Tests (Red): con Sustain 100% y Repeats 3, cada repetición dura
         exactamente su hueco; con Pace ≠ 0, cada una dura **el suyo** y no el
         primero.
-  - [ ] Tests (Red, FR16): **el Pulse sigue midiendo su gate sobre el Step**, con
+  - [x] Tests (Red, FR16): **el Pulse sigue midiendo su gate sobre el Step**, con
         Repeats en 0 y con Repeats en 3.
-  - [ ] Implementación (Green): reutiliza `Sustain.gateNanoseconds(forStep:)`
+  - [x] Implementación (Green): reutiliza `Sustain.gateNanoseconds(forStep:)`
         pasándole el hueco — es un porcentaje sobre una duración, y el nombre del
         argumento se generaliza.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
