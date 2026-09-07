@@ -251,7 +251,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: v2 rebanada 4 — Persistencia: Patterns y Banks**
+- [x] **Track: v2 rebanada 4 — Persistencia: Patterns y Banks** — el árbol y el disco entregados y verificados en dispositivo; **cerrado con un defecto abierto**: el cambio de Pattern no llega a la pantalla
   *Link: [conductor/tracks/persistence_20260907/index.md](./tracks/persistence_20260907/index.md)*
 
   **Planificado el 2026-09-07**, en ocho fases. Es el escalón que la Pre Spec
@@ -292,6 +292,37 @@ escalón es el que se nota.
 
   **No es el primer intento.** Hay uno anterior, `persistence_20260904`,
   abandonado sin mergear — la entrada de abajo.
+
+  **Cerrado el 2026-09-07**, en ocho fases. `Engine` 709 tests al 98,47%, `MIDI`
+  640 al 93,19%, `Persistence` 62 al 97,52%, más un paquete SPM nuevo.
+
+  **Lo que entrega:** el árbol entero —16 Banks × 16 Patterns con su tempo—, el
+  disco con un fichero por Bank en Application Support, escritura atómica,
+  `schemaVersion` y rescate de ficheros ilegibles; Autosave con debounce, `Save
+  Bank` y `Reload`; el cambio de Pattern **cuantizado al compás**, adoptado por el
+  hilo del scheduler; y la pantalla `banks`, que deja de ser cáscara sin cambiar
+  de forma.
+
+  **Los números que decidieron diseño.** La comprobación de la ranura armada
+  cuesta el **0,0232%** de la ventana contra un presupuesto del 1% —por debajo del
+  ruido de medición— así que la adopción se quedó en el hilo del scheduler.
+  Guardar un Bank son 15,5 ms y el Project entero 243,6 ms, que es por qué el
+  Autosave escribe solo el Bank tocado. Un Project vacío pasó de 10,8 MB a menos
+  de 4 KB con la marca de hueco.
+
+  **Cerrado con un defecto abierto**, y por decisión explícita: el cambio de
+  Pattern suena pero no llega a la pantalla ni al Project. Tiene track propio
+  arriba, incluida la consecuencia que destruye trabajo. **Cambiar de Bank sí
+  funciona.**
+
+  **La verificación en dispositivo quedó parcial.** Se comprobó el arranque y el
+  cambio de Bank —y ahí salieron cuatro fallos de cableado del modelo, tres
+  arreglados y uno abierto—; la cuenta atrás, los cuatro estados con el
+  transporte corriendo, `Save`/`Reload` de punta a punta, el reloj externo y el
+  presupuesto de 100 ms de NFR3 **no se llegaron a comprobar**. El guion está en
+  `device-verification.md`.
+
+  **Sin medición de jitter**, por las dos vías escritas en la Fase 1.
 
 ---
 
