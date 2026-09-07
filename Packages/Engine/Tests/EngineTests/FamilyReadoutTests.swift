@@ -51,6 +51,50 @@ final class FamilyReadoutTests: XCTestCase {
         }
     }
 
+    // MARK: - Shape, segunda línea
+
+    /// **El card de Shape pasa a dos líneas el 2026-09-07** (FR15): los cuatro
+    /// de siempre arriba y los cuatro del Note Repeater debajo. La separación
+    /// dice lo que dice el modelo — una capa sobre el ritmo, no el ritmo.
+    func testShapeCarriesTheNoteRepeaterOnASecondLine() {
+        let readout = FamilyReadout(track: track, family: .shape)
+        XCTAssertEqual(
+            readout.secondaryDetail, "Repeats 0 · Time 1/32 · Ramp 0% · Pace 0%")
+    }
+
+    /// Y escribe lo que tenga puesto, con el signo de Ramp y Pace.
+    func testTheSecondLineFollowsTheValues() {
+        let moved =
+            track
+            .applying(4, to: .repeats)
+            .applying(1, to: .repeatTime)
+            .applying(-30, to: .ramp)
+            .applying(60, to: .pace)
+        let readout = FamilyReadout(track: moved, family: .shape)
+
+        XCTAssertEqual(
+            readout.secondaryDetail, "Repeats 4 · Time 1/48 · Ramp -30% · Pace +60%")
+    }
+
+    /// **Las otras dos familias no tienen segunda línea**, y es `nil` y no una
+    /// cadena vacía: la vista pregunta si la hay.
+    func testOnlyShapeHasASecondLine() {
+        XCTAssertNil(FamilyReadout(track: track, family: .groove).secondaryDetail)
+        XCTAssertNil(FamilyReadout(track: track, family: .tonal).secondaryDetail)
+    }
+
+    /// Los ocho de Shape aparecen entre la lectura grande y las dos líneas: **no
+    /// se pierde ninguno** al partirlos en tres.
+    func testEveryShapeParameterIsShownSomewhere() {
+        let readout = FamilyReadout(track: track, family: .shape)
+        let shown =
+            readout.headline + " · " + readout.detail + " · " + (readout.secondaryDetail ?? "")
+
+        for name in ["Steps", "Pulses", "Rotate", "Division", "Repeats", "Time", "Ramp", "Pace"] {
+            XCTAssertTrue(shown.contains(name), "falta \(name)")
+        }
+    }
+
     // MARK: - Tonal
 
     /// **TONAL no tiene parámetros de knob detrás** (FR4), así que su lectura en

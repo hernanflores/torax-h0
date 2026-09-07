@@ -88,6 +88,18 @@ public struct FamilyReadout: Equatable, Sendable {
     /// El resto de la familia, en una línea pequeña.
     public let detail: String
 
+    /// La segunda línea pequeña, o `nil` si la familia no tiene.
+    ///
+    /// **Solo Shape la tiene, y desde el 2026-09-07.** Los cuatro del Note
+    /// Repeater no caben detrás de los cuatro de siempre sin que la línea deje de
+    /// leerse a un metro, y meterlos en la misma diría además algo falso: son una
+    /// capa sobre el ritmo, no el ritmo. La separación en dos líneas dice lo
+    /// mismo que el modelo (FR15).
+    ///
+    /// `nil` y no cadena vacía: la vista pregunta si hay segunda línea, no si
+    /// está vacía.
+    public let secondaryDetail: String?
+
     /// El distintivo del gesto que está puesto, o `nil` en reposo.
     ///
     /// > **Por qué hace falta.** Con Temp puesto, la lectura, el anillo y el
@@ -127,6 +139,14 @@ public struct FamilyReadout: Equatable, Sendable {
             detail =
                 "Steps \(shape.steps.count) · Rotate \(shape.rotate.amount) "
                 + "· Division \(shape.division)"
+            // La capa de arriba, en su propia línea. Los cuatro se escriben con
+            // la misma regla que su valor transitorio, para que reposo y giro no
+            // se lean como dos idiomas distintos.
+            let repeater = track.noteRepeater
+            secondaryDetail =
+                "Repeats \(repeater.repeats.count) · Time \(repeater.time) "
+                + "· Ramp \(TrackParameter.ramp.value(in: track)) "
+                + "· Pace \(TrackParameter.pace.value(in: track))"
 
         case .groove:
             let groove = track.groove
@@ -136,6 +156,7 @@ public struct FamilyReadout: Equatable, Sendable {
             detail =
                 "Sustain \(groove.sustain.percent)% · Probability \(groove.probability.percent)% "
                 + "· Timing \(groove.timing.percent)% · Delay \(groove.delay.percent)%"
+            secondaryDetail = nil
 
         case .tonal:
             // **Aquí la etiqueta se añade, no se extrae.** En Shape y Groove el
@@ -153,6 +174,7 @@ public struct FamilyReadout: Equatable, Sendable {
             value = "\(track.frame.root) \(track.frame.scale.name)"
             headline = "\(track.frame.root) \(track.frame.scale.name)"
             detail = "Pool · \(track.pool.countDescription)"
+            secondaryDetail = nil
         }
     }
 }
