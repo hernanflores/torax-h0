@@ -47,16 +47,16 @@ revisar antes de seguir (NFR1).
   - [x] **Choke y Tail quedan fuera**, con la limitación de solape escrita.
   - [x] Fijar el vocabulario: `Repeats`, `Time`, `Ramp`, `Pace`, `Note Repeater`.
         Ni «ratchet» como nombre de parámetro, ni «roll», ni «stutter».
-- [ ] Task: Sacar el Note Repeater de «Fuera de v1» en `product.md` (FR19)
-  - [ ] Nota fechada en `conductor/product.md`: el Note Repeater sale de la lista
+- [x] Task: Sacar el Note Repeater de «Fuera de v1» en `product.md` (FR19) — 31679cf
+  - [x] Nota fechada en `conductor/product.md`: el Note Repeater sale de la lista
         de *Fuera de v1* por la misma vía que salieron Cycles y los múltiples
         Tracks.
-  - [ ] Describirlo en *Interaction Model*: **capa sobre el ritmo, no ritmo**.
+  - [x] Describirlo en *Interaction Model*: **capa sobre el ritmo, no ritmo**.
         Steps, Pulses y Rotate no cambian.
-  - [ ] Anotar en *Success Criteria* que este es el **segundo cambio desde la
+  - [x] Anotar en *Success Criteria* que este es el **segundo cambio desde la
         suspensión del 2026-09-02 que toca la rejilla temporal**, que no se abre
         excepción y que se verifica tocando.
-  - [ ] Anotar que Probability pasa a decidir sobre todas las notas, y por qué
+  - [x] Anotar que Probability pasa a decidir sobre todas las notas, y por qué
         eso no es una regresión: con Repeats en 0 los dos conjuntos coinciden.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
