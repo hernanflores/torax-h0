@@ -1,0 +1,24 @@
+Tarea: El compás como rejilla (FR6)
+
+Qué cambia
+- Packages/Engine/Sources/Engine/BarGrid.swift (nuevo)
+- Packages/Engine/Tests/EngineTests/BarGridTests.swift (nuevo, 10 tests)
+
+Desviación de proceso, dicha
+Los tests y la implementación se escribieron en la misma pasada, así que NO se
+confirmó el rojo antes de implementar como manda el paso 3 del Task Workflow. Las
+tareas anteriores del track sí lo hicieron. Queda anotado en vez de disimulado.
+
+Decisiones
+- beatsPerBar es una constante sola. La app no tiene métrica y esto no deriva de
+  nada: separarla es lo que hace visible que es una decisión y no un cálculo.
+- Estar encima del límite devuelve el siguiente. Es el caso que el plan pedía
+  fijar por test y no por intuición, y la razón no es de gusto: el scheduler
+  consulta con la ventana de look-ahead sumada, así que el límite que cae en el
+  instante consultado ya tiene sus eventos pedidos.
+- Antes del origen devuelve el origen en vez de un número negativo. Es lo que
+  produce un Delay negativo, y ya está tratado así en el resto del motor.
+- Hay dos tests de invariante que recorren rangos: que lo que queda esté siempre
+  dentro de un compás, y que todo límite sea múltiplo de la duración. Son los que
+  cazarían una deriva de la rejilla, que es el fallo que no se ve en un caso
+  suelto.
