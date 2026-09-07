@@ -1,0 +1,26 @@
+Task: Anotar el Note Repeater en la Pre Spec (FR19, NFR7)
+
+Qué cambia: una nota fechada el 2026-09-07 en 'Pre Spec Torax H-0.md', §4 «Note
+Repeater (ratchet)», justo debajo de los cinco bullets originales.
+
+Por qué: el Task Workflow §8 exige documentar la desviación ANTES de implementar,
+y la Pre Spec promete un Note Repeater distinto del que la rebanada 5 de la v2
+entrega. Sin la nota, el documento y el código quedarían en desacuerdo desde la
+primera línea de la Fase 2.
+
+Qué dice la nota:
+- Repeats 0-8, no 0-48, y sin «infinito»: el techo de coste en el hilo del
+  scheduler se razona en vez de medirse (jitter suspendido desde el 2026-09-02);
+  108 eventos por Step con doce Tracks es defendible donde 588 no lo es.
+- Ramp y Pace son knobs propios (CC 79, 80, 81 y 83), no secundarios de CTRL:
+  mismo caso que resolvió la nota del 2026-09-02 sobre el gesto de CTRL.
+- Choke y Tail fuera, con la limitación de solape de NoteEmitter escrita.
+- Vocabulario fijado (NFR7): Repeats, Time, Ramp, Pace, Note Repeater. Nada de
+  «ratchet» como nombre de parámetro, ni «roll», ni «stutter», ni «subdivisión».
+- FR16 enunciado: con Repeats en 0 la salida es la de antes de la rebanada.
+- Sin medición de jitter, segundo cambio desde la suspensión que toca la rejilla
+  temporal, y aquí no se abre excepción: se verifica tocando.
+
+Ficheros modificados: 'Pre Spec Torax H-0.md' (+33 líneas)
+
+Sin tests: es una nota de documentación, no hay comportamiento que probar.
