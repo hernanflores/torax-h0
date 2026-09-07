@@ -262,6 +262,37 @@ final class TransportModel {
         gesture =
             controlInput.isTempActive
             ? .temp : (controlInput.isCtrlAllActive ? .ctrlAll : .none)
+
+        recordEdit()
+    }
+
+    /// Escribe el Pattern vigente en su hueco del Project, y lo pone en cola
+    /// para el Autosave.
+    ///
+    /// **Es el fallo que la pantalla `banks` destapó**: `pattern` y `project`
+    /// eran dos estados separados y solo el primero recibía las ediciones. El
+    /// Project se quedaba con lo que se cargó del disco, así que el card de
+    /// bancos decía «no patterns» con una pieza sonando, el hueco activo decía
+    /// `empty`, y —lo peor— **`Save Bank` guardaba el Bank viejo**: el punto de
+    /// retorno se fijaba sobre material que ya no existía.
+    ///
+    /// **Va en `syncFromControlInput` porque ése ya era el sitio único.** Su
+    /// propia documentación lo dice: «cada camino que edita —knob, pad,
+    /// pantalla— termina aquí, y así no hay ninguno que se olvide de refrescar
+    /// la mitad». Refrescaba media mitad.
+    ///
+    /// **El gesto en curso no se guarda.** Temp y Ctrl All superponen valores
+    /// que vuelven solos al soltar, y escribirlos dejaría en disco un fill que
+    /// nadie pidió conservar — que es justo lo que esos dos gestos existen para
+    /// evitar.
+    private func recordEdit() {
+        guard gesture == .none else { return }
+
+        project = project.replacing(
+            bank.replacing(pattern, at: project.selectedPattern),
+            at: project.selectedBank
+        )
+        autosave.changed(bank, at: project.selectedBank)
     }
 
     /// Con qué material arranca la app.
@@ -685,9 +716,10 @@ final class TransportModel {
         let loaded = restored.wasEmpty ? Project.initial : restored.project
         project = loaded
         rescuedFiles = restored.rescuedFiles
-        pattern =
+        let restoredPattern =
             loaded.bank(at: loaded.selectedBank)?
             .pattern(at: loaded.selectedPattern) ?? Pattern.initial
+        pattern = restoredPattern
         selectedTrackIndex = loaded.selectedTrack
 
         // La entrada de control se construye primero y publica por el relevo:
@@ -695,7 +727,14 @@ final class TransportModel {
         // existir.
         let relay = self.relay
         controlInput = ControlInput(
-            pattern: .initial,
+            // **Con el Pattern restaurado, no con `.initial`.**
+            //
+            // Arrancaba con `.initial` y el disco se leía después, así que la
+            // entrada de control quedaba con material distinto del que enseñaba
+            // la pantalla: **el primer giro de knob publicaba `.initial` y se
+            // llevaba por delante lo restaurado**. Se descubrió persiguiendo por
+            // qué el Bank decía «no patterns» con una pieza sonando.
+            pattern: restoredPattern,
             publish: { [relay] updated in relay.publish(updated) },
             mix: { [relay] gesture in relay.apply(gesture) }
         )
@@ -720,7 +759,7 @@ final class TransportModel {
                 tempo: Self.tempo, division: pattern.cycle(at: 0)!.shape.division)
             let createdTransport = Transport(
                 configuration: SchedulerConfiguration(timeline: timeline),
-                pattern: pattern,
+                pattern: restoredPattern,
                 emitter: Self.voice()
             ) { [output, activeDestination] message, hostTime in
                 Self.send(message, at: hostTime, through: output, to: activeDestination)
