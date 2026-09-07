@@ -78,6 +78,33 @@ Project (estado completo + ajustes guardados)
 - **Save Bank manual:** crea el punto de retorno intencional de *un* Bank; `Reload` descarta cambios no guardados y vuelve a ese punto.
 - **Backup Project:** exporta/importa el estado completo. Úsalo para archivado, transferencia de setup o antes de un directo.
 
+> **Nota del 2026-09-07 — de estos tres, entran dos.** La rebanada 4 de la v2
+> (`persistence_20260907`) entrega **Autosave** y **Save Bank / Reload**; **Backup
+> Project se queda fuera**.
+>
+> **El Autosave es el de arriba**: protege el trabajo reciente y restaura al
+> reiniciar. Escribe tras un par de segundos de calma —no por evento, que a
+> cuarenta y ocho controles físicos sería escribir en ráfagas—, fuerza la
+> escritura al pasar la app a segundo plano, y toca **solo el Bank editado**.
+> Sigue escribiendo con el transporte corriendo: ocurre lejos del hilo del
+> scheduler, y pararlo mientras suena sería perder justo la sesión que más
+> importa.
+>
+> **`Save Bank` y `Reload` son la otra capa**, y son del Bank vigente. Reload
+> entra **cuantizado**, como un cambio de Pattern, y **no pide confirmación**,
+> por coherencia con el resto de la app — que no confirma nada. En un Bank que
+> nunca se guardó a mano el botón no está disponible y lo dice: sin punto de
+> retorno, volver a vacío no es volver, es borrar.
+>
+> **Backup Project queda fuera porque no es modelo, es UI de documentos**:
+> `UIDocument`, share sheet, ida y vuelta de ficheros ajenos. El formato JSON lo
+> deja preparado y el track tiene la limitación escrita: hasta que entre, el
+> estado vive en el contenedor de la app y **desinstalarla lo borra**.
+>
+> **Vocabulario, para que no aparezcan sinónimos.** `Bank`, `Pattern`, `Project`,
+> `Save Bank`, `Reload`, `Autosave`, y `queued` para el Pattern que espera el
+> compás. Ni «preset», ni «song», ni «slot», ni «guardar todo».
+
 ## 3. El motor: cómo se obtiene una secuencia
 
 Una forma útil de leer el flujo es:
