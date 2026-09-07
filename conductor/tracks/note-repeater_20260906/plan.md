@@ -33,19 +33,19 @@ revisar antes de seguir (NFR1).
 
 ## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
 
-- [ ] Task: Anotar el Note Repeater en la Pre Spec (FR19, NFR7)
-  - [ ] Nota fechada en `Pre Spec Torax H-0.md`, §4 «Note Repeater (ratchet)»:
+- [x] Task: Anotar el Note Repeater en la Pre Spec (FR19, NFR7) — a312a20
+  - [x] Nota fechada en `Pre Spec Torax H-0.md`, §4 «Note Repeater (ratchet)»:
         qué se entrega y qué no.
-  - [ ] **Repeats es 0–8 y no 0–48, y no hay «infinito»**, con el porqué
+  - [x] **Repeats es 0–8 y no 0–48, y no hay «infinito»**, con el porqué
         delante: el techo de coste en el hilo del scheduler se razona en vez de
         medirse, y 108 eventos por Step con doce Tracks es defendible donde 588
         no lo es.
-  - [ ] **Ramp y Pace son knobs y no secundarios de CTRL**, por la misma razón
+  - [x] **Ramp y Pace son knobs y no secundarios de CTRL**, por la misma razón
         que «cuántos Cycles activos» pasó a ser táctil: el BeatStep Pro no tiene
         CTRL, y el gesto agrupaba cosas porque el hardware de la Pre Spec lo
         hacía barato.
-  - [ ] **Choke y Tail quedan fuera**, con la limitación de solape escrita.
-  - [ ] Fijar el vocabulario: `Repeats`, `Time`, `Ramp`, `Pace`, `Note Repeater`.
+  - [x] **Choke y Tail quedan fuera**, con la limitación de solape escrita.
+  - [x] Fijar el vocabulario: `Repeats`, `Time`, `Ramp`, `Pace`, `Note Repeater`.
         Ni «ratchet» como nombre de parámetro, ni «roll», ni «stutter».
 - [ ] Task: Sacar el Note Repeater de «Fuera de v1» en `product.md` (FR19)
   - [ ] Nota fechada en `conductor/product.md`: el Note Repeater sale de la lista
