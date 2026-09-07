@@ -83,6 +83,24 @@ public final class PatternHandoff: @unchecked Sendable {
 
     private let slots: UnsafeMutablePointer<Pattern>
 
+    /// El Pattern que espera al límite de compás.
+    ///
+    /// **Una ranura y no otro anillo.** Solo hay un pendiente a la vez —armar dos
+    /// veces deja el último, que es lo que un directo pide— y lo escribe el hilo
+    /// principal mientras el del scheduler lo mira una vez por ventana. Medido
+    /// antes de construirlo: la comprobación cuesta menos que el ruido de la
+    /// medición, 0,0232% de la ventana (`ArmedSlotCostTests`).
+    private let armedSlot: UnsafeMutablePointer<Pattern>
+
+    /// Generación de lo armado. **Impar significa «hay algo pendiente»**, par
+    /// «no hay nada».
+    ///
+    /// La paridad evita un opcional en el camino de tiempo real: comprobar si
+    /// hay pendiente es leer un entero y mirar un bit, sin ramas que asignen. Y
+    /// como el contador solo avanza, armar dos veces sin adoptar deja el último
+    /// sin que nadie tenga que limpiar nada.
+    private let armedGeneration = AtomicCounter(0)
+
     /// Generación publicada. Monótona: solo avanza.
     ///
     /// `AtomicCounter` ya hace `store` con release y `load` con acquire, que es
@@ -109,6 +127,8 @@ public final class PatternHandoff: @unchecked Sendable {
     public init(_ initial: Pattern) {
         slots = .allocate(capacity: Self.slotCount)
         slots.initialize(repeating: initial, count: Self.slotCount)
+        armedSlot = .allocate(capacity: 1)
+        armedSlot.initialize(to: initial)
     }
 
     /// Arranca con un solo Track en la primera posición y quince vacíos.
@@ -123,6 +143,8 @@ public final class PatternHandoff: @unchecked Sendable {
     deinit {
         slots.deinitialize(count: Self.slotCount)
         slots.deallocate()
+        armedSlot.deinitialize(count: 1)
+        armedSlot.deallocate()
     }
 
     /// Publica material nuevo: los dieciséis Tracks a la vez.
@@ -181,4 +203,52 @@ public final class PatternHandoff: @unchecked Sendable {
     static func readIsSafe(latched: UInt64, observed: UInt64) -> Bool {
         observed &- latched < safeGenerationDistance
     }
+
+    // MARK: - El Pattern armado
+
+    /// Deja un Pattern esperando al límite de compás. **No publica**: hasta que
+    /// alguien adopte, sigue sonando el de antes.
+    ///
+    /// **Un solo escritor**, el hilo principal, igual que `publish(_:)`. Armar
+    /// es un gesto de usuario y no es código de tiempo real.
+    ///
+    /// Armar dos veces deja el último: cambiar de idea antes del límite es
+    /// normal en directo, y no hay cola porque un Pattern encolado que ya no se
+    /// quiere no tiene forma de cancelarse a mitad.
+    public func arm(_ pattern: Pattern) {
+        armedSlot.pointee = pattern
+        armedGeneration.value = armedGeneration.value | 1
+    }
+
+    /// Quita lo pendiente sin adoptarlo.
+    ///
+    /// Existe para Stop (FR10): ahí lo pendiente pasa a vigente por otro camino
+    /// —con el transporte parado no hay rejilla que respetar— y no puede quedar
+    /// nada armado detrás.
+    public func disarm() {
+        armedGeneration.value = armedGeneration.value & ~UInt64(1)
+    }
+
+    /// Si hay algo esperando.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public var hasArmedPattern: Bool { armedGeneration.value & 1 == 1 }
+
+    /// Publica lo armado, si lo hay. Devuelve si hizo algo.
+    ///
+    /// **Es lo que el scheduler llama en cada límite de compás**, y casi siempre
+    /// sin nada pendiente: por eso el caso vacío es una lectura atómica y una
+    /// comparación, y nada más.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    @discardableResult
+    public func adoptArmedPattern() -> Bool {
+        guard hasArmedPattern else { return false }
+        publish(armedSlot.pointee)
+        disarm()
+        return true
+    }
+
 }
