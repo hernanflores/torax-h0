@@ -1,0 +1,25 @@
+Tarea: Las notas que cruzan el límite terminan (FR9)
+
+Implementación: ninguna. El plan lo preveía —'puede que no haga falta código'— y
+así fue. Lo que hacía falta es el test, porque la propiedad de la que todo esto
+depende (que el par note-on/note-off se emita junto y sellado) es fácil de romper
+sin darse cuenta el día que alguien mueva la emisión.
+
+El error que el test cometió primero, y que conviene recordar
+La primera versión pasaba el instante en nanosegundos a NoteEmitter, que convierte
+el gate a host ticks. Mezclar las dos unidades ponía el apagado 500 ms antes de
+donde toca —12 millones de ticks contra 1500 millones de nanosegundos— y el test
+fallaba culpando al código. En Apple Silicon el tick no es un nanosegundo, y eso
+no se ve leyendo la firma del método.
+
+Queda anotado porque es la clase de fallo que se repetirá: cualquier test futuro
+que fabrique instantes para NoteEmitter tiene que fabricarlos en ticks.
+
+Qué afirma cada test
+- Cada note-on tiene su note-off, comparando los multiconjuntos.
+- La nota del Pattern viejo recibe su apagado DESPUÉS del límite, que es el caso
+  que la tarea existe para comprobar.
+- Ninguna nota se apaga sin haber sonado, que es la firma que dejaría un
+  all-notes-off por canal.
+- Diez cambios seguidos, alternando dos Patterns compás tras compás, no dejan
+  nada colgado. Es el caso de directo.
