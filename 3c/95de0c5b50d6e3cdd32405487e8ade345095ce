@@ -1,0 +1,27 @@
+Tareas: 'Bajar a Engine lo que la cáscara dejó arriba' y 'La cuenta atrás hasta el compás' (FR25), la parte de Engine.
+
+Ciclo TDD
+Rojo confirmado en las dos: PatternSlotState y slotStates sin existir; y después
+dos fallos reales de implementación en la cuenta atrás.
+
+Los dos fallos, porque ninguno se ve leyendo el código
+1. beatsUntilNextBoundary dividía la duración del compás entre cuatro para
+   obtener la negra, y luego redondeaba hacia arriba. A 174 BPM el compás son
+   1 379 310 345 ns: la negra trunca a 344 827 586 y se pierde 1 ns por negra,
+   que el redondeo hacia arriba convertía en una QUINTA negra. Se arregla
+   dividiendo contra el compás y no contra la negra.
+2. Antes del origen daba 0, porque el próximo límite es el origen mismo. Decir
+   'entra ya' de algo que no ha empezado es mentir; devuelve el compás entero.
+
+El test que los cazó es el de invariante sobre un rango de instantes y el que
+recorre tres tempos. Ninguno de los dos casos aparece en un ejemplo suelto.
+
+Decisiones
+- El estado se construye con cuatro booleanos y no toma un Bank ni un Transport.
+  Así las dieciséis combinaciones se prueban enteras y la regla de precedencia
+  —suena manda sobre espera, y parado no hay espera— queda escrita una vez.
+- slotStates devuelve los dieciséis de una vez, como patternsHavingMaterial, por
+  la misma razón: la rejilla necesita todos y preguntar dieciséis veces invita a
+  que dos preguntas caigan a ambos lados de un cambio.
+- La cuenta va en negras. No depende del tempo —siempre entre 1 y 4—, que es lo
+  que la hace legible a un metro.
