@@ -505,6 +505,29 @@ public final class Transport: @unchecked Sendable {
     /// Si hay un Pattern esperando al compás.
     public var hasArmedPattern: Bool { handoff.hasArmedPattern }
 
+    /// Cambia de Bank: **su Pattern seleccionado, más su tempo** (FR11).
+    ///
+    /// **Una sola regla de cuantización en el producto.** El material entra por
+    /// donde entra un cambio de Pattern —inmediato si está parado, en el compás
+    /// si suena— y el tempo entra con él, en vez de saltar a media frase.
+    ///
+    /// **Con reloj externo el tempo del Bank no manda** (FR12). Lo pone el
+    /// maestro, y el dato guardado no desaparece: vuelve a mandar en cuanto la
+    /// fuente sea `Internal`. Lo que el reloj externo decide es el tempo, no si
+    /// se puede cambiar de Bank — el material entra igual.
+    ///
+    /// Un índice fuera de rango no hace nada, con el mismo criterio que el resto
+    /// del motor.
+    public func select(_ bank: Bank, pattern index: Int) {
+        guard let material = bank.pattern(at: index) else { return }
+
+        select(material)
+
+        if clockSource == .internal {
+            setTempo(beatsPerMinute: bank.tempo.beatsPerMinute)
+        }
+    }
+
     /// Arranca el reloj.
     ///
     /// El hilo se crea aquí y no en `init` para que la reproducción empiece
