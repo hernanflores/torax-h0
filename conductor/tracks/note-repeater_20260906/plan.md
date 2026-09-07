@@ -31,7 +31,7 @@ una tarea empuja hacia un array temporal de eventos o hacia coma flotante dentro
 del bucle de ventana, es la señal de que el diseño se está torciendo: parar y
 revisar antes de seguir (NFR1).
 
-## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
+## FASE 1: LA DESVIACIÓN QUEDA ESCRITA [checkpoint: 31679cf]
 
 - [x] Task: Anotar el Note Repeater en la Pre Spec (FR19, NFR7) — a312a20
   - [x] Nota fechada en `Pre Spec Torax H-0.md`, §4 «Note Repeater (ratchet)»:
@@ -58,7 +58,7 @@ revisar antes de seguir (NFR1).
         excepción y que se verifica tocando.
   - [x] Anotar que Probability pasa a decidir sobre todas las notas, y por qué
         eso no es una regresión: con Repeats en 0 los dos conjuntos coinciden.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: EL VALOR PURO — `NoteRepeater` EN `Engine`
 
