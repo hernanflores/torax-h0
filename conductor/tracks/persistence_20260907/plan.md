@@ -319,7 +319,20 @@ su test de que el fichero anterior sigue ahí.
 
 ## FASE 8: DISPOSITIVO Y CIERRE
 
-- [ ] Task: Verificación en iPad con el BeatStep Pro
+- [~] Task: Verificación en iPad con el BeatStep Pro — **parcial**
+
+  > **Cerrada parcial el 2026-09-07, por decisión del usuario.** Lo que se
+  > verificó en dispositivo: la app arranca con el material restaurado, y
+  > **cambiar de Bank funciona**. Lo que destapó: tres fallos de cableado del
+  > modelo, arreglados (`100710c`), y uno que se queda abierto —el cambio de
+  > Pattern no llega a la pantalla ni al Project, con track propio en el
+  > registro—.
+  >
+  > **Lo que no se llegó a verificar**: la cuenta atrás, los cuatro estados de
+  > hueco con el transporte corriendo, `Save Bank`/`Reload` de punta a punta, el
+  > cambio de Bank con reloj externo, el Autosave en sesión larga y el
+  > presupuesto de 100 ms de NFR3. El guion queda escrito en
+  > `device-verification.md` para quien retome.
   - [ ] **El criterio principal**: editar en varios Patterns, cerrar la app por
         completo, reabrir y encontrarlo todo — Bank, Pattern, Track y material
         hasta el último Cycle.
