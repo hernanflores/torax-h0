@@ -158,7 +158,7 @@ revisar antes de seguir (NFR1).
   - [x] Implementación (Green): la segunda línea, mismo acento.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: LA EMISIÓN APRENDE VELOCITY Y GATE PROPIOS
+## FASE 3: LA EMISIÓN APRENDE VELOCITY Y GATE PROPIOS [checkpoint: 4d8e959]
 
 - [x] Task: `NoteEmitter` recibe la velocity y el gate del evento (FR7, FR12) — b74ac73
   - [x] Tests (Red): emitir con una velocity distinta de la del Groove produce
@@ -183,7 +183,7 @@ revisar antes de seguir (NFR1).
   - [x] Implementación (Green): reutiliza `Sustain.gateNanoseconds(forStep:)`
         pasándole el hueco — es un porcentaje sobre una duración, y el nombre del
         argumento se generaliza.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: LA TIRADA — EL `TrackScheduler` REPITE
 
