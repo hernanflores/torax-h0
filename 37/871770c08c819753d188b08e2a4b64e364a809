@@ -1,0 +1,47 @@
+Task: No regresión de punta a punta (FR16), y el cableado que faltaba
+
+Dos cosas en un commit, porque la segunda no se puede probar sin la primera.
+
+1) El cableado. La tarea anterior dejó las repeticiones saliendo del
+TrackScheduler y ahí se paraban: PatternScheduler no las reenviaba, así que no
+llegaban a sonar. Ahora cruzan las tres capas.
+   - PatternScheduler.advance y emitWindow ganan emitRepetition opcional, con las
+     dos llamadas del corte por compás incluidas.
+   - SchedulerThread gana RepetitionHandler y lo sella con la misma cuenta que el
+     Pulse. El gate se convierte con tempoMap.wallNanoseconds, igual que los
+     instantes: seguir a un maestro lento tiene que alargar el hueco y el gate a
+     la vez, o la tirada se despegaría de la rejilla que la contiene.
+   - Transport le da un repetitionHandler que llama a
+     NoteEmitter.emit(pitch:velocity:gateNanoseconds:…). No recalcula nada.
+
+   Detalle de tiempo real: el reenvío por Track usa un cierre literal y no
+   emitRepetition.map { … }. El map construye un cierre nuevo por Track y por
+   ventana, que es una asignación en el hilo del scheduler (NFR1). El literal es
+   no-escapante y captura solo valores triviales.
+
+2) La no regresión, de punta a punta. Un Pattern con dos Tracks que junta lo que
+la rebanada podría haber roto: anillos de 16 y 12 Steps, pulsos 5 y 7, swing al
+66% en uno y Delay al 25% en el otro, Probability al 70% y al 90%, pools de dos
+alturas y canales distintos. Con Repeats en 0 la salida es, instante a instante,
+la referencia capturada ejecutando el código: 24 Pulses con su track, su Step, su
+altura, su velocity y su offset en nanosegundos.
+
+Lo que hace válida esa referencia como 'antes de la rebanada' es que el camino
+del Pulse no cambió: sale por el mismo cierre, con los mismos argumentos, y
+consume una tirada por Pulse como siempre. La prueba independiente del consumo de
+aleatoriedad es el literal de semilla 7 de la tarea de Probability, capturado
+antes de tocar el generador.
+
+Y un test más: con Probability al 100% —donde las tiradas extra no pueden mover
+nada— los Pulses son idénticos con Repeats 0 y con Repeats 6, con swing y Delay
+negativo dentro.
+
+Ficheros modificados:
+- Packages/MIDI/Sources/MIDI/PatternScheduler.swift
+- Packages/MIDI/Sources/MIDI/SchedulerThread.swift
+- Packages/MIDI/Sources/MIDI/Transport.swift
+Ficheros creados:
+- Packages/MIDI/Tests/MIDITests/RepeatsZeroRegressionTests.swift (4 tests)
+
+Verificación: Engine 797 · MIDI 21 + 678 · Persistence 62, 0 fallos. xcodebuild
+iOS SUCCEEDED.
