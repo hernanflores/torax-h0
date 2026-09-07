@@ -22,3 +22,44 @@ destino MIDI. Pasaba sin afirmar una sola cosa. Se reescribió para comprobar lo
 que sí se puede comprobar sin hardware: que parado publica y que armado espera.
 La cuantización con el instante medido sobre el offset está en
 QuantizedPatternChangeTests, al nivel del scheduler.
+
+--- Verificación de fase: FASE 6 — EL CAMBIO CUANTIZADO (2026-09-07) ---
+
+Comandos ejecutados
+  swift test --package-path Packages/Engine        → 689 tests, 0 fallos
+  swift test --package-path Packages/MIDI (partición CI) → 640 + 21, 0 fallos
+  swift test --package-path Packages/Persistence   → 62 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS
+                                                   → BUILD SUCCEEDED
+Sin rastro del flake clientCreationFailed(-50).
+
+La puerta de la fase
+Medida antes de construir: la comprobación de la ranura armada cuesta 4 637 ns
+contra 4 847 ns sin ella —por debajo del ruido—, el 0,0232% de la ventana, con un
+presupuesto del 1%. FR7 no cambia y la alternativa queda descartada.
+
+Cobertura de los cambios de la fase
+Cada fuente tocada tiene tests nuevos: BarGrid/BarGridTests,
+PatternHandoff/ArmedPatternTests, PatternScheduler/QuantizedPatternChangeTests,
+TrackScheduler/ArmedCycleCursorTests, NoteEmitter/NotesCrossingTheBarTests,
+Transport/{TransportArmedPatternTests,BankChangeTests,QuantizedReloadTests}.
+
+Tres tests que no probaban nada, corregidos y anotados
+1. ArmedCycleCursorTests usaba cuatro Cycles sobre cuatro vueltas por compás, así
+   que el cursor volvía a cero por aritmética y los tests pasaban sin código. Con
+   tres Cycles apareció el rojo, y destapó un fallo real: el cierre de vuelta
+   movía el cursor justo después del reinicio.
+2. NotesCrossingTheBarTests pasaba instantes en nanosegundos a NoteEmitter, que
+   convierte el gate a host ticks. Mezclar unidades culpaba al código, que estaba
+   bien.
+3. QuantizedReloadTests llamaba a play() y salía por un guard, porque en host no
+   hay destino MIDI. Reescrito para afirmar lo comprobable sin hardware.
+
+Verificación manual
+Ninguna en pantalla: la fase entrega motor y la interfaz no lo llama todavía. Lo
+verificable es el instante del cambio, y está comprobado sobre el offset y no de
+oído — el evento en 2 000 000 000 ns es del Pattern nuevo y el de 1 875 000 000
+del viejo, con ventanas de 20 ms reales.
+
+Confirmación del usuario
+Confirmada el 2026-09-07: «Sí — cerrar y seguir con Fase 7».
