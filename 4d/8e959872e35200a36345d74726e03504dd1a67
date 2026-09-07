@@ -30,3 +30,35 @@ Ficheros creados:
 - Packages/Engine/Tests/EngineTests/RepeatGateTests.swift
 
 Verificación: Engine 785 · MIDI 649, 0 fallos. xcodebuild iOS SUCCEEDED.
+
+--- Verificación de la FASE 3: LA EMISIÓN APRENDE VELOCITY Y GATE PROPIOS (2026-09-07) ---
+
+Tests automáticos ejecutados:
+  swift test --package-path Packages/Engine
+    Executed 785 tests, with 0 failures (779 al abrir la fase)
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    Executed 21 tests, with 1 test skipped and 0 failures
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    Executed 649 tests, with 0 failures (640 antes)
+  swift test --package-path Packages/Persistence
+    Executed 62 tests, with 0 failures
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    ** BUILD SUCCEEDED **
+
+Cobertura: Engine 98,52% de líneas (umbral 90). MIDI 93,21% en un proceso y
+excluyendo Engine/Sources (umbral 80). NoteEmitter.swift al 100%.
+
+Qué entrega la fase: el emisor sabe emitir con velocity y gate del evento, y la
+regla del note-off sigue en un solo sitio. Sustain.gateNanoseconds pasa de
+forStep a over, porque la duración sobre la que se aplica es el Step para un
+Pulse y el hueco para una repetición.
+
+Verificación manual propuesta: la fase no cambia nada audible —el TrackScheduler
+todavía no genera repeticiones y el único sitio de llamada sigue usando la vía
+del Groove—, así que lo que se comprueba es eso. En el iPad con el BeatStep Pro:
+que un Pattern conocido suene exactamente igual, que Sustain se comporte igual en
+los extremos (1% percusivo, 200% ligado sobre un solo vecino), que subir Repeats
+todavía no repita, y que no queden notas colgadas al parar — el note-off es lo
+que esta fase movió de sitio.
+
+Confirmación del usuario: «OK» (2026-09-07).
