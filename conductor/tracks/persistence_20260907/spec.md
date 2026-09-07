@@ -452,6 +452,17 @@ Además:
    > residentes, no 9,5. En disco, un Bank lleno son **660 KB** y uno vacío
    > **106 bytes**.
 
+8. **El cambio de Pattern no llega a la pantalla ni al Project.** Encontrado en
+   dispositivo el 2026-09-07, al cerrar el track. Lo que suena sí cambia —la
+   adopción en el límite funciona y está probada sobre el índice de Step— pero
+   **nadie avisa al modelo de que ocurrió**: el hueco se queda en `queued` para
+   siempre, la selección no se mueve, y el siguiente giro de knob escribe el
+   material del Pattern nuevo en el hueco del viejo.
+
+   Cambiar de Bank no lo tiene porque mueve la selección en el acto. Falta el
+   equivalente de `CyclePlaybackClock` para «qué Pattern está vigente». Track
+   propio en el registro.
+
 ## Out of Scope
 
 - Backup Project: exportar e importar por la app Files.

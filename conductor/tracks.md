@@ -741,6 +741,43 @@ en cualquier momento.
 
 ---
 
+- [ ] **Track: El cambio de Pattern no llega a la pantalla ni al Project**
+
+  Encontrado el 2026-09-07 verificando `persistence_20260907` en dispositivo.
+  **Cambiar de Bank funciona; cambiar de Pattern con el transporte corriendo,
+  no.**
+
+  **Lo que suena sí cambia.** La adopción en el límite de compás funciona y está
+  probada sobre el índice de Step (`QuantizedPatternChangeTests`). Lo que falla
+  es todo lo demás: **nadie avisa al modelo de que la adopción ocurrió**.
+
+  La adopción la hace el hilo del scheduler dentro de `PatternScheduler.advance`,
+  y no hay camino de vuelta hacia `TransportModel`. Consecuencias, de menos a más
+  grave:
+
+  - `armedPatternIndex` **no se limpia nunca**, así que el hueco se queda en
+    `queued` para siempre y la cuenta atrás no desaparece.
+  - `project.selectedPattern` **no se mueve**, así que la rejilla sigue marcando
+    como elegido el Pattern anterior y el card de bancos cuenta sobre el Bank
+    equivocado.
+  - **Y la que destruye trabajo:** suena el Pattern B mientras el Project cree
+    que el vigente es el A, así que el siguiente giro de knob escribe el material
+    de B **en el hueco de A**.
+
+  `selectBank` no tiene el problema porque mueve `project.selectingBank(index)`
+  en el acto; `selectPattern`, con el transporte corriendo, solo arma.
+
+  **Dónde está la pieza que falta.** El cursor de Cycle ya resolvió este mismo
+  problema —el hilo del scheduler publicando hacia la interfaz sin locks— con
+  `CyclePlaybackClock`. Lo que falta es el equivalente para «qué Pattern está
+  vigente»: una palabra atómica que el scheduler escriba al adoptar y que el
+  modelo lea, no una llamada de vuelta.
+
+  **No bloquea a nadie más**, y el resto de la rebanada 4 está entregado y
+  verificado.
+
+---
+
 - [ ] **Track: La pantalla no ve lo que cambia el hardware**
 
   Descubierto el 2026-09-06, durante la Fase 4 de `screens-redesign_20260906`.
