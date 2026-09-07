@@ -1,0 +1,27 @@
+Tarea: Crear el paquete SPM Persistence (NFR6)
+
+Qué cambia
+- Packages/Persistence/: Package.swift, Sources/Persistence/FileSystem.swift,
+  Tests/PersistenceTests/{DependencyBoundaryTests,InMemoryFileSystem}.swift
+- ToraxH0.xcodeproj: referencia local al paquete y dependencia de producto.
+
+Decisiones
+- El protocolo tiene cuatro operaciones: leer, escribir atómico, mover y crear
+  directorio. Si algún día hacen falta más, es señal de que el almacén está
+  haciendo algo que no es guardar.
+- read devuelve Data? y no lanza cuando el fichero no existe. No existir es el
+  estado de la primera vez que se abre la app; tratarlo como error obligaría a
+  distinguirlo en cada sitio de uso.
+- La atomicidad se delega en Data.write(options: .atomic) en vez de escribir el
+  temporal a mano. El renombrado dentro del volumen es lo que hace la operación
+  indivisible y Foundation ya lo hace bien; reimplementarlo sería más código
+  para el mismo resultado y con más formas de equivocarse.
+- El doble en memoria distingue failNextWrite de failEveryWrite. Son dos cosas
+  distintas: una escritura interrumpida se recupera sola en el siguiente ciclo,
+  un disco lleno no — y el aviso persistente de FR21 depende de esa diferencia.
+- DiskFileSystem no almacena el FileManager: no es Sendable. La costura que hace
+  testeable el paquete es el protocolo, no inyectar un gestor.
+
+Verificación
+swift test --package-path Packages/Persistence corre en host sin simulador.
+xcodebuild -scheme ToraxH0 -destination generic/platform=iOS: BUILD SUCCEEDED.
