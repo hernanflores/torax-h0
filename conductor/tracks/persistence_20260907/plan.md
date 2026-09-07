@@ -111,7 +111,7 @@ su test de que el fichero anterior sigue ahí.
 
 ## FASE 3: EL FORMATO — DTO `Codable` EN `Engine`
 
-- [ ] Task: Los DTO espejo y la traducción (FR18)
+- [x] Task: Los DTO espejo y la traducción (FR18) — `f6e7165`
   - [ ] Tests (Red): **ida y vuelta** de `Cycle`, `Track`, `Pattern`, `Bank` y
         `Project` — de POD a DTO y de vuelta — devuelve un valor igual al
         original, campo por campo. El pool de ocho alturas empaquetado en un
