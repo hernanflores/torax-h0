@@ -93,7 +93,7 @@ su test de que el fichero anterior sigue ahí.
         Abrir la app por primera vez tiene que sonar como suena hoy.
   - [ ] Implementación (Green): `Project` con sus Banks, los tres índices y la
         fuente de reloj.
-- [ ] Task: Copiar y borrar un Pattern (FR13)
+- [x] Task: Copiar y borrar un Pattern (FR13) — `e7b4732`
   - [ ] Tests (Red): copiar a un hueco produce un Pattern **igual por valor** al
         original y no toca el resto; copiar sobre uno con material lo sustituye;
         borrar deja `Pattern()`; los dos fuera de rango devuelven el Project
