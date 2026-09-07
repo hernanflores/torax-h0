@@ -53,7 +53,7 @@ su test de que el fichero anterior sigue ahí.
         pasa a tener un gesto que se usa tocando, no solo antes de tocar.
   - [ ] Dejar escrito lo que sigue fuera: Backup Project, Program Change,
         encadenado, nombres y disparo desde el controlador.
-- [ ] Task: Documentar el paquete `Persistence` en `tech-stack.md` (NFR6)
+- [x] Task: Documentar el paquete `Persistence` en `tech-stack.md` (NFR6) — `4565ecc`
   - [ ] Nota fechada en la sección *Estructura de módulos*: por qué no cabe en
         los paquetes que hay —`Engine` no importa fuera de la stdlib y
         `JSONEncoder` es Foundation; `MIDI` es CoreMIDI; `App` no se mide— y qué
