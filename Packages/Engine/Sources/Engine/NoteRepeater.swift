@@ -279,3 +279,75 @@ extension Ramp {
         return Velocity(unchecked: Velocity.validRange.clamping(base.value + travel))
     }
 }
+
+extension RepeatTime {
+
+    /// Hueco entre dos repeticiones, en nanosegundos, dado lo que dura un Step.
+    ///
+    /// **Múltiplo de la duración del Step y no una vuelta al tempo:**
+    /// `hueco = duraciónDelStep × (Time / Division)`. La duración del Step ya
+    /// está calculada donde esto se usa, y hacerlo así hereda —sin inventar una
+    /// vía nueva— la rejilla que la `MusicalTimeline` fija al pulsar Play.
+    ///
+    /// Es lo que hace que Time sea un **valor de nota absoluto**: un Track en 1/4
+    /// y otro en 1/16 con el mismo Time repiten al mismo ritmo, porque la
+    /// Division entra dividiendo y sale del resultado.
+    ///
+    /// Entera y multiplicando antes de dividir, como
+    /// `Sustain.gateNanoseconds(forStep:)`.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    ///
+    /// Calculates the spacing between two repetitions.
+    /// - Parameters:
+    ///   - stepDurationNanoseconds: How long one step lasts.
+    ///   - division: The division of the track the repetitions belong to.
+    /// - Returns: The gap in nanoseconds.
+    public func gapNanoseconds(forStep stepDurationNanoseconds: Int64, division: Division) -> Int64
+    {
+        stepDurationNanoseconds * Int64(fraction.numerator) * Int64(division.denominator)
+            / (Int64(fraction.denominator) * Int64(division.numerator))
+    }
+}
+
+extension Pace {
+
+    /// Hueco de la repetición `i` de una tirada de `n`, estirando o encogiendo
+    /// el hueco que Time mide.
+    ///
+    /// ```
+    /// r = pace ≥ 0 ? (100 + pace) / 100 : 100 / (100 − pace)
+    /// hueco(i) = Time × (1 + (r − 1) × (i − 1) / (n − 1))     con n > 1
+    /// hueco(1) = Time                                         con n = 1
+    /// ```
+    ///
+    /// **`r` es exactamente recíproco entre `+p` y `−p`** —+50 da ×1,5 y −50 da
+    /// ÷1,5—, y por eso se calcula como fracción y no con una exponencial:
+    /// girar el knob a un lado y al otro la misma cantidad es el mismo gesto, y
+    /// no hay coma flotante en el camino de tiempo real.
+    ///
+    /// **El primer hueco vale siempre Time.** La curva arranca donde Time dice y
+    /// se separa después, así que subir Pace no desplaza la primera repetición.
+    ///
+    /// **Con `n = 1` el hueco es Time**, sea cual sea Pace: la interpolación
+    /// divide por `n − 1` y con una sola repetición no hay tirada que recorrer.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    ///
+    /// Calculates the spacing of one repetition along the pace curve.
+    /// - Parameters:
+    ///   - i: The repetition index, from 1 to `n`.
+    ///   - n: How many repetitions the burst has.
+    ///   - base: The gap that Time measures, in nanoseconds.
+    /// - Returns: The gap in nanoseconds.
+    public func gapNanoseconds(forRepetition i: Int, of n: Int, base: Int64) -> Int64 {
+        guard n > 1, percent != 0 else { return base }
+        let numerator = percent > 0 ? Int64(100 + percent) : 100
+        let denominator = percent > 0 ? 100 : Int64(100 - percent)
+        let span = Int64(n - 1)
+        return base * (span * denominator + (numerator - denominator) * Int64(i - 1))
+            / (denominator * span)
+    }
+}

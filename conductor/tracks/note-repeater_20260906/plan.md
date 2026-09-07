@@ -83,7 +83,7 @@ revisar antes de seguir (NFR1).
   - [x] Tests (Red): mover la Velocity del Track mueve la rampa entera con ella.
   - [x] Implementación (Green): aritmética entera, acotada a
         `Velocity.validRange`.
-- [ ] Task: El hueco de cada repetición (FR6, FR8)
+- [~] Task: El hueco de cada repetición (FR6, FR8)
   - [ ] Tests (Red): con Pace 0 los `n` huecos son iguales y valen Time. Con
         +100 el último dura el doble que el primero; con −100, la mitad; los
         intermedios interpolan linealmente.
