@@ -1,0 +1,19 @@
+Tarea: Anotar que la rebanada sí toca el motor (Overview, FR6, FR7)
+
+Qué cambia
+- conductor/product.md: nota fechada 2026-09-07 en *Success Criteria*.
+- Las dos sub-tareas sobre conductor/tracks.md quedaron cubiertas al crear el
+  track (commit b059b84): la entrada ya lleva la enmienda de alcance y la
+  precisión de qué entra exactamente en el hilo de tiempo real.
+
+Por qué
+El registro afirmaba «no es una rebanada de motor». Con el cambio de Pattern
+cuantizado eso es falso, y dejar la afirmación en pie habría hecho que la
+próxima persona buscara el trabajo del scheduler donde no está escrito. El Task
+Workflow §8 exige anotar la desviación antes de implementar; aquí se aplica al
+alcance, no a la implementación.
+
+La nota carga además con una segunda pregunta que iba a llegar sola: si toca el
+scheduler, ¿por qué no se mide? Se responde con la regla del 2026-08-28 —se mide
+el cuándo, no el cuánto— y no solo con la suspensión, para que la respuesta
+sobreviva a que la suspensión se levante.
