@@ -1,0 +1,15 @@
+Corrección descubierta al empezar la Fase 4.
+
+ProjectRecord se escribió en la Fase 3 con los dieciséis BankRecord dentro, y
+FR18 dice un fichero por Bank más uno de Project. La contradicción no se ve
+mientras no existe el almacén: un record que contiene todo es perfectamente
+coherente hasta que hay que repartirlo en ficheros.
+
+Pasa a ser cabecera —schemaVersion, índices y ajustes de sesión— y gana
+project(with:) para reconstruir el Project con los Banks que le den. Los que
+falten quedan vacíos, que es lo que hace que un Project a medio escribir no
+impida arrancar.
+
+Cuatro ficheros de test actualizados. La clave 'banks' sale del test que enumera
+las claves esperadas del fichero de Project, que es exactamente el mecanismo que
+ese test existe para forzar.
