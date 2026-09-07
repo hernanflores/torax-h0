@@ -1,0 +1,25 @@
+Tarea: Los cursores de Cycle arrancan al entrar (FR8)
+
+El test que no probaba nada, y cómo se vio
+La primera versión usaba cuatro Cycles activos sobre un Track de cuatro Steps.
+A 120 BPM eso son cuatro vueltas por compás, así que el cursor volvía al primero
+por sí solo justo en el límite: los cuatro tests pasaban SIN implementar nada.
+Se cambió a tres Cycles, donde al llegar al compás el cursor está en el segundo,
+y entonces el rojo apareció: 'Optional(73)' donde tocaba 72.
+
+Queda anotado porque el fallo no es del código sino del test, y un test que pasa
+por coincidencia aritmética es peor que no tenerlo: afirma una propiedad que
+nadie está comprobando.
+
+El fallo real que destapó
+Poner cursor = 0 al adoptar no basta. advanceCycleIfTheTurnClosed mide la vuelta
+desde turnStartStep, y el límite de compás coincide con un cierre de vuelta, así
+que el primer Step del Pattern nuevo veía la vuelta cerrada y avanzaba el cursor
+de 0 a 1.
+
+Se resuelve con un reinicio diferido —restartsTurnAtNextStep— que ancla
+turnStartStep al Step que llega y se salta el avance de esa vuelta. Es un booleano
+en el hilo del scheduler: sin asignar, sin lock.
+
+restartCycles se queda para Play, que no necesita reanclar porque ahí la rejilla
+arranca de cero. Son dos casos distintos y tienen dos métodos.
