@@ -138,18 +138,18 @@ revisar antes de seguir (NFR1).
   - [x] Documentar por qué el caso se llama `.repeatTime` y el usuario lee
         `Time`: desambiguación de Swift frente a `MusicalTime`, no un término
         nuevo (NFR7).
-- [~] Task: El `NoteRepeater` sobrevive al disco (enmienda del 2026-09-07)
-  - [ ] Tests (Red): `CycleRecord` gana cuatro claves —`repeats`, `repeatTime`,
+- [x] Task: El `NoteRepeater` sobrevive al disco (enmienda del 2026-09-07) — 8c0008d
+  - [x] Tests (Red): `CycleRecord` gana cuatro claves —`repeats`, `repeatTime`,
         `ramp` y `pace`— y el test que enumera las claves esperadas las exige.
-  - [ ] Tests (Red): round-trip completo — un Cycle con los cuatro movidos vuelve
+  - [x] Tests (Red): round-trip completo — un Cycle con los cuatro movidos vuelve
         del JSON idéntico, con los literales escritos a mano que usa
         `RecordRoundTripTests`.
-  - [ ] Tests (Red): **un fichero sin las claves nuevas se lee como el estado de
+  - [x] Tests (Red): **un fichero sin las claves nuevas se lee como el estado de
         antes de la rebanada** — Repeats 0, Time 1/32, Ramp 0, Pace 0—, y
         `schemaVersion` **sigue siendo 1**.
-  - [ ] Tests (Red): un valor fuera de rango cae en su default en vez de
+  - [x] Tests (Red): un valor fuera de rango cae en su default en vez de
         reventar, como el resto de las claves.
-  - [ ] Implementación (Green): las cuatro claves, con decodificación tolerante.
+  - [x] Implementación (Green): las cuatro claves, con decodificación tolerante.
 
 - [ ] Task: El texto de la familia Shape, en dos líneas (FR15)
   - [ ] Tests (Red): `FamilyReadout` de Shape devuelve **dos líneas** — los
