@@ -62,16 +62,16 @@ revisar antes de seguir (NFR1).
 
 ## FASE 2: EL VALOR PURO — `NoteRepeater` EN `Engine`
 
-- [~] Task: Los cuatro tipos y sus rangos (FR5, FR6, FR7, FR8)
-  - [ ] Tests (Red): `Repeats` acota 0…8 y **se detiene en los extremos**, no
+- [x] Task: Los cuatro tipos y sus rangos (FR5, FR6, FR7, FR8) — f5c7339
+  - [x] Tests (Red): `Repeats` acota 0…8 y **se detiene en los extremos**, no
         envuelve; `Time` recorre las nueve fracciones de más lenta a más rápida y
         se detiene; `Ramp` y `Pace` acotan −100…100; los cuatro defaults son
         0, 1/32, 0 y 0.
-  - [ ] Tests (Red): una `Time` que no esté en la lista se devuelve intacta al
+  - [x] Tests (Red): una `Time` que no esté en la lista se devuelve intacta al
         avanzar, con el mismo criterio que `Division`.
-  - [ ] Implementación (Green): los cuatro tipos, con `init?` validador y
+  - [x] Implementación (Green): los cuatro tipos, con `init?` validador y
         `init(unchecked:)` interno, en el idioma de `Velocity` y `Division`.
-  - [ ] `Time` envuelve una fracción y **no amplía `Division.ordered`**: la lista
+  - [x] `Time` envuelve una fracción y **no amplía `Division.ordered`**: la lista
         de Time es suya, y meter tresillos en la de Division cambiaría por dónde
         pasa otro knob.
 - [ ] Task: La velocity de cada repetición (FR7)
