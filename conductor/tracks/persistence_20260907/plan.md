@@ -2,7 +2,7 @@
 
 Sigue el `workflow.md`: tests antes de implementación, un commit por tarea, git
 note por commit y checkpoint verificado al cerrar cada fase. Todo el track vive
-en la rama `feat/persistence` y entra por Pull Request.
+en la rama `feat/persistence-banks` y entra por Pull Request.
 
 **El orden va de dentro afuera, y deja el riesgo para el final.** Primero las
 desviaciones, que el Task Workflow §8 y el principio 2 exigen *antes* de

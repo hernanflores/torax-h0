@@ -251,7 +251,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: v2 rebanada 4 — Persistencia: Patterns y Banks**
+- [~] **Track: v2 rebanada 4 — Persistencia: Patterns y Banks**
   *Link: [conductor/tracks/persistence_20260907/index.md](./tracks/persistence_20260907/index.md)*
 
   **Planificado el 2026-09-07**, en ocho fases. Es el escalón que la Pre Spec
