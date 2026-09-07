@@ -431,3 +431,65 @@ public struct NoteRepeater: Equatable, Sendable {
             ?? 0
     }
 }
+
+extension Cycle {
+
+    /// Cuánto dura la ventana en la que caben las repeticiones de un Pulse, en
+    /// nanosegundos desde su **instante de emisión**.
+    ///
+    /// **El corte lo pone el Pulse siguiente de la vuelta, y en su defecto el
+    /// cierre de la vuelta** (FR9). Una repetición se emite si su instante cae
+    /// estrictamente antes de este límite.
+    ///
+    /// **Se mide contra el instante de emisión y no contra la rejilla recta.**
+    /// El Pulse siguiente cae donde Timing y Delay lo pongan, y medir contra la
+    /// rejilla cortaría de más o de menos según el paso. Delay no mueve el
+    /// límite —desplaza a los dos Pulses por igual— y el swing sí, que es
+    /// justamente lo que hay que respetar.
+    ///
+    /// **El cierre de la vuelta es rejilla, sin desplazar.** Qué Cycle viene
+    /// después lo decide el hilo del scheduler al cerrar, y mirar dentro de él
+    /// rompería que el Cycle nuevo entre limpio en su primer Step (FR5 de
+    /// `cycles_20260901`).
+    ///
+    /// **Las repeticiones sí cruzan los Steps vacíos** del reparto euclidiano:
+    /// eso es lo que hace funcionar un roll largo sobre un ritmo disperso.
+    ///
+    /// Devuelve 0 si el Step no dispara: no hay tirada que acotar.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await. Recorre como mucho una vuelta.
+    ///
+    /// Calculates how long the repetition window of a pulse lasts.
+    /// - Parameters:
+    ///   - cycleStep: The step index within the current turn.
+    ///   - stepDurationNanoseconds: How long one step lasts.
+    /// - Returns: The window in nanoseconds, measured from the pulse's emission instant.
+    public func repeatWindowNanoseconds(fromStep cycleStep: Int, stepDurationNanoseconds: Int64)
+        -> Int64
+    {
+        guard triggers(atStep: cycleStep) else { return 0 }
+
+        let stepCount = shape.steps.count
+        let start =
+            Int64(cycleStep) * stepDurationNanoseconds
+            + groove.shiftNanoseconds(
+                atStep: cycleStep, stepDurationNanoseconds: stepDurationNanoseconds)
+
+        // Se busca hacia delante dentro de la vuelta, nunca más allá: un solo
+        // recorrido acotado por `stepCount`, sin envolver.
+        var next = cycleStep + 1
+        while next < stepCount {
+            if triggers(atStep: next) {
+                let instant =
+                    Int64(next) * stepDurationNanoseconds
+                    + groove.shiftNanoseconds(
+                        atStep: next, stepDurationNanoseconds: stepDurationNanoseconds)
+                return instant - start
+            }
+            next += 1
+        }
+
+        return Int64(stepCount) * stepDurationNanoseconds - start
+    }
+}

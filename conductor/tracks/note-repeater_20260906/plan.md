@@ -187,7 +187,7 @@ revisar antes de seguir (NFR1).
 
 ## FASE 4: LA TIRADA — EL `TrackScheduler` REPITE
 
-- [ ] Task: El límite de la tirada (FR9)
+- [~] Task: El límite de la tirada (FR9)
   - [ ] Tests (Red): dado un Cycle y un Step que dispara, el límite es el
         **instante de emisión** del Pulse siguiente de la vuelta, con su Timing y
         su Delay dentro — no la rejilla recta.
