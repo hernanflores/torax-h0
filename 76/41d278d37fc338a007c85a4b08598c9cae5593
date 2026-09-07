@@ -28,3 +28,29 @@ Decisiones
 - reloadAvailability devuelve el motivo y no un Bool. Un botón deshabilitado sin
   explicación se lee como un fallo; el motivo es información sobre cómo funciona
   el guardado, y hay un test de que es texto legible y no un código.
+
+--- Verificación de fase: FASE 5 — AUTOSAVE, SAVE BANK Y RELOAD (2026-09-07) ---
+
+Comandos ejecutados
+  swift test --package-path Packages/Persistence --enable-code-coverage
+    → 62 tests, 0 fallos. 97,52% de líneas (umbral 90%).
+      Autosave.swift 100% · RestorePoint.swift 100% · ProjectStore.swift 99,12%
+  swift test --package-path Packages/Engine   → 679 tests, 0 fallos
+
+No se ejecutan MIDI ni xcodebuild: la fase no toca ninguno de los dos.
+
+Cobertura de los cambios de la fase
+Los dos ficheros nuevos al 100%. Sin huecos que justificar esta vez.
+
+Verificación manual
+Ninguna en pantalla. El Autosave existe y nadie lo llama todavía: engancharlo al
+ciclo de vida de la escena es tarea de la Fase 7, y forzar una verificación
+visual ahora habría sido inventarla.
+
+Lo verificable de esta fase es de conducta y está en los tests: que N cambios
+produzcan una escritura, que un giro largo no escriba a mitad, que un flush
+fallido conserve lo pendiente, y que ni editar ni el Autosave muevan el punto de
+retorno.
+
+Confirmación del usuario
+Pendiente de recoger al presentar el checkpoint.
