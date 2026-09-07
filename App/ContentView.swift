@@ -24,11 +24,17 @@ import SwiftUI
 /// > (`workflow.md`, 2026-09-02)— y su única puerta es el argumento.
 struct ContentView: View {
 
-    /// **El modelo lo posee el contenedor, y ahí está FR8.** Cambiar de módulo
-    /// recompone el cuerpo, pero este objeto no se vuelve a crear: el transporte
-    /// sigue corriendo y el playhead está donde tiene que estar al volver.
-    /// Navegar no toca el reloj porque navegar no llega hasta aquí.
-    @State private var model = TransportModel()
+    /// **El modelo lo posee la escena desde el 2026-09-07**, no esta vista.
+    ///
+    /// Vivía aquí, y la razón de moverlo es el ciclo de vida: al pasar la app a
+    /// segundo plano hay que forzar la escritura pendiente del Autosave (FR14), y
+    /// `scenePhase` se observa en `App`, no en una vista de dentro.
+    ///
+    /// **Lo que esta nota decía sigue siendo cierto**: cambiar de módulo
+    /// recompone el cuerpo y este objeto no se vuelve a crear, así que el
+    /// transporte sigue corriendo y el playhead está donde tiene que estar al
+    /// volver. Ahora lo garantiza estar un nivel más arriba.
+    let model: TransportModel
 
     /// Conservado sin puerta en la interfaz. Ver la nota del tipo.
     @State private var jitter = JitterMeasurementModel()

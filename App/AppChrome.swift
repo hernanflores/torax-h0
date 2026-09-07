@@ -82,6 +82,7 @@ struct AppChrome: View {
 
                 inputStatus
 
+                saveWarning
                 outputWarning
 
                 clockSource
@@ -136,6 +137,24 @@ struct AppChrome: View {
     ///
     /// Cuando hay destino no se escribe nada. Repetir el nombre del sinte en la
     /// barra sería el ruido que el handoff quitó de aquí a propósito.
+    /// **El guardado que falla se dice, y no se calla** (FR21).
+    ///
+    /// Va **antes** que el aviso de MIDI porque es más grave: sin destino MIDI
+    /// no se oye nada, y eso se nota solo; un Autosave que lleva diez minutos
+    /// fallando no se nota hasta que se pierde el trabajo.
+    ///
+    /// **Persiste hasta que un guardado funcione.** Es `store.lastSaveFailure`
+    /// leído en cada redibujado, no una notificación que se descarta.
+    @ViewBuilder
+    private var saveWarning: some View {
+        if let failure = model.saveFailure {
+            Text(display: failure)
+                .font(Typography.caption)
+                .foregroundStyle(Palette.shape)
+                .lineLimit(1)
+        }
+    }
+
     @ViewBuilder
     private var outputWarning: some View {
         if let unavailable = model.outputUnavailable {

@@ -505,6 +505,15 @@ public final class Transport: @unchecked Sendable {
     /// Si hay un Pattern esperando al compás.
     public var hasArmedPattern: Bool { handoff.hasArmedPattern }
 
+    /// Cuánto lleva sonando, en nanosegundos desde el origen de la rejilla, o
+    /// `nil` si está parado.
+    ///
+    /// **Existe para la cuenta atrás del compás** (FR25): la pantalla necesita
+    /// saber dónde está la rejilla para decir cuántas negras faltan, y el
+    /// `Playhead` da la posición dentro del anillo de un Track, que no es lo
+    /// mismo.
+    public var elapsedNanoseconds: Int64? { playheadClock.elapsedNanoseconds() }
+
     /// Cambia de Bank: **su Pattern seleccionado, más su tempo** (FR11).
     ///
     /// **Una sola regla de cuantización en el producto.** El material entra por
