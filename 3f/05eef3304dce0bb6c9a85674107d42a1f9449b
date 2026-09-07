@@ -1,0 +1,16 @@
+Tarea: Stop adopta lo armado (FR10)
+
+Ciclo TDD
+Rojo confirmado: select, armForNextBar y hasArmedPattern sin existir.
+
+Decisiones
+- select() decide la vía en vez de exponer dos métodos y dejar que la pantalla
+  elija. La condición es 'si está sonando', y el único que lo sabe sin
+  preguntarle a nadie es el transporte. Exponer armForNextBar aparte se mantiene
+  porque los tests y el cambio de Bank lo necesitan explícito.
+- Stop adopta antes de parar el scheduler, no después. Da igual para el sonido
+  —el hilo ya se está deteniendo— pero deja lastPublishedPattern correcto para
+  el Play siguiente, que es lo que la pantalla lee.
+- PatternHandoff gana armedPattern, que lo lee el hilo principal. Es lo que
+  permite a Stop quedarse con lo pendiente sin releer el anillo, y está
+  documentado como lectura de ese hilo y no del scheduler.
