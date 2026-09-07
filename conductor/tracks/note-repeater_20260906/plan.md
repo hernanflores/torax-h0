@@ -122,20 +122,20 @@ revisar antes de seguir (NFR1).
   - [x] Tests (Red): cada Cycle tiene el suyo; editar el B no toca al A.
   - [x] Implementación (Green): el campo en `Cycle`, su `with(noteRepeater:)` y
         el default.
-- [~] Task: Los cuatro `TrackParameter` (FR2, FR3, FR17)
-  - [ ] Tests (Red): `.repeats`, `.repeatTime`, `.ramp` y `.pace` existen, caen
+- [x] Task: Los cuatro `TrackParameter` (FR2, FR3, FR17) — fe7f169
+  - [x] Tests (Red): `.repeats`, `.repeatTime`, `.ramp` y `.pace` existen, caen
         en `ParameterFamily.shape` y describen `"Repeats"`, `"Time"`, `"Ramp"` y
         `"Pace"`.
-  - [ ] Tests (Red): `applying(_:to:)` mueve cada uno **sin tocar Shape, Groove
+  - [x] Tests (Red): `applying(_:to:)` mueve cada uno **sin tocar Shape, Groove
         ni el pool**, que es la regla de destructividad de
         `product-guidelines.md`.
-  - [ ] Tests (Red): `value(in:)` escribe `3`, `1/32`, `+40%` y `−20%` — Ramp y
+  - [x] Tests (Red): `value(in:)` escribe `3`, `1/32`, `+40%` y `−20%` — Ramp y
         Pace **con signo**, por la misma razón que Delay: adelantar y frenar no
         se distinguen por el contexto.
-  - [ ] Tests (Red): `displacementRange` devuelve el rango de los cuatro
+  - [x] Tests (Red): `displacementRange` devuelve el rango de los cuatro
         (ninguno envuelve), y `CtrlAllOffset` los topa como a los demás.
-  - [ ] Implementación (Green): los cuatro casos y sus ramas.
-  - [ ] Documentar por qué el caso se llama `.repeatTime` y el usuario lee
+  - [x] Implementación (Green): los cuatro casos y sus ramas.
+  - [x] Documentar por qué el caso se llama `.repeatTime` y el usuario lee
         `Time`: desambiguación de Swift frente a `MusicalTime`, no un término
         nuevo (NFR7).
 - [ ] Task: El `NoteRepeater` sobrevive al disco (enmienda del 2026-09-07)
