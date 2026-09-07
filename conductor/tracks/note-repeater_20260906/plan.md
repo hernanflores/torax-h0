@@ -200,20 +200,20 @@ revisar antes de seguir (NFR1).
         cuál es lo decide este hilo al cerrar la vuelta.
   - [x] Implementación (Green): la búsqueda del Pulse siguiente sobre el Shape
         vigente, con aritmética entera y sin recorrer más de una vuelta.
-- [~] Task: Las repeticiones se emiten (FR9, FR10, FR11, NFR1, NFR3)
-  - [ ] Tests (Red): con Repeats 3 y Time 1/32 sobre un Track en 1/16, cada Pulse
+- [x] Task: Las repeticiones se emiten (FR9, FR10, FR11, NFR1, NFR3) — b539cce
+  - [x] Tests (Red): con Repeats 3 y Time 1/32 sobre un Track en 1/16, cada Pulse
         entrega **cuatro** note-on, el primero en la rejilla.
-  - [ ] Tests (Red): la tirada arranca en el **Pulse ya desplazado** por Timing y
+  - [x] Tests (Red): la tirada arranca en el **Pulse ya desplazado** por Timing y
         Delay; ninguna repetición recibe swing propio.
-  - [ ] Tests (Red): todas las repeticiones suenan **a la altura del Pulse**, y
+  - [x] Tests (Red): todas las repeticiones suenan **a la altura del Pulse**, y
         el recorrido del pool no se acelera — dos Pulses seguidos con Repeats
         altos siguen avanzando el pool de uno en uno.
-  - [ ] Tests (Red): con Repeats 8 y Time 1/8 en un Track en 1/16, solo se emiten
+  - [x] Tests (Red): con Repeats 8 y Time 1/8 en un Track en 1/16, solo se emiten
         las que caben antes del Pulse siguiente.
-  - [ ] Tests (Red, NFR3): con Repeats en 0 no se ejecuta nada del camino nuevo.
-  - [ ] Implementación (Green): el bucle interior dentro del recorrido de
+  - [x] Tests (Red, NFR3): con Repeats en 0 no se ejecuta nada del camino nuevo.
+  - [x] Implementación (Green): el bucle interior dentro del recorrido de
         ventana, sin arrays temporales ni coma flotante.
-  - [ ] Comprobar que **`advanceBudgetNanoseconds` no cambia**: las repeticiones
+  - [x] Comprobar que **`advanceBudgetNanoseconds` no cambia**: las repeticiones
         van siempre *después* del Pulse, así que no adelantan ningún instante y
         el presupuesto sigue siendo cosa de Delay.
 - [ ] Task: Probability decide sobre todas las notas (FR13)
