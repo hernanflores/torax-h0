@@ -1,0 +1,17 @@
+Task: El arnés no repite (FR14)
+
+Qué cambia: SchedulerMaterial gana la propiedad noteRepeater, junto a groove.
+Devuelve el del Cycle, y el NEUTRO en la vía del arnés. emitRepetitions se lo
+pregunta al material en vez de al Cycle, para que la vía del arnés tenga una
+respuesta escrita en vez de depender de que material.cycle sea nil.
+
+Por qué: el arnés mide la rejilla temporal y no el material musical, igual que
+usa el Groove por defecto. Una tirada de repeticiones metería hasta nueve eventos
+donde el histograma espera uno y estaría midiendo otra cosa.
+
+Ficheros modificados:
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift
+- Packages/MIDI/Tests/MIDITests/RepetitionEmissionTests.swift (2 tests nuevos;
+  ya había uno que comprobaba que el arnés no emite ninguna repetición)
+
+Verificación: MIDI 674 tests, 0 fallos.
