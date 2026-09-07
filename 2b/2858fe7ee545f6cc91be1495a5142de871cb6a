@@ -1,0 +1,30 @@
+Tarea: `Project`, dieciséis Banks y los índices de sesión (FR1, FR23)
+
+Qué cambia
+- Packages/Engine/Sources/Engine/Project.swift (nuevo)
+- Packages/Engine/Tests/EngineTests/ProjectTests.swift (nuevo, 20 tests)
+Precedido por el commit 9912b54, que bajó ClockSource a Engine para que este
+tipo pudiera nombrarlo.
+
+Ciclo TDD
+Rojo confirmado: 80 errores 'cannot find Project in scope' antes de implementar.
+
+Decisiones
+- Acotar y no envolver. El argumento no es de gusto: este tipo se va a construir
+  leyendo un fichero, y un índice corrupto que envuelve produce una selección
+  plausible — el Bank 20 pasaría a ser el 4 — mientras que acotado produce el
+  borde, que se reconoce. Es el criterio que Pulses y Time ya siguen dentro del
+  motor.
+- El Track se acota contra Pattern.trackCount (12) y no contra 16. La desviación
+  del 2026-09-02 manda también aquí, y el test lo dice por su nombre.
+- Nombres de endpoint y no endpoints. Un MIDIEndpointRef no sobrevive al
+  arranque, y CoreMIDI no es visible desde Engine. Se guarda lo único que
+  significa algo en el arranque siguiente.
+- El helper copy(...) con doble Optional en los dos campos String?. Sin él, cada
+  uno de los seis métodos reconstruye el valor entero a mano, que es exactamente
+  cómo se pierde un campo en silencio; el doble Optional es lo que permite
+  distinguir 'no lo cambies' de 'ponlo a nil', y sin eso remembering(nil, nil) no
+  podría olvidar nada.
+- testTheInitialProjectHoldsTodaysMaterialInTheFirstSlot recorre los 256 huecos.
+  Es el test que impide que meter dos niveles estrene otra app en silencio, y es
+  el mismo requisito que Cycles se puso con 'un Cycle activo suena como hoy'.
