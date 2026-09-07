@@ -137,10 +137,15 @@ su test de que el fichero anterior sigue ahí.
         fichero corrupto.
   - [ ] Implementación (Green): la versión, su lectura y una función de migración
         vacía con su punto de llamada. Sin migradores (FR19).
-- [ ] Task: El JSON se lee con los ojos (NFR7)
-  - [ ] Test: salida indentada y con claves ordenadas, comprobada sobre un
-        fichero pequeño literal.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+> **Enmienda del 2026-09-07 — «El JSON se lee con los ojos» se va a la Fase 4.**
+> La tarea prueba que la salida esté indentada y con las claves ordenadas, y eso
+> no es una propiedad de los DTO: es **configuración del `JSONEncoder`**, que
+> vive en `Persistence` porque `Engine` no puede importar Foundation. Probarlo
+> aquí exigiría configurar un encoder en el test y afirmar sobre él, que es
+> probar Foundation en vez de código propio. Se mueve a la tarea que crea el
+> almacén, donde el encoder existe.
 
 ## FASE 4: EL PAQUETE `Persistence` — DISCO, ATOMICIDAD Y RESCATE
 
@@ -152,6 +157,11 @@ su test de que el fichero anterior sigue ahí.
         disco lleno y fichero corrupto sin ceremonia.
   - [ ] Verificar que `swift test --package-path Packages/Persistence` corre en
         host, sin simulador, como los otros dos.
+- [ ] Task: El JSON se lee con los ojos (NFR7) *(movida desde la Fase 3 el 2026-09-07)*
+  - [ ] Test: el encoder del almacén produce salida **indentada y con claves
+        ordenadas**, comprobada sobre un fichero pequeño literal. Es la mitad de
+        la razón por la que `tech-stack.md` eligió JSON: «inspeccionable,
+        diffeable».
 - [ ] Task: Escribir y leer un Bank (FR18, FR20)
   - [ ] Tests (Red): escribir un Bank y releerlo devuelve un árbol igual;
         escribir el Bank 3 no toca los ficheros de los otros quince.
