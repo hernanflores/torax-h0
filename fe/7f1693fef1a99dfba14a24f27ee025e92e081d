@@ -1,0 +1,54 @@
+Task: Los cuatro `TrackParameter` (FR2, FR3, FR17)
+
+Qué cambia:
+- TrackParameter gana .repeats, .repeatTime, .ramp y .pace, declarados detrás de
+  .division para que la familia Shape quede contigua.
+- family: los cuatro en .shape. displacementRange: Repeats/Ramp/Pace devuelven su
+  validRange; .repeatTime devuelve 0...(RepeatTime.ordered.count - 1), como
+  Division, porque su knob recorre una lista.
+- description: 'Repeats', 'Time', 'Ramp', 'Pace'.
+- Cycle.applying(_:to:): los cuatro pasan por NoteRepeater.with(...).
+- Cycle.value(of:) (ParameterOverlay): la posición del knob, con el índice de la
+  lista para Time.
+- ParameterChange: la cadena de detección aprende los cuatro, entre Division y
+  Velocity.
+- Shape.applying(_:to:): los cuatro entran en la rama 'no son suyos'. Están en la
+  familia Shape y aun así no viven en Shape — son una capa sobre el ritmo.
+
+Decisión: Ramp y Pace escriben el signo también en positivo ('+40%'), y el cero
+sin signo. Delay, el otro bipolar, se escribe sin '+' desde antes; unificarlos
+tocaría su test y su pantalla, y es un cambio de otro track. Queda anotado en el
+código.
+
+Trabajo arrastrado desde la Fase 5, y por qué no se pudo aplazar: el repo tiene
+el invariante 'todo TrackParameter tiene su controlador'
+(ControlMappingTests.testEveryTrackParameterHasAController), y otros tests cruzan
+ControlMapping contra preset/torax-h0.beatstep-pro.json y preset/README.md.
+Añadir los cuatro casos deja la suite roja hasta que el preset los declare, así
+que entran ya: CC 79, 80, 81 y 83, saltando el 82 que es el knob del Cycle. El 79
+lo dejó libre a propósito ctrl-all_20260905.
+
+Un test tenía una suposición que este cambio rompió: UnassignedInputTests
+derivaba los CC declarados como knobs.prefix(TrackParameter.allCases.count), que
+valía mientras los parámetros ocuparan knobs contiguos. Con Pace en el 83 y el
+Cycle en el 82, contar trece desde el 70 dejaba a Pace fuera. Ahora se pregunta
+al mapeo.
+
+Ficheros modificados:
+- Packages/Engine/Sources/Engine/TrackParameter.swift
+- Packages/Engine/Sources/Engine/ParameterOverlay.swift
+- Packages/Engine/Sources/Engine/ParameterChange.swift
+- Packages/Engine/Sources/Engine/Shape.swift
+- Packages/MIDI/Sources/MIDI/ControlMapping.swift
+- preset/torax-h0.beatstep-pro.json (version 3 → 4)
+- preset/README.md (tabla de knobs y nota fechada)
+- Tests actualizados: TrackParameterTests (las dos listas que fijan los casos),
+  PresetMappingTests, UnassignedInputTests
+Ficheros creados:
+- Packages/Engine/Tests/EngineTests/NoteRepeaterParameterTests.swift (10 tests)
+
+Verificación: Engine 768 · MIDI 21 + 640 · Persistence 62, 0 fallos. xcodebuild
+iOS SUCCEEDED. Cobertura: Engine 98,49% de líneas (umbral 90), MIDI 93,19%
+medida en un proceso y excluyendo Engine/Sources (umbral 80).
+
+Sin medición de jitter (NFR6).
