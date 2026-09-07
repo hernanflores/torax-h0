@@ -1,0 +1,22 @@
+Task: El texto de la familia Shape, en dos líneas (FR15)
+
+Qué cambia: FamilyReadout gana secondaryDetail, que solo Shape rellena:
+'Repeats 0 · Time 1/32 · Ramp 0% · Pace 0%'. Groove y Tonal lo dejan en nil.
+
+Decisiones:
+- nil y no cadena vacía: la vista pregunta si hay segunda línea, no si está
+  vacía.
+- Los valores de Ramp y Pace salen de TrackParameter.value(in:), no de un
+  formato nuevo. Es lo que mantiene que reposo y giro se lean en el mismo
+  idioma — el signo de '+60%' es el mismo en el valor transitorio y en el card.
+- La primera línea no cambia, así que el handoff y las otras dos familias se
+  quedan como estaban.
+
+El cableado en la vista es de la Fase 6; esto es solo el texto, que vive en
+Engine porque una etiqueta mal puesta se sigue dibujando y en App no hay tests.
+
+Ficheros modificados:
+- Packages/Engine/Sources/Engine/FamilyReadout.swift
+- Packages/Engine/Tests/EngineTests/FamilyReadoutTests.swift (4 tests nuevos)
+
+Verificación: Engine 779 · MIDI 640, 0 fallos. xcodebuild iOS SUCCEEDED.
