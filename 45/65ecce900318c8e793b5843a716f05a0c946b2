@@ -1,0 +1,22 @@
+Tarea: Documentar el paquete Persistence en tech-stack.md (NFR6)
+
+Qué cambia
+- tech-stack.md: fila de la tabla resumen; el paquete en *Estructura de módulos*
+  con la nota de por qué no cabe en los tres que hay y cómo se reparte el trabajo
+  con Engine; enmienda fechada a *Persistencia* con las seis decisiones de
+  formato y ubicación.
+- workflow.md: fila de Persistence en *Coverage Requirements* y el umbral en la
+  casilla de Quality Gates.
+
+Por qué
+El principio 2 del workflow exige que un cambio de tech stack se documente antes
+de implementarlo, y esto lo es: un paquete SPM nuevo es la primera adición a la
+estructura de módulos desde CToraxAtomics.
+
+El argumento que decide dónde va el disco no es de gusto sino la regla que ya
+existía: App no lleva umbral porque 'si algo ahí merece un test, está en el sitio
+equivocado' (nota del 2026-08-27). El guardado merece tests, luego no es de App.
+
+No se añaden comandos de test para el paquete en *Development Commands*: el
+paquete no existe hasta la Fase 4, y documentar un comando que hoy falla sería
+peor que no documentarlo. Entra con la tarea que lo crea.
