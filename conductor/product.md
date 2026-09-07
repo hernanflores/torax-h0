@@ -301,6 +301,26 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > repositorio, listos por si se retoma; el porqué y el coste están en
 > `workflow.md`, en *Medición de jitter: suspendida*.
 
+> **Persistencia (2026-09-07): el tercer cambio que roza el hilo del scheduler, y
+> tampoco se mide.** La rebanada 4 de la v2 hace que **cambiar de Pattern con el
+> transporte corriendo entre en el próximo compás**, y esa decisión la toma el
+> hilo del scheduler en el límite. Es la tercera vez desde la suspensión que un
+> cambio llega ahí —las otras dos son `note-repeater` y `modulation`, todavía sin
+> empezar— y aquí **no se abre excepción**, a diferencia de
+> `external-clock_20260903`.
+>
+> **La razón no es el cansancio de medir, es que la regla no aplica.** La nota
+> del 2026-08-28 del *Task Workflow* dice que se mide cuando cambia el **cuándo**,
+> no el **cuánto**: esta rebanada **no mueve ningún instante**. Cambia qué
+> material se emite en un límite que ya existía, el snapshot no crece ni un byte
+> y no hay trabajo nuevo por evento. Lo que se añade al hilo de tiempo real es
+> una lectura atómica más por ventana y una comparación de enteros. Bajo la regla
+> anterior a la suspensión tampoco habría exigido arnés.
+>
+> **Lo que sí se verifica, y tocando:** que el Pattern entre en el compás y no
+> antes ni después —comprobado sobre el índice de Step, no de oído— y que ninguna
+> nota quede colgada al cruzar el límite. Track `persistence_20260907`.
+
 Secundarios:
 
 - Los knobs responden sin saltos de valor ni latencia perceptible.
