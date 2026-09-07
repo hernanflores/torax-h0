@@ -83,18 +83,18 @@ revisar antes de seguir (NFR1).
   - [x] Tests (Red): mover la Velocity del Track mueve la rampa entera con ella.
   - [x] Implementación (Green): aritmética entera, acotada a
         `Velocity.validRange`.
-- [~] Task: El hueco de cada repetición (FR6, FR8)
-  - [ ] Tests (Red): con Pace 0 los `n` huecos son iguales y valen Time. Con
+- [x] Task: El hueco de cada repetición (FR6, FR8) — 9a6dc7a
+  - [x] Tests (Red): con Pace 0 los `n` huecos son iguales y valen Time. Con
         +100 el último dura el doble que el primero; con −100, la mitad; los
         intermedios interpolan linealmente.
-  - [ ] Tests (Red): `r` es **exactamente recíproco** entre `+p` y `−p` — +50 da
+  - [x] Tests (Red): `r` es **exactamente recíproco** entre `+p` y `−p` — +50 da
         ×1,5 y −50 da ÷1,5.
-  - [ ] Tests (Red): con `n = 1` el único hueco vale Time, sea cual sea Pace (la
+  - [x] Tests (Red): con `n = 1` el único hueco vale Time, sea cual sea Pace (la
         interpolación divide por `n − 1`).
-  - [ ] Tests (Red): el hueco sale de `duraciónDelStep × (Time / Division)`, así
+  - [x] Tests (Red): el hueco sale de `duraciónDelStep × (Time / Division)`, así
         que un Track en 1/4 y otro en 1/16 con el mismo Time repiten al mismo
         ritmo.
-  - [ ] Implementación (Green): aritmética entera en nanosegundos, multiplicando
+  - [x] Implementación (Green): aritmética entera en nanosegundos, multiplicando
         antes de dividir, como `Sustain.gateNanoseconds`.
 - [ ] Task: `NoteRepeater` dentro del `Cycle` (FR1, NFR2)
   - [ ] Tests (Red): el `Cycle` por defecto trae el `NoteRepeater` neutro;
