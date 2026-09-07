@@ -210,3 +210,31 @@ Guardar es explícito; el estado de trabajo se protege solo (Autosave). Cualquie
 - Mostrar una nota fija por paso — contradice el modelo de pool.
 - Animaciones no derivadas del reloj musical.
 - Introducir un sinónimo para un término ya definido en la Pre Spec.
+
+> **Nota del 2026-09-07 — `banks` es la pantalla que se toca mientras suena.**
+>
+> La rebanada 4 de la v2 (`persistence_20260907`) le pone detrás los dieciséis
+> Banks, los 256 Patterns y el disco, y con eso **enmienda el reparto táctil**:
+> `banks` estaba descrita del lado de «se configura antes de tocar», y elegir un
+> Pattern es un gesto de directo.
+>
+> **La frontera real no era temporal, era qué se edita con el dedo.** En `banks`
+> no se edita material generativo: se elige cuál suena, se guarda y se vuelve a
+> un punto de retorno. `track` sigue con sus cuatro escrituras táctiles
+> auditadas y ninguna toca Shape ni Groove.
+>
+> **Lo que la pantalla promete y tiene que cumplir:**
+>
+> - **Decir cuánto falta.** Entre pulsar un Pattern y el compás en que entra
+>   pasan hasta cuatro segundos a 60 BPM. La cuenta atrás va en negras —«in 2»—
+>   porque es una instrucción que se sigue tocando, no un dato que interpretar.
+> - **Decir qué está vacío con la palabra exacta.** `empty` no es «apagado por
+>   ahora»: el hueco existe y no tiene material.
+> - **Explicar los botones que no se pueden pulsar.** `Reload` sin punto de
+>   retorno lleva el motivo debajo. Un botón apagado sin explicación se lee como
+>   un fallo de la app.
+> - **No callarse un guardado que falla.** El aviso persiste hasta que uno
+>   funcione, y va antes que el de MIDI en la barra: sin destino MIDI no se oye
+>   nada y eso se nota solo; un Autosave fallando no se nota hasta perder el
+>   trabajo.
+

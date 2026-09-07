@@ -7,9 +7,9 @@
 /// desde un hilo de tiempo real. `_isPOD(Pattern.self)` es la red que lo vigila.
 ///
 /// **El nombre es el de la Pre Spec**, que llama Pattern al conjunto de los
-/// Tracks que se reproducen a la vez. Que todavía no se pueda tener
-/// más de uno —ni Banks, ni Project— es una limitación de alcance, no otro
-/// concepto: cuando lleguen, este tipo ya se llama como se tiene que llamar.
+/// Tracks que se reproducen a la vez. **Los Banks y el Project llegaron el
+/// 2026-09-07** y este tipo no cambió ni una línea, que era exactamente la
+/// apuesta de llamarlo Pattern cuando solo había uno.
 ///
 /// **Los doce existen siempre y arrancan vacíos.** No hay Tracks que crear
 /// ni destruir: un Track sin pool dispara sus Pulses y no tiene material que

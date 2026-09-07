@@ -415,6 +415,23 @@ Además:
    entonces, tomará el camino del fichero apartado, que es seguro pero pierde el
    trabajo de vista.
 
+   > **Escrito para quien llegue con la rebanada 5, el 2026-09-07.** Lo que hay
+   > que tocar está localizado y son tres sitios:
+   >
+   > 1. `CycleRecord` en `Packages/Engine/Sources/Engine/ProjectRecord.swift`:
+   >    añadir los campos nuevos con su clave.
+   > 2. `RecordRoundTripTests.testTheCycleJSONHasNoOtherKeys`, que **va a fallar
+   >    y ése es su trabajo**: enumera las quince claves esperadas y no deja
+   >    añadir un parámetro al `Cycle` sin decidir cómo se guarda.
+   > 3. `ProjectRecord.migrated(_:)`, que hoy es `validated()` y nada más. Ahí va
+   >    la primera migración de v1 a v2, y `SchemaVersionTests` tiene ya el test
+   >    de la versión anterior separado del de la futura precisamente para que
+   >    escribir ese migrador rompa **un** test y no dos.
+   >
+   > La versión anterior y la futura fallan las dos hoy, pero por razones
+   > distintas: la anterior dejará de fallar con el primer migrador, la futura no
+   > dejará de fallar nunca.
+
 4. **`Reload` destruye trabajo con un toque y no hay deshacer.** Decidido sin
    confirmación por coherencia con el resto de la app. Es la única acción del
    producto con esa propiedad.
@@ -426,9 +443,14 @@ Además:
    Pattern siempre vuelve por su primer Cycle activo. Quien esperara que un
    Pattern «siguiera vivo» donde lo dejó no lo encontrará así.
 
-7. **Los 256 Patterns existen aunque estén vacíos.** ~9,5 MB residentes en el
-   hilo principal cuando el Project está lleno. En disco no: FR18 los codifica
-   como marca.
+7. **Los 256 Patterns existen aunque estén vacíos.** En disco no pesan: FR18 los
+   codifica como marca, y un Project vacío ocupa **menos de 4 KB** frente a los
+   10,8 MB que ocupaba antes de la marca.
+
+   > **Medido el 2026-09-07.** Un `Pattern` son **27 936 bytes** —menos de los
+   > ~37 KB que esta spec estimaba— así que el Project lleno ronda los 7 MB
+   > residentes, no 9,5. En disco, un Bank lleno son **660 KB** y uno vacío
+   > **106 bytes**.
 
 ## Out of Scope
 

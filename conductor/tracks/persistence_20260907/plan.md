@@ -337,7 +337,7 @@ su test de que el fichero anterior sigue ahí.
         un proceso y filtrando `Engine/Sources`, según las ampliaciones del
         workflow; el flake `-50` se descarta comparando pasadas contra `main`.
   - [ ] `swift format`, y los dos style guides.
-- [ ] Task: Sincronizar la documentación con lo entregado
+- [~] Task: Sincronizar la documentación con lo entregado
   - [ ] `product.md`: la nota de las cuatro pantallas deja de llamar cáscara a
         `banks`; el Core Model deja de decir que Patterns y Banks no existen.
   - [ ] `product-guidelines.md`: la pantalla `banks` en el reparto táctil, con su

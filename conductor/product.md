@@ -24,7 +24,7 @@ Project (estado completo + ajustes)
             └── hasta 16 Cycles por Track
 ```
 
-- **Project:** estado completo: 16 Banks, sus Patterns/Tracks y ajustes asociados.
+- **Project:** estado completo: 16 Banks, sus Patterns/Tracks y ajustes asociados. **Existe desde el 2026-09-07**, con los dieciséis Banks y sus 256 Patterns en disco.
 - **Bank:** contenedor musical de alto nivel (canción, setup o sección de live). 16 Patterns y tempo propio.
 - **Pattern:** sección musical que reproduce el estado de sus 16 Tracks en conjunto (groove principal, break, fill, variante). Disparable cuantizado, encadenable, seleccionable por MIDI Program Change.
 - **Track:** una voz/carril musical y de control. Donde residen los parámetros generativos.
@@ -164,6 +164,12 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > entrega igualmente porque enseñar la forma completa y decir qué está vacío es
 > más honesto que una pestaña que no lleva a ninguna parte; deja de ser cáscara
 > con la rebanada 4 de la v2, sin cambiar de forma.
+>
+> **Dejó de serlo el 2026-09-07**, y la promesa se cumplió al pie de la letra:
+> los tres cards siguen donde estaban. Lo que cambia es que detrás hay dieciséis
+> Banks de dieciséis Patterns que existen, se eligen y se guardan, más un cuarto
+> estado de hueco —`queued`— con la cuenta atrás hasta el compás en que entra.
+> **Las cuatro pantallas son estado real.**
 >
 > **Y la frontera del tacto queda dicha**, que es lo que el principio rector
 > implicaba sin concretar: `track` se lee mientras suena y ahí **no se edita
