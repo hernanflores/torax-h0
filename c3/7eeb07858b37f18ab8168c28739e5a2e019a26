@@ -44,3 +44,26 @@ QUALITY GATES, repasados uno a uno:
 
 Queda por hacer: abrir el PR contra main. Se pide al usuario aparte, porque es
 una acción hacia fuera.
+
+--- VERIFICACIÓN DE FASE 7: SIMULADOR, DISPOSITIVO Y CIERRE ---
+
+Comandos:
+  swift format --in-place --recursive App Packages
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI (las dos mitades de la partición de CI)
+  swift test --package-path Packages/MIDI --enable-code-coverage (un proceso)
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  Simulador iPad Pro 11 (seis capturas) e iPad con BeatStep Pro y sinte externo.
+
+Resultado: Engine 878 / 98,63%. MIDI 21 + 747 / 92,50%. App BUILD SUCCEEDED.
+Verificación en dispositivo: diez bloques de diez en verde.
+
+Verificación manual: es la propia fase. Los dos documentos del track la recogen
+—simulator-verification.md y device-verification.md— con el guion, los resultados
+y los defectos encontrados.
+
+El bloque 5 falló —el playhead del panel no se movía—, se arregló en d3d0667 y el
+usuario lo recomprobó en dispositivo: cumple.
+
+Confirmación del usuario: «Funciono» sobre el bloque 5 recomprobado, después de
+haber rellenado los otros nueve como OK.
