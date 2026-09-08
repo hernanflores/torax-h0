@@ -293,7 +293,7 @@ revisar antes de seguir (NFR1).
 
 ## FASE 7: DISPOSITIVO Y CIERRE
 
-- [ ] Task: Verificación en iPad con BeatStep Pro (NFR6)
+- [~] Task: Verificación en iPad con BeatStep Pro (NFR6)
   - [ ] Los cuatro knobs mueven su parámetro, con valor grande transitorio y
         cambio audible **en el Step siguiente**.
   - [ ] Un ratchet de hi-hat: Repeats 3, Time 1/32. Un roll: Repeats 8, Time
