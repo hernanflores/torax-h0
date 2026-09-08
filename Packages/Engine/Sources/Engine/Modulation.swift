@@ -418,3 +418,52 @@ extension Groove {
         )
     }
 }
+
+/// Un Step de la vuelta, tal y como el panel `velocity response` lo dibuja.
+///
+/// **Lleva la velocity final, recorte incluido** (FR12): no la forma
+/// normalizada. Dos ajustes que recortan distinto se tienen que ver distintos, y
+/// eso solo es cierto si la altura de la barra es la velocity 1…127 que se va a
+/// emitir.
+///
+/// **Y lleva si el Step dispara** (FR13), porque los que no son pulso euclidiano
+/// se dibujan atenuados: el LFO corre sobre ellos igualmente (FR8), así que
+/// tienen valor y no suenan. Un panel que los omitiera mentiría sobre la fase.
+public struct VelocityResponseStep: Equatable, Sendable {
+
+    /// La velocity que se emitiría en este Step, ya acotada a 1…127.
+    public let velocity: Velocity
+
+    /// Si el Step es pulso euclidiano.
+    public let triggers: Bool
+}
+
+extension Cycle {
+
+    /// La vuelta entera, Step a Step, como el panel la dibuja (FR12, FR13).
+    ///
+    /// **Tantas entradas como Steps tenga el Cycle**, no dieciséis: el 16 del
+    /// handoff es el caso por defecto y no una constante. El panel es el espejo
+    /// del anillo, y uno que dijera dieciséis cuando el anillo dice nueve
+    /// mentiría sobre lo que suena.
+    ///
+    /// **Vive en `Engine` y no en la vista** (NFR6). Es el dato que el panel
+    /// dibuja, así que se prueba con números en vez de mirándolo — que es lo que
+    /// `workflow.md` pide cuando algo en `App` merecería un test.
+    ///
+    /// **No es código de tiempo real.** Asigna un array y lo consulta la interfaz
+    /// al redibujar, como `Playhead`. El camino del scheduler no pasa por aquí:
+    /// usa `Groove.modulated(by:atStep:of:)`, que no asigna nada.
+    ///
+    /// Calculates the velocity of every step of one turn, as the response panel draws it.
+    /// - Returns: One entry per step of the cycle, in order.
+    public var velocityResponse: [VelocityResponseStep] {
+        let stepCount = shape.steps.count
+        return (0..<stepCount).map { step in
+            VelocityResponseStep(
+                velocity: modulation.velocity(atStep: step, of: stepCount, from: groove.velocity),
+                triggers: triggers(atStep: step)
+            )
+        }
+    }
+}

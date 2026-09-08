@@ -273,6 +273,68 @@ final class ModulationOffsetTests: XCTestCase {
         XCTAssertEqual(turn, [64, 91, 119, 106, 78, 51, 23, 8, 36])
     }
 
+    // MARK: - La vuelta que el panel dibuja
+
+    /// **Tantas entradas como Steps**, no dieciséis (FR13): el panel es el
+    /// espejo del anillo.
+    func testTheResponseHasOneEntryPerStep() {
+        for stepCount in [1, 9, 16] {
+            let cycle = Cycle(shape: Shape(steps: Steps(stepCount)!, pulses: Pulses(1)!))
+            XCTAssertEqual(cycle.velocityResponse.count, stepCount, "\(stepCount) Steps")
+        }
+    }
+
+    /// **La altura es la velocity final, recorte incluido** (FR12). Con la
+    /// Velocity por defecto y accent al extremo, media onda se aplasta contra
+    /// 127 — y eso es justo lo que el panel existe para enseñar.
+    func testTheResponseCarriesTheFinalVelocityWithItsClipping() {
+        let cycle = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(16)!))
+            .with(modulation: Modulation(waveform: .triangle, accent: Accent(percent: 100)!))
+
+        XCTAssertEqual(
+            cycle.velocityResponse.map(\.velocity.value),
+            [100, 115, 127, 127, 127, 127, 127, 115, 100, 85, 69, 53, 37, 53, 69, 85]
+        )
+    }
+
+    /// **Y dice cuáles disparan** (FR13), para dibujar atenuados los que no. El
+    /// LFO corre sobre ellos igualmente (FR8): tienen valor y no suenan.
+    func testTheResponseSaysWhichStepsTrigger() {
+        let cycle = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(4)!))
+        let response = cycle.velocityResponse
+
+        XCTAssertEqual(response.map(\.triggers).filter { $0 }.count, 4)
+        for (step, entry) in response.enumerated() {
+            XCTAssertEqual(entry.triggers, cycle.triggers(atStep: step), "step \(step)")
+        }
+    }
+
+    /// Los Steps que no disparan **también llevan su velocity**: es lo que hace
+    /// que el panel enseñe la onda completa y no solo cuatro barras sueltas.
+    func testTheStepsThatDoNotTriggerStillCarryTheirVelocity() {
+        let cycle = Cycle(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(4)!),
+            groove: Groove(velocity: Velocity(64)!, sustain: .default, probability: .default)
+        )
+        .with(modulation: Modulation(waveform: .triangle, accent: Accent(percent: 100)!))
+
+        let response = cycle.velocityResponse
+        XCTAssertEqual(response[4].velocity.value, 127)
+        XCTAssertEqual(response[12].velocity.value, 1)
+        XCTAssertTrue(response.contains { !$0.triggers })
+    }
+
+    /// Con `accent` en 0 todas las barras miden la Velocity del Cycle: el panel
+    /// enseña una línea recta, que es lo que suena.
+    func testWithoutAccentTheResponseIsFlat() {
+        let cycle = Cycle(
+            shape: Shape(steps: Steps(9)!, pulses: Pulses(9)!),
+            groove: Groove(velocity: Velocity(90)!, sustain: .default, probability: .default)
+        )
+        XCTAssertEqual(
+            cycle.velocityResponse.map(\.velocity.value), Array(repeating: 90, count: 9))
+    }
+
     // MARK: - El valor
 
     /// Los defaults del producto: sin modulación, sobre `triangle`.

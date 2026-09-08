@@ -23,6 +23,32 @@ struct ModulationScreen: View {
     let model: TransportModel
 
     var body: some View {
+        // **~70/30, repartido contra el ancho disponible** (FR11).
+        //
+        // > **Se intentó con `layoutPriority` y se vio mal en el simulador.** La
+        // > prioridad no reparte proporciones: decide **quién pide primero**, así
+        // > que la columna izquierda —con `maxWidth: .infinity`— se quedaba con
+        // > todo y la derecha bajaba a unos cuarenta puntos, con `accent`
+        // > partido en una letra por línea. Una fracción del ancho medido dice
+        // > lo que se quería decir; la prioridad decía otra cosa.
+        GeometryReader { area in
+            let gutter: CGFloat = 24
+            let usable = max(area.size.width - gutter, 1)
+            columns(left: usable * Self.leftShare, right: usable * (1 - Self.leftShare))
+        }
+        // El alto lo fija el contenido, no la pantalla: el `GeometryReader` solo
+        // se usa para el ancho, y sin esto se comería la altura entera.
+        .frame(height: Self.contentHeight)
+    }
+
+    /// Alto del contenido de la pantalla.
+    ///
+    /// Fijo porque el `GeometryReader` de arriba mide el ancho y propondría
+    /// altura infinita a sus hijos; la columna izquierda tiene que caber entera
+    /// —rejilla más panel— y la derecha se estira hasta donde le den.
+    private static let contentHeight: CGFloat = 620
+
+    private func columns(left: CGFloat, right: CGFloat) -> some View {
         HStack(alignment: .top, spacing: 24) {
             VStack(alignment: .leading, spacing: 20) {
                 ModulationContext(
@@ -35,12 +61,43 @@ struct ModulationScreen: View {
                     onSelect: { model.setModulation(model.modulation.with(waveform: $0)) }
                 )
 
+                VelocityResponseView(
+                    response: model.track.velocityResponse,
+                    waveform: model.modulation.waveform,
+                    playhead: model.playheads[safe: model.selectedTrackIndex] ?? nil
+                )
+
                 Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(width: left, alignment: .leading)
 
-            Spacer(minLength: 0)
+            VStack(spacing: 20) {
+                AccentCard(
+                    accent: model.modulation.accent,
+                    onChange: { model.setModulation(model.modulation.with(accent: $0)) }
+                )
+
+                ModulationSummaryCard(modulation: model.modulation)
+
+                Spacer(minLength: 0)
+            }
+            .frame(width: right)
         }
+    }
+
+    /// El reparto de FR11: la izquierda se lleva el 70% y la derecha el resto.
+    private static let leftShare: CGFloat = 0.7
+}
+
+extension Array {
+
+    /// El elemento de esa posición, o `nil` fuera de rango.
+    ///
+    /// La lista de playheads tiene doce entradas con el transporte corriendo y
+    /// puede no tenerlas al arrancar; pedir una fuera de rango no es un error y
+    /// no debe reventar la pantalla.
+    fileprivate subscript(safe index: Int) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }
 
@@ -192,11 +249,20 @@ struct WaveformPreview: SwiftUI.Shape {
 
     let waveform: Waveform
 
+    /// Cuántos ciclos se dibujan.
+    ///
+    /// **Dos en el card de la rejilla y uno en el panel**, y la diferencia
+    /// importa: el card enseña *qué forma es* —y con un solo ciclo `saw` y
+    /// `triangle` se distinguen mal, porque la diferencia está en el corte y un
+    /// corte necesita algo después para leerse como tal—; el panel enseña *una
+    /// vuelta del anillo*, que es exactamente un ciclo (FR4). Dibujar dos sobre
+    /// dieciséis barras diría que la modulación va al doble de velocidad de lo
+    /// que va.
+    var cycles: Int = 2
+
     /// Puntos por ciclo. No es un parámetro del dominio: es cuánto se muestrea
     /// para que la línea se vea curva y no escalonada.
     private static let resolution = 64
-
-    private static let cycles = 2
 
     /// Cuánto tiene que saltar el valor entre dos muestras vecinas para que el
     /// dibujo lo trate como un corte y no como una pendiente.
@@ -210,7 +276,7 @@ struct WaveformPreview: SwiftUI.Shape {
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let total = Self.resolution * Self.cycles
+        let total = Self.resolution * cycles
 
         func point(_ index: Int, _ value: Int) -> CGPoint {
             // La onda va de −100 a 100 y la `y` de una vista crece hacia abajo,
@@ -245,5 +311,287 @@ struct WaveformPreview: SwiftUI.Shape {
             previous = value
         }
         return path
+    }
+}
+
+/// El card alto de `accent`: la lectura grande, el slider bipolar y su etiqueta
+/// (FR11, FR18, FR19).
+///
+/// **La lectura va arriba y grande**, porque es el valor que se mira al
+/// arrastrar. Lleva el signo también en el positivo, y ese formato vive en
+/// `Engine` (NFR6): aquí solo se pinta.
+struct AccentCard: View {
+
+    let accent: Accent
+    let onChange: (Accent) -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text(display: "accent")
+                .font(Typography.sectionTitle)
+                .foregroundStyle(Palette.text)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Text(display: accent.description)
+                .font(Typography.readout)
+                .monospacedDigit()
+                .foregroundStyle(Palette.groove)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+
+            BipolarAccentSlider(accent: accent, onChange: onChange)
+                .frame(maxWidth: .infinity)
+                .frame(minHeight: 220)
+
+            Text(display: "bipolar velocity")
+                .font(Typography.caption)
+                .foregroundStyle(Palette.muted)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity)
+        .brutalistPanel()
+    }
+}
+
+/// El slider bipolar vertical de `accent` (FR18).
+///
+/// **`+100` arriba, `0` en el centro exacto, `−100` abajo.** El arrastre es
+/// continuo y el pulgar sigue al dedo; un toque simple sobre la pista salta a
+/// ese valor, que es lo que hace que llegar a un extremo no exija recorrerlo.
+///
+/// **Se imanta en el 0, y solo en el 0.** Es el único valor que hay que poder
+/// recuperar sin mirar —el que apaga la modulación— y el único, por tanto, que
+/// merece un enganche. Imantar también los extremos convertiría el ajuste fino
+/// cerca de ±100 en saltos.
+///
+/// > **El imantado vive aquí y no en `Accent`.** Lo que hace que un punto esté
+/// > «cerca» del centro son puntos de pantalla, no unidades del parámetro: el
+/// > tipo cruza el cero como cualquier otro valor y hay un test que lo fija. Es
+/// > la misma frontera que separa el dibujo de la forma de la forma misma.
+struct BipolarAccentSlider: View {
+
+    let accent: Accent
+    let onChange: (Accent) -> Void
+
+    /// Cuánto se imanta el centro, en puntos de pantalla.
+    ///
+    /// **Diez puntos**, que sobre una pista de unas doscientas son un 5% del
+    /// recorrido a cada lado: bastante para atrapar el dedo sin mirar, poco para
+    /// no robar el tramo donde se ajusta un acento suave.
+    private static let snapPoints: CGFloat = 10
+
+    /// El ancho de la pista. El pulgar la desborda a los dos lados, que es lo
+    /// que lo hace visible sin engordar la pista.
+    private static let trackWidth: CGFloat = 12
+
+    private static let thumbWidth: CGFloat = 40
+    private static let thumbHeight: CGFloat = 20
+
+    var body: some View {
+        GeometryReader { area in
+            let height = area.size.height
+            let travel = max(height - Self.thumbHeight, 1)
+            // El pulgar se mueve dentro del recorrido útil, no de la altura
+            // entera: si no, en los extremos se saldría media altura de pulgar.
+            let y = Self.thumbHeight / 2 + travel * CGFloat(100 - accent.percent) / 200
+
+            ZStack(alignment: .top) {
+                // La pista.
+                Capsule()
+                    .fill(Palette.inset)
+                    .overlay(Capsule().stroke(Palette.border, lineWidth: Brutalist.stroke))
+                    .frame(width: Self.trackWidth)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                // **La marca del centro, off-white.** Es la referencia del 0 y
+                // por eso es lo más claro de la pieza: sin ella, «el pulgar está
+                // en medio» sería una impresión y no una lectura.
+                Rectangle()
+                    .fill(Palette.offWhite)
+                    .frame(width: Self.thumbWidth, height: Brutalist.stroke)
+                    .frame(maxWidth: .infinity)
+                    .offset(y: Self.thumbHeight / 2 + travel / 2)
+
+                // El pulgar, mauve, porque lo que modula es velocity.
+                RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+                    .fill(Palette.groove)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+                            .stroke(Palette.groove, lineWidth: Brutalist.stroke)
+                    )
+                    .frame(width: Self.thumbWidth, height: Self.thumbHeight)
+                    .frame(maxWidth: .infinity)
+                    .offset(y: y - Self.thumbHeight / 2)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // **Toda la columna responde, no solo la pista de doce puntos.** Es
+            // el mismo defecto que se corrigió en los escalones del tempo: un
+            // objetivo del ancho de la tinta falla la mitad de las veces.
+            .contentShape(Rectangle())
+            .gesture(
+                // `minimumDistance: 0` es lo que hace que un toque simple sobre
+                // la pista salte a ese valor (FR18): sin él, tocar sin arrastrar
+                // no produciría ningún evento.
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        onChange(Self.accent(at: value.location.y, over: height))
+                    }
+            )
+        }
+    }
+
+    /// Qué `accent` corresponde a un punto de la pista.
+    ///
+    /// Arriba es `+100` y abajo `−100`, así que la escala se invierte respecto
+    /// de la `y` de la vista.
+    private static func accent(at y: CGFloat, over height: CGFloat) -> Accent {
+        let travel = max(height - thumbHeight, 1)
+        let position = min(max(y - thumbHeight / 2, 0), travel)
+        let percent = Int((0.5 - position / travel) * 200)
+
+        // El imantado, traducido de puntos de pantalla a unidades del parámetro
+        // sobre esta pista concreta — que es la razón por la que vive aquí.
+        let snapWidth = Int(snapPoints / travel * 200)
+        let snapped = abs(percent) <= snapWidth ? 0 : percent
+
+        return Accent(percent: min(max(snapped, -100), 100)) ?? .default
+    }
+}
+
+/// El panel `velocity response`: lo que se va a emitir, barra a barra (FR12–FR15).
+///
+/// **La altura de cada barra es la velocity final, recorte incluido** (FR12), y
+/// no la forma normalizada: dos ajustes que recortan distinto se tienen que ver
+/// distintos. El dato sale de `Cycle.velocityResponse`, que vive en `Engine` y
+/// está probado con números.
+///
+/// **Tantas barras como Steps tenga el Track** (FR13). El 16 del handoff es el
+/// caso por defecto, no una constante.
+///
+/// **El playhead cae sobre la barra que suena y desaparece con el transporte
+/// parado** (FR14). Las barras se quedan: son estado, no animación.
+struct VelocityResponseView: View {
+
+    let response: [VelocityResponseStep]
+    let waveform: Waveform
+
+    /// Dónde está el tiempo, o `nil` con el transporte parado.
+    let playhead: Playhead?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(display: "velocity response")
+                .font(Typography.sectionTitle)
+                .foregroundStyle(Palette.text)
+
+            GeometryReader { area in
+                ZStack(alignment: .bottom) {
+                    // **La línea de centro va DETRÁS de las barras.**
+                    //
+                    // > Estaba delante y se vio en el simulador: cruzaba las
+                    // > barras por la mitad y parecía que cada una estaba
+                    // > partida en dos. Es una referencia para leer la onda, no
+                    // > un dato — y lo que no es dato no tapa al dato.
+                    Rectangle()
+                        .fill(Palette.border)
+                        .frame(height: Brutalist.stroke)
+                        .offset(y: -area.size.height / 2)
+
+                    bars(in: area.size)
+
+                    // La onda seleccionada, **un solo ciclo**: el panel dibuja
+                    // una vuelta del anillo, y una vuelta es un ciclo (FR4).
+                    WaveformPreview(waveform: waveform, cycles: 1)
+                        .stroke(Palette.groove, lineWidth: Brutalist.stroke)
+                        .frame(width: area.size.width, height: area.size.height)
+
+                    playheadMark(in: area.size)
+                }
+            }
+            .frame(height: 180)
+            .padding(12)
+            .brutalistPanel()
+
+            Text(display: "1 cycle per pattern")
+                .font(Typography.caption)
+                .foregroundStyle(Palette.muted)
+        }
+    }
+
+    /// Una barra por Step, con la altura de su velocity.
+    ///
+    /// **Los que no son pulso van atenuados** (FR13, FR8): el LFO corre sobre
+    /// ellos, así que tienen valor y no suenan. Omitirlos mentiría sobre la fase.
+    private func bars(in size: CGSize) -> some View {
+        HStack(alignment: .bottom, spacing: 2) {
+            ForEach(Array(response.enumerated()), id: \.offset) { index, entry in
+                RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+                    .fill(entry.triggers ? Palette.offWhite : Palette.stepDim)
+                    .frame(
+                        height: max(
+                            size.height * CGFloat(entry.velocity.value)
+                                / CGFloat(Velocity.validRange.upperBound),
+                            Brutalist.stroke
+                        )
+                    )
+                    .opacity(isUnderPlayhead(index) ? 1 : 0.85)
+            }
+        }
+        .frame(width: size.width, height: size.height, alignment: .bottom)
+    }
+
+    /// El playhead: una línea vertical sobre la barra que suena.
+    ///
+    /// **Un redibujo por Step**, la misma cadencia que el playhead del anillo:
+    /// esta vista no tiene temporizador propio, se repinta cuando el modelo
+    /// publica. Con el transporte parado no se dibuja.
+    @ViewBuilder
+    private func playheadMark(in size: CGSize) -> some View {
+        if let playhead, !response.isEmpty {
+            let step = playhead.step % response.count
+            let width = size.width / CGFloat(response.count)
+            Rectangle()
+                .fill(Palette.offWhite)
+                .frame(width: Brutalist.strokeEmphasis, height: size.height)
+                .offset(x: -size.width / 2 + width * (CGFloat(step) + 0.5))
+        }
+    }
+
+    private func isUnderPlayhead(_ index: Int) -> Bool {
+        guard let playhead, !response.isEmpty else { return false }
+        return playhead.step % response.count == index
+    }
+}
+
+/// El card resumen al pie de la columna derecha (FR11, FR19).
+///
+/// Dice lo mismo que la pantalla ya enseña, en dos líneas y sin dibujo: es la
+/// lectura que se busca de reojo para confirmar qué está puesto, no otra vía de
+/// edición.
+struct ModulationSummaryCard: View {
+
+    let modulation: Modulation
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            row("waveform", modulation.waveform.description)
+            row("accent", modulation.accent.description)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .brutalistPanel()
+    }
+
+    private func row(_ name: String, _ value: String) -> some View {
+        HStack {
+            Text(display: name)
+                .font(Typography.caption)
+                .foregroundStyle(Palette.muted)
+            Spacer(minLength: 12)
+            Text(display: value)
+                .font(Typography.bodyStrong)
+                .monospacedDigit()
+                .foregroundStyle(Palette.text)
+        }
     }
 }
