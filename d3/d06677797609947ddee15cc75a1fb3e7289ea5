@@ -1,0 +1,45 @@
+Fix: el playhead del panel no se movía (FR14)
+
+Encontrado por la verificación en dispositivo del bloque 5, el único de los diez
+que falló. Y solo podía encontrarse ahí: sin destinos MIDI el simulador no tiene
+transporte, así que el playhead no tenía nada que lo moviera y el defecto era
+invisible en las seis capturas.
+
+Ficheros:
+- App/ModulationScreen.swift
+
+LA CAUSA, que es lo que vale la pena registrar. TransportModel.playheads NO ES
+ESTADO OBSERVABLE, y su propia documentación explica por qué no debe serlo:
+cambia de forma continua, y publicarlo como propiedad observada obligaría a
+alguien a refrescarlo a 60 Hz y a invalidar la vista entera en cada fotograma. Se
+consulta al dibujar.
+
+La consecuencia, que la documentación también dice y que se pasó por alto al
+escribir el panel: 'quien lo dibuje se redibuja solo —TimelineView— y pregunta
+aquí'. El anillo lo hace desde hace tiempo. El panel recibía el valor por
+parámetro, así que se leía UNA sola vez al construir el cuerpo y no volvía a
+preguntar nunca. No era un fallo de cálculo: era una vista que no tenía motivo
+para repintarse.
+
+EL ARREGLO. El playhead llega como cierre —() -> Playhead?— y solo él vive dentro
+de un TimelineView(.animation(paused: !isPlaying)).
+
+Dos decisiones dentro del arreglo:
+
+- Las barras se quedan FUERA del TimelineView. Son estado y no animación, que es
+  literalmente lo que FR14 pide, y meterlas dentro reconstruiría dieciséis vistas
+  por fotograma para dibujar exactamente lo mismo.
+
+- Se retira el realce de la barra bajo el playhead, que había puesto por mi
+  cuenta y que no está en la spec. Lo pedía leer el playhead desde las barras, y
+  eso las habría arrastrado dentro del TimelineView por un efecto que nadie
+  encargó.
+
+No es un temporizador nuevo colgado de la vista, que es lo que FR14 excluye: es
+el mismo mecanismo que el playhead del anillo —'misma cadencia... que ya existe y
+ya está medida'— y se detiene solo con el transporte parado.
+
+Verificación: swift test --package-path Packages/Engine  878 tests, 0 fallos
+              xcodebuild build -scheme ToraxH0           BUILD SUCCEEDED
+PENDIENTE: el bloque 5 del guion de dispositivo hay que repetirlo. Es el único
+sitio donde se puede ver.
