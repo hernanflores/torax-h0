@@ -65,7 +65,7 @@ seguir.
         excluye, para que la ausencia se lea como decisión.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: EL VALOR PURO — `Modulation` EN `Engine`
+## FASE 2: EL VALOR PURO — `Modulation` EN `Engine` [checkpoint: 2a36a7d]
 
 - [x] Task: `Waveform` y `Accent`, con sus rangos (FR2, FR3) `45073c4`
   - [x] Tests (Red): `Accent` acota −100…100 y **se detiene en los extremos**, no
@@ -104,7 +104,7 @@ seguir.
   - [x] Tests (Red): la aritmética es entera y el redondeo está fijado por test
         en los valores que caen a mitad de unidad.
   - [x] Implementar (Green).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: EL `Cycle` LLEVA SU `Modulation`
 
