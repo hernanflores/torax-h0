@@ -87,7 +87,19 @@ Es lo único de la pantalla que el simulador no pudo verificar.
 3. Al parar, el playhead **desaparece** y las barras se quedan dibujadas: son
    estado, no animación.
 
-- [ ] Resultado: No OK
+- [x] Resultado: **falló y se arregló.** El playhead no se movía. La causa no
+  estaba en el cálculo sino en el redibujado: `TransportModel.playheads` no es
+  estado observable —cambia de forma continua, y publicarlo obligaría a
+  invalidar la vista entera a 60 Hz—, así que se consulta al dibujar y quien lo
+  dibuja tiene que provocar su propio repintado. El anillo lo hace con un
+  `TimelineView`; este panel recibía el valor por parámetro y lo leía una sola
+  vez al construir el cuerpo. Arreglado en `d3d0667`: el playhead llega como
+  cierre y solo él vive dentro del `TimelineView` —las barras se quedan fuera,
+  porque son estado y no animación—. **Recomprobado en dispositivo: cumple.**
+
+  > **Solo podía encontrarse aquí.** El simulador no tiene destinos MIDI, así que
+  > no hay transporte que mueva el playhead y las seis capturas no podían verlo.
+  > Es la razón por la que este documento existe.
 
 ### 6. Cada Track con su anillo (FR4)
 
@@ -132,4 +144,14 @@ Es lo único de la pantalla que el simulador no pudo verificar.
 
 ## Veredicto
 
-- [X] Solo Falla FR14, el resto paso OK.
+**Cumple, los diez bloques.** Nueve pasaron a la primera; el 5 —el playhead del
+panel, FR14— falló, se arregló en `d3d0667` y se recomprobó.
+
+**El acento se oye** (criterio 13), que es lo que esta rebanada existía para
+conseguir: con `triangle` y `accent` alto el patrón respira a lo largo de la
+vuelta, y `pulse` acentúa media vuelta entera. Con `accent` en 0 un Pattern de
+antes suena idéntico, y un Bank guardado antes abre con la modulación en su
+neutro — el criterio 1, comprobado con el oído además de con los tests.
+
+**Sin medición de jitter** (NFR3): la modulación cambia el *cuánto* y no el
+*cuándo*, y la medición está suspendida desde el 2026-09-02.
