@@ -1,0 +1,29 @@
+Task: La palabra atómica de la adopción (FR7, NFR1)
+
+`PatternHandoff.adoptionCount`, un `AtomicCounter` que `adoptArmedPattern()`
+incrementa **solo cuando adopta de verdad**.
+
+El porqué: el hilo del scheduler es quien sabe cuándo llega el límite de compás,
+y no había forma de que el modelo se enterase de que la adopción ocurrió. La
+pantalla seguía en el hueco viejo y —lo caro— el siguiente giro de knob escribía
+en él. Es el defecto hermano que este track absorbe.
+
+Decisiones:
+- Contador de generación: importa que cambió, no su valor.
+- Se incrementa después del guard de `hasArmedPattern`, así que no se mueve una
+  vez por ventana. El límite de compás pasa constantemente y casi siempre sin
+  nada pendiente; moverlo ahí haría creer al modelo que adoptó cuatro veces por
+  segundo.
+- Sin callback hacia el modelo (NFR1): sería trabajo en el camino de tiempo
+  real. Se lee al dibujar, como `playhead` y `cycleInCourse`.
+- No cambia el coste por ventana: la escritura ocurre en la adopción, que ya era
+  el camino excepcional. `SnapshotPerWindowTests` y `ArmedSlotCostTests` siguen
+  verdes sin tocarlas.
+
+Ficheros:
+- M Packages/MIDI/Sources/MIDI/PatternHandoff.swift
+- A Packages/MIDI/Tests/MIDITests/AdoptionGenerationTests.swift (8 tests, uno de
+  concurrencia con 20.000 adopciones contra un lector en otro hilo)
+
+Verificación: Red 8 de 8 sin compilar; Green 8 de 8. Suite MIDI 21 + 709, 0
+fallos. Sin medición de jitter (NFR4): no mueve ningún instante.
