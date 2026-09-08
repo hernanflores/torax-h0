@@ -1,0 +1,35 @@
+Task: Sacar el LFO de «Fuera de v1» en product.md (NFR7)
+
+Fase 1 del track modulation_20260906. Segunda y última tarea de documentación
+previa a implementar.
+
+Ficheros modificados:
+- conductor/product.md — cuatro ediciones.
+
+Qué cambia:
+
+1. MVP Scope, lista de «Fuera de v1»: «LFO y Random Modulation» pasa a «~~LFO~~
+   y Random Modulation», con el paréntesis diciendo que del LFO sale la mitad el
+   2026-09-08 y que Random se queda. Misma vía por la que salieron los múltiples
+   Tracks, los Cycles, la persistencia y el Note Repeater.
+
+2. Nota fechada del 2026-09-08 en MVP Scope: qué entra (LFO cíclico sobre
+   velocity, waveform de cuatro formas y accent bipolar, por Cycle), el
+   requisito de no regresión con accent = 0, el ciclo por vuelta del anillo, la
+   quinta pantalla del lado táctil, por qué no se mide jitter, y la lista de lo
+   que se queda fuera con su porqué — Random entera, Phrase/Range, la longitud
+   ajustable, modular algo que no sea velocity, y el knob con su coste (Ctrl
+   All, Temp y la lectura transitoria grande no alcanzan a accent).
+
+3. Interaction Model: viñeta nueva. La modulación es capa sobre la dinámica y no
+   sobre el material — no toca Steps, Pulses, Rotate ni el pool. Paralela a la
+   viñeta del Note Repeater, que es capa sobre el ritmo.
+
+4. Enmienda a la nota del 2026-09-06 «la app tiene cuatro pantallas»: son cinco.
+   El chrome no cambia de forma y la regla auditada de la pantalla track sigue
+   con sus cuatro escrituras táctiles — ninguna de las dos nuevas vive ahí.
+
+El porqué: la lista de «Fuera de v1» describe lo que la app no hace, y dejarla
+sin tocar la convierte en una promesa falsa en sentido contrario. La nota fechada
+es el mecanismo que este proyecto ya usó cuatro veces para sacar algo de esa
+lista sin perder el registro de qué se decidió y cuándo.
