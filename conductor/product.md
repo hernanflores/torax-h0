@@ -57,6 +57,12 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
   euclidiano es el mismo y el Pulse original sigue sonando en su instante. Con
   Repeats en 0 —el default— no hay repeticiones y nada cambia. Ver la nota del
   2026-09-07 en *MVP Scope*.
+- **La modulación es una capa sobre la dinámica, no sobre el material.** Añade
+  movimiento cíclico a la velocity a lo largo de la vuelta del anillo y **no toca
+  Steps, Pulses, Rotate ni el pool**: no cambia qué notas suenan ni cuándo, sino
+  con cuánta fuerza. Con `accent` en 0 —el default— nada cambia. Se edita en la
+  quinta pantalla, `modulation`, con el dedo y no con knobs. Ver la nota del
+  2026-09-08 en *MVP Scope*.
 
 > **Nota del 2026-08-31 — Scale y Root son de cada Track, no de la app.** Esta
 > página y `product-guidelines.md` los describían como configuración táctil sin
@@ -199,6 +205,16 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > escrituras auditadas siguen siendo cuatro. Lo que `banks` añade no es edición
 > de material: es elegir cuál suena.
 
+> **Enmienda del 2026-09-08 — son cinco.** La rebanada 6 de la v2
+> (`modulation_20260906`) añade `modulation`, y el chrome no cambia de forma: la
+> navegación persistente reparte cinco donde repartía cuatro y nada más se toca.
+>
+> **Cae del lado táctil, y por el criterio de esta misma nota.** `accent` y
+> `waveform` se editan con el dedo porque se configuran antes de tocar, como
+> `scale` y `midi` — no hay knob que los mueva. **La regla auditada de `track`
+> sigue intacta**: sus cuatro escrituras táctiles siguen siendo cuatro, y ninguna
+> de las dos nuevas vive ahí.
+
 > **Nota del 2026-09-03 — el reloj puede ser de otro.** La línea de arriba dice
 > «transporte (play/stop) y **reloj interno**», y sigue siendo cierta: el reloj
 > interno existe, y ahora además es **editable** —el tempo estaba clavado en 120
@@ -245,7 +261,7 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 
 - Acordes polifónicos simultáneos (Style *Poly*) — explícitamente fuera de scope en la Pre Spec.
 - ~~Patterns, Banks; guardado/Autosave~~; **Backup Project**. *(Múltiples Tracks salieron de aquí el 2026-09-01: la v2 rebanada 1 entregó dieciséis, que el 2026-09-02 pasaron a **doce** por legibilidad de los anillos — ver la nota del Core Model. Patterns, Banks, Autosave y Save/Reload salen el 2026-09-07: los entrega la v2 rebanada 4 — ver la nota de abajo. **Backup Project se queda**: exportar e importar por la app Files es UI de documentos, no modelo.)*
-- ~~Note Repeater (Repeats/Time/Ramp/Pace)~~; Harmony; Voicing/Style; Range/Phrase; LFO y Random Modulation. *(Cycles salió de aquí el 2026-09-02: la v2 rebanada 3 lo entrega — hasta dieciséis por Track, recorridos a cada vuelta del anillo. El Note Repeater sale el 2026-09-07: lo entrega la v2 rebanada 5 — ver la nota de abajo.)*
+- ~~Note Repeater (Repeats/Time/Ramp/Pace)~~; Harmony; Voicing/Style; Range/Phrase; ~~LFO~~ y Random Modulation. *(Cycles salió de aquí el 2026-09-02: la v2 rebanada 3 lo entrega — hasta dieciséis por Track, recorridos a cada vuelta del anillo. El Note Repeater sale el 2026-09-07: lo entrega la v2 rebanada 5 — ver la nota de abajo. **Del LFO sale la mitad el 2026-09-08**: la v2 rebanada 6 lo entrega sobre velocity, y solo sobre velocity; **Random Modulation se queda** — ver la nota de abajo.)*
 - Ableton Link, MIDI Program Change, encadenado de Patterns.
 
 > **Nota del 2026-09-07 — Patterns, Banks y guardado salen de «Fuera de v1».**
@@ -303,6 +319,52 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > **Choke y Tail**, con la limitación de solape escrita en la Pre Spec. Que cada
 > repetición avance el pool tonal, el swing dentro de la tirada, y dibujar las
 > repeticiones en el anillo.
+
+> **Nota del 2026-09-08 — la mitad del LFO sale de «Fuera de v1».** Sale por la
+> misma vía por la que salieron los múltiples Tracks, los Cycles, la persistencia
+> y el Note Repeater: lo entrega una rebanada de la v2, la 6
+> (`modulation_20260906`), y la lista de arriba deja de describir lo que la app
+> hace.
+>
+> **Entra la mitad, y está dicho cuál.** De la línea «LFO y Random Modulation»
+> entra el **LFO cíclico, y solo sobre velocity**. Dos parámetros por Cycle:
+> **`waveform`** —`saw`, `triangle`, `sine`, `pulse`— y **`accent`**, bipolar
+> −100…100. La forma no se llama *Groove* aunque la Pre Spec así la rotule,
+> porque el motor ya gastó ese término en la familia de Velocity, Sustain,
+> Probability, Timing y Delay; el porqué está en la nota del 2026-09-08 de la
+> Pre Spec.
+>
+> **Con `accent` en 0 —el default— no cambia nada de lo entregado.** Instantes,
+> velocities y consumo de aleatoriedad son los de antes de la rebanada. Es el
+> mismo requisito que sostuvo el Note Repeater: un Pattern hecho antes suena
+> igual después.
+>
+> **Un ciclo por vuelta del anillo del propio Track.** La fase sale del índice
+> de Step dentro de la vuelta, así que no hay reloj de modulación ni estado que
+> mantener: la sincronía es una consecuencia de cómo se calcula la fase. Cada
+> Track modula a su velocidad, porque cada uno tiene sus Steps y su Division.
+>
+> **La app pasa a tener cinco pantallas.** `modulation` es la quinta, junto a
+> `track`, `scale`, `midi` y `banks`, y cae **del lado táctil de la frontera**
+> del 2026-09-06: se configura antes de tocar, como `scale` y `midi`. La regla
+> auditada de la pantalla `track` no se toca — sigue sin editar un solo
+> parámetro generativo con el dedo.
+>
+> **No se mide jitter, y es una decisión, no un olvido.** La modulación cambia
+> el *cuánto* y no el *cuándo*: aritmética entera acotada en el camino de
+> emisión, sin desplazar la rejilla. Es literalmente el caso que la nota del
+> 2026-08-28 de `workflow.md` excluye, y además la medición está suspendida
+> desde el 2026-09-02.
+>
+> **Lo que se queda fuera, y por qué.** **Random Modulation** entera, que es la
+> otra mitad de la línea. El destino **Phrase/Range** del LFO, que modula pitch
+> y no dinámica. La **longitud ajustable** del ciclo —la Pre Spec la promete y
+> el brief pedía cuatro compases—: queda fija a una vuelta del anillo, porque es
+> lo que hace que la sincronía no necesite estado. Modular **cualquier cosa que
+> no sea velocity**. Y **el knob**: ni `waveform` ni `accent` entran en el
+> preset del BeatStep Pro, así que Ctrl All, Temp y la lectura transitoria
+> grande no los alcanzan — el coste está escrito en la Pre Spec y se paga el día
+> que tengan knob.
 
 ## Success Criteria
 

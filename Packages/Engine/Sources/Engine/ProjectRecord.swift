@@ -22,10 +22,11 @@
 
 // MARK: - Cycle
 
-/// Un `Cycle` en disco: diecinueve claves planas.
+/// Un `Cycle` en disco: veintiuna claves planas.
 ///
 /// **Eran quince hasta el 2026-09-07**, cuando los cuatro del Note Repeater se
-/// sumaron.
+/// sumaron, y diecinueve hasta el 2026-09-08, cuando llegaron las dos de la
+/// modulación.
 ///
 /// **Plano y no anidado**, aunque `Shape`, `Groove` y `TonalFrame` sean tipos
 /// propios. Un Cycle son quince números y una cadena; anidarlos en tres objetos
@@ -83,6 +84,29 @@ public struct CycleRecord: Codable, Equatable, Sendable {
     public let ramp: Int?
     public let pace: Int?
 
+    /// Las dos de la modulación, desde el 2026-09-08.
+    ///
+    /// **Opcionales por la misma razón que las cuatro de arriba**: un fichero
+    /// escrito sin ellas las decodifica como `nil` y se lee como el neutro
+    /// —`triangle` y accent 0—, que es exactamente el estado que ese fichero
+    /// describía. `schemaVersion` se queda en 1 porque
+    /// `ProjectRecord.validated()` exige igualdad exacta, y sin migrador subirla
+    /// dejaría sin abrir los Banks ya guardados.
+    ///
+    /// **Se escriben siempre**, también el neutro: un `0` explícito dice «sin
+    /// modulación», mientras que una clave ausente solo dice «esto lo escribió
+    /// otra versión».
+    ///
+    /// **`waveform` se guarda por una clave estable en minúsculas y no por su
+    /// posición en el `enum`.** El orden de `Waveform.allCases` lo manda la
+    /// rejilla 2×2 de la pantalla, y atar el fichero al índice haría que
+    /// reordenar la rejilla cambiara la onda de un Bank ya guardado. Es el mismo
+    /// criterio que `scale`, y por eso tampoco se reutiliza
+    /// `Waveform.description`: aquello es lo que se lee en pantalla, y son dos
+    /// vocabularios distintos aunque hoy coincidan.
+    public let waveform: String?
+    public let accent: Int?
+
     public init(_ cycle: Cycle) {
         steps = cycle.shape.steps.count
         pulses = cycle.shape.pulses.count
@@ -103,6 +127,8 @@ public struct CycleRecord: Codable, Equatable, Sendable {
         repeatTimeDenominator = cycle.noteRepeater.time.fraction.denominator
         ramp = cycle.noteRepeater.ramp.percent
         pace = cycle.noteRepeater.pace.percent
+        waveform = Self.key(for: cycle.modulation.waveform)
+        accent = cycle.modulation.accent.percent
     }
 
     /// El Cycle que describe.
@@ -146,6 +172,14 @@ public struct CycleRecord: Codable, Equatable, Sendable {
             pace: pace.flatMap { Pace(percent: $0) } ?? .default
         )
 
+        // Una onda desconocida y un accent fuera de rango caen en su default,
+        // como el resto de las claves: un fichero de otra versión —o tocado a
+        // mano— no deja un Bank sin abrir.
+        let modulation = Modulation(
+            waveform: waveform.map(Self.waveform(for:)) ?? .default,
+            accent: accent.flatMap { Accent(percent: $0) } ?? .default
+        )
+
         return Cycle(
             shape: shape,
             pool: pitches,
@@ -153,6 +187,7 @@ public struct CycleRecord: Codable, Equatable, Sendable {
             channel: Channel(channel) ?? .first,
             frame: TonalFrame(scale: Self.scale(for: scale), root: Root(root) ?? .c),
             noteRepeater: repeater,
+            modulation: modulation,
             padOctaveShift: padOctaveShift
         )
     }
@@ -178,6 +213,30 @@ public struct CycleRecord: Codable, Equatable, Sendable {
     /// producto: un fichero de una versión futura no deja la app sin abrir.
     static func scale(for key: String) -> Scale {
         Scale.allCases.first { Self.key(for: $0) == key } ?? .minor
+    }
+
+    /// La clave con la que cada onda se escribe en disco.
+    ///
+    /// **Exhaustivo a propósito**, como el de `Scale`: sin `default`, añadir una
+    /// onda al motor no compila hasta que alguien decida cómo se guarda.
+    ///
+    /// **No es `Waveform.description`**, aunque hoy coincidan. Aquel es lo que
+    /// enseña la pantalla y atar el fichero a él haría que un cambio de
+    /// rotulación rompiera ficheros guardados. Son dos vocabularios distintos:
+    /// uno se lee, otro se guarda — la misma razón que separa `scale` de
+    /// `Scale.name`.
+    static func key(for waveform: Waveform) -> String {
+        switch waveform {
+        case .saw: "saw"
+        case .triangle: "triangle"
+        case .sine: "sine"
+        case .pulse: "pulse"
+        }
+    }
+
+    /// Y de vuelta. Una clave desconocida cae en el default del producto.
+    static func waveform(for key: String) -> Waveform {
+        Waveform.allCases.first { Self.key(for: $0) == key } ?? .default
     }
 }
 

@@ -327,10 +327,35 @@ decía sobre qué. La rebanada 4 de la v2 lo fija:
   enchufar una migración queda hecho y vacío: escribir un migrador de v1 a v2
   antes de que exista v2 es probar una migración inventada.
 
-**Cuándo llega el primer migrador de verdad.** Enseguida: las rebanadas 5 y 6
+**Cuándo llega el primer migrador de verdad.** ~~Enseguida: las rebanadas 5 y 6
 —`note-repeater` y `modulation`— añaden campos al `Cycle`. Está previsto y por
 eso la versión entra ahora, que es lo que la frase de arriba quería decir con
-«el modelo va a crecer».
+«el modelo va a crecer».~~
+
+> **Nota del 2026-09-08 — las dos llegaron y ninguna necesitó migrador.** La
+> predicción de arriba era razonable y salió mal, así que conviene escribir por
+> qué: **añadir un campo al `Cycle` no obliga a migrar**. La rebanada 5 sumó las
+> cuatro claves del Note Repeater el 2026-09-07 y la 6 las dos de la modulación
+> el 2026-09-08, y las seis entraron por la misma vía:
+>
+> - **Claves opcionales.** Un fichero escrito sin ellas las decodifica como `nil`
+>   y se lee como el neutro —Repeats 0, `accent` 0—, que es **exactamente el
+>   estado que ese fichero describía**. No hay nada que traducir: el valor
+>   ausente y el valor neutro significan lo mismo.
+> - **`schemaVersion` se queda en 1.** `ProjectRecord.validated()` exige igualdad
+>   exacta, así que subirla sin migrador dejaría sin abrir todos los Banks ya
+>   guardados. Subirla *con* migrador sería escribir un traductor entre dos
+>   formatos que describen el mismo estado.
+>
+> **Cuándo hará falta uno de verdad**, dicho ahora que se ve la diferencia: no
+> cuando el modelo *crezca*, sino cuando **cambie de significado**. Renombrar una
+> clave, partir un campo en dos, cambiar la unidad de un valor guardado, o
+> retirar una clave cuyo default no sea el estado que el fichero viejo tenía. Un
+> campo nuevo con neutro no es ninguna de esas cosas.
+>
+> El punto donde enchufar la migración sigue hecho y vacío, y eso no cambia: la
+> versión se escribe y se lee desde el primer commit, que es lo que hace que el
+> día que haga falta sea barato.
 
 ## Testing
 

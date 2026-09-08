@@ -258,7 +258,36 @@ el dibujo.
   caen los pulsos, no con qué fuerza; dos codificaciones en la misma figura la
   hacen ilegible a un metro.
 - **Duty ajustable de `pulse`**, fijo al 50%.
-- **Persistencia.** No existe todavía para nada del Pattern.
+- ~~**Persistencia.** No existe todavía para nada del Pattern.~~ **Corregido el
+  2026-09-08 al implementar: existe, y la modulación se guarda.** Ver la nota de
+  abajo.
+
+> **Nota del 2026-09-08 — la persistencia sí existe, y `modulation` entra en el
+> fichero.** Esta spec se escribió el 2026-09-06, cuando la rebanada 4 de la v2
+> estaba por planificar, y por eso listaba la persistencia entre lo que no
+> existe. Entró el 2026-09-07 con `persistence_20260907`, así que **añadir un
+> campo al `Cycle` sin tocar `CycleRecord` perdería `waveform` y `accent` al
+> guardar**, en silencio.
+>
+> **Es exactamente lo que la rebanada 5 se encontró** —y `ProjectRecord.swift`
+> lo deja escrito por adelantado: «las rebanadas 5 y 6 —Note Repeater y
+> Modulation— añaden campos, y el test que enumera las claves esperadas es lo que
+> impide que uno se pierda en silencio». Ese test es
+> `RecordRoundTripTests.testTheCycleJSONHasNoOtherKeys`, y falla hasta que las
+> claves nuevas se declaran.
+>
+> **Dos claves nuevas, opcionales, y `schemaVersion` se queda en 1.**
+> `ProjectRecord.validated()` exige igualdad exacta de versión, así que subirla
+> sin migrador dejaría sin abrir los Banks ya escritos. Un fichero sin estas
+> claves se lee con el neutro —`triangle` y `accent` 0—, que es exactamente el
+> estado que ese fichero describía: la promesa de «con `accent` en 0 no cambia
+> nada» aplicada al disco.
+>
+> **`waveform` se guarda por una clave estable en minúsculas y no por su
+> posición en el `enum`.** El orden de `allCases` es el que dibuja la rejilla de
+> la pantalla (FR11) y puede querer cambiarse; atar el fichero al índice haría
+> que reordenar la rejilla cambiara la onda de un Bank ya guardado. Es la misma
+> razón por la que `scale` se guarda por clave y no por su nombre de pantalla.
 
 ## Known Limitations
 

@@ -838,6 +838,32 @@ public final class ControlInput: @unchecked Sendable {
         ctrlAll = CtrlAllOffset()
     }
 
+    /// Cambia la modulación del Cycle **en edición** del Track seleccionado.
+    ///
+    /// **Se edita en pantalla y no con un knob**: `modulation` cae del lado
+    /// táctil de la frontera del 2026-09-06, donde ya están Scale, Root, el canal
+    /// y cuántos Cycles están activos. Ningún CC llega hasta aquí, y no hay
+    /// `TrackParameter` que la nombre (FR9).
+    ///
+    /// **Escribe sobre el Cycle en edición y no sobre el que suena** (FR16), como
+    /// el resto de la edición táctil: mientras suena el A se construye el B, que
+    /// es la forma natural de trabajar. La etiqueta de la pantalla lo dice para
+    /// que editar el B mientras suena el A no parezca que la pantalla miente.
+    ///
+    /// Publica porque el scheduler lee la modulación del snapshot en cada Step:
+    /// sin publicar, el acento no se oiría hasta el giro siguiente de cualquier
+    /// knob. Publicar solo si algo cambió evita mandar un snapshot idéntico
+    /// cuando se vuelve a elegir la onda que ya estaba.
+    @discardableResult
+    public func setModulation(_ modulation: Modulation) -> Bool {
+        guard !isTouchFrozen else { return false }
+        guard modulation != track.modulation else { return false }
+
+        pattern = pattern.replacing(track.with(modulation: modulation), at: selectedTrackIndex)
+        publish(pattern)
+        return true
+    }
+
     /// Cambia el marco tonal y reencuadra el pool.
     ///
     /// **Reencuadra, no vacía** (`product-guidelines.md`). Publicar solo si algo

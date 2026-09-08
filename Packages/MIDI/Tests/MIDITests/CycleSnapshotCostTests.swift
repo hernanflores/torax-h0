@@ -160,6 +160,55 @@ final class CycleSnapshotCostTests: XCTestCase {
         XCTAssertLessThan(nanosecondsPerLoad, 20_000_000.0 / 100)
     }
 
+    /// **El `Pattern` real, con el campo que la rebanada 6 le añade.**
+    ///
+    /// La serie que esto continúa: 2,25 KB en 274 ns (2026-08-31, antes de los
+    /// Cycles), ~37 KB en ~870 ns (2026-09-01, con los dieciséis Cycles). Cada
+    /// rebanada que engorda el `Cycle` deja aquí su cifra, para que el coste del
+    /// snapshot sea un número medido y no una impresión.
+    ///
+    /// **Medido el 2026-09-08: la modulación no cuesta ni un byte.** El `Pattern`
+    /// pesa **27.936 bytes** con el campo dentro y pesaba **27.936 sin él** —
+    /// comprobado midiendo `main` en la misma máquina—, porque los dos bytes de
+    /// `Modulation` caben en el relleno que el `Cycle` ya tenía. El `Cycle` sigue
+    /// midiendo 144 bytes.
+    ///
+    /// Es mejor que el 1% que NFR2 presupuponía, y es también la razón por la que
+    /// el tipo guarda un `Int8` y no un `Accent`: con una palabra entera el campo
+    /// no habría cabido en el hueco y el snapshot habría crecido de verdad.
+    ///
+    /// **Lo que se afirma es el presupuesto, no la cifra.** El tamaño exacto
+    /// depende del compilador y de la disposición, y fijarlo por test convertiría
+    /// una mejora de `Engine` en un fallo.
+    ///
+    /// El presupuesto es el mismo de siempre: el 1% de la ventana de 20 ms. Un
+    /// test que fijara los nanosegundos exactos fallaría en cualquier máquina
+    /// distinta y no diría nada de la decisión.
+    func testTheRealPatternWithModulationStillFitsWellInsideTheWindow() {
+        let bytes = MemoryLayout<Pattern>.size
+        let nanosecondsPerLoad = measureLoad(of: Pattern.initial)
+
+        print(
+            "Con modulación: MemoryLayout<Pattern> = \(bytes) bytes "
+                + "(\(MemoryLayout<Cycle>.size) por Cycle, "
+                + "\(MemoryLayout<Modulation>.size) de ellos son la Modulation), "
+                + "load() = \(String(format: "%.0f", nanosecondsPerLoad)) ns, "
+                + "\(String(format: "%.4f", nanosecondsPerLoad / 20_000_000.0 * 100))% "
+                + "de la ventana")
+
+        XCTAssertLessThan(
+            nanosecondsPerLoad, 20_000_000.0 / 100,
+            "un load() del snapshot con modulación se come más del 1% de la ventana")
+    }
+
+    /// Y el campo nuevo no puede haber roto la trivialidad del snapshot real,
+    /// que es de lo que depende poder copiarlo en el hilo del scheduler (NFR2).
+    func testTheRealSnapshotIsStillTrivialWithModulationInside() {
+        XCTAssertTrue(_isPOD(Modulation.self), "la Modulation no es trivial")
+        XCTAssertTrue(_isPOD(Cycle.self), "el Cycle dejó de ser trivial con la modulación")
+        XCTAssertTrue(_isPOD(Pattern.self), "el Pattern dejó de ser trivial")
+    }
+
     /// El anillo entero, que es lo que se reserva al construir el handoff.
     ///
     /// **No es coste por ventana sino memoria residente**, y por eso se mira
