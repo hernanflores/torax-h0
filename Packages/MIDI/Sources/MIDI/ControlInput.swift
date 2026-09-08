@@ -799,6 +799,33 @@ public final class ControlInput: @unchecked Sendable {
         return true
     }
 
+    /// Adopta un Pattern entero: el material que estos controles editan pasa a
+    /// ser otro.
+    ///
+    /// **Es la vía de ida que faltaba** (FR1). `ControlInput` guarda su propia
+    /// copia del Pattern —ver `pattern`— y hasta la v2 solo la escribía en su
+    /// `init`: las demás escrituras son ediciones incrementales. Así que al
+    /// cambiar de Bank nadie la reseedeaba y **el primer giro de knob
+    /// republicaba el Pattern anterior entero encima del Bank nuevo**.
+    ///
+    /// **Lo que es del material se sustituye; lo que es del dedo se conserva**
+    /// (FR2). Se sustituyen los doce Tracks con sus Cycles, pools, Grooves,
+    /// canales, marcos tonales y registros de pads: todo eso viaja en el
+    /// `Pattern`. Se conserva el Track seleccionado, porque cambiar de Bank para
+    /// seguir tocando el mismo Track es el gesto normal en directo.
+    ///
+    /// **El marco tonal no se re-siembra** (FR3), a diferencia del `init`. Aquel
+    /// reparte uno a los doce porque nace sin material; un Pattern que viene de
+    /// disco trae el suyo por Cycle, y pisarlo sería destruir material — lo que
+    /// `product-guidelines.md` prohíbe.
+    ///
+    /// **No publica** (FR4): quien provoca el cambio —`selectBank`,
+    /// `selectPattern`, `reloadBank`— ya avisa al transporte. Publicar además
+    /// dejaría dos publicaciones por cambio y una carrera por cuál gana.
+    public func adopt(_ pattern: Pattern) {
+        self.pattern = pattern
+    }
+
     /// Cambia el marco tonal y reencuadra el pool.
     ///
     /// **Reencuadra, no vacía** (`product-guidelines.md`). Publicar solo si algo
