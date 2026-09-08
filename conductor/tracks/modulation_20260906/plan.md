@@ -198,10 +198,10 @@ seguir.
 
 ## FASE 6: EL ACENTO SE VE
 
-- [ ] Task: El formato de la lectura vive en `Engine` (NFR6)
-  - [ ] Tests (Red): `+34`, `−12` y `0` — el signo se ve en el positivo, como
+- [x] Task: El formato de la lectura vive en `Engine` (NFR6) `ab13f2c`
+  - [x] Tests (Red): `+34`, `−12` y `0` — el signo se ve en el positivo, como
         `Rotate`, y el 0 va sin signo.
-  - [ ] Implementar (Green) junto a `Accent`, no en la vista.
+  - [x] Implementar (Green) junto a `Accent`, no en la vista.
 - [ ] Task: `BipolarAccentSlider` (FR11, FR18, FR19)
   - [ ] Arrastre continuo, `+100` arriba, `0` en el centro exacto, `−100` abajo.
   - [ ] Imantado al 0 cerca del centro y toque simple sobre la pista.
