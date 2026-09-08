@@ -33,3 +33,29 @@ El porqué: la lista de «Fuera de v1» describe lo que la app no hace, y dejarl
 sin tocar la convierte en una promesa falsa en sentido contrario. La nota fechada
 es el mecanismo que este proyecto ya usó cuatro veces para sacar algo de esa
 lista sin perder el registro de qué se decidió y cuándo.
+
+--- VERIFICACIÓN DE FASE 1: LA DESVIACIÓN QUEDA ESCRITA ---
+
+Comando de tests (línea base antes de tocar el motor; la fase no toca código):
+  swift test --package-path Packages/Engine
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+
+Resultado: Engine 800 tests, 0 fallos. MIDI 21 + 720 = 741 tests, 0 fallos, con
+la partición de CI que exige workflow.md desde la ampliación del 2026-08-30. Sin
+rastro del flake de CoreMIDI (-50) en esta pasada.
+
+Cobertura: no se mide en esta fase — no hay código nuevo que cubrir.
+Jitter: no aplica (NFR3, y suspendido desde el 2026-09-02).
+
+Pasos de verificación manual propuestos:
+1. git show 817c3d5 — las tres notas de la Pre Spec: §4 entra el LFO solo sobre
+   velocity y Random se queda; la fila Accent de §5 con las tres desviaciones y
+   el coste del knob escrito; la deuda de Retrigger anotada.
+2. git show d6ba133 — product.md: «LFO» tachado en «Fuera de v1» y Random no;
+   la viñeta de capa sobre la dinámica en el Interaction Model; la enmienda de
+   que las pantallas son cinco.
+3. Vocabulario en ambos ficheros: modulation, waveform, accent, saw, triangle,
+   sine, pulse. Sin «LFO» como parámetro, sin «shape», sin «amount».
+
+Confirmación del usuario: «go» — aprobado sin cambios.
