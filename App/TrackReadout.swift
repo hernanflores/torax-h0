@@ -243,8 +243,17 @@ struct ParameterFamilyCard: View {
 
     let family: ParameterFamily
 
-    /// Los parámetros de la familia con su valor, ya escritos por `Engine`.
-    let entries: [(label: String, value: String)]
+    /// Los parámetros de la familia con su valor, ya escritos por `Engine`,
+    /// **repartidos en las líneas que la familia necesite**.
+    ///
+    /// Shape trae dos desde el 2026-09-07: los cuatro del ritmo arriba y los
+    /// cuatro del Note Repeater debajo. Ocho columnas en una sola fila dejarían
+    /// de leerse a un metro, y juntarlas diría además algo falso — el Note
+    /// Repeater es una capa sobre el ritmo, no el ritmo (FR15).
+    ///
+    /// Quién va en cada línea lo decide `Engine`, con
+    /// `TrackParameter.isNoteRepeater`; aquí solo se dibuja.
+    let rows: [[(label: String, value: String)]]
 
     /// Si es la familia que se está girando ahora mismo.
     let isActive: Bool
@@ -259,27 +268,37 @@ struct ParameterFamilyCard: View {
             // nombre encima del valor los nueve caben en dos filas cortas y se
             // comparan de un vistazo; en renglones `nombre valor` habría que
             // leerlos en orden para encontrar uno.
-            HStack(alignment: .top, spacing: 12) {
-                ForEach(entries, id: \.label) { entry in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(display: entry.label)
-                            .font(Typography.caption)
-                            .foregroundStyle(Palette.muted)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(alignment: .top, spacing: 12) {
+                    ForEach(row, id: \.label) { entry in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(display: entry.label)
+                                .font(Typography.caption)
+                                .foregroundStyle(Palette.muted)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
 
-                        Text(display: entry.value)
-                            .font(Typography.bodyMedium)
-                            .monospacedDigit()
-                            .foregroundStyle(Palette.text)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
+                            Text(display: entry.value)
+                                .font(Typography.bodyMedium)
+                                .monospacedDigit()
+                                .foregroundStyle(Palette.text)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.6)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }
         .padding(8)
+        // **El card no cede altura, y desde el 2026-09-07 hace falta decirlo.**
+        // Con la segunda línea de Shape la columna pasó a pedir más alto del
+        // disponible, y quien cedía era este card: SwiftUI encogía su texto con
+        // el `minimumScaleFactor`, así que los ocho valores se dibujaban a la
+        // mitad de tamaño que los cinco de Groove. Ilegible a un metro, que es
+        // el requisito de `product-guidelines.md`. Lo que cede ahora es el
+        // anillo, que tiene de sobra.
+        .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Palette.inset, in: RoundedRectangle(cornerRadius: Brutalist.radiusLarge))
         .overlay {

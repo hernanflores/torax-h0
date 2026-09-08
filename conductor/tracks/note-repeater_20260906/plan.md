@@ -274,7 +274,7 @@ revisar antes de seguir (NFR1).
 
 ## FASE 6: LA PANTALLA
 
-- [ ] Task: El card de Shape, en dos líneas (FR15)
+- [~] Task: El card de Shape, en dos líneas (FR15)
   - [ ] Tests (Red): el texto de la familia trae las dos líneas y los ocho
         valores (cubierto en `Engine`, Fase 2; aquí se cablea).
   - [ ] Implementación (Green): la segunda línea en `ParameterFamilyCard`, mismo

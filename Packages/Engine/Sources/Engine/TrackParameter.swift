@@ -109,6 +109,24 @@ extension TrackParameter {
     }
 }
 
+extension TrackParameter {
+
+    /// Si este parámetro es del Note Repeater.
+    ///
+    /// **Es dato de dominio y no de presentación.** Los cuatro están en la
+    /// familia Shape y aun así no son el ritmo: son una capa sobre él, y esa
+    /// diferencia es la que el card de Shape dibuja partiendo su lista en dos
+    /// líneas (FR15). Que la vista deduzca cuáles son con una lista escrita a
+    /// mano sería poner una decisión del modelo donde no hay tests.
+    public var isNoteRepeater: Bool {
+        switch self {
+        case .repeats, .repeatTime, .ramp, .pace: true
+        case .steps, .pulses, .rotate, .division: false
+        case .velocity, .sustain, .probability, .timing, .delay: false
+        }
+    }
+}
+
 extension TrackParameter: CustomStringConvertible {
 
     /// Los términos de la Pre Spec, en inglés y sin traducir, como exige

@@ -15,6 +15,7 @@ import XCTest
 final class NoteRepeaterParameterTests: XCTestCase {
 
     private let cycle = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(4)!))
+    private let four: [TrackParameter] = [.repeats, .repeatTime, .ramp, .pace]
 
     // MARK: - Los cuatro existen y se clasifican
 
@@ -35,6 +36,20 @@ final class NoteRepeaterParameterTests: XCTestCase {
     func testTheFourParametersAreEnumerated() {
         for parameter in [TrackParameter.repeats, .repeatTime, .ramp, .pace] {
             XCTAssertTrue(TrackParameter.allCases.contains(parameter), "\(parameter)")
+        }
+    }
+
+    /// **Los cuatro se distinguen del ritmo aunque compartan familia.** Es lo
+    /// que parte el card de Shape en dos líneas: cuatro y cuatro.
+    func testTheFourAreMarkedAsNoteRepeaterAndTheRestAreNot() {
+        let shape = TrackParameter.allCases.filter { $0.family == .shape }
+        XCTAssertEqual(shape.count, 8)
+        XCTAssertEqual(shape.filter(\.isNoteRepeater), [.repeats, .repeatTime, .ramp, .pace])
+        XCTAssertEqual(
+            shape.filter { !$0.isNoteRepeater }, [.steps, .pulses, .rotate, .division])
+
+        for parameter in TrackParameter.allCases where parameter.family == .groove {
+            XCTAssertFalse(parameter.isNoteRepeater, "\(parameter)")
         }
     }
 
@@ -116,6 +131,40 @@ final class NoteRepeaterParameterTests: XCTestCase {
     func testZeroCarriesNoSign() {
         XCTAssertEqual(TrackParameter.ramp.value(in: cycle), "0%")
         XCTAssertEqual(TrackParameter.pace.value(in: cycle), "0%")
+    }
+
+    // MARK: - El valor grande transitorio
+
+    /// **Girar cualquiera de los cuatro anuncia su valor grande** con el mismo
+    /// formato que el card: el término de la Pre Spec y el valor, sin adornos
+    /// (FR15).
+    func testTurningEachOneAnnouncesItsValue() {
+        let start = cycle.applying(2, to: .repeats)
+
+        XCTAssertEqual(
+            ParameterChange(from: start, to: start.applying(1, to: .repeats))?.description,
+            "Repeats 3")
+        XCTAssertEqual(
+            ParameterChange(from: start, to: start.applying(1, to: .repeatTime))?.description,
+            "Time 1/48")
+        XCTAssertEqual(
+            ParameterChange(from: start, to: start.applying(40, to: .ramp))?.description,
+            "Ramp +40%")
+        XCTAssertEqual(
+            ParameterChange(from: start, to: start.applying(-20, to: .pace))?.description,
+            "Pace -20%")
+    }
+
+    /// Y lo que anuncia el giro es exactamente lo que dice el card en reposo:
+    /// si alguna vez se separan, es un fallo y no una variación.
+    func testTheAnnouncementMatchesTheCard() {
+        for parameter in four {
+            let moved = cycle.applying(2, to: parameter)
+            let change = ParameterChange(from: cycle, to: moved)
+
+            XCTAssertEqual(change?.value, parameter.value(in: moved), "\(parameter)")
+            XCTAssertEqual(change?.label, parameter.description, "\(parameter)")
+        }
     }
 
     // MARK: - Ctrl All los alcanza

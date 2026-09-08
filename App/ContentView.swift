@@ -386,13 +386,13 @@ struct ContentView: View {
 
             ParameterFamilyCard(
                 family: .shape,
-                entries: entries(for: .shape),
+                rows: rows(for: .shape),
                 isActive: family == .shape
             )
 
             ParameterFamilyCard(
                 family: .groove,
-                entries: entries(for: .groove),
+                rows: rows(for: .groove),
                 isActive: family == .groove
             )
 
@@ -421,10 +421,22 @@ struct ContentView: View {
     /// declara los nueve y en qué orden se leen, que es el del dominio y no el de
     /// los knobs — el preset los reordenó el 2026-09-05 y la pantalla no siguió,
     /// a propósito.
-    private func entries(for candidate: ParameterFamily) -> [(label: String, value: String)] {
-        TrackParameter.allCases
-            .filter { $0.family == candidate }
-            .map { ($0.description, $0.value(in: model.track)) }
+    /// Las líneas del card de una familia.
+    ///
+    /// **Shape trae dos y el resto una.** La segunda son los cuatro del Note
+    /// Repeater, que están en la familia Shape y aun así no son el ritmo: es una
+    /// capa sobre él, y el card dice lo mismo que el modelo separándolos (FR15).
+    /// Quién es de la capa lo decide `Engine`, no esta vista.
+    private func rows(for candidate: ParameterFamily) -> [[(label: String, value: String)]] {
+        let parameters = TrackParameter.allCases.filter { $0.family == candidate }
+        let layered = parameters.filter(\.isNoteRepeater)
+
+        func written(_ list: [TrackParameter]) -> [(label: String, value: String)] {
+            list.map { ($0.description, $0.value(in: model.track)) }
+        }
+
+        guard !layered.isEmpty else { return [written(parameters)] }
+        return [written(parameters.filter { !$0.isNoteRepeater }), written(layered)]
     }
 
     // MARK: - El patrón
