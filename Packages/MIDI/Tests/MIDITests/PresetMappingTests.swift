@@ -74,6 +74,51 @@ final class PresetMappingTests: XCTestCase {
         XCTAssertEqual(expected.count, TrackParameter.allCases.count, "falta algún parámetro")
     }
 
+    /// **Los cuatro del Note Repeater, escritos aparte** porque son lo que la
+    /// rebanada 5 de la v2 pidió: CC 79, 80, 81 y 83, saltando el 82.
+    func testTheNoteRepeaterKnobsAreSeventyNineToEightyThree() throws {
+        XCTAssertEqual(mapping.parameter(for: try XCTUnwrap(MIDIController(79))), .repeats)
+        XCTAssertEqual(mapping.parameter(for: try XCTUnwrap(MIDIController(80))), .repeatTime)
+        XCTAssertEqual(mapping.parameter(for: try XCTUnwrap(MIDIController(81))), .ramp)
+        XCTAssertEqual(mapping.parameter(for: try XCTUnwrap(MIDIController(83))), .pace)
+    }
+
+    /// Y el 82 sigue siendo el Cycle en edición: la tirada le pasa por encima
+    /// sin tocarlo.
+    func testTheCycleKnobKeptItsControllerWhenTheRepeaterArrived() throws {
+        XCTAssertEqual(mapping.editingCycleController?.number, 82)
+        XCTAssertNil(mapping.parameter(for: try XCTUnwrap(MIDIController(82))))
+    }
+
+    /// **Las tres familias siguen sin pisarse.** Los knobs van del 70 al 85, los
+    /// step buttons del 102 al 117 y los pads son notas: ningún CC de knob puede
+    /// caer en el bloque de los botones.
+    func testTheThreeFamiliesDoNotOverlap() {
+        let numbers = mapping.declaredNumbers
+        XCTAssertTrue(Set(numbers.knobs).isDisjoint(with: Set(numbers.stepButtons)))
+        XCTAssertEqual(Set(numbers.knobs).count, 16)
+        XCTAssertEqual(Set(numbers.stepButtons).count, 16)
+    }
+
+    /// **Con un `knobBlock` distinto, lo que se declara sigue al bloque.** Los
+    /// dieciséis números y el knob del Cycle se recalculan; ninguno queda
+    /// clavado al 70.
+    ///
+    /// > **Lo que NO sigue al bloque son las asignaciones**, y es anterior a esta
+    /// > rebanada: `assignments` guarda CC absolutos para los trece parámetros,
+    /// > no desplazamientos. Un mapeo con otro bloque hay que construirlo con sus
+    /// > números. Los cuatro del Note Repeater entran con el mismo criterio que
+    /// > los nueve de antes, así que esto no empeora — queda escrito para que
+    /// > nadie lo lea como una promesa que el tipo no hace.
+    func testTheDeclaredNumbersFollowTheKnobBlock() {
+        let moved = ControlMapping(
+            assignments: [.steps: 20], knobBlock: MIDIController(20)!)
+
+        XCTAssertEqual(moved.declaredNumbers.knobs.first, 20)
+        XCTAssertEqual(moved.declaredNumbers.knobs.last, 35)
+        XCTAssertEqual(moved.editingCycleController?.number, 32)
+    }
+
     /// El intercambio del 2026-09-05, escrito aparte porque es lo que se pidió.
     func testDelayIsOnSeventySixAndProbabilityOnSeventyEight() throws {
         XCTAssertEqual(

@@ -243,7 +243,7 @@ revisar antes de seguir (NFR1).
 
 ## FASE 5: LOS CUATRO KNOBS Y EL PRESET
 
-- [ ] Task: Los cuatro CC en `ControlMapping` (FR4)
+- [~] Task: Los cuatro CC en `ControlMapping` (FR4)
   - [ ] Tests (Red): CC 79 mueve Repeats, 80 Time, 81 Ramp y 83 Pace; el 82
         sigue moviendo el Cycle en edición y ningún otro parámetro cambia de CC.
   - [ ] Tests (Red): con un `knobBlock` distinto del por defecto, los cuatro
