@@ -223,7 +223,7 @@ seguir.
         (`workflow.md`, *Coverage Requirements*).
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 7: SIMULADOR, DISPOSITIVO Y CIERRE
+## FASE 7: SIMULADOR, DISPOSITIVO Y CIERRE [checkpoint: c37eeb0]
 
 - [x] Task: Verificar la pantalla en simulador (criterio 13) `d96047b`
   - [x] Captura con `simctl` de la pantalla `modulation` con cada una de las
@@ -261,4 +261,4 @@ seguir.
         nada fuera de la stdlib.
   - [x] Actualizar `conductor/tracks.md` y abrir el PR contra `main` — cuerpo
         corto, cinco líneas y la tabla de verificación (`workflow.md`).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
