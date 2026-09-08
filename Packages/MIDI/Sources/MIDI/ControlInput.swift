@@ -822,8 +822,20 @@ public final class ControlInput: @unchecked Sendable {
     /// **No publica** (FR4): quien provoca el cambio —`selectBank`,
     /// `selectPattern`, `reloadBank`— ya avisa al transporte. Publicar además
     /// dejaría dos publicaciones por cambio y una carrera por cuál gana.
+    ///
+    /// **Temp y Ctrl All se cancelan sin restaurar** (FR5). El overlay y el
+    /// desplazamiento capturados guardan valores **del Pattern que ya no está**:
+    /// devolverlos al soltar el botón escribiría material de otro sitio encima
+    /// del recién adoptado, que es la destrucción que este track existe para
+    /// impedir. Se descartan, y soltar después no escribe nada.
+    ///
+    /// **El botón sigue hundido**: soltar no es lo que cancela, adoptar sí. A
+    /// efectos del gesto siguiente el modificador sigue al mando, y el primer
+    /// giro sobre el material nuevo captura su base ahí.
     public func adopt(_ pattern: Pattern) {
         self.pattern = pattern
+        overlay = ParameterOverlay()
+        ctrlAll = CtrlAllOffset()
     }
 
     /// Cambia el marco tonal y reencuadra el pool.
