@@ -175,7 +175,7 @@ seguir.
         tarea es el test y queda dicho en la git note.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 5: LA QUINTA PESTAÑA Y LAS CUATRO ONDAS
+## FASE 5: LA QUINTA PESTAÑA Y LAS CUATRO ONDAS [checkpoint: 8743480]
 
 - [x] Task: `Module.modulation` y la navegación de cinco (FR10) `8743480`
   - [x] Añadir el caso a `Module` y comprobar que `ModuleNavigation` reparte los
@@ -194,7 +194,7 @@ seguir.
   - [x] La etiqueta dice `track 04 · cycle 02`; el Track lo elige el controlador
         y esta pantalla no lo escribe (FR17).
   - [x] Área táctil suficiente y legible sin zoom (Code Review Process §6).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: EL ACENTO SE VE
 
