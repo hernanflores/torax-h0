@@ -1,0 +1,41 @@
+Task: El modelo aplica lo que armó (FR8, FR10) + La pantalla lo consulta (FR9)
+
+Dos tareas del plan en un commit: la decisión y su consulta son la misma pieza y
+separarlas dejaba `PendingAdoption` sin nadie que la llamara.
+
+Qué se añade:
+- `MIDI/PendingAdoption`: recuerda el hueco armado y el contador que había
+  entonces, y dice qué aplicar cuando el contador se mueve después. La decisión
+  vive aquí y no en `App` porque `App` no se mide (NFR3) y esto tiene casos
+  límite reales.
+- `Transport.adoptionCount`, que expone la palabra del handoff.
+- `TransportModel.applyPendingAdoption()`: mueve `project.selectedPattern`, deja
+  de haber nada armado —así desaparece la cuenta atrás y la rejilla marca el
+  hueco— y **adopta en `ControlInput`**, que es la consecuencia que destruía
+  trabajo (FR10).
+- `TransportModel.armedPatternIndex` deja de ser almacenada y delega en
+  `PendingAdoption`: un solo sitio donde vive lo pendiente.
+
+El caso límite que no era obvio: armar encima de algo que ya aterrizó sin haber
+mirado en medio. Suena el que entró en el compás, no el que espera al siguiente,
+así que el aterrizaje se guarda en vez de perderse. Hace falta pulsar dos
+Patterns dentro del mismo cuadro a caballo de un límite — y por eso se resuelve
+con un test en vez de confiando en que no pase.
+
+Desviación documentada (paso 8 del Task Workflow): FR9 decía «se lee al
+dibujar». Se implementa como un `.task` a 16 ms y no dentro del `TimelineView`
+porque aplicar **escribe** en el modelo y `playhead`/`cycleInCourse` solo leen;
+escribir mientras SwiftUI evalúa un cuerpo invalida la vista que se dibuja. La
+propiedad que FR9 protege —el hilo de tiempo real no llama a nadie— se cumple
+entera. Nota fechada del 2026-09-08 en el spec.md del track.
+
+Ficheros:
+- A Packages/MIDI/Sources/MIDI/PendingAdoption.swift
+- A Packages/MIDI/Tests/MIDITests/PendingAdoptionTests.swift (10 tests)
+- M Packages/MIDI/Sources/MIDI/Transport.swift
+- M App/TransportModel.swift
+- M App/ToraxH0App.swift
+- M conductor/tracks/control-input-adoption_20260908/spec.md
+
+Verificación: Red 10 de 10 sin compilar; Green 10 de 10. Suite MIDI 719 tests,
+0 fallos. BUILD SUCCEEDED.
