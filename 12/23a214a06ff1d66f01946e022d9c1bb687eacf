@@ -1,0 +1,54 @@
+Task: Modulation en disco, o se pierde al guardar (FR1)
+
+Tarea ENMENDADA de la Fase 3 del track modulation_20260906. No estaba en el plan
+original: la spec listaba la persistencia en Out of Scope porque el track se
+abrió el 2026-09-06 y persistence_20260907 entró al día siguiente. La enmienda,
+en spec.md y plan.md, va en el commit anterior de plan.
+
+TDD: los 9 tests se escribieron primero y fallaron demostrando la pérdida
+silenciosa — un Cycle con modulación volvía del round trip con el neutro.
+
+Ficheros:
+- Packages/Engine/Sources/Engine/ProjectRecord.swift (dos claves y sus mapas)
+- Packages/Engine/Tests/EngineTests/ModulationRecordTests.swift (creado)
+- Packages/Engine/Tests/EngineTests/RecordRoundTripTests.swift (las dos claves
+  declaradas en el conjunto esperado)
+
+Un hallazgo sobre las redes que vale la pena registrar. ProjectRecord.swift
+prometía que 'añadir un parámetro al Cycle tiene que romper un test', y el test
+que enumera las claves esperadas cumplió — pero solo DESPUÉS de declarar las
+claves nuevas. Ese test se dispara cuando SOBRA una clave, no cuando FALTA un
+campo del Cycle. Lo que destapó la pérdida fue el round trip del Cycle entero.
+Los dos hacen falta, y queda anotado en el propio test.
+
+Decisiones:
+
+- waveform se guarda por CLAVE ESTABLE en minúsculas y no por su posición en el
+  enum. El orden de Waveform.allCases lo manda la rejilla 2x2 de la pantalla
+  (FR11) y puede querer cambiarse; atar el fichero al índice haría que reordenar
+  la rejilla cambiara la onda de un Bank ya guardado.
+
+- Y no reutiliza Waveform.description, aunque hoy las cadenas coincidan. Aquello
+  es lo que enseña la pantalla; atarlo haría que un cambio de rotulación rompiera
+  ficheros. Son dos vocabularios distintos, que es exactamente la razón por la
+  que scale ya está separado de Scale.name. El switch es exhaustivo a propósito:
+  añadir una onda no compilará hasta que alguien decida cómo se guarda.
+
+- Las dos claves son OPCIONALES y schemaVersion se queda en 1.
+  ProjectRecord.validated() exige igualdad exacta, así que subirla sin migrador
+  dejaría ilegibles los Banks ya escritos. Un fichero sin las claves se lee como
+  el neutro —triangle y accent 0—, que es exactamente el estado que ese fichero
+  describía: el criterio 1 de la rebanada aplicado al disco.
+
+- Se escriben siempre, también el neutro: un 0 explícito dice 'sin modulación',
+  mientras que una clave ausente solo dice 'esto lo escribió otra versión'.
+
+- Una onda desconocida y un accent fuera de rango caen en su default en vez de
+  dejar el Bank sin abrir. Un byte malo no es razón para perder trabajo.
+
+Claves del CycleRecord: 15 hasta el 2026-09-07, 19 con el Note Repeater, 21 con
+la modulación.
+
+Verificación: swift test --package-path Packages/Engine
+Engine 865 tests, 0 fallos (856 antes de la tarea, +9).
+Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
