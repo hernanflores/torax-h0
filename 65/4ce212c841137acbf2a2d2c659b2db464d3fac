@@ -1,0 +1,33 @@
+Task: Cada Track modula con su propio anillo (FR4)
+
+Última tarea de la Fase 4 del track modulation_20260906.
+
+Ficheros:
+- Packages/MIDI/Tests/MIDITests/ModulationInSchedulerTests.swift (2 tests más)
+
+LA TAREA ES EL TEST, y queda dicho aquí como el plan pedía: los dos pasaron a la
+primera, sin tocar una línea de producción. No es que la tarea sobrara — es el
+resultado que la valida. La fase de la modulación sale del índice de Step dentro
+de la vuelta del propio Track, así que la independencia entre Tracks es una
+CONSECUENCIA de cómo se calcula la fase y no un mecanismo que haya que construir
+y mantener. Eso es exactamente lo que FR4 promete cuando dice que la sincronía no
+es algo que haya que vigilar, y ahora está comprobado en vez de argumentado.
+
+Los dos tests:
+
+1. Dos Tracks de longitudes distintas sonando a la vez. El de dieciséis Steps
+   recorre su onda una vez en dieciséis Steps —pico en el 4, valle en el 12— y
+   el de ocho la recorre DOS veces en ese mismo tiempo —picos en el 2 y el 10,
+   valles en el 6 y el 14—. El desfase entre los dos es la función, no un
+   defecto: el LFO está atado al material del Track igual que sus Cycles.
+
+2. Un Track muteado sigue avanzando su fase. Se mutea, se dejan pasar ocho
+   Steps, se desmutea, y los Steps 8–15 valen exactamente lo mismo que los del
+   vecino que nunca calló. Es la misma propiedad que MuteGateTests fija para la
+   rejilla —mute de mixer y no stop del Track— comprobada ahora sobre la
+   velocity: si la fase hubiera esperado al mute, el Track volvería por el
+   principio de su onda y no por donde iba.
+
+Verificación:
+  swift test --package-path Packages/MIDI (partición de CI)   737 tests, 0 fallos
+Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
