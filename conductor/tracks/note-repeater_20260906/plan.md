@@ -185,7 +185,7 @@ revisar antes de seguir (NFR1).
         argumento se generaliza.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 4: LA TIRADA — EL `TrackScheduler` REPITE
+## FASE 4: LA TIRADA — EL `TrackScheduler` REPITE [checkpoint: 3787177]
 
 - [x] Task: El límite de la tirada (FR9) — 290a6ac
   - [x] Tests (Red): dado un Cycle y un Step que dispara, el límite es el
@@ -239,7 +239,7 @@ revisar antes de seguir (NFR1).
         Probability y varios Cycles dentro.
   - [x] Implementación (Green): si algo falla aquí, es un fallo de las tareas
         anteriores y se arregla ahí, no con un caso especial para Repeats 0.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: LOS CUATRO KNOBS Y EL PRESET
 
