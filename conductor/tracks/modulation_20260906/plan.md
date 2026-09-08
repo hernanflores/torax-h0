@@ -238,7 +238,7 @@ seguir.
         tarea — estaba marcado como hecho y no lo estaba.
   - [x] Anotar en la git note lo que el simulador **no** puede verificar: sin
         destinos MIDI no hay transporte, así que ni playhead ni acento audible.
-- [ ] Task: Verificar en iPad con BeatStep Pro (criterios 3, 5, 13)
+- [~] Task: Verificar en iPad con BeatStep Pro (criterios 3, 5, 13)
   - [ ] Con un sinte externo: `triangle` y `accent` alto **se oye** como una
         respiración a lo largo de la vuelta.
   - [ ] `pulse` acentúa media vuelta entera y la otra media suena por debajo.
@@ -248,10 +248,10 @@ seguir.
   - [ ] Comprobar que el playhead del panel va con el del anillo, sin retraso
         visible.
   - [ ] Legibilidad a un metro del panel y de la lectura grande.
-  - [ ] **El imantado del slider** (FR18), que viene de la tarea del simulador:
+  - [x] **El imantado del slider** (FR18), que viene de la tarea del simulador:
         arrastrar cerca del centro deja `accent` en 0 exacto, y un toque simple
         sobre la pista salta a ese valor. `simctl` no toca la pantalla, así que
-        es aquí donde se comprueba (criterio 11).
+        es aquí donde se comprueba (criterio 11). **Cumple, 2026-09-08.**
 - [ ] Task: Cobertura, estilo y cierre del track
   - [ ] `Engine` ≥90% y `MIDI` ≥80%, esta última medida como dice `workflow.md`:
         un solo proceso, `.profdata` fusionado a mano, `Engine/Sources` fuera del
