@@ -1,7 +1,7 @@
 # Verificación en dispositivo — v2 rebanada 5: Note Repeater
 
 **Track:** `note-repeater_20260906`
-**Fecha:** _(pendiente)_
+**Fecha:** 2026-09-07
 **Dispositivo:** iPad Air 4ª generación
 **Controlador:** BeatStep Pro, encoders en `Relative #2`, **preset versión 4**
 
@@ -40,7 +40,7 @@ nada nuevo.
 3. Un Bank guardado antes del cambio **abre y suena igual**, con los cuatro
    parámetros en su neutro: `repeats 0 · time 1/32 · ramp 0% · pace 0%`.
 
-- [ ] Resultado:
+- [x] Resultado: **cumple.** Un Pattern de antes del cambio suena idéntico, y un Bank guardado antes abre con los cuatro en su neutro.
 
 ### 2. Los cuatro knobs
 
@@ -53,7 +53,7 @@ nada nuevo.
 5. El knob 13 sigue moviendo el **Cycle en edición**, y el 15 y el 16 no hacen
    nada.
 
-- [ ] Resultado:
+- [x] Resultado: **cumple.** Los cuatro knobs mueven su parámetro con valor grande transitorio, el cambio se oye en el Step siguiente y ninguno envuelve en los topes. El knob 13 sigue siendo el Cycle; el 15 y el 16, nada.
 
 ### 3. Los dos gestos que la rebanada existía para hacer
 
@@ -68,7 +68,7 @@ nada nuevo.
    Pace alto salen **menos repeticiones de las pedidas**, y es deliberado: el
    corte llega antes.
 
-- [ ] Resultado:
+- [x] Resultado: **cumple.** El ratchet y el roll suenan. El roll cruza los Steps vacíos y se corta al cerrar la vuelta. Ramp sube y baja sin apagar ninguna repetición; Pace frena y acelera, y con Pace alto salen menos de las pedidas, como estaba previsto.
 
 ### 4. Al oído, lo que no se puede medir (NFR6)
 
@@ -85,7 +85,7 @@ Es el punto por el que existe este documento.
    repeticiones se solapan a propósito —Choke y Tail quedaron fuera— pero **nada
    debe quedarse sonando** al parar el transporte.
 
-- [ ] Resultado:
+- [x] Resultado: **cumple.** Con Repeats 8, Time 1/128 y varios Tracks a la vez la tirada no se arrastra ni se adelanta. El swing y el Delay la llevan entera. Con Sustain al 200% las repeticiones se solapan —Choke y Tail están fuera— y no queda ninguna nota colgada al parar.
 
 ### 5. Probability sobre todas las notas
 
@@ -95,7 +95,7 @@ Es el punto por el que existe este documento.
    repeticiones.
 4. Pulsar Play dos veces reproduce **las mismas omisiones**.
 
-- [ ] Resultado:
+- [x] Resultado: **cumple.** La textura queda agujereada, los golpes callados conservan sus repeticiones y pulsar Play dos veces reproduce las mismas omisiones.
 
 ### 6. Temp y Ctrl All
 
@@ -106,7 +106,7 @@ Es el punto por el que existe este documento.
 3. Girar contra el tope con Ctrl All puesto y soltar: **tiene que volver la base
    exacta**, no un valor topado.
 
-- [ ] Resultado:
+- [x] Resultado: **cumple.** Temp iguala y devuelve; Ctrl All sube los doce y devuelve la base exacta, también después de topar.
 
 ### 7. La pantalla
 
@@ -117,7 +117,7 @@ Es el punto por el que existe este documento.
 3. La tira de **Cycles sale entera**, con sus dos renglones de 01 a 16.
 4. **El anillo no dibuja las repeticiones**, solo los Pulses. Es deliberado.
 
-- [ ] Resultado:
+- [x] Resultado: **cumple.** Las dos líneas de `shape` se leen a un metro al mismo tamaño que `groove`, `tonal` cabe en una fila, la tira de Cycles sale entera y el anillo sigue dibujando solo los Pulses.
 
 ### 8. Persistencia de los cuatro
 
@@ -129,7 +129,7 @@ Es el punto por el que existe este documento.
 > Pattern anterior entero**. Tiene track propio en `conductor/tracks.md` y no es
 > de esta rebanada. Si aparece aquí, es ése.
 
-- [ ] Resultado:
+- [x] Resultado: **cumple con el aviso.** Los cuatro sobreviven a `Save Bank` / `Reload` y al cambio de Bank. Se confirma también el defecto avisado: después de cambiar de Bank, el primer giro de knob republica el Pattern anterior entero. **Es el defecto `ControlInput` no adopta el Pattern del Bank nuevo**, registrado el mismo día en `conductor/tracks.md`, y no es de esta rebanada.
 
 ## Sin medición de jitter
 
@@ -141,5 +141,15 @@ Repeats se quedó en 8 y no en los 48 de la Pre Spec.
 
 ## Lo que no cumplió
 
-_(Se rellena al hacer la verificación. Si algo falla, va aquí — el guion no se
-cierra en verde por omisión.)_
+**Los ocho bloques cumplen.** Nada quedó sin comprobar y nada falló.
+
+**Lo único anotado no es de esta rebanada:** el bloque 8 confirma el defecto
+avisado — después de cambiar de Bank, el primer giro de knob republica el Pattern
+anterior entero, porque `ControlInput` solo escribe su copia del Pattern en su
+`init`. Tiene track propio, abierto el 2026-09-07, con el diagnóstico y la forma
+del arreglo. Se descubrió con esta rebanada porque un ratchet sobre un Bank que
+se creía vacío es inconfundible, pero vuelve el Pattern entero y no solo los
+Repeats.
+
+**Sin medición de jitter**, por las dos vías escritas arriba. El juicio del
+punto 4 es al oído y es el que esta rebanada acepta como suficiente.
