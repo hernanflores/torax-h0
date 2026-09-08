@@ -701,7 +701,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: v2 rebanada 5 — Note Repeater: Repeats, Time, Ramp y Pace**
+- [x] **Track: v2 rebanada 5 — Note Repeater: Repeats, Time, Ramp y Pace** — los cuatro knobs suenan y se verificaron en iPad; **sin medición de jitter**, por la suspensión del 2026-09-02
   *Link: [conductor/tracks/note-repeater_20260906/index.md](./tracks/note-repeater_20260906/index.md)*
 
   Abierto el 2026-09-06. **Saca el Note Repeater de «Fuera de v1»** de
@@ -725,6 +725,38 @@ escalón es el que se nota.
   **No lleva medición de jitter**, y es el segundo cambio desde la suspensión del
   2026-09-02 que toca la rejilla temporal. Aquí no se abre excepción —el primero,
   `external-clock_20260903`, sí la abrió—: se verifica tocando.
+
+  **Cerrado el 2026-09-07**, en siete fases. `Engine` 800 tests al 98,54%, `MIDI`
+  708 al 92,65%, `Persistence` 62 al 97,52%.
+
+  **Lo que entrega:** los cuatro parámetros en el `Cycle` —cuatro bytes por
+  Cycle, el 2% del snapshot—, la tirada colgando de cada Pulse con su corte por
+  el Pulse siguiente, la velocity de la rampa y el gate sobre el hueco de cada
+  repetición, Probability decidiendo sobre todas las notas, los cuatro knobs en
+  los CC 79, 80, 81 y 83, el preset en su versión 4, y el card de Shape en dos
+  líneas.
+
+  **Dos cosas que el plan no tenía y entraron por enmienda.** La **persistencia
+  de los cuatro**: la rebanada 4 llegó a `main` después de escribirse este plan y
+  añadir un parámetro al `Cycle` sin tocar `CycleRecord` habría perdido Repeats,
+  Time, Ramp y Pace al guardar. `schemaVersion` se queda en 1 y las claves nuevas
+  se leen con default neutro, así que los Banks ya escritos siguen abriendo. Y el
+  **preset adelantado a la Fase 2**, porque el invariante «todo `TrackParameter`
+  tiene su controlador» deja la suite roja hasta que el preset declara los CC.
+
+  **El número que decidió el diseño:** `NoteRepeater` guarda cuatro `Int8` y no
+  sus cuatro tipos. `RepeatTime` envuelve una `Division` —dos palabras— y
+  almacenarla entera habría subido el snapshot un 21% en vez del 2% que NFR2
+  presupone.
+
+  **Verificado en dispositivo, los ocho bloques del guion.** Incluido el que
+  sustituye al arnés: con Repeats 8, Time 1/128 y varios Tracks a la vez la
+  tirada no se arrastra, el swing la lleva entera y Sustain al 200% no deja notas
+  colgadas. Ver `device-verification.md`.
+
+  **Deja un defecto encontrado al verificar, que no es suyo:** `ControlInput` no
+  adopta el Pattern del Bank nuevo, así que el primer giro de knob después de
+  cambiar de Bank republica el Pattern anterior entero. Tiene track propio arriba.
 
 ---
 
@@ -769,6 +801,52 @@ Con las rebanadas 1 y 2 del MVP cerradas, son lo único abierto. Dos de los tres
 están encadenados: `midi-test-flake` bloquea a `scheduler-lifecycle`, no al
 revés. `network-session-source` es independiente de esa cadena y se puede tomar
 en cualquier momento.
+
+---
+
+- [ ] **Track: `ControlInput` no adopta el Pattern del Bank nuevo**
+
+  Encontrado el 2026-09-07 verificando la Fase 4 de `note-repeater_20260906` en
+  dispositivo. **Los parámetros del Bank anterior vuelven en cuanto se gira un
+  knob, incluso sobre un Bank vacío.**
+
+  **La raíz.** `ControlInput` guarda su propia copia del Pattern
+  —`ControlInput.swift:32`, y está documentado por qué: `PatternHandoff.load()`
+  puede descartar una lectura y perder un giro sería un knob que no responde—
+  pero **solo la escribe en su `init`**. Las demás escrituras son ediciones
+  incrementales: un giro, un pad, un canal. No hay ninguna vía para reseedearla
+  con otro Pattern.
+
+  Así que al cambiar de Bank: `selectBank` mueve el `Project`, avisa al
+  transporte y actualiza el `pattern` del modelo —por eso **lo que suena sí
+  cambia**—, pero `controlInput` se queda con el Pattern del Bank anterior. Al
+  primer giro de knob, `TransportModel.swift:260` hace
+  `pattern = controlInput.pattern` y **republica el Pattern viejo entero encima
+  del Bank nuevo**.
+
+  **No son solo los Repeats.** Vuelven Steps, Pulses, Rotate, el pool, el Groove
+  y el marco tonal — el Pattern completo. Se descubrió con el Note Repeater
+  porque un ratchet sobre un Bank que se creía vacío es inconfundible, mientras
+  que el resto pasa por «no cambió nada».
+
+  **Alcanza también a `selectPattern` y a `reloadBank`**, por la misma vía: los
+  tres cambian el material del modelo y ninguno se lo dice a `ControlInput`.
+
+  **Es familia del defecto de abajo, no el mismo.** Aquél es el hilo del
+  scheduler sin vía de vuelta hacia el modelo; éste es el modelo sin vía de ida
+  hacia `ControlInput`. La entrada de abajo dice que «`selectBank` no tiene el
+  problema», y eso resulta ser cierto solo para lo que suena, no para lo que se
+  edita después.
+
+  **La forma del arreglo**, para quien lo tome: una vía en `ControlInput` que
+  adopte un Pattern entero conservando lo que es suyo y no del material —el Track
+  seleccionado, el registro de pads, los modificadores puestos—, llamada desde
+  `selectBank`, `selectPattern` y `reloadBank`. Lo delicado es qué pasa con un
+  Temp o un Ctrl All puesto en el momento del cambio: soltarlos después
+  restauraría valores de un Pattern que ya no está.
+
+  **No bloquea a `note-repeater_20260906`**, que se cierra con este defecto
+  anotado.
 
 ---
 

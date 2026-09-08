@@ -22,7 +22,10 @@
 
 // MARK: - Cycle
 
-/// Un `Cycle` en disco: quince claves planas.
+/// Un `Cycle` en disco: diecinueve claves planas.
+///
+/// **Eran quince hasta el 2026-09-07**, cuando los cuatro del Note Repeater se
+/// sumaron.
 ///
 /// **Plano y no anidado**, aunque `Shape`, `Groove` y `TonalFrame` sean tipos
 /// propios. Un Cycle son quince números y una cadena; anidarlos en tres objetos
@@ -58,6 +61,28 @@ public struct CycleRecord: Codable, Equatable, Sendable {
     public let root: Int
     public let padOctaveShift: Int
 
+    /// Los cuatro del Note Repeater, desde el 2026-09-07.
+    ///
+    /// **Opcionales, y es lo único que hace legible un Bank de antes de la
+    /// rebanada.** Un fichero escrito sin estas claves las decodifica como `nil`
+    /// y se lee como el neutro —Repeats 0, Time 1/32, Ramp 0, Pace 0—, que es
+    /// exactamente el estado que ese fichero describía. La alternativa era subir
+    /// `schemaVersion`, y `ProjectRecord.validated()` exige igualdad exacta: sin
+    /// migrador, eso dejaría sin abrir los Banks ya guardados.
+    ///
+    /// **Se escriben siempre**, también el neutro: un `0` explícito dice «sin
+    /// repeticiones», mientras que una clave ausente solo dice «esto lo escribió
+    /// otra versión».
+    ///
+    /// **Time se guarda por su denominador y no por su posición en la lista.**
+    /// El índice es la disposición del knob y ataría el fichero a ella: insertar
+    /// una fracción en `RepeatTime.ordered` movería lo que suena un Bank ya
+    /// guardado. `128` seguirá siendo 1/128.
+    public let repeats: Int?
+    public let repeatTimeDenominator: Int?
+    public let ramp: Int?
+    public let pace: Int?
+
     public init(_ cycle: Cycle) {
         steps = cycle.shape.steps.count
         pulses = cycle.shape.pulses.count
@@ -74,6 +99,10 @@ public struct CycleRecord: Codable, Equatable, Sendable {
         scale = Self.key(for: cycle.frame.scale)
         root = cycle.frame.root.pitchClass
         padOctaveShift = cycle.padOctaveShift
+        repeats = cycle.noteRepeater.repeats.count
+        repeatTimeDenominator = cycle.noteRepeater.time.fraction.denominator
+        ramp = cycle.noteRepeater.ramp.percent
+        pace = cycle.noteRepeater.pace.percent
     }
 
     /// El Cycle que describe.
@@ -105,12 +134,25 @@ public struct CycleRecord: Codable, Equatable, Sendable {
             delay: Delay(percent: delay) ?? .default
         )
 
+        // Un valor fuera de rango cae en su default, como el resto de las
+        // claves. Time se busca en la lista por su denominador: una fracción que
+        // no esté en ella —un fichero de otra versión, o tocado a mano— vuelve
+        // como el default en vez de dejar el Bank sin abrir.
+        let repeater = NoteRepeater(
+            repeats: repeats.flatMap(Repeats.init) ?? .default,
+            time: RepeatTime.ordered.first { $0.fraction.denominator == repeatTimeDenominator }
+                ?? .default,
+            ramp: ramp.flatMap { Ramp(percent: $0) } ?? .default,
+            pace: pace.flatMap { Pace(percent: $0) } ?? .default
+        )
+
         return Cycle(
             shape: shape,
             pool: pitches,
             groove: groove,
             channel: Channel(channel) ?? .first,
             frame: TonalFrame(scale: Self.scale(for: scale), root: Root(root) ?? .c),
+            noteRepeater: repeater,
             padOctaveShift: padOctaveShift
         )
     }

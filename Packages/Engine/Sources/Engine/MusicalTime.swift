@@ -71,7 +71,11 @@ public struct Division: Equatable, Sendable {
     /// Vía interna para las constantes de abajo, cuyos valores son literales
     /// conocidos. Evita tener que forzar el desempaquetado del inicializador
     /// validador, que `code_styleguides/swift.md` prohíbe fuera de tests.
-    private init(unchecked numerator: Int, denominator: Int) {
+    /// **Internal y no private desde el 2026-09-07**: `RepeatTime` construye su
+    /// propia lista de fracciones —tresillos incluidos— y necesita la misma vía,
+    /// por la misma razón. Ampliar `Division.ordered` para dársela cambiaría por
+    /// dónde pasa el knob de Division, que es otro parámetro.
+    init(unchecked numerator: Int, denominator: Int) {
         self.numerator = numerator
         self.denominator = denominator
     }

@@ -68,6 +68,19 @@ public final class SchedulerThread: @unchecked Sendable {
             _ hostTime: UInt64
         ) -> Void
 
+    /// Se invoca por cada repetición del Note Repeater, desde el hilo del
+    /// scheduler.
+    ///
+    /// **Llega con su velocity y su gate ya resueltos**, y no con el Groove: una
+    /// repetición no suena a la Velocity del Track —la recorre la rampa— ni dura
+    /// lo que un Step, sino su propio hueco. El gate viene ya en tiempo de
+    /// reloj, convertido con el mapa de tempo como los instantes.
+    public typealias RepetitionHandler =
+        @Sendable (
+            _ track: Int, _ source: Cycle, _ step: Int, _ pitch: Pitch?, _ velocity: Velocity,
+            _ gateNanoseconds: Int64, _ hostTime: UInt64
+        ) -> Void
+
     private let configuration: SchedulerConfiguration
     private let material: SchedulerMaterial
 
@@ -84,6 +97,7 @@ public final class SchedulerThread: @unchecked Sendable {
     /// es la vía del arnés de medición.
     private let mutes: MuteMask?
     private let handler: StepHandler
+    private let repetitionHandler: RepetitionHandler?
 
     /// Lo que se sabe del maestro externo, o `nil` si nadie sigue a ninguno.
     ///
@@ -114,6 +128,7 @@ public final class SchedulerThread: @unchecked Sendable {
         pattern: Pattern? = nil,
         mutes: MuteMask? = nil,
         clock: ClockHandoff? = nil,
+        repetitionHandler: RepetitionHandler? = nil,
         handler: @escaping StepHandler
     ) {
         self.init(
@@ -125,6 +140,7 @@ public final class SchedulerThread: @unchecked Sendable {
             pattern: pattern,
             mutes: mutes,
             clock: clock,
+            repetitionHandler: repetitionHandler,
             handler: handler)
     }
 
@@ -137,8 +153,10 @@ public final class SchedulerThread: @unchecked Sendable {
         pattern: Pattern? = nil,
         mutes: MuteMask? = nil,
         clock: ClockHandoff? = nil,
+        repetitionHandler: RepetitionHandler? = nil,
         handler: @escaping StepHandler
     ) {
+        self.repetitionHandler = repetitionHandler
         self.clock = clock
         self.pattern = pattern
         self.mutes = mutes
@@ -168,7 +186,7 @@ public final class SchedulerThread: @unchecked Sendable {
         let thread = Thread {
             [
                 configuration, material, pattern, handoff, playhead, cyclePlaybackClock,
-                mutes, clock, handler, running,
+                mutes, clock, handler, repetitionHandler, running,
             ] in
             SchedulerThread.run(
                 configuration: configuration,
@@ -180,6 +198,7 @@ public final class SchedulerThread: @unchecked Sendable {
                 mutes: mutes,
                 clock: clock,
                 handler: handler,
+                repetitionHandler: repetitionHandler,
                 running: running,
                 origin: origin
             )
@@ -245,6 +264,7 @@ public final class SchedulerThread: @unchecked Sendable {
         mutes: MuteMask?,
         clock: ClockHandoff?,
         handler: StepHandler,
+        repetitionHandler: RepetitionHandler?,
         running: AtomicFlag,
         origin: UInt64? = nil
     ) {
@@ -322,7 +342,33 @@ public final class SchedulerThread: @unchecked Sendable {
                 tempoMap.gridNanoseconds(atWallNanoseconds: wallNanoseconds) - budgetNanoseconds
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
 
-            scheduler.advance(toHorizon: horizon, refreshingFrom: handoff) {
+            scheduler.advance(
+                toHorizon: horizon,
+                refreshingFrom: handoff,
+                // **La repetición se sella con la misma cuenta que el Pulse**, y
+                // su gate se convierte con el mismo mapa: seguir a un maestro
+                // lento tiene que alargar el hueco y el gate a la vez, o la
+                // tirada se despegaría de la rejilla que la contiene.
+                emitRepetition: { track, source, step, pitch, velocity, gate, offset in
+                    guard let repetitionHandler else { return }
+                    let gridStart = budgetNanoseconds + offset
+                    let wallStart = tempoMap.wallNanoseconds(forGridNanoseconds: gridStart)
+                    // El gate es una duración entre dos posiciones musicales.
+                    // Restarlas después de mapearlas conserva la pendiente del
+                    // tempo y cancela tanto el rebase como las correcciones de
+                    // fase que desplazan el origen.
+                    let wallGate =
+                        tempoMap.wallNanoseconds(forGridNanoseconds: gridStart + gate)
+                        - wallStart
+                    let hostTime =
+                        startHostTicks
+                        &+ HostClock.hostTicks(
+                            fromNanoseconds: UInt64(max(0, wallStart)))
+                    repetitionHandler(
+                        track, source, step, pitch, velocity,
+                        wallGate, hostTime)
+                }
+            ) {
                 track, source, step, pitch, groove, offset in
                 // El offset es relativo al origen de la rejilla, y el
                 // presupuesto es lo que separa ese origen del arranque. Sumarlos

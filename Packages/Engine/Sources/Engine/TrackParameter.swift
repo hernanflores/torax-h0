@@ -25,6 +25,19 @@ public enum TrackParameter: Hashable, Sendable, CaseIterable {
     case rotate
     case division
 
+    // Shape, una capa por encima — cuántos triggers extra cuelgan de cada Pulse.
+    //
+    // **Son de Shape y no de una familia nueva.** La tabla de Shape de la Pre
+    // Spec ya pone Repeats y Time ahí, y un cuarto acento exigiría verificar un
+    // cuarto color a un metro sin una familia nueva detrás.
+    case repeats
+
+    /// El usuario lee `Time`. El prefijo es desambiguación de Swift frente a
+    /// `MusicalTime` y `MusicalTimeline`, no un término nuevo (NFR7).
+    case repeatTime
+    case ramp
+    case pace
+
     // Groove — cómo se interpreta lo que ocurre.
     case velocity
     case sustain
@@ -90,7 +103,26 @@ extension TrackParameter {
     public var family: ParameterFamily {
         switch self {
         case .steps, .pulses, .rotate, .division: .shape
+        case .repeats, .repeatTime, .ramp, .pace: .shape
         case .velocity, .sustain, .probability, .timing, .delay: .groove
+        }
+    }
+}
+
+extension TrackParameter {
+
+    /// Si este parámetro es del Note Repeater.
+    ///
+    /// **Es dato de dominio y no de presentación.** Los cuatro están en la
+    /// familia Shape y aun así no son el ritmo: son una capa sobre él, y esa
+    /// diferencia es la que el card de Shape dibuja partiendo su lista en dos
+    /// líneas (FR15). Que la vista deduzca cuáles son con una lista escrita a
+    /// mano sería poner una decisión del modelo donde no hay tests.
+    public var isNoteRepeater: Bool {
+        switch self {
+        case .repeats, .repeatTime, .ramp, .pace: true
+        case .steps, .pulses, .rotate, .division: false
+        case .velocity, .sustain, .probability, .timing, .delay: false
         }
     }
 }
@@ -122,6 +154,12 @@ extension TrackParameter: CustomStringConvertible {
         case .pulses: Pulses.validRange
         case .rotate: nil
         case .division: 0...(Division.ordered.count - 1)
+        case .repeats: Repeats.validRange
+        // Como Division, y por lo mismo: el knob recorre una lista, así que su
+        // rango es el de posiciones y no el de fracciones.
+        case .repeatTime: 0...(RepeatTime.ordered.count - 1)
+        case .ramp: Ramp.validRange
+        case .pace: Pace.validRange
         case .velocity: Velocity.validRange
         case .sustain: Sustain.validRange
         case .probability: Probability.validRange
@@ -136,6 +174,10 @@ extension TrackParameter: CustomStringConvertible {
         case .pulses: "Pulses"
         case .rotate: "Rotate"
         case .division: "Division"
+        case .repeats: "Repeats"
+        case .repeatTime: "Time"
+        case .ramp: "Ramp"
+        case .pace: "Pace"
         case .velocity: "Velocity"
         case .sustain: "Sustain"
         case .probability: "Probability"
@@ -172,6 +214,25 @@ extension Cycle {
             // que hizo que un giro de knob perdiera el canal, el marco tonal y
             // el registro de pads en cuanto el Track creció.
             return with(shape: shape.applying(delta, to: parameter))
+
+        // Los cuatro del Note Repeater pasan por `NoteRepeater.with(...)`, que
+        // es el mismo idioma y por la misma razón: enumerar campos aquí perdería
+        // los otros tres en cuanto el valor creciera.
+        case .repeats:
+            return with(
+                noteRepeater: noteRepeater.with(repeats: noteRepeater.repeats.advanced(by: delta)))
+
+        case .repeatTime:
+            return with(
+                noteRepeater: noteRepeater.with(time: noteRepeater.time.advanced(by: delta)))
+
+        case .ramp:
+            return with(
+                noteRepeater: noteRepeater.with(ramp: noteRepeater.ramp.advanced(by: delta)))
+
+        case .pace:
+            return with(
+                noteRepeater: noteRepeater.with(pace: noteRepeater.pace.advanced(by: delta)))
 
         case .velocity:
             return withGroove(
@@ -252,6 +313,7 @@ extension TrackParameter {
     public func value(in track: Cycle) -> String {
         let shape = track.shape
         let groove = track.groove
+        let repeater = track.noteRepeater
         switch self {
         case .steps: return "\(shape.steps.count)"
         // **El valor pedido, no `effectivePulses`.** El knob está en este número
@@ -259,6 +321,16 @@ extension TrackParameter {
         case .pulses: return "\(shape.pulses.count)"
         case .rotate: return "\(shape.rotate.amount)"
         case .division: return "\(shape.division)"
+        case .repeats: return "\(repeater.repeats.count)"
+        // La fracción, como Division: `1/32`.
+        case .repeatTime: return "\(repeater.time)"
+        // **Con signo explícito, también el positivo.** Ramp y Pace son curvas
+        // con dos sentidos y el valor transitorio se lee solo: `+40%` dice que
+        // sube donde `40%` obligaría a recordar hacia dónde. Delay, que es el
+        // otro bipolar, se escribe sin el `+` desde antes; unificarlos toca su
+        // test y su pantalla, y es un cambio de otro track.
+        case .ramp: return signed(repeater.ramp.percent)
+        case .pace: return signed(repeater.pace.percent)
         // Sin signo de porcentaje: Velocity vive en la unidad MIDI, y ponérselo
         // diría que es un porcentaje de algo.
         case .velocity: return "\(groove.velocity.value)"
@@ -270,5 +342,11 @@ extension TrackParameter {
         // distinguen por el contexto.
         case .delay: return "\(groove.delay.percent)%"
         }
+    }
+
+    /// Un porcentaje bipolar con su signo delante, y sin signo en el cero: el
+    /// cero no es ni subir ni bajar.
+    private func signed(_ percent: Int) -> String {
+        percent > 0 ? "+\(percent)%" : "\(percent)%"
     }
 }

@@ -206,6 +206,17 @@ public struct Cycle: Equatable, Sendable {
     /// es lo que hacía imposible un bajo en menor bajo un arpegio en mayor.
     public let frame: TonalFrame
 
+    /// Cuántos triggers extra genera cada Pulse, y cómo caen.
+    ///
+    /// **Vive en `Cycle` por la misma razón que el Groove**: el hilo del
+    /// scheduler necesita los cuatro parámetros para decidir qué emite un Pulse,
+    /// y lo único que ese hilo lee es el snapshot publicado. Cuesta cuatro bytes
+    /// por Cycle, que es lo que `NoteRepeater` documenta.
+    ///
+    /// **Con el neutro no cambia nada de lo entregado**: Repeats en 0 no ejecuta
+    /// nada del camino nuevo, igual que un pool vacío no se programa.
+    public let noteRepeater: NoteRepeater
+
     /// En qué registro está editando los pads este Cycle.
     ///
     /// **Es la única concesión de `Cycle` a la superficie de control**, y está
@@ -221,6 +232,7 @@ public struct Cycle: Equatable, Sendable {
         groove: Groove = .default,
         channel: Channel = .first,
         frame: TonalFrame = TonalFrame(scale: .minor, root: .c),
+        noteRepeater: NoteRepeater = .default,
         padOctaveShift: Int = 0
     ) {
         self.shape = shape
@@ -228,6 +240,7 @@ public struct Cycle: Equatable, Sendable {
         self.groove = groove
         self.channel = channel
         self.frame = frame
+        self.noteRepeater = noteRepeater
         self.padOctaveShift = padOctaveShift
     }
 
@@ -251,6 +264,7 @@ public struct Cycle: Equatable, Sendable {
         groove: Groove? = nil,
         channel: Channel? = nil,
         frame: TonalFrame? = nil,
+        noteRepeater: NoteRepeater? = nil,
         padOctaveShift: Int? = nil
     ) -> Cycle {
         Cycle(
@@ -259,6 +273,7 @@ public struct Cycle: Equatable, Sendable {
             groove: groove ?? self.groove,
             channel: channel ?? self.channel,
             frame: frame ?? self.frame,
+            noteRepeater: noteRepeater ?? self.noteRepeater,
             padOctaveShift: padOctaveShift ?? self.padOctaveShift
         )
     }
@@ -343,9 +358,12 @@ extension Shape {
     /// - Returns: An updated shape with steps, pulses, and division constrained to their valid ranges, rotation wrapped to the step count, or the original shape for track-level parameters.
     public func applying(_ delta: Int, to parameter: TrackParameter) -> Shape {
         switch parameter {
-        case .velocity, .sustain, .probability, .timing, .delay:
+        case .velocity, .sustain, .probability, .timing, .delay,
+            .repeats, .repeatTime, .ramp, .pace:
             // No son suyos: los ajusta `Cycle.applying(_:to:)`, que es quien
-            // conoce las dos familias. Devolver el Shape intacto es la respuesta
+            // conoce las familias. Los cuatro del Note Repeater están en la
+            // familia Shape y aun así no viven en `Shape`: son una capa sobre el
+            // ritmo, no el ritmo. Devolver el Shape intacto es la respuesta
             // correcta y no un caso olvidado.
             return self
 

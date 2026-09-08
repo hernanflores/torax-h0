@@ -111,7 +111,8 @@ final class ParameterChangeTests: XCTestCase {
     func testDescriptionIsTheLabelAndTheValue() {
         for parameter in TrackParameter.allCases {
             guard let moved = change(1, parameter) ?? change(-1, parameter) else {
-                XCTFail("\(parameter) no se movió"); continue
+                XCTFail("\(parameter) no se movió")
+                continue
             }
             XCTAssertEqual("\(moved.label) \(moved.value)", moved.description, "\(parameter)")
         }
@@ -120,7 +121,8 @@ final class ParameterChangeTests: XCTestCase {
     func testLabelNeverCarriesTheValue() {
         for parameter in TrackParameter.allCases {
             guard let moved = change(1, parameter) ?? change(-1, parameter) else {
-                XCTFail("\(parameter) no se movió"); continue
+                XCTFail("\(parameter) no se movió")
+                continue
             }
             XCTAssertFalse(moved.label.isEmpty, "\(parameter)")
             XCTAssertFalse(moved.label.contains(" "), "\(parameter)")
@@ -137,12 +139,14 @@ final class ParameterChangeTests: XCTestCase {
     func testValueMatchesWhatAChangeWouldAnnounce() {
         for parameter in TrackParameter.allCases {
             guard let moved = change(1, parameter) ?? change(-1, parameter) else {
-                XCTFail("\(parameter) no se movió"); continue
+                XCTFail("\(parameter) no se movió")
+                continue
             }
             let after = track.applying(moved.value == "\(parameter)" ? 0 : 1, to: parameter)
             _ = after
-            XCTAssertEqual(moved.value, moved.parameter.value(in: track.applying(1, to: parameter)),
-                           "\(parameter)")
+            XCTAssertEqual(
+                moved.value, moved.parameter.value(in: track.applying(1, to: parameter)),
+                "\(parameter)")
         }
     }
 
@@ -189,8 +193,9 @@ final class ParameterChangeTests: XCTestCase {
     }
 
     func testFamilyNamesAreAllDistinct() {
-        XCTAssertEqual(Set(ParameterFamily.allCases.map(\.name)).count,
-                       ParameterFamily.allCases.count)
+        XCTAssertEqual(
+            Set(ParameterFamily.allCases.map(\.name)).count,
+            ParameterFamily.allCases.count)
     }
 
     func testEveryParameterBelongsToANamedFamily() {

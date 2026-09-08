@@ -15,8 +15,13 @@ final class UnassignedInputTests: XCTestCase {
     /// Los 128 CC sobre un `ControlInput` recién construido: solo publican los
     /// que el preset declara.
     func testOnlyDeclaredControllersPublish() throws {
+        // **Se pregunta al mapeo, no se cuenta desde el principio de la fila.**
+        // Decía `knobs.prefix(TrackParameter.allCases.count)`, que valía mientras
+        // los parámetros ocuparan knobs contiguos. Desde el 2026-09-07 no lo son:
+        // Pace está en el CC 83 y el 82 es el knob del Cycle, así que contar
+        // trece desde el 70 dejaba a Pace fuera de «declarado».
         let declared = Set(
-            mapping.declaredNumbers.knobs.prefix(TrackParameter.allCases.count)
+            TrackParameter.allCases.compactMap { mapping.controller(for: $0)?.number }
                 + mapping.declaredNumbers.stepButtons)
 
         for number in 0...127 {

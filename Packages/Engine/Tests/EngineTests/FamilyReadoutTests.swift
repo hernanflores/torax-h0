@@ -51,6 +51,50 @@ final class FamilyReadoutTests: XCTestCase {
         }
     }
 
+    // MARK: - Shape, segunda línea
+
+    /// **El card de Shape pasa a dos líneas el 2026-09-07** (FR15): los cuatro
+    /// de siempre arriba y los cuatro del Note Repeater debajo. La separación
+    /// dice lo que dice el modelo — una capa sobre el ritmo, no el ritmo.
+    func testShapeCarriesTheNoteRepeaterOnASecondLine() {
+        let readout = FamilyReadout(track: track, family: .shape)
+        XCTAssertEqual(
+            readout.secondaryDetail, "Repeats 0 · Time 1/32 · Ramp 0% · Pace 0%")
+    }
+
+    /// Y escribe lo que tenga puesto, con el signo de Ramp y Pace.
+    func testTheSecondLineFollowsTheValues() {
+        let moved =
+            track
+            .applying(4, to: .repeats)
+            .applying(1, to: .repeatTime)
+            .applying(-30, to: .ramp)
+            .applying(60, to: .pace)
+        let readout = FamilyReadout(track: moved, family: .shape)
+
+        XCTAssertEqual(
+            readout.secondaryDetail, "Repeats 4 · Time 1/48 · Ramp -30% · Pace +60%")
+    }
+
+    /// **Las otras dos familias no tienen segunda línea**, y es `nil` y no una
+    /// cadena vacía: la vista pregunta si la hay.
+    func testOnlyShapeHasASecondLine() {
+        XCTAssertNil(FamilyReadout(track: track, family: .groove).secondaryDetail)
+        XCTAssertNil(FamilyReadout(track: track, family: .tonal).secondaryDetail)
+    }
+
+    /// Los ocho de Shape aparecen entre la lectura grande y las dos líneas: **no
+    /// se pierde ninguno** al partirlos en tres.
+    func testEveryShapeParameterIsShownSomewhere() {
+        let readout = FamilyReadout(track: track, family: .shape)
+        let shown =
+            readout.headline + " · " + readout.detail + " · " + (readout.secondaryDetail ?? "")
+
+        for name in ["Steps", "Pulses", "Rotate", "Division", "Repeats", "Time", "Ramp", "Pace"] {
+            XCTAssertTrue(shown.contains(name), "falta \(name)")
+        }
+    }
+
     // MARK: - Tonal
 
     /// **TONAL no tiene parámetros de knob detrás** (FR4), así que su lectura en
@@ -120,7 +164,8 @@ final class FamilyReadoutTests: XCTestCase {
     // silencio en cuanto un valor lleve espacio, como `1/16`.
 
     func testShapeSplitsIntoLabelAndValue() {
-        let readout = FamilyReadout(track: .init(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!)), family: .shape)
+        let readout = FamilyReadout(
+            track: .init(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!)), family: .shape)
         XCTAssertEqual(readout.label, "Pulses")
         XCTAssertEqual(readout.value, "5 / 16")
     }
@@ -128,7 +173,8 @@ final class FamilyReadoutTests: XCTestCase {
     func testShapeValueShowsPulsesOverSteps() {
         // Pulses solo significa algo contra los Steps en los que reparte: 5 de 16
         // y 5 de 12 son dos densidades distintas. El handoff escribe las dos.
-        let readout = FamilyReadout(track: .init(shape: Shape(steps: Steps(12)!, pulses: Pulses(5)!)), family: .shape)
+        let readout = FamilyReadout(
+            track: .init(shape: Shape(steps: Steps(12)!, pulses: Pulses(5)!)), family: .shape)
         XCTAssertEqual(readout.value, "5 / 12")
     }
 
@@ -143,7 +189,8 @@ final class FamilyReadoutTests: XCTestCase {
     }
 
     func testGrooveSplitsIntoLabelAndValue() {
-        let readout = FamilyReadout(track: .init(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!)), family: .groove)
+        let readout = FamilyReadout(
+            track: .init(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!)), family: .groove)
         XCTAssertEqual(readout.label, "Velocity")
         XCTAssertFalse(readout.value.contains("Velocity"))
     }
@@ -153,7 +200,8 @@ final class FamilyReadoutTests: XCTestCase {
         // knob detrás— y el headline siempre fue `C Minor` a secas. Partirlo
         // habría cambiado lo que dice la pantalla en reposo, que es texto
         // establecido y con tests propios.
-        let readout = FamilyReadout(track: .init(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!)), family: .tonal)
+        let readout = FamilyReadout(
+            track: .init(shape: Shape(steps: Steps(16)!, pulses: Pulses(1)!)), family: .tonal)
         XCTAssertEqual(readout.label, "Scale")
         XCTAssertEqual(readout.value, readout.headline)
     }

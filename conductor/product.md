@@ -52,6 +52,11 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 
 - **Controlador MIDI = entrada primaria.** Knobs para parámetros continuos; pads para el pool tonal. **Un pad es un grado de la escala, no una altura fija**: los catorce primeros dan dos octavas alineadas de la escala vigente y dos mueven el registro entero, así que qué suena depende de Scale y Root y no del número que envía el controlador. Detalle en la nota del 2026-08-31 de la Pre Spec.
 - **Pantalla = feedback + edición secundaria.** Muestra estado (pasos activos, pool tonal, Cycle en curso) y expone lo que no cabe en knobs: Scale, guardado, mapeos.
+- **El Note Repeater es una capa sobre el ritmo, no un ritmo.** Añade triggers
+  extra detrás de cada Pulse y **no toca Steps, Pulses ni Rotate**: el reparto
+  euclidiano es el mismo y el Pulse original sigue sonando en su instante. Con
+  Repeats en 0 —el default— no hay repeticiones y nada cambia. Ver la nota del
+  2026-09-07 en *MVP Scope*.
 
 > **Nota del 2026-08-31 — Scale y Root son de cada Track, no de la app.** Esta
 > página y `product-guidelines.md` los describían como configuración táctil sin
@@ -240,7 +245,7 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 
 - Acordes polifónicos simultáneos (Style *Poly*) — explícitamente fuera de scope en la Pre Spec.
 - ~~Patterns, Banks; guardado/Autosave~~; **Backup Project**. *(Múltiples Tracks salieron de aquí el 2026-09-01: la v2 rebanada 1 entregó dieciséis, que el 2026-09-02 pasaron a **doce** por legibilidad de los anillos — ver la nota del Core Model. Patterns, Banks, Autosave y Save/Reload salen el 2026-09-07: los entrega la v2 rebanada 4 — ver la nota de abajo. **Backup Project se queda**: exportar e importar por la app Files es UI de documentos, no modelo.)*
-- Note Repeater (Repeats/Time/Ramp/Pace); Harmony; Voicing/Style; Range/Phrase; LFO y Random Modulation. *(Cycles salió de aquí el 2026-09-02: la v2 rebanada 3 lo entrega — hasta dieciséis por Track, recorridos a cada vuelta del anillo.)*
+- ~~Note Repeater (Repeats/Time/Ramp/Pace)~~; Harmony; Voicing/Style; Range/Phrase; LFO y Random Modulation. *(Cycles salió de aquí el 2026-09-02: la v2 rebanada 3 lo entrega — hasta dieciséis por Track, recorridos a cada vuelta del anillo. El Note Repeater sale el 2026-09-07: lo entrega la v2 rebanada 5 — ver la nota de abajo.)*
 - Ableton Link, MIDI Program Change, encadenado de Patterns.
 
 > **Nota del 2026-09-07 — Patterns, Banks y guardado salen de «Fuera de v1».**
@@ -265,6 +270,39 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > Temp, 14 Ctrl All, 15 y 16 solo y mute— así que meter Patterns en el hardware
 > exige un modificador nuevo, que es una decisión de mapeo y toca el preset
 > cerrado en la rebanada 7. Tampoco entran nombres editables ni copiar Banks.
+
+> **Nota del 2026-09-07 — el Note Repeater sale de «Fuera de v1».** Sale por la
+> misma vía por la que salieron los múltiples Tracks, los Cycles y la
+> persistencia: lo entrega una rebanada de la v2, la 5
+> (`note-repeater_20260906`), y la lista de arriba deja de describir lo que la
+> app hace.
+>
+> **Es una capa sobre el ritmo, no un ritmo nuevo.** Cada Pulse pasa a generar
+> hasta ocho triggers extra, y **Steps, Pulses y Rotate no cambian**: el reparto
+> euclidiano es el mismo, el anillo dibuja lo mismo y el Pulse original sigue
+> sonando en su instante. Las repeticiones son del Track y heredan lo suyo — su
+> Velocity, su Sustain, su swing y su Delay. Cuatro knobs: **Repeats** (0–8),
+> **Time** (1/8 … 1/128, rectos y tresillos), **Ramp** (curva de velocity, ±100)
+> y **Pace** (curva de espaciado, ±100).
+>
+> **Con Repeats en 0 —el default— no cambia nada de lo entregado.** Instantes,
+> velocities, gates y consumo de aleatoriedad son los de antes de la rebanada.
+> Es el requisito que sostiene todo lo demás: un Pattern hecho antes suena igual
+> después.
+>
+> **Probability pasa a decidir sobre todas las notas, y no es una regresión.**
+> Hasta ahora tiraba una vez por Pulse; ahora tira también por cada repetición.
+> Con Repeats en 0 los dos conjuntos son el mismo, así que ningún Pattern
+> existente suena distinto — y con repeticiones, que la tirada fuera solo del
+> Pulse dejaría el roll entero a todo o nada, que no es lo que Probability
+> significa.
+>
+> **Lo que se queda fuera, y por qué.** Repeats por encima de 8 y el «infinito»
+> del tope de la Pre Spec: el techo de coste en el hilo del scheduler se razona
+> en vez de medirse, y ampliarlo después es cambiar una constante. Los modos
+> **Choke y Tail**, con la limitación de solape escrita en la Pre Spec. Que cada
+> repetición avance el pool tonal, el swing dentro de la tirada, y dibujar las
+> repeticiones en el anillo.
 
 ## Success Criteria
 
@@ -364,6 +402,26 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > **Lo que sí se verifica, y tocando:** que el Pattern entre en el compás y no
 > antes ni después —comprobado sobre el índice de Step, no de oído— y que ninguna
 > nota quede colgada al cruzar el límite. Track `persistence_20260907`.
+
+> **Note Repeater (2026-09-07): el segundo cambio desde la suspensión que sí
+> toca la rejilla temporal, y no se mide.** La rebanada 5 de la v2
+> (`note-repeater_20260906`) **crea instantes nuevos entre los Steps**, que es
+> justo lo que la nota del 2026-08-28 del *Task Workflow* manda medir: cambia el
+> **cuándo**, no solo el **cuánto**. El primero fue `external-clock_20260903`, que
+> abrió una excepción acotada y midió. **Aquí no se abre excepción**: manda la
+> suspensión.
+>
+> **Lo que se pierde queda escrito.** Con Repeats en 8 y doce Tracks son hasta
+> 108 eventos por Step donde antes había 12, y sin arnés no hay número que diga
+> cuánto se ensancha la cola. Es también por qué el tope se quedó en 8 y no en
+> los 48 de la Pre Spec: sin medición, el techo de coste se **razona**, y un
+> número que se pueda defender con la cabeza vale más que uno grande que nadie ha
+> medido.
+>
+> **Lo que sí se verifica, y tocando:** un ratchet que se arrastra se oye. Se
+> comprueba en dispositivo, con el BeatStep Pro, que las repeticiones caen
+> parejas a Repeats 8 y Time 1/128, y que con Repeats en 0 el Pattern suena
+> exactamente igual que antes de la rebanada.
 
 Secundarios:
 

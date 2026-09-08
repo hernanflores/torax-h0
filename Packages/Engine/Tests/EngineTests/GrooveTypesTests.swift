@@ -416,9 +416,9 @@ final class ShortestStepTests: XCTestCase {
         )
         let step = Int64(timeline.stepDurationNanoseconds)
 
-        XCTAssertEqual(Sustain(percent: 100)!.gateNanoseconds(forStep: step), step)
-        XCTAssertLessThan(Sustain(percent: 99)!.gateNanoseconds(forStep: step), step)
-        XCTAssertGreaterThan(Sustain(percent: 101)!.gateNanoseconds(forStep: step), step)
+        XCTAssertEqual(Sustain(percent: 100)!.gateNanoseconds(over: step), step)
+        XCTAssertLessThan(Sustain(percent: 99)!.gateNanoseconds(over: step), step)
+        XCTAssertGreaterThan(Sustain(percent: 101)!.gateNanoseconds(over: step), step)
     }
 
     func testTheShortestStepIsTwentyFiveMilliseconds() throws {

@@ -17,6 +17,7 @@ final class TrackParameterTests: XCTestCase {
             TrackParameter.allCases.map(\.description),
             [
                 "Steps", "Pulses", "Rotate", "Division",
+                "Repeats", "Time", "Ramp", "Pace",
                 "Velocity", "Sustain", "Probability", "Timing", "Delay",
             ]
         )
@@ -155,7 +156,11 @@ final class ParameterFamilyTests: XCTestCase {
         }
     }
 
-    /// La clasificación de los nueve no se movió al añadir el caso.
+    /// La clasificación no se movió al añadir casos.
+    ///
+    /// **Trece desde el 2026-09-07**: los cuatro del Note Repeater entran en la
+    /// familia Shape, detrás de Division, porque son una capa sobre el ritmo y
+    /// no una familia nueva.
     ///
     /// Los otros dos tests miran cada familia por separado; éste fija la lista
     /// entera de una vez, que es lo que se rompería si alguien reordenara los
@@ -164,6 +169,7 @@ final class ParameterFamilyTests: XCTestCase {
         XCTAssertEqual(
             TrackParameter.allCases.map(\.family),
             [
+                .shape, .shape, .shape, .shape,
                 .shape, .shape, .shape, .shape,
                 .groove, .groove, .groove, .groove, .groove,
             ]

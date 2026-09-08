@@ -135,6 +135,41 @@ No cambia la estructura base: sobre cada Pulse añade triggers adicionales. Sirv
 - **Pace:** acelera o frena gradualmente la separación entre repeticiones.
 - Modos **Choke/Tail** determinan el comportamiento de las notas repetidas.
 
+> **Nota del 2026-09-07 — el Note Repeater entra, y entra recortado.** La
+> rebanada 5 de la v2 (`note-repeater_20260906`) implementa esta sección. Cada
+> Pulse pasa a generar hasta ocho triggers extra sin tocar Steps, Pulses ni
+> Rotate, y las repeticiones heredan del Track su Velocity, su Sustain, su swing
+> y su Delay. Con **Repeats en 0 —el default— no cambia nada de lo entregado**:
+> instantes, velocities, gates y consumo de aleatoriedad son los de antes de la
+> rebanada.
+>
+> **Repeats es 0–8, no 0–48, y no hay «infinito».** El tope de la Pre Spec se
+> recorta porque el techo de coste en el hilo del scheduler se **razona** en vez
+> de medirse —la medición de jitter está suspendida desde el 2026-09-02— y con
+> doce Tracks, 108 eventos por Step es un número defendible donde 588 no lo es.
+> Ampliarlo más adelante es cambiar una constante, no rehacer el diseño.
+>
+> **Ramp y Pace son knobs propios, no secundarios de CTRL.** Es el mismo caso que
+> resolvió la nota del 2026-09-02 sobre el gesto de CTRL: el BeatStep Pro no
+> tiene CTRL, y el gesto agrupaba cosas porque el hardware de la Pre Spec lo
+> hacía barato, no porque sean la misma cosa. Los cuatro van a los knobs 10, 11,
+> 12 y 14 — CC 79, 80, 81 y 83.
+>
+> **Los modos Choke y Tail quedan fuera.** Cada repetición emite su note-on y su
+> note-off, y **el solape no se vigila**: con Sustain alto una repetición se pisa
+> con la siguiente y el note-off de la primera apaga a la segunda. Es la
+> limitación ya aceptada de `NoteEmitter`, en un sitio más donde ocurre.
+>
+> **El vocabulario queda fijado**, y es el de esta sección: `Repeats`, `Time`,
+> `Ramp`, `Pace` y `Note Repeater`. «Ratchet» describe el efecto y no nombra
+> ningún parámetro; «roll», «stutter» y «subdivisión» no se usan en código, en
+> pantalla ni en los documentos.
+>
+> **Sin medición de jitter**, y es el segundo cambio desde la suspensión del
+> 2026-09-02 que toca la rejilla temporal —el primero, `external-clock_20260903`,
+> abrió una excepción acotada—. Aquí no se abre excepción: se verifica tocando,
+> en dispositivo. Un ratchet que se arrastra se oye.
+
 ### Tonal: pool, escala y movimiento
 
 - Cada Track puede contener **hasta 8 pitches**.

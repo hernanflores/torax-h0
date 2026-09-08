@@ -45,15 +45,31 @@ public struct ControlMapping: Equatable, Sendable {
         .delay: 76,
         .timing: 77,
         .probability: 78,
+        // Los cuatro del Note Repeater, desde el 2026-09-07. El 79 lo dejó libre
+        // a propósito `ctrl-all_20260905` al mover el knob del Cycle al 82; el
+        // 80, el 81 y el 83 no pisan nada con significado asignado en la
+        // especificación MIDI. El 82 se salta porque es el knob del Cycle.
+        .repeats: 79,
+        .repeatTime: 80,
+        .ramp: 81,
+        .pace: 83,
     ])
 
     /// CC por defecto del primer knob; los dieciséis van seguidos desde ahí.
     ///
-    /// **Los nueve primeros son los nueve parámetros del Track**, en el orden de
-    /// `TrackParameter`, que es también el orden de la pantalla: la fila de
-    /// knobs se lee igual que la lista de parámetros. Los siete restantes
-    /// —knobs 10 a 16— se declaran y no se asignan; su sitio es de v2, con
-    /// Cycles, Accent, Repeats, Time, Voicing y Range.
+    /// **Catorce de los dieciséis están asignados**: trece parámetros del Track
+    /// y el knob del Cycle en edición, que es el 13.
+    ///
+    /// > **Decía «los nueve primeros, en el orden de `TrackParameter`» y que los
+    /// > siete restantes eran de v2, «con Cycles, Accent, Repeats, Time, Voicing
+    /// > y Range».** De esa lista ya entraron tres: el Cycle en edición el
+    /// > 2026-09-05 y Repeats y Time el 2026-09-07, con Ramp y Pace detrás. El
+    /// > orden dejó de seguir al de `TrackParameter` el 2026-09-05, cuando Delay
+    /// > y Probability se intercambiaron — la nota de `beatStepPro` lo explica.
+    ///
+    /// **Quedan libres el 15 y el 16** (CC 84 y 85), declarados a propósito: su
+    /// sitio es de v2, con Accent, Voicing y Range. Girarlos no hace nada y no es
+    /// un error.
     public static let defaultKnobBlock = MIDIController(70)!
 
     /// CC por defecto del primer step button; los dieciséis van seguidos.

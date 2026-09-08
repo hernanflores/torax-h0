@@ -142,10 +142,13 @@ struct CycleStrip: View {
                         .font(Typography.parameterLine)
                         .foregroundStyle(Palette.muted)
 
-                    Text(display: "\(current(sounding).paddedForDisplay) / \(activeCount.paddedForDisplay)")
-                        .font(Typography.valueTitle)
-                        .monospacedDigit()
-                        .foregroundStyle(Palette.text)
+                    Text(
+                        display:
+                            "\(current(sounding).paddedForDisplay) / \(activeCount.paddedForDisplay)"
+                    )
+                    .font(Typography.valueTitle)
+                    .monospacedDigit()
+                    .foregroundStyle(Palette.text)
                 }
 
                 Spacer(minLength: 12)
@@ -174,7 +177,9 @@ struct CycleStrip: View {
             //
             // Dos filas y no una: en la columna estrecha, dieciséis celdas
             // seguidas quedarían por debajo del objetivo táctil.
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 8), spacing: 6) {
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 8), spacing: 6
+            ) {
                 ForEach(1...Track.cycleCount, id: \.self) { number in
                     cell(number, sounding: sounding)
                 }
@@ -238,8 +243,17 @@ struct ParameterFamilyCard: View {
 
     let family: ParameterFamily
 
-    /// Los parámetros de la familia con su valor, ya escritos por `Engine`.
-    let entries: [(label: String, value: String)]
+    /// Los parámetros de la familia con su valor, ya escritos por `Engine`,
+    /// **repartidos en las líneas que la familia necesite**.
+    ///
+    /// Shape trae dos desde el 2026-09-07: los cuatro del ritmo arriba y los
+    /// cuatro del Note Repeater debajo. Ocho columnas en una sola fila dejarían
+    /// de leerse a un metro, y juntarlas diría además algo falso — el Note
+    /// Repeater es una capa sobre el ritmo, no el ritmo (FR15).
+    ///
+    /// Quién va en cada línea lo decide `Engine`, con
+    /// `TrackParameter.isNoteRepeater`; aquí solo se dibuja.
+    let rows: [[(label: String, value: String)]]
 
     /// Si es la familia que se está girando ahora mismo.
     let isActive: Bool
@@ -254,27 +268,37 @@ struct ParameterFamilyCard: View {
             // nombre encima del valor los nueve caben en dos filas cortas y se
             // comparan de un vistazo; en renglones `nombre valor` habría que
             // leerlos en orden para encontrar uno.
-            HStack(alignment: .top, spacing: 12) {
-                ForEach(entries, id: \.label) { entry in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(display: entry.label)
-                            .font(Typography.caption)
-                            .foregroundStyle(Palette.muted)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(alignment: .top, spacing: 12) {
+                    ForEach(row, id: \.label) { entry in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(display: entry.label)
+                                .font(Typography.caption)
+                                .foregroundStyle(Palette.muted)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
 
-                        Text(display: entry.value)
-                            .font(Typography.bodyMedium)
-                            .monospacedDigit()
-                            .foregroundStyle(Palette.text)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.6)
+                            Text(display: entry.value)
+                                .font(Typography.bodyMedium)
+                                .monospacedDigit()
+                                .foregroundStyle(Palette.text)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.6)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }
         .padding(8)
+        // **El card no cede altura, y desde el 2026-09-07 hace falta decirlo.**
+        // Con la segunda línea de Shape la columna pasó a pedir más alto del
+        // disponible, y quien cedía era este card: SwiftUI encogía su texto con
+        // el `minimumScaleFactor`, así que los ocho valores se dibujaban a la
+        // mitad de tamaño que los cinco de Groove. Ilegible a un metro, que es
+        // el requisito de `product-guidelines.md`. Lo que cede ahora es el
+        // anillo, que tiene de sobra.
+        .fixedSize(horizontal: false, vertical: true)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Palette.inset, in: RoundedRectangle(cornerRadius: Brutalist.radiusLarge))
         .overlay {
@@ -315,42 +339,24 @@ struct TonalCard: View {
                 .font(Typography.parameterLine)
                 .foregroundStyle(isActive ? Palette.tonal : Palette.muted)
 
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
-                labelled("scale", scaleName)
-                Spacer(minLength: 8)
-                labelled("root", "\(frame.root)")
-            }
-
-            if pool.isEmpty {
-                // **El pool vacío se dice, no se disimula.** Es el estado de
-                // once Tracks al arrancar: disparan sus Pulses y no tienen
-                // material que emitir.
-                Text(display: "pool \(PitchPool().countDescription)")
-                    .font(Typography.caption)
-                    .foregroundStyle(Palette.muted)
-            } else {
-                // **Celdas de ancho propio, no repartidas.** Con
-                // `maxWidth: .infinity` un pool de una sola altura dibujaba una
-                // celda del ancho del card: parecía un campo de texto vacío en
-                // vez de una nota. El pool tiene de cero a ocho elementos y lo
-                // que hay que ver es cuántos, así que cada uno mide lo suyo y
-                // sobra sitio a la derecha cuando hay pocos.
-                HStack(spacing: 6) {
-                    ForEach(Array(pool.enumerated()), id: \.offset) { _, name in
-                        Text(display: name)
-                            .font(Typography.captionStrong)
-                            .foregroundStyle(Palette.mutedBright)
-                            .frame(minWidth: 38, minHeight: 28)
-                            .background(
-                                Palette.surface,
-                                in: RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
-                            )
-                            .overlay {
-                                RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
-                                    .stroke(Palette.border, lineWidth: Brutalist.stroke)
-                            }
-                    }
+            // **Una fila cuando cabe, dos cuando hace falta.** Mantener el card
+            // bajo deja sitio a Cycles en el ancho del iPad, pero no puede ser a
+            // costa de comprimir las ocho alturas. La primera variante conserva
+            // esa densidad; la segunda baja el pool y lo envuelve si el readout
+            // recibe menos ancho.
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: 12) {
+                    frameLabels
+                    poolRow
                     Spacer(minLength: 0)
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .center, spacing: 12) {
+                        frameLabels
+                        Spacer(minLength: 0)
+                    }
+                    poolGrid
                 }
             }
         }
@@ -364,6 +370,76 @@ struct TonalCard: View {
                     lineWidth: isActive ? Brutalist.strokeEmphasis : Brutalist.stroke
                 )
         }
+    }
+
+    @ViewBuilder
+    private var frameLabels: some View {
+        labelled("scale", scaleName)
+        labelled("root", "\(frame.root)")
+    }
+
+    @ViewBuilder
+    private var poolRow: some View {
+        if pool.isEmpty {
+            emptyPool
+        } else {
+            // Impide que `ViewThatFits` acepte esta variante comprimiendo las
+            // celdas por debajo de su tamaño legible.
+            HStack(spacing: 4) {
+                ForEach(Array(pool.enumerated()), id: \.offset) { _, name in
+                    noteCell(name)
+                }
+            }
+            .fixedSize(horizontal: true, vertical: false)
+        }
+    }
+
+    @ViewBuilder
+    private var poolGrid: some View {
+        if pool.isEmpty {
+            emptyPool
+        } else {
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 30, maximum: 44), spacing: 4)],
+                alignment: .leading,
+                spacing: 4
+            ) {
+                ForEach(Array(pool.enumerated()), id: \.offset) { _, name in
+                    noteCell(name, fillsWidth: true)
+                }
+            }
+        }
+    }
+
+    /// **El pool vacío se dice, no se disimula.** Es el estado de once Tracks
+    /// al arrancar: disparan sus Pulses y no tienen material que emitir.
+    private var emptyPool: some View {
+        Text(display: "pool \(PitchPool().countDescription)")
+            .font(Typography.caption)
+            .foregroundStyle(Palette.muted)
+    }
+
+    /// Celdas de ancho propio en la fila y repartidas solo dentro de las
+    /// columnas acotadas de la rejilla adaptativa.
+    private func noteCell(_ name: String, fillsWidth: Bool = false) -> some View {
+        Text(display: name)
+            .font(Typography.captionStrong)
+            .foregroundStyle(Palette.mutedBright)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .frame(
+                minWidth: 30,
+                maxWidth: fillsWidth ? .infinity : nil,
+                minHeight: 26
+            )
+            .background(
+                Palette.surface,
+                in: RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+                    .stroke(Palette.border, lineWidth: Brutalist.stroke)
+            }
     }
 
     private func labelled(_ label: String, _ value: String) -> some View {

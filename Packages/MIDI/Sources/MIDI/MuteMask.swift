@@ -107,7 +107,8 @@ public struct MuteState: Equatable, Sendable {
     var word: UInt64 { UInt64(mutes) | (UInt64(solos) << 16) }
 
     init(word: UInt64) {
-        self.init(mutes: UInt16(truncatingIfNeeded: word), solos: UInt16(truncatingIfNeeded: word >> 16))
+        self.init(
+            mutes: UInt16(truncatingIfNeeded: word), solos: UInt16(truncatingIfNeeded: word >> 16))
     }
 }
 
