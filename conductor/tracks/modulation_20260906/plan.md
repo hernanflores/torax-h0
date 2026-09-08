@@ -177,23 +177,23 @@ seguir.
 
 ## FASE 5: LA QUINTA PESTAÑA Y LAS CUATRO ONDAS
 
-- [ ] Task: `Module.modulation` y la navegación de cinco (FR10)
-  - [ ] Añadir el caso a `Module` y comprobar que `ModuleNavigation` reparte los
+- [x] Task: `Module.modulation` y la navegación de cinco (FR10) `8743480`
+  - [x] Añadir el caso a `Module` y comprobar que `ModuleNavigation` reparte los
         cinco sin apretar la fila.
-  - [ ] Verificar que navegar a `modulation` y volver **no** interrumpe el
+  - [x] Verificar que navegar a `modulation` y volver **no** interrumpe el
         transporte ni mueve el playhead: el modelo lo posee `ContentView`.
-- [ ] Task: `WaveformPreview` y `WaveformCard` (FR11, FR19, FR20)
-  - [ ] El dibujo de cada onda: trazo geométrico simple, sin relleno, sin
+- [x] Task: `WaveformPreview` y `WaveformCard` (FR11, FR19, FR20) `8743480`
+  - [x] El dibujo de cada onda: trazo geométrico simple, sin relleno, sin
         degradado, dos ciclos como en el handoff.
-  - [ ] Seleccionado: relleno mauve plano, etiqueta oscura, borde de 3 pt y
+  - [x] Seleccionado: relleno mauve plano, etiqueta oscura, borde de 3 pt y
         sombra dura sin desenfoque. Los otros tres, oscuros con borde neutro de
         2 pt.
-  - [ ] Cadenas en minúscula, radios de 3 a 8 pt, Figtree 400/600/700.
-- [ ] Task: `WaveformSelector` y la etiqueta de contexto (FR11, FR16, FR17)
-  - [ ] Rejilla 2×2, escritura sobre el **Cycle en edición**.
-  - [ ] La etiqueta dice `track 04 · cycle 02`; el Track lo elige el controlador
+  - [x] Cadenas en minúscula, radios de 3 a 8 pt, Figtree 400/600/700.
+- [x] Task: `WaveformSelector` y la etiqueta de contexto (FR11, FR16, FR17) `8743480`
+  - [x] Rejilla 2×2, escritura sobre el **Cycle en edición**.
+  - [x] La etiqueta dice `track 04 · cycle 02`; el Track lo elige el controlador
         y esta pantalla no lo escribe (FR17).
-  - [ ] Área táctil suficiente y legible sin zoom (Code Review Process §6).
+  - [x] Área táctil suficiente y legible sin zoom (Code Review Process §6).
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: EL ACENTO SE VE
