@@ -68,3 +68,14 @@ Verificación:
   swift test --package-path Packages/MIDI (partición)      734 tests, 0 fallos
   xcodebuild build -scheme ToraxH0                         BUILD SUCCEEDED
 Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
+
+Añadido en la misma tarea, antes de cerrarla: el test del límite de vuelta que el
+plan pedía y que se había quedado fuera —
+testTheNewCycleBringsItsOwnModulationFromItsFirstStep. Pasó a la primera, y eso
+es un resultado y no un descuido: la modulación se lee del material vigente en
+cada Step, así que el Cycle nuevo trae la suya desde su Step 0 sin una línea de
+código adicional. Se queda en la suite porque es la propiedad que hace útil poner
+la Modulation en el Cycle y no en el Track — un desarrollo A/B donde solo el B
+acentúa suena plano la primera vuelta y con forma la segunda.
+
+ModulationInSchedulerTests: 13 tests.
