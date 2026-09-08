@@ -1,0 +1,21 @@
+Task: Verificación en iPad con BeatStep Pro + Cobertura y suite completa
+
+Escribe device-verification.md con los catorce puntos que se probaron: el fallo
+reportado sobre un Bank vacío, los tres caminos parados, el Track seleccionado,
+Temp y Ctrl All hundidos durante un cambio de Bank, y la vía de vuelta con el
+transporte corriendo. Sin discrepancias — confirmación del usuario: «Funcionó».
+
+Cobertura (medida como dice workflow.md: MIDI en un proceso, .profdata fusionado
+a mano porque la pasada falla por el flake conocido, e ignorando Engine/Sources):
+
+| | líneas | umbral |
+|---|---|---|
+| MIDI | 92,36% | ≥80% |
+| Engine | 98,54% | ≥90% |
+
+Los tres ficheros del track: ControlInput.swift 100%, PatternHandoff.swift 100%,
+PendingAdoption.swift 100%.
+
+Suite: MIDI 21 + 719, Engine 800, Persistence 62, 0 fallos. BUILD SUCCEEDED.
+
+Sin medición de jitter (NFR4).
