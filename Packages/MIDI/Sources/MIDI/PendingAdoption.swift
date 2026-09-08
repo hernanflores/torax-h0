@@ -1,3 +1,5 @@
+import Engine
+
 /// Lo que se armó, esperando a que el scheduler diga que lo adoptó.
 ///
 /// **El scheduler no conoce índices** (FR8). Con el transporte corriendo, el
@@ -18,12 +20,32 @@
 /// nadie lo oye.
 public final class PendingAdoption {
 
+    /// La selección completa que se entregó al scheduler.
+    ///
+    /// El Bank y el hueco identifican dónde aplicarla en el `Project`; el
+    /// Pattern es el mismo snapshot que empezará a sonar, aunque el Bank cambie
+    /// antes de que el modelo lea el aterrizaje.
+    public struct Adoption: Equatable, Sendable {
+        public let bankIndex: Int
+        public let patternIndex: Int
+        public let pattern: Pattern
+
+        public init(bankIndex: Int, patternIndex: Int, pattern: Pattern) {
+            self.bankIndex = bankIndex
+            self.patternIndex = patternIndex
+            self.pattern = pattern
+        }
+    }
+
     /// Qué hueco espera al compás, si alguno.
     ///
     /// **Lo consume la pantalla**: es lo que pinta el hueco como `queued` y lo
     /// que sostiene la cuenta atrás. Que se vacíe al aterrizar es la mitad de
     /// FR10.
-    public private(set) var armedPatternIndex: Int?
+    public var armedPatternIndex: Int? { armed?.patternIndex }
+
+    /// La selección completa que espera al compás.
+    private var armed: Adoption?
 
     /// El contador de adopciones que había cuando se armó. Lo que dispara es que
     /// se mueva **después** de eso.
@@ -36,22 +58,22 @@ public final class PendingAdoption {
     /// caballo de un límite de compás. Se guarda en vez de descartarse porque lo
     /// que suena es el que aterrizó, y dar el otro pondría la pantalla y el knob
     /// en un hueco que todavía no suena.
-    private var landedButUnread: Int?
+    private var landedButUnread: Adoption?
 
     public init() {}
 
-    /// Recuerda qué hueco acaba de armarse.
+    /// Recuerda qué selección acaba de armarse.
     ///
     /// Armar dos veces antes del compás deja el último, igual que la ranura del
     /// `PatternHandoff`: cambiar de idea antes del límite es normal en directo.
     /// - Parameters:
-    ///   - patternIndex: el hueco del Bank vigente que espera al compás.
+    ///   - adoption: el Bank, hueco y Pattern que esperan al compás.
     ///   - adoptionCount: el valor del contador ahora mismo.
-    public func arm(_ patternIndex: Int, adoptionCount: UInt64) {
-        if let armed = armedPatternIndex, adoptionCount > armedAtCount {
+    public func arm(_ adoption: Adoption, adoptionCount: UInt64) {
+        if let armed, adoptionCount > armedAtCount {
             landedButUnread = armed
         }
-        armedPatternIndex = patternIndex
+        armed = adoption
         armedAtCount = adoptionCount
     }
 
@@ -60,26 +82,26 @@ public final class PendingAdoption {
     /// La usa el camino parado, donde el material entra en el acto y no puede
     /// quedar nada esperando detrás.
     public func cancel() {
-        armedPatternIndex = nil
+        armed = nil
         landedButUnread = nil
     }
 
-    /// Qué hueco hay que aplicar, si el contador se movió desde que se armó.
+    /// Qué selección hay que aplicar, si el contador se movió desde que se armó.
     ///
     /// Devuelve `nil` en el caso de casi todos los cuadros: sin nada pendiente,
-    /// leer el contador no cambia nada. Cuando devuelve un índice, el modelo
-    /// mueve `project.selectedPattern` ahí, deja de haber nada armado y
-    /// `ControlInput` adopta el material de ese hueco — la consecuencia que
-    /// destruía trabajo (FR10).
+    /// leer el contador no cambia nada. Cuando devuelve una adopción, el modelo
+    /// mueve el `Project` a ese Bank y hueco, deja de haber nada armado y
+    /// `ControlInput` adopta el mismo Pattern que empezó a sonar — la
+    /// consecuencia que destruía trabajo (FR10).
     /// - Parameter adoptionCount: el valor del contador ahora mismo.
-    /// - Returns: el hueco que acaba de empezar a sonar, o `nil`.
-    public func landed(adoptionCount: UInt64) -> Int? {
+    /// - Returns: la selección que acaba de empezar a sonar, o `nil`.
+    public func landed(adoptionCount: UInt64) -> Adoption? {
         if let unread = landedButUnread {
             landedButUnread = nil
             return unread
         }
-        guard let armed = armedPatternIndex, adoptionCount > armedAtCount else { return nil }
-        armedPatternIndex = nil
+        guard let armed, adoptionCount > armedAtCount else { return nil }
+        self.armed = nil
         return armed
     }
 }

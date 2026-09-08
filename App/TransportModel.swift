@@ -175,7 +175,14 @@ final class TransportModel {
 
         if isPlaying {
             transport?.armForNextBar(material)
-            pendingAdoption.arm(index, adoptionCount: transport?.adoptionCount ?? 0)
+            pendingAdoption.arm(
+                PendingAdoption.Adoption(
+                    bankIndex: project.selectedBank,
+                    patternIndex: index,
+                    pattern: material
+                ),
+                adoptionCount: transport?.adoptionCount ?? 0
+            )
         } else {
             project = project.selectingPattern(index)
             pattern = material
@@ -200,22 +207,24 @@ final class TransportModel {
     /// hueco correcto— y **`ControlInput` adopta**, que es la consecuencia que
     /// destruía trabajo.
     ///
-    /// El material sale del Bank y no de lo que se armó a propósito: es la misma
-    /// fuente que usó `armForNextBar`, y leerla aquí evita guardar una copia que
-    /// pudiera discrepar.
+    /// El material es el mismo snapshot que se armó. También conserva el Bank y
+    /// el hueco de entonces, para que cambiar de selección antes del poll no
+    /// desincronice el `Project` y `ControlInput` de lo que empezó a sonar.
     ///
     /// **Lo que suena entra exacto en el compás; esto puede llegar hasta un
     /// cuadro después** (FR9), y nadie lo oye.
     func applyPendingAdoption() {
         guard let transport else { return }
-        guard let index = pendingAdoption.landed(adoptionCount: transport.adoptionCount) else {
+        guard let adoption = pendingAdoption.landed(adoptionCount: transport.adoptionCount) else {
             return
         }
 
-        project = project.selectingPattern(index)
-        let material = bank.pattern(at: index) ?? Pattern()
-        pattern = material
-        controlInput.adopt(material)
+        project =
+            project
+            .selectingBank(adoption.bankIndex)
+            .selectingPattern(adoption.patternIndex)
+        pattern = adoption.pattern
+        controlInput.adopt(adoption.pattern)
         autosave.changedHeader(project)
     }
 
@@ -234,7 +243,13 @@ final class TransportModel {
             pendingAdoption.cancel()
         } else {
             pendingAdoption.arm(
-                project.selectedPattern, adoptionCount: transport?.adoptionCount ?? 0)
+                PendingAdoption.Adoption(
+                    bankIndex: project.selectedBank,
+                    patternIndex: project.selectedPattern,
+                    pattern: target.pattern(at: project.selectedPattern) ?? Pattern()
+                ),
+                adoptionCount: transport?.adoptionCount ?? 0
+            )
         }
         autosave.changedHeader(project)
     }
@@ -276,6 +291,16 @@ final class TransportModel {
         if !isPlaying {
             pattern = saved.pattern(at: project.selectedPattern) ?? Pattern()
             controlInput.adopt(pattern)
+            pendingAdoption.cancel()
+        } else {
+            pendingAdoption.arm(
+                PendingAdoption.Adoption(
+                    bankIndex: project.selectedBank,
+                    patternIndex: project.selectedPattern,
+                    pattern: saved.pattern(at: project.selectedPattern) ?? Pattern()
+                ),
+                adoptionCount: transport?.adoptionCount ?? 0
+            )
         }
         autosave.changed(saved, at: project.selectedBank)
     }

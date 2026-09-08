@@ -12,6 +12,17 @@ import XCTest
 /// allí, estaría en el sitio equivocado.
 final class PendingAdoptionTests: XCTestCase {
 
+    private func adoption(bank: Int = 2, slot: Int = 5, steps: Int = 8)
+        -> PendingAdoption.Adoption
+    {
+        PendingAdoption.Adoption(
+            bankIndex: bank,
+            patternIndex: slot,
+            pattern: Pattern().replacing(
+                Cycle(shape: Shape(steps: Steps(steps)!, pulses: Pulses(1)!)), at: 0)
+        )
+    }
+
     // MARK: - Lo que se recuerda al armar
 
     func testItStartsWithNothingArmed() {
@@ -21,7 +32,7 @@ final class PendingAdoptionTests: XCTestCase {
     func testArmingRemembersTheSlot() {
         let pending = PendingAdoption()
 
-        pending.arm(5, adoptionCount: 0)
+        pending.arm(adoption(), adoptionCount: 0)
 
         XCTAssertEqual(pending.armedPatternIndex, 5)
     }
@@ -30,12 +41,13 @@ final class PendingAdoptionTests: XCTestCase {
     /// handoff: cambiar de idea antes del límite es normal en directo.
     func testArmingTwiceBeforeTheBarKeepsTheLast() {
         let pending = PendingAdoption()
+        let last = adoption(bank: 4, slot: 9, steps: 12)
 
-        pending.arm(5, adoptionCount: 0)
-        pending.arm(9, adoptionCount: 0)
+        pending.arm(adoption(), adoptionCount: 0)
+        pending.arm(last, adoptionCount: 0)
 
         XCTAssertEqual(pending.armedPatternIndex, 9)
-        XCTAssertEqual(pending.landed(adoptionCount: 1), 9)
+        XCTAssertEqual(pending.landed(adoptionCount: 1), last)
     }
 
     /// Cancelar quita lo pendiente sin aplicarlo. Es lo que hace el camino
@@ -43,7 +55,7 @@ final class PendingAdoptionTests: XCTestCase {
     func testCancellingClearsTheArmedSlot() {
         let pending = PendingAdoption()
 
-        pending.arm(5, adoptionCount: 0)
+        pending.arm(adoption(), adoptionCount: 0)
         pending.cancel()
 
         XCTAssertNil(pending.armedPatternIndex)
@@ -57,18 +69,31 @@ final class PendingAdoptionTests: XCTestCase {
     /// y mueve la rejilla al hueco correcto (FR10).
     func testAMovedCounterYieldsTheArmedSlotAndClearsIt() {
         let pending = PendingAdoption()
-        pending.arm(5, adoptionCount: 0)
+        let adoption = adoption()
+        pending.arm(adoption, adoptionCount: 0)
 
-        XCTAssertEqual(pending.landed(adoptionCount: 1), 5)
+        XCTAssertEqual(pending.landed(adoptionCount: 1), adoption)
         XCTAssertNil(pending.armedPatternIndex, "no se limpió lo pendiente")
+    }
+
+    /// El aterrizaje conserva la identidad del Bank, el hueco y el material
+    /// exacto que se entregó al scheduler, aunque el modelo ya mire otra cosa.
+    func testALandingCarriesTheArmedBankSlotAndPatternSnapshot() {
+        let pending = PendingAdoption()
+        let armed = adoption(bank: 7, slot: 11, steps: 12)
+
+        pending.arm(armed, adoptionCount: 3)
+
+        XCTAssertEqual(pending.landed(adoptionCount: 4), armed)
     }
 
     /// Y no se aplica dos veces: el cuadro siguiente ya no tiene nada que hacer.
     func testItDoesNotYieldTheSameAdoptionTwice() {
         let pending = PendingAdoption()
-        pending.arm(5, adoptionCount: 0)
+        let adoption = adoption()
+        pending.arm(adoption, adoptionCount: 0)
 
-        XCTAssertEqual(pending.landed(adoptionCount: 1), 5)
+        XCTAssertEqual(pending.landed(adoptionCount: 1), adoption)
         XCTAssertNil(pending.landed(adoptionCount: 1))
     }
 
@@ -86,7 +111,7 @@ final class PendingAdoptionTests: XCTestCase {
     /// movido, así que lo armado sigue esperando.
     func testArmingWithoutTheCounterMovingYieldsNothing() {
         let pending = PendingAdoption()
-        pending.arm(5, adoptionCount: 3)
+        pending.arm(adoption(), adoptionCount: 3)
 
         XCTAssertNil(pending.landed(adoptionCount: 3))
         XCTAssertEqual(pending.armedPatternIndex, 5, "dejó de esperar")
@@ -96,10 +121,11 @@ final class PendingAdoptionTests: XCTestCase {
     /// importa es que se mueva **después**.
     func testACounterAlreadyAheadBeforeArmingDoesNotFire() {
         let pending = PendingAdoption()
-        pending.arm(5, adoptionCount: 7)
+        let adoption = adoption()
+        pending.arm(adoption, adoptionCount: 7)
 
         XCTAssertNil(pending.landed(adoptionCount: 7))
-        XCTAssertEqual(pending.landed(adoptionCount: 8), 5)
+        XCTAssertEqual(pending.landed(adoptionCount: 8), adoption)
     }
 
     // MARK: - Armar encima de algo que ya aterrizó
@@ -114,13 +140,15 @@ final class PendingAdoptionTests: XCTestCase {
     /// donde hay un test, y no confiando en que no pase.
     func testALandingIsNotLostWhenAnotherIsArmedBeforeReading() {
         let pending = PendingAdoption()
-        pending.arm(5, adoptionCount: 0)
+        let landed = adoption(bank: 2, slot: 5, steps: 8)
+        let waiting = adoption(bank: 9, slot: 9, steps: 12)
+        pending.arm(landed, adoptionCount: 0)
 
         // El compás llega —contador a 1— y antes de mirar se arma otro.
-        pending.arm(9, adoptionCount: 1)
+        pending.arm(waiting, adoptionCount: 1)
 
-        XCTAssertEqual(pending.landed(adoptionCount: 1), 5, "se perdió el que ya sonaba")
+        XCTAssertEqual(pending.landed(adoptionCount: 1), landed, "se perdió el que ya sonaba")
         XCTAssertEqual(pending.armedPatternIndex, 9, "el que espera dejó de esperar")
-        XCTAssertEqual(pending.landed(adoptionCount: 2), 9)
+        XCTAssertEqual(pending.landed(adoptionCount: 2), waiting)
     }
 }
