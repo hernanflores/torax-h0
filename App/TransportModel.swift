@@ -140,7 +140,13 @@ final class TransportModel {
     }
 
     /// Qué hueco espera al compás, si alguno.
-    private(set) var armedPatternIndex: Int?
+    ///
+    /// Lo recuerda `PendingAdoption`, que vive en `MIDI` porque decidir cuándo
+    /// lo armado pasa a vigente tiene casos límite y `App` no se mide (NFR3).
+    var armedPatternIndex: Int? { pendingAdoption.armedPatternIndex }
+
+    /// Lo armado esperando a que el scheduler diga que lo adoptó (FR8).
+    private let pendingAdoption = PendingAdoption()
 
     /// Cuántas negras faltan para que entre el Pattern armado, o `nil` si no hay
     /// ninguno esperando.
@@ -169,14 +175,47 @@ final class TransportModel {
 
         if isPlaying {
             transport?.armForNextBar(material)
-            armedPatternIndex = index
+            pendingAdoption.arm(index, adoptionCount: transport?.adoptionCount ?? 0)
         } else {
             project = project.selectingPattern(index)
             pattern = material
             controlInput.adopt(material)
             transport?.publish(material)
-            armedPatternIndex = nil
+            pendingAdoption.cancel()
         }
+        autosave.changedHeader(project)
+    }
+
+    /// Aplica la adopción que el scheduler dice haber hecho, si la hay (FR8,
+    /// FR10).
+    ///
+    /// **Es la vía de vuelta, y por eso es un poll y no un callback** (NFR1): el
+    /// hilo del scheduler solo incrementa una palabra atómica al adoptar, y
+    /// llamar hacia el modelo desde ahí sería trabajo en el camino de tiempo
+    /// real. La decisión de si toca aplicar algo vive en `PendingAdoption`, en
+    /// `MIDI`, donde hay tests.
+    ///
+    /// Al aplicar: mueve `project.selectedPattern` al hueco que sonó, deja de
+    /// haber nada armado —así desaparece la cuenta atrás y la rejilla marca el
+    /// hueco correcto— y **`ControlInput` adopta**, que es la consecuencia que
+    /// destruía trabajo.
+    ///
+    /// El material sale del Bank y no de lo que se armó a propósito: es la misma
+    /// fuente que usó `armForNextBar`, y leerla aquí evita guardar una copia que
+    /// pudiera discrepar.
+    ///
+    /// **Lo que suena entra exacto en el compás; esto puede llegar hasta un
+    /// cuadro después** (FR9), y nadie lo oye.
+    func applyPendingAdoption() {
+        guard let transport else { return }
+        guard let index = pendingAdoption.landed(adoptionCount: transport.adoptionCount) else {
+            return
+        }
+
+        project = project.selectingPattern(index)
+        let material = bank.pattern(at: index) ?? Pattern()
+        pattern = material
+        controlInput.adopt(material)
         autosave.changedHeader(project)
     }
 
@@ -192,9 +231,10 @@ final class TransportModel {
         if !isPlaying {
             pattern = target.pattern(at: project.selectedPattern) ?? Pattern()
             controlInput.adopt(pattern)
-            armedPatternIndex = nil
+            pendingAdoption.cancel()
         } else {
-            armedPatternIndex = project.selectedPattern
+            pendingAdoption.arm(
+                project.selectedPattern, adoptionCount: transport?.adoptionCount ?? 0)
         }
         autosave.changedHeader(project)
     }

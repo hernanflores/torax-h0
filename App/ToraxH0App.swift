@@ -34,6 +34,30 @@ struct ToraxH0App: App {
                         model.tickAutosave()
                     }
                 }
+                // **La vía de vuelta de la adopción, a ritmo de cuadro.**
+                //
+                // El hilo del scheduler adopta el Pattern armado en el límite de
+                // compás y lo único que publica es una palabra atómica; llamar
+                // hacia el modelo desde ahí sería trabajo en el camino de tiempo
+                // real. Así que se pregunta, con el mismo criterio que el
+                // playhead: lo que suena entra exacto en el compás y lo que la
+                // pantalla refleja llega hasta un cuadro después.
+                //
+                // **Aquí y no dentro del `TimelineView`** aunque FR9 diga «al
+                // dibujar»: aplicar escribe en el modelo, y escribir mientras
+                // SwiftUI evalúa un cuerpo es invalidar la vista que se está
+                // dibujando. La propiedad que FR9 protege —que el hilo de tiempo
+                // real no llame a nadie— se cumple igual preguntando desde aquí.
+                // Nota fechada del 2026-09-08 en el `spec.md` del track.
+                //
+                // Sin nada pendiente cuesta una lectura atómica y una
+                // comparación, que es lo que pasa en casi todos los cuadros.
+                .task {
+                    while !Task.isCancelled {
+                        try? await Task.sleep(for: .milliseconds(16))
+                        model.applyPendingAdoption()
+                    }
+                }
         }
         .onChange(of: scenePhase) { _, phase in
             // **Segundo plano escribe ya.** Lo que no se escriba aquí se pierde

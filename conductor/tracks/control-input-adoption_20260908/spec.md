@@ -76,6 +76,24 @@ trabajo en el camino de tiempo real. **Lo que suena entra exacto en el compás; 
 que la pantalla y el `Project` reflejan puede llegar hasta un cuadro después**, y
 eso es aceptable porque nadie lo oye.
 
+> **Nota del 2026-09-08 — se pregunta desde un bucle de la app, no desde el
+> cuerpo de la vista.**
+>
+> FR9 decía «se lee al dibujar» por analogía con `playhead` y `cycleInCourse`, y
+> la analogía se rompe en una cosa: aquellos **leen** y esto **escribe**. Aplicar
+> la adopción mueve `project.selectedPattern`, limpia lo pendiente y adopta en
+> `ControlInput`; hacerlo dentro del `TimelineView` sería invalidar la vista que
+> SwiftUI está evaluando en ese momento.
+>
+> Se implementa como un `.task` de la app que pregunta cada 16 ms —el mismo
+> orden que un cuadro— y llama a `applyPendingAdoption()`. **La propiedad que
+> FR9 protege se cumple entera**: el hilo del scheduler no llama a nadie, solo
+> incrementa una palabra atómica, y el límite declarado —hasta un cuadro de
+> retraso en la pantalla y el `Project`— es el mismo.
+>
+> Sin nada pendiente el tick cuesta una lectura atómica y una comparación, que
+> es lo que pasa en casi todos los cuadros.
+
 **FR10 — Lo que el defecto hermano prometía queda cumplido.** Al adoptar en el
 compás: la cuenta atrás desaparece, la rejilla de Patterns marca el que suena, y
 **el siguiente giro de knob escribe en el hueco correcto** — que es la

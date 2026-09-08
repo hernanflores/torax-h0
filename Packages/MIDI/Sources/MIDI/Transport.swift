@@ -505,6 +505,12 @@ public final class Transport: @unchecked Sendable {
     /// Si hay un Pattern esperando al compás.
     public var hasArmedPattern: Bool { handoff.hasArmedPattern }
 
+    /// Cuántas adopciones ha visto el handoff. **La vía de vuelta** (FR7).
+    ///
+    /// Se consulta al dibujar, sin callback desde el hilo de tiempo real: ver
+    /// `PatternHandoff.adoptionCount` y `PendingAdoption`.
+    public var adoptionCount: UInt64 { handoff.adoptionCount }
+
     /// Cuánto lleva sonando, en nanosegundos desde el origen de la rejilla, o
     /// `nil` si está parado.
     ///
