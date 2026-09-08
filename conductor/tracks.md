@@ -804,7 +804,7 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: `ControlInput` no adopta el Pattern del Bank nuevo**
+- [~] **Track: `ControlInput` no adopta el Pattern del Bank nuevo**
   *Link: [conductor/tracks/control-input-adoption_20260908/index.md](./tracks/control-input-adoption_20260908/index.md)*
 
   **Planificado el 2026-09-08**, en cuatro fases. **Absorbe el defecto hermano de
