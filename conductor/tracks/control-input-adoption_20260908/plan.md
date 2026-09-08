@@ -64,19 +64,19 @@ quién conoce el material.
 
 ## FASE 3: LA VÍA DE VUELTA — EL SCHEDULER DICE QUE ADOPTÓ
 
-- [~] Task: La palabra atómica de la adopción (FR7, NFR1)
-  - [ ] Tests (Red): el contador arranca en cero y **se mueve exactamente una vez
+- [x] Task: La palabra atómica de la adopción (FR7, NFR1) `e99ba9e`
+  - [x] Tests (Red): el contador arranca en cero y **se mueve exactamente una vez
         por adopción**, no una por ventana.
-  - [ ] Tests (Red): armar sin que llegue el compás **no** lo mueve; armar dos
+  - [x] Tests (Red): armar sin que llegue el compás **no** lo mueve; armar dos
         veces y adoptar una lo mueve una vez.
-  - [ ] Tests (Red): la lectura desde otro hilo no rompe nada — mismo test de
+  - [x] Tests (Red): la lectura desde otro hilo no rompe nada — mismo test de
         concurrencia que tiene `CyclePlaybackClock`.
-  - [ ] Implementación (Green): un `AtomicCounter`, con la forma de
+  - [x] Implementación (Green): un `AtomicCounter`, con la forma de
         `CyclePlaybackClock`: sin locks, sin asignaciones, escrito solo en el
         límite de compás.
-  - [ ] Comprobar que **no cambia el coste por ventana**: la escritura ocurre en
+  - [x] Comprobar que **no cambia el coste por ventana**: la escritura ocurre en
         la adopción, que ya era un camino excepcional.
-- [ ] Task: El modelo aplica lo que armó (FR8, FR10)
+- [~] Task: El modelo aplica lo que armó (FR8, FR10)
   - [ ] Tests (Red): con una adopción publicada, el modelo mueve
         `project.selectedPattern` al hueco que armó y **limpia
         `armedPatternIndex`**.
