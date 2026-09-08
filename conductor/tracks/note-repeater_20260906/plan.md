@@ -291,7 +291,7 @@ revisar antes de seguir (NFR1).
         comprobar que el card no desborda a un metro con los ocho valores.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 7: DISPOSITIVO Y CIERRE
+## FASE 7: DISPOSITIVO Y CIERRE [checkpoint: 8845ac3]
 
 - [x] Task: Verificación en iPad con BeatStep Pro (NFR6) — 8845ac3
   - [x] Los cuatro knobs mueven su parámetro, con valor grande transitorio y
@@ -323,4 +323,4 @@ revisar antes de seguir (NFR1).
   - [x] `conductor/tracks.md`: marcar la rebanada 5 y su resultado.
   - [x] Anotar en el `spec.md` cualquier requisito que se haya corregido
         implementando, con fecha, como hicieron `ctrl-all` y `temp-parameters`.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
