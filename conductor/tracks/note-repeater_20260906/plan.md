@@ -274,20 +274,20 @@ revisar antes de seguir (NFR1).
 
 ## FASE 6: LA PANTALLA
 
-- [~] Task: El card de Shape, en dos líneas (FR15)
-  - [ ] Tests (Red): el texto de la familia trae las dos líneas y los ocho
+- [x] Task: El card de Shape, en dos líneas (FR15) — d83e8ee
+  - [x] Tests (Red): el texto de la familia trae las dos líneas y los ocho
         valores (cubierto en `Engine`, Fase 2; aquí se cablea).
-  - [ ] Implementación (Green): la segunda línea en `ParameterFamilyCard`, mismo
+  - [x] Implementación (Green): la segunda línea en `ParameterFamilyCard`, mismo
         acento `#9AAB79`, sin color ni tipografía nuevos.
-  - [ ] **El anillo no se toca**: dibuja Pulses, no repeticiones.
-- [ ] Task: El valor grande transitorio de los cuatro (FR15)
-  - [ ] Tests (Red): `ParameterOverlay` anuncia `Repeats 3`, `Time 1/32`,
+  - [x] **El anillo no se toca**: dibuja Pulses, no repeticiones.
+- [x] Task: El valor grande transitorio de los cuatro (FR15) — fe7f169
+  - [x] Tests (Red): `ParameterOverlay` anuncia `Repeats 3`, `Time 1/32`,
         `Ramp +40%` y `Pace −20%`, y el test que compara el anuncio con el card
         sigue pasando.
-  - [ ] Implementación (Green): las cuatro ramas.
-- [ ] Task: Compilar la app para iPadOS y revisar en simulador
-  - [ ] `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`.
-  - [ ] Captura en simulador de la pantalla `track` con las dos líneas, y
+  - [x] Implementación (Green): las cuatro ramas.
+- [x] Task: Compilar la app para iPadOS y revisar en simulador — d83e8ee
+  - [x] `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`.
+  - [x] Captura en simulador de la pantalla `track` con las dos líneas, y
         comprobar que el card no desborda a un metro con los ocho valores.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
