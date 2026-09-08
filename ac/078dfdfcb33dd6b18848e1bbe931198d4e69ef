@@ -1,0 +1,18 @@
+Task: Los modificadores se cancelan al adoptar (FR5)
+
+`adopt(_:)` descarta `overlay` y `ctrlAll` sin restaurarlos.
+
+El porqué: los dos guardan valores capturados del Pattern anterior. Con Temp,
+el overlay tiene el Cycle base sobre el que se superpone el fill; con Ctrl All,
+las bases de los doce Tracks. Restaurarlos al soltar el botón escribiría ese
+material viejo encima del Pattern recién adoptado — la destrucción que este
+track existe para impedir (product-guidelines.md).
+
+Lo que NO cambia: el botón sigue hundido. Soltar no es lo que cancela, adoptar
+sí, así que el gesto siguiente sobre el material nuevo captura su base ahí.
+
+Ficheros:
+- M Packages/MIDI/Sources/MIDI/ControlInput.swift
+- A Packages/MIDI/Tests/MIDITests/AdoptionCancelsModifiersTests.swift (7 tests)
+
+Verificación: Red 4 de 7 fallando; Green 7 de 7. Suite MIDI 21 + 701, 0 fallos.
