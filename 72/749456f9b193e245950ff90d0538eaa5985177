@@ -1,0 +1,25 @@
+Task: Los tres caminos adoptan (FR6, NFR3)
+
+`selectBank`, `selectPattern` y `reloadBank` llaman a `controlInput.adopt(_:)`
+en su rama parada. Una línea cada uno, sin lógica: `App` no se mide
+(workflow.md), así que si apareciera una decisión aquí estaría en el sitio
+equivocado y bajaría a `MIDI`.
+
+Con esto **el fallo reportado queda arreglado para el transporte parado**.
+
+La rama que suena NO adopta todavía, a propósito: ahí el material entra en el
+límite de compás dentro del hilo del scheduler, y quien tiene que contarlo es la
+vía de vuelta de la Fase 3.
+
+Auditoría de las escrituras de `pattern` en el modelo, que el plan pedía:
+- 3 en las ramas paradas de los tres caminos — ahora adoptan.
+- 1 en `syncFromControlInput()`, que lee de `ControlInput`, no le escribe.
+- 1 en el arranque, donde `ControlInput` ya se construye con `restoredPattern`
+  (arreglado en su día por el mismo motivo).
+No queda ningún otro sitio que cambie el material sin avisar.
+
+Ficheros:
+- M App/TransportModel.swift
+
+Verificación: xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+→ BUILD SUCCEEDED. Sin tests: App no se mide.
