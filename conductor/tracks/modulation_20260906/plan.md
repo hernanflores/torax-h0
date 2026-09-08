@@ -32,7 +32,7 @@ empuja hacia `sin()`, hacia un `Double` de fase o hacia una tabla que haya que
 asignar, es la señal de que el diseño se está torciendo: parar y revisar antes de
 seguir.
 
-## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
+## FASE 1: LA DESVIACIÓN QUEDA ESCRITA [checkpoint: d6ba133]
 
 - [x] Task: Anotar la modulación en la Pre Spec (NFR7) `817c3d5`
   - [x] Nota fechada en `Pre Spec Torax H-0.md`, §4 «Modulación LFO y Random» y
@@ -63,7 +63,7 @@ seguir.
         `scale`, `midi` y `banks`.
   - [x] Anotar que **no se mide jitter** y por qué la regla del 2026-08-28 lo
         excluye, para que la ausencia se lea como decisión.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: EL VALOR PURO — `Modulation` EN `Engine`
 
