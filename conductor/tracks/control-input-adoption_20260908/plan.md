@@ -21,7 +21,7 @@ existir. Es lo que permite parar entre fases sin dejar nada a medias.
 **Sin medición de jitter** (NFR4): este cambio no mueve ningún instante, cambia
 quién conoce el material.
 
-## FASE 1: LA VÍA DE IDA — `ControlInput` ADOPTA
+## FASE 1: LA VÍA DE IDA — `ControlInput` ADOPTA [checkpoint: ac078df]
 
 - [x] Task: `ControlInput` adopta un Pattern entero (FR1, FR2, FR3, FR4) `da357ba`
   - [x] Tests (Red): adoptar sustituye los doce Tracks —Shape, pool, Groove,
@@ -48,11 +48,11 @@ quién conoce el material.
   - [x] Documentar por qué no se restauran sobre el Pattern nuevo: los valores
         capturados son de otro material, y escribirlos ahí es la destrucción que
         este track existe para impedir.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: EL CABLEADO CON EL TRANSPORTE PARADO
 
-- [ ] Task: Los tres caminos adoptan (FR6, NFR3)
+- [~] Task: Los tres caminos adoptan (FR6, NFR3)
   - [ ] `selectBank`, `selectPattern` y `reloadBank` llaman a la vía de la Fase 1
         en su rama parada, **una línea cada uno y sin lógica**.
   - [ ] Comprobar que la rama que suena **no** adopta todavía: hasta la Fase 3,
