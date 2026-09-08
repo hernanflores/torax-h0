@@ -1,0 +1,23 @@
+Fix en curso de la Fase 6: el card tonal baja de dos filas a una
+
+Reportado por el usuario verificando la Fase 6 en dispositivo: «Cycles está
+cortado y es incómodo».
+
+Causa: la segunda línea del card de Shape añadió una fila a una columna que ya
+iba justa, y el .fixedSize que impide que Shape ceda altura empujó el recorte
+hacia abajo — a la tira de Cycles, que es lo último de la columna.
+
+Qué cambia: TonalCard pasa de dos filas a una. scale, root y las celdas del pool
+comparten renglón. El pool tiene un máximo de ocho alturas, así que su ancho está
+acotado por construcción; las celdas bajan de 38 a 30 puntos de ancho mínimo y
+de 6 a 4 de separación, con minimumScaleFactor 0,8 en el texto.
+
+Verificado en simulador con el caso peor: se sembró temporalmente Pattern.initial
+con las ocho alturas, se hizo la captura y se revirtió. Las ocho celdas caben en
+la fila junto a scale y root sin desbordar, y la tira de Cycles sale entera con
+sus dos renglones de dieciséis.
+
+Ficheros modificados:
+- App/TrackReadout.swift
+
+Verificación: Engine 800 tests, 0 fallos. xcodebuild iPadOS SUCCEEDED.
