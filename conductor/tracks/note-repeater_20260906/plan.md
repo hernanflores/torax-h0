@@ -306,11 +306,11 @@ revisar antes de seguir (NFR1).
   - [ ] Temp y Ctrl All sobre REPEATS: el fill sube, soltar lo devuelve.
   - [ ] Escribir `device-verification.md` con lo que se probó y lo que se oyó,
         **incluido lo que no cumplió**.
-- [ ] Task: Cobertura y suite completa
-  - [ ] `swift test --package-path Packages/Engine --enable-code-coverage` — ≥90%.
-  - [ ] `MIDI` en un proceso, con el `.profdata` fusionado a mano e ignorando
+- [x] Task: Cobertura y suite completa
+  - [x] `swift test --package-path Packages/Engine --enable-code-coverage` — ≥90%.
+  - [x] `MIDI` en un proceso, con el `.profdata` fusionado a mano e ignorando
         `Engine/Sources`, como dice `workflow.md` — ≥80%.
-  - [ ] Si aparece `clientCreationFailed(-50)` en `VirtualLoopbackTests`, correr
+  - [x] Si aparece `clientCreationFailed(-50)` en `VirtualLoopbackTests`, correr
         3–4 pasadas y comparar contra `main` antes de atribuirlo al cambio.
 - [ ] Task: Pull Request
   - [ ] Rama `feat/note-repeater`, PR contra `main`. Nada entra en `main` sin PR.
