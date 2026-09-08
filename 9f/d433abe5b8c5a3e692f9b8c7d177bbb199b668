@@ -1,0 +1,22 @@
+Task: Temp y Ctrl All alcanzan a los cuatro (FR17)
+
+Salió gratis, que es lo que el plan predecía: los dos gestos operan sobre
+TrackParameter, así que los cuatro entraron solos. No hizo falta tocar
+ControlInput ni ParameterOverlay — no había ninguna lista de parámetros escrita a
+mano en esos caminos.
+
+Cinco tests nuevos, que son la red para que siga siendo verdad:
+- Temp superpone cada uno de los cuatro y soltar devuelve el NoteRepeater
+  anterior, comprobado parámetro a parámetro.
+- Temp alcanza los Cycles activos del Track seleccionado.
+- Ctrl All desplaza los doce Tracks y soltar devuelve la base EXACTA: se compara
+  el Pattern entero, no solo el parámetro movido.
+- El tope: 40 giros de 5 contra el extremo dejan los cuatro dentro de su rango, y
+  Time dentro de su lista.
+- Soltar después de haber topado sigue devolviendo la base — el tope no destruye
+  lo capturado.
+
+Ficheros creados:
+- Packages/MIDI/Tests/MIDITests/NoteRepeaterGesturesTests.swift (5 tests)
+
+Verificación: MIDI 687 tests, 0 fallos.
