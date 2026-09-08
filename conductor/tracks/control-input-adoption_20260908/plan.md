@@ -37,15 +37,15 @@ quién conoce el material.
   - [x] Implementación (Green): la vía pública, junto a `setFrame` y
         `setActiveCycleCount`, que son las otras entradas que no vienen del
         controlador.
-- [~] Task: Los modificadores se cancelan al adoptar (FR5)
-  - [ ] Tests (Red): con Temp hundido, adoptar y soltar **no escribe nada**; el
+- [x] Task: Los modificadores se cancelan al adoptar (FR5) `ac078df`
+  - [x] Tests (Red): con Temp hundido, adoptar y soltar **no escribe nada**; el
         Pattern queda como lo dejó la adopción.
-  - [ ] Tests (Red): lo mismo con Ctrl All, incluido el caso de haber girado
+  - [x] Tests (Red): lo mismo con Ctrl All, incluido el caso de haber girado
         contra el tope antes de adoptar.
-  - [ ] Tests (Red): el modificador **sigue hundido** a efectos del gesto
+  - [x] Tests (Red): el modificador **sigue hundido** a efectos del gesto
         siguiente: soltar no es lo que lo cancela, adoptar sí.
-  - [ ] Implementación (Green): descartar `overlay` y `ctrlAll` sin restaurarlos.
-  - [ ] Documentar por qué no se restauran sobre el Pattern nuevo: los valores
+  - [x] Implementación (Green): descartar `overlay` y `ctrlAll` sin restaurarlos.
+  - [x] Documentar por qué no se restauran sobre el Pattern nuevo: los valores
         capturados son de otro material, y escribirlos ahí es la destrucción que
         este track existe para impedir.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
