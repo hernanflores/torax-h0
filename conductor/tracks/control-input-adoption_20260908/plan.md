@@ -50,7 +50,7 @@ quién conoce el material.
         este track existe para impedir.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: EL CABLEADO CON EL TRANSPORTE PARADO
+## FASE 2: EL CABLEADO CON EL TRANSPORTE PARADO [checkpoint: 7274945]
 
 - [x] Task: Los tres caminos adoptan (FR6, NFR3) `7274945`
   - [x] `selectBank`, `selectPattern` y `reloadBank` llaman a la vía de la Fase 1
@@ -60,11 +60,11 @@ quién conoce el material.
         se entera.
   - [x] Revisar que no queda ningún otro sitio que cambie el material del modelo
         sin avisar — si aparece uno, entra aquí.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: LA VÍA DE VUELTA — EL SCHEDULER DICE QUE ADOPTÓ
 
-- [ ] Task: La palabra atómica de la adopción (FR7, NFR1)
+- [~] Task: La palabra atómica de la adopción (FR7, NFR1)
   - [ ] Tests (Red): el contador arranca en cero y **se mueve exactamente una vez
         por adopción**, no una por ventana.
   - [ ] Tests (Red): armar sin que llegue el compás **no** lo mueve; armar dos
