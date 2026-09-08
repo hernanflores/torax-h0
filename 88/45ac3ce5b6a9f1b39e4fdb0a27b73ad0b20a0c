@@ -1,0 +1,24 @@
+Task: Verificación en iPad con BeatStep Pro (NFR6)
+
+Hecha por el usuario el 2026-09-07 en iPad con el BeatStep Pro, preset versión 4.
+Los ocho bloques del guion cumplen.
+
+Lo que decide, y por qué esta verificación era el juez: la rebanada crea
+instantes nuevos entre los Steps y no se mide (NFR6, suspensión del 2026-09-02,
+sin excepción). El bloque 4 es el que sustituye al arnés: con Repeats 8, Time
+1/128 y varios Tracks a la vez —el peor caso que el diseño admite— la tirada no
+se arrastra ni se adelanta, el swing y el Delay la llevan entera, y con Sustain
+al 200% las repeticiones se solapan sin dejar notas colgadas al parar.
+
+FR16 se comprobó primero y por separado, antes de tocar nada nuevo: un Pattern
+anterior al cambio suena idéntico y un Bank guardado antes abre con los cuatro
+parámetros en su neutro.
+
+Hallazgo, y no es de esta rebanada: el bloque 8 confirma el defecto avisado en el
+guion. Después de cambiar de Bank, el primer giro de knob republica el Pattern
+anterior entero, porque ControlInput solo escribe su copia del Pattern en su
+init. Track propio abierto el mismo día en conductor/tracks.md, con diagnóstico y
+forma del arreglo.
+
+Ficheros creados:
+- conductor/tracks/note-repeater_20260906/device-verification.md
