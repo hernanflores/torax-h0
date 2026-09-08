@@ -20,3 +20,26 @@ Ficheros creados:
 - Packages/MIDI/Tests/MIDITests/NoteRepeaterGesturesTests.swift (5 tests)
 
 Verificación: MIDI 687 tests, 0 fallos.
+
+--- Verificación de la FASE 5: LOS CUATRO KNOBS Y EL PRESET (2026-09-07) ---
+
+Tests automáticos ejecutados:
+  swift test --package-path Packages/Engine → 797, 0 fallos
+  swift test --package-path Packages/MIDI (partición de CI) → 21 (1 skipped) + 687, 0 fallos
+  swift test --package-path Packages/Persistence → 62, 0 fallos
+
+Verificación manual propuesta: los cuatro knobs (10, 11, 12 y 14) mueven lo suyo
+y solo lo suyo; el 13 sigue moviendo el Cycle en edición; el 15 y el 16 no hacen
+nada; Temp iguala el valor en los Cycles activos y lo devuelve al soltar; Ctrl
+All desplaza los doce Tracks y devuelve la base exacta, también después de topar.
+
+Confirmación del usuario: «OK» (2026-09-07).
+
+Dos correcciones de plan salidas al cerrar la fase, las dos anotadas:
+- El plan pedía un test de que 'con un knobBlock distinto los cuatro siguen al
+  bloque'. No es cierto para ningún parámetro: assignments guarda CC absolutos
+  desde antes de esta rebanada. Queda escrito en el test.
+- El plan decía 'los tres knobs que siguen libres' y son dos, el 15 y el 16.
+
+Buena parte de esta fase se había adelantado a la Fase 2, arrastrada por el
+invariante 'todo TrackParameter tiene su controlador'.
