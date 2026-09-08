@@ -1,0 +1,50 @@
+Task: Modulation dentro del Cycle, sin dejar de ser POD (FR1, NFR2)
+
+Primera tarea de la Fase 3 del track modulation_20260906. TDD: los 10 tests se
+escribieron primero y fallaron con 'value of type Cycle has no member modulation'.
+
+Ficheros:
+- Packages/Engine/Sources/Engine/Shape.swift (campo, init y with)
+- Packages/Engine/Tests/EngineTests/ModulationInCycleTests.swift (creado)
+
+Aquí está el riesgo de la rebanada, no en la matemática. Las cuatro ondas se
+prueban con números y se acabó; lo que había que vigilar es que meter un campo
+más en un valor que cruza al hilo del scheduler dieciséis veces por Track no
+rompiera _isPOD ni engordara el snapshot. Las dos cosas están fijadas por test:
+
+- _isPOD sigue siendo cierto para Waveform, Accent, Modulation, Cycle, Track y
+  Pattern.
+- MemoryLayout<Modulation>.size == 2. Dos bytes por Cycle: la onda es un enum sin
+  carga y el accent se guarda como Int8. Es el idioma que NoteRepeater fijó, y es
+  lo que hace que el campo no se note en el snapshot (NFR2).
+
+El campo entra POR DEFAULT en el inicializador, como entraron Timing, Delay y el
+Note Repeater. No es comodidad: es la regla de destructividad de
+product-guidelines.md aplicada al código — un parámetro nuevo no cambia lo que ya
+hacía quien no lo pide, y todos los sitios de construcción anteriores siguen
+compilando y sonando igual.
+
+Y entra en Cycle.with(...), que desde el 2026-08-31 es la única forma legítima de
+editar un Cycle. Hay test en las dos direcciones: with(modulation:) no toca
+ninguno de los otros siete campos, y cambiar cualquier otro campo no pierde la
+modulación. Ese segundo test existe porque el defecto que with(...) previene ya
+ocurrió una vez — girar un knob devolvía el Cycle al canal 1 y a Do menor.
+
+También fijado: la igualdad distingue dos Cycles que solo difieren en la onda o
+en el accent. Sin eso, cambiar de forma no publicaría un snapshot nuevo y la
+pantalla mentiría sobre lo que suena.
+
+Y que cambiar el Cycle en edición no toca a los otros quince, que es lo que
+permite acentuar solo el B de un desarrollo A/B.
+
+Verificación:
+  swift test --package-path Packages/Engine                    856 tests, 0 fallos
+  swift test --package-path Packages/MIDI (partición de CI)    21 + 720, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS   BUILD SUCCEEDED
+
+Nota de entorno: la primera pasada de MIDI falló al enlazar con símbolos
+indefinidos, y no era del cambio — artefactos incrementales de .build que
+referenciaban la firma vieja de Cycle.init. Con rm -rf Packages/MIDI/.build la
+suite pasa entera. No es el flake de CoreMIDI (-50), que tiene otra firma.
+
+Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
