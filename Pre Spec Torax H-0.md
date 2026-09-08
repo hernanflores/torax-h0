@@ -258,6 +258,36 @@ Un Track puede tener de **1 a 16 Cycles** activos. Cada Cycle es una versión de
 | LFO | Forma repetible, sincronizada al tempo. | **Phrase** para pitch mediante Range; **Groove** para variación de velocity mediante Accent. |
 | Random | Secuencia pseudoaleatoria en loop: cambia, pero no es caos totalmente impredecible. | Parámetros del Track; intensidad y drift controlables. |
 
+> **Nota del 2026-09-08 — entra la mitad del LFO, y solo sobre velocity.** La
+> rebanada 6 de la v2 (`modulation_20260906`) implementa la fila **LFO** de esta
+> tabla en su destino **Groove/Accent**. Lo que se entrega y lo que no:
+>
+> | | |
+> |---|---|
+> | **Entra** | LFO cíclico sobre **velocity**, por Cycle, con cuatro formas: `saw`, `triangle`, `sine`, `pulse`. |
+> | **No entra** | El destino **Phrase/Range** para pitch — es la otra celda de la fila y no se toca. |
+> | **No entra** | **Random Modulation**, la segunda fila entera. |
+> | **No entra** | Modular nada que no sea velocity: Sustain, Timing, Division o el pool. |
+>
+> **«Sincronizada al tempo» se entrega como un ciclo por vuelta del anillo del
+> propio Track.** La fase sale del índice de Step dentro de la vuelta dividido
+> por los Steps del Track, así que no hay reloj de modulación ni estado que
+> mantener: la sincronía es una consecuencia de cómo se calcula la fase. Cada
+> Track modula a su velocidad, porque cada uno tiene sus Steps y su Division.
+>
+> **Vocabulario fijado** (`product-guidelines.md` pide un término por concepto):
+> el módulo es `modulation`, la forma es **`waveform`** y la amplitud es
+> **`accent`**; las formas son `saw`, `triangle`, `sine` y `pulse`. No se usa
+> «LFO» como nombre de parámetro, ni «shape» —que ya nombra una familia—, ni
+> «amount».
+>
+> **Por qué la forma no se llama `Groove`.** Esta especificación usa *Groove*
+> para dos cosas distintas: la familia de Velocity, Sustain, Probability, Timing
+> y Delay (§5), y el knob que escoge la forma del LFO (fila `Accent`, §5). El
+> motor ya gastó el término en la primera —`Groove` es un tipo de `Engine`— y un
+> segundo significado lo haría ambiguo justo donde más se lee. La forma toma
+> `waveform`, que es como la rotula el propio handoff de diseño.
+
 ## 5. Referencia de parámetros
 
 ### Diseño melódico: interacción entre Shape, Groove y Tonal
@@ -301,6 +331,16 @@ En la práctica: Steps largos contra una Phrase de 16 posiciones generan desfase
 
 **Retrigger:** reinicia la secuencia al llegar a ese Step; también reinicia Random, Range, Accent y Voicing desde ese punto.
 
+> **Nota del 2026-09-08 — Retrigger reiniciaría `accent`, y Retrigger no
+> existe.** Esta línea promete que Retrigger reinicia Accent desde su Step, y la
+> rebanada 6 de la v2 entrega `accent` **sin** ese reinicio: la fase de la
+> modulación sale siempre del índice de Step dentro de la vuelta, así que solo
+> vuelve al principio cuando lo hace el anillo. No es una desviación de la
+> modulación sino una deuda heredada —Retrigger no está implementado en ningún
+> Step—, y se anota aquí para que el día que entre se sepa que arrastra este
+> requisito con él. Lo mismo vale para Random, Range y Voicing, que tampoco
+> existen todavía.
+
 ### Groove — interpretación temporal y dinámica
 
 | Parámetro | Función |
@@ -310,6 +350,35 @@ En la práctica: Steps largos contra una Phrase de 16 posiciones generan desfase
 | Accent | Amplitud de variación de velocity alrededor de Velocity base. **Groove** escoge la forma/LFO de esa variación; se puede cambiar su longitud. |
 | Timing | Desplaza cada segundo Step, creando swing/shuffle (rejilla no uniforme). |
 | Delay | Desplaza el Track entero hacia adelante o atrás respecto a la rejilla. |
+
+> **Nota del 2026-09-08 — cómo se entrega `Accent`.** La rebanada 6 de la v2
+> (`modulation_20260906`) lo implementa con **tres desviaciones de esta fila**,
+> escritas antes de implementar:
+>
+> 1. **La forma se llama `waveform`, no `Groove`.** Ver la nota de §4.
+>
+> 2. **La longitud no se puede cambiar.** Esta fila dice «se puede cambiar su
+>    longitud» y el brief de producto pedía cuatro compases por defecto. Se
+>    entrega **fija a un ciclo por vuelta del anillo**, que es lo que hace que la
+>    sincronía no necesite ni reloj ni estado. La longitud ajustable queda fuera
+>    de alcance, anotada aquí para que la deuda esté escrita.
+>
+> 3. **`Accent` no tiene knob: se edita con el dedo**, en la pantalla
+>    `modulation`. Esta sección lista `Accent` entre los parámetros de Groove,
+>    que son todos de knob, pero cae del lado táctil de la frontera del
+>    2026-09-06 —se configura antes de tocar, como `scale`, `midi` y `banks`— y
+>    los cuarenta y ocho controles del BeatStep Pro ya están asignados.
+>
+>    **Lo que eso cuesta, con el precio delante:** Ctrl All, Temp y la lectura
+>    transitoria grande **no alcanzan a `accent`**, porque los tres operan sobre
+>    `TrackParameter` y `accent` no lo es. Se arregla el día que tenga knob, y
+>    ese día es otro track.
+>
+> **El rango es bipolar, −100 … +100, con default 0.** El 0 está dentro del
+> rango y es el valor que **apaga** la modulación: con `accent = 0` la salida es
+> idéntica a la de antes de la rebanada. La amplitud «alrededor de Velocity
+> base» se entrega como ±63 unidades MIDI en el extremo, y la velocity
+> resultante se acota a 1…127 como el resto.
 
 ### Tonal
 
