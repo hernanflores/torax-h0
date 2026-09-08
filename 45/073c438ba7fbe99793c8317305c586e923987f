@@ -1,0 +1,44 @@
+Task: Waveform y Accent, con sus rangos (FR2, FR3)
+
+Primera tarea de la Fase 2 del track modulation_20260906. TDD: los 11 tests se
+escribieron primero y fallaron por 'cannot find Waveform in scope'.
+
+Ficheros creados:
+- Packages/Engine/Sources/Engine/Modulation.swift
+- Packages/Engine/Tests/EngineTests/ModulationTypesTests.swift
+
+Qué entra:
+
+Waveform — enum de cuatro casos (saw, triangle, sine, pulse), CaseIterable,
+Equatable, Sendable, con description en minúscula. Default .triangle. El orden
+de allCases es el que dibuja la rejilla 2x2 de la pantalla (FR11), así que está
+fijado por test: es contrato, no un detalle del compilador.
+
+Accent — struct bipolar −100…100, default 0, init? que devuelve nil fuera de
+rango, init(unchecked:) interno y advanced(by:) que se detiene en los extremos
+reutilizando ClosedRange.clamping de Groove.swift.
+
+Decisiones y su porqué:
+
+- La forma se llama waveform y no Groove. El motor ya gastó 'Groove' en la
+  familia de Velocity, Sustain, Probability, Timing y Delay; un segundo
+  significado lo haría ambiguo justo donde más se lee. Desviación fechada el
+  2026-09-08 en la Pre Spec (commit 817c3d5).
+
+- El default es triangle y no saw: es la única de las cuatro que no introduce ni
+  un salto ni una asimetría que haya que explicar. Con accent = 0 da igual cuál
+  sea; importa el día que se sube el slider sin haber elegido forma.
+
+- El 0 está DENTRO del rango de Accent y es el default. No es un extremo: es el
+  valor que apaga la modulación, y de él depende el criterio 1 de aceptación —
+  con accent = 0 la salida es idéntica a la de antes de la rebanada.
+
+- advanced(by:) existe aunque accent NO tenga knob (FR9). Lo mueve el arrastre
+  del dedo en BipolarAccentSlider, y ahí no envolver pesa más que en un encoder:
+  un arrastre largo produce deltas grandes de golpe, y envolver saltaría de +100
+  a −100. El imantado en el 0 (FR18) es de la vista, no del tipo — el tipo cruza
+  el cero como cualquier otro valor, y hay test que lo fija.
+
+Verificación: swift test --package-path Packages/Engine
+Engine 811 tests, 0 fallos (800 antes de la tarea, +11).
+Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
