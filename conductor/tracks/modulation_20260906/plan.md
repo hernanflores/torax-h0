@@ -166,12 +166,12 @@ seguir.
         tiene `cycleStep` y `stepCount` a mano, sin releer el snapshot.
   - [x] Verificar a mano que no entra ninguna asignación, bloqueo ni coma
         flotante en el bucle de ventana (NFR1, Quality Gates).
-- [ ] Task: Cada Track modula con su propio anillo (FR4)
-  - [ ] Tests (Red): dos Tracks con Steps distintos completan su ciclo en vueltas
+- [x] Task: Cada Track modula con su propio anillo (FR4) `654ce21`
+  - [x] Tests (Red): dos Tracks con Steps distintos completan su ciclo en vueltas
         distintas, cada uno con la suya.
-  - [ ] Tests (Red): un Track muteado sigue avanzando su fase — la rejilla del
+  - [x] Tests (Red): un Track muteado sigue avanzando su fase — la rejilla del
         muteado avanza, y la modulación va con ella.
-  - [ ] Implementar (Green) si hace falta; si los tests pasan sin tocar nada, la
+  - [x] Implementar (Green) si hace falta; si los tests pasan sin tocar nada, la
         tarea es el test y queda dicho en la git note.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
