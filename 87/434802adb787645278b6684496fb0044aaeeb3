@@ -81,3 +81,37 @@ playhead ni acento audible.
 Pendiente de la Fase 6: la columna derecha está vacía —el card de accent y el
 resumen— y por eso el reparto 70/30 de FR11 todavía no se ve; la rejilla ocupa el
 ancho entero.
+
+--- VERIFICACIÓN DE FASE 5: LA QUINTA PESTAÑA Y LAS CUATRO ONDAS ---
+
+Comandos:
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  Simulador iPad Pro 11 (iOS 26.3), captura con simctl.
+
+Resultado: MIDI 747 tests, 0 fallos. App BUILD SUCCEEDED. La pantalla dibuja lo
+que el handoff pide.
+
+Cobertura: App no se mide (workflow.md, Coverage Requirements). El único fichero
+de código fuera de App que toca la fase es ControlInput.swift, y tiene su
+ModulationInputTests con 10 tests.
+
+Jitter: no aplica (NFR3), y suspendido desde el 2026-09-02.
+
+Pasos de verificación manual propuestos:
+1. Tocar modulation, las cuatro ondas, y volver a track: el transporte no se
+   interrumpe ni el playhead se mueve (criterio 9). Sale gratis — el modelo lo
+   posee la escena, no la vista.
+2. git show 8743480 — en App no queda lógica: la regla de sobre qué Cycle se
+   escribe está en ControlInput.setModulation y la forma sale de
+   Waveform.value(atStep:of:), la misma función que suena.
+3. El barrido de los 128 controladores x 3 valores no mueve la modulación de
+   ninguno de los doce Tracks (FR9).
+
+Lo que se puso delante del usuario y se aprobó:
+- Las tres tareas van en un solo commit, contra el 'un commit por tarea' del
+  workflow, porque la pantalla no se parte en tres commits que compilen.
+- La columna derecha está vacía, así que el reparto 70/30 de FR11 aún no se ve.
+  Lo cierra la Fase 6.
+
+Confirmación del usuario: «ok» — aprobado sin cambios.
