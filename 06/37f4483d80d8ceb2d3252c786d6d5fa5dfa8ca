@@ -40,3 +40,43 @@ distinta, y fijar el tamaño convertiría una mejora de Engine en un fallo.
 Verificación:
   swift test --package-path Packages/MIDI (partición de CI)   21 + 722, 0 fallos
 Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
+
+--- VERIFICACIÓN DE FASE 3: EL Cycle LLEVA SU Modulation ---
+
+Comandos de test:
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado: Engine 865 tests, 0 fallos (846 al abrir la fase, +19 en tres tareas,
+una de ellas enmendada). MIDI 21 + 722, 0 fallos. App BUILD SUCCEEDED.
+
+Cobertura: Modulation.swift 100%, Shape.swift 100%, ProjectRecord.swift 99,10%
+de líneas. Engine en total 98,61%, contra el umbral de 90%.
+
+Ficheros de código de la fase y su test:
+  Shape.swift          -> ModulationInCycleTests
+  ProjectRecord.swift  -> ModulationRecordTests, RecordRoundTripTests
+
+El número de la fase: el Pattern pesa 27.936 bytes con la modulación dentro y
+27.936 sin ella (main, misma máquina). Cero coste — los dos bytes caben en el
+relleno que el Cycle ya tenía. load() ~613 ns, 0,0031% de la ventana de 20 ms.
+
+Jitter: no aplica (NFR3), y suspendido desde el 2026-09-02.
+
+Pasos de verificación manual propuestos:
+1. git show 309a2ba — el campo entra por default en el inicializador y en
+   Cycle.with(...); test en las dos direcciones.
+2. git show 1223a21 — la persistencia, tarea que NO estaba en el plan: sin ella,
+   guardar un Bank perdía waveform y accent en silencio.
+3. waveform se guarda por clave y no por índice; schemaVersion sigue en 1.
+4. testAFileWithoutTheKeysReadsAsTheNeutralModulation prueba que un Bank escrito
+   antes de la rebanada sigue abriendo y suena igual.
+5. git show 0637f44 — la medición del snapshot.
+
+Hallazgo registrado: el test que enumera las claves del CycleRecord se dispara
+cuando SOBRA una clave, no cuando FALTA un campo del Cycle. Lo que destapó la
+pérdida silenciosa fue el round trip del Cycle entero. Anotado en el propio test.
+
+Confirmación del usuario: «ok» — aprobado sin cambios.
