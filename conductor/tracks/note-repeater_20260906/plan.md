@@ -319,7 +319,7 @@ revisar antes de seguir (NFR1).
   - [ ] Anotar en el cuerpo que **no lleva medición de jitter** y por qué, que es
         la pregunta que un revisor va a hacer en un track que crea instantes
         nuevos entre los Steps.
-- [ ] Task: Actualizar el registro y cerrar el track
+- [~] Task: Actualizar el registro y cerrar el track
   - [ ] `conductor/tracks.md`: marcar la rebanada 5 y su resultado.
   - [ ] Anotar en el `spec.md` cualquier requisito que se haya corregido
         implementando, con fecha, como hicieron `ctrl-all` y `temp-parameters`.

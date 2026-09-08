@@ -307,3 +307,68 @@ ratchet que se arrastra se oye.
   vigente al pulsar Play, y con ella cambia el hueco de Time.
 - **Un Pace positivo alto entrega menos repeticiones de las pedidas** (FR8/FR9).
   Es visible en el sonido y no hay aviso en pantalla.
+
+## Correcciones al implementar (2026-09-07)
+
+Lo que este documento decía y la implementación tuvo que cambiar. Se anota con
+fecha, como hicieron `ctrl-all_20260905` y `temp-parameters_20260904`.
+
+**«Persistencia. No existe (rebanada 4 de la v2, por planificar).»** Sí existe:
+`persistence_20260907` entró a `main` el mismo 2026-09-07, después de escribirse
+este spec. Y `ProjectRecord.swift` ya dejaba dicho lo que eso implicaba —«añadir
+un parámetro al `Cycle` tiene que romper un test», nombrando a esta rebanada—.
+**Los cuatro parámetros se persisten**, en una tarea añadida al plan por
+enmienda: `CycleRecord` pasa de quince claves a diecinueve, las cuatro nuevas son
+opcionales para que un Bank escrito antes se lea como el neutro, y
+`schemaVersion` **se queda en 1** porque `validated()` exige igualdad exacta y
+subirla sin migrador dejaría ilegibles los ficheros ya escritos en el iPad.
+
+**NFR2 decía «cuatro enteros por Cycle», y son cuatro *bytes*.** El número que
+NFR2 usa para justificar el 2% del snapshot —~768 bytes con 12 Tracks × 16
+Cycles— solo sale si el campo ocupa cuatro bytes por Cycle, no cuatro palabras.
+Guardar los cuatro tipos tal cual no cabía: `RepeatTime` envuelve una `Division`,
+que son dos palabras, y el campo habría pasado de 4 a 40 bytes, subiendo el
+snapshot un 21% en vez de un 2%. Se guardan **cuatro `Int8`** y los tipos se
+exponen como propiedades calculadas. Consecuencia, documentada en el tipo: **Time
+se guarda como la posición del knob**, así que una `RepeatTime` fuera de
+`RepeatTime.ordered` cae en el default al entrar en un `Cycle`. No se pierde
+ningún valor alcanzable — el knob solo pasa por las nueve—. En disco, en cambio,
+Time se guarda **por su denominador y no por su posición**: el índice es
+disposición del knob, y ataría el fichero a ella.
+
+**FR18 se adelantó a la Fase 2, y no por gusto.** El repo tiene el invariante
+«todo `TrackParameter` tiene su controlador» (`ControlMappingTests`), y otros
+tests cruzan `ControlMapping` contra el JSON del preset y su README. Añadir los
+cuatro casos al enum deja la suite roja hasta que el preset los declara, así que
+los CC 79, 80, 81 y 83 y la reescritura del preset entraron con la Fase 2 en vez
+de con la Fase 5.
+
+**El plan pedía un test de que «con un `knobBlock` distinto los cuatro siguen al
+bloque». No es cierto para ningún parámetro**, y es anterior a esta rebanada:
+`ControlMapping.assignments` guarda CC absolutos, no desplazamientos. Lo que sí
+sigue al bloque son los números declarados y el knob del Cycle, y eso es lo que
+el test comprueba.
+
+**Quedan libres dos knobs, no tres.** El plan decía tres; con Pace en el knob 14
+son el 15 y el 16.
+
+**Ramp y Pace escriben el signo también en positivo** —`+40%`—, como este spec
+pedía en FR15. `Delay`, el otro parámetro bipolar, se escribe sin el `+` desde
+antes de esta rebanada. Los dos criterios conviven a propósito: unificarlos toca
+el test y la pantalla de Delay, y es un cambio de otro track.
+
+**La segunda línea del card de Shape obligó a algo que FR15 no preveía.** Con la
+fila nueva la columna derecha pasó a pedir más alto del disponible y el card
+cedía: SwiftUI le encogía el texto con su `minimumScaleFactor` y los ocho valores
+se dibujaban a la mitad de tamaño que los cinco de Groove — ilegible a un metro,
+que es requisito de `product-guidelines.md`. El card deja de ceder altura, y para
+que la tira de Cycles no quedara cortada, **el card `tonal` baja de dos filas a
+una**: `scale`, `root` y las celdas del pool comparten renglón. El pool tiene un
+máximo de ocho alturas, así que su ancho está acotado por construcción.
+
+**Defecto encontrado verificando, y no es de esta rebanada.** Después de cambiar
+de Bank, el primer giro de knob republica el Pattern anterior entero, porque
+`ControlInput` solo escribe su copia del Pattern en su `init` y nadie la
+reseedea. Vuelve el Pattern completo —no solo los Repeats—, y alcanza también a
+`selectPattern` y a `reloadBank`. Track propio abierto el 2026-09-07 en
+`conductor/tracks.md`.
