@@ -1,0 +1,35 @@
+Task: El formato de la lectura vive en Engine (NFR6)
+
+Primera tarea de la Fase 6 del track modulation_20260906. TDD: los 4 tests se
+escribieron primero y fallaron con 'value of type Accent has no member
+description'.
+
+Ficheros:
+- Packages/Engine/Sources/Engine/Modulation.swift (Accent: CustomStringConvertible)
+- Packages/Engine/Tests/EngineTests/ModulationTypesTests.swift (4 tests más)
+
+Tres decisiones de formato, todas fijadas por test:
+
+- El signo se ve TAMBIÉN EN EL POSITIVO: +34, no 34. Es la convención que Rotate
+  y Delay ya siguen para lo bipolar, y aquí es lo que separa 'sube 34' de 'el
+  valor es 34'. Sin él, la lectura grande de la pantalla no diría hacia dónde se
+  desvía la velocity.
+
+- El 0 VA SIN SIGNO. No es un valor pequeño hacia ningún lado — es el que apaga
+  la modulación — y escribirlo +0 le inventaría una dirección que no tiene.
+
+- SIN el símbolo de porcentaje. El rango es −100…100 pero no es un porcentaje de
+  nada nombrable: lo que desplaza son unidades MIDI, con el factor de FR6.
+  Ponerle % diría que es un porcentaje de la Velocity base, que es justo lo que
+  no es. Mismo criterio por el que Velocity va sin % en Groove.description.
+
+Y un test que recorre los 201 valores del rango y comprueba que la lectura se
+puede volver a leer como el número que era, para que el formato no pueda perder
+información en ningún punto.
+
+Vive en Engine y no en la vista (NFR6): workflow.md dice que si algo en App
+merece un test está en el sitio equivocado, y un formato es exactamente eso.
+
+Verificación: swift test --package-path Packages/Engine
+Engine 873 tests, 0 fallos (869 antes de la tarea, +4).
+Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
