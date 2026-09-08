@@ -45,3 +45,36 @@ Ficheros creados:
 
 Verificación: Engine 797 · MIDI 21 + 678 · Persistence 62, 0 fallos. xcodebuild
 iOS SUCCEEDED.
+
+--- Verificación de la FASE 4: LA TIRADA — EL TrackScheduler REPITE (2026-09-07) ---
+
+Tests automáticos ejecutados:
+  swift test --package-path Packages/Engine
+    Executed 797 tests, with 0 failures
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    Executed 21 tests, with 1 test skipped and 0 failures
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    Executed 678 tests, with 0 failures (640 al abrir la fase)
+  swift test --package-path Packages/Persistence
+    Executed 62 tests, with 0 failures
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    ** BUILD SUCCEEDED **
+
+Cobertura: Engine 98,52% de líneas. MIDI 92,46% en un proceso y excluyendo
+Engine/Sources (umbral 80). TrackScheduler.swift 98,23%, PatternScheduler.swift
+99,42%.
+
+Verificación manual en iPad con el BeatStep Pro: el Note Repeater suena. Se
+comprobaron los cuatro knobs, el corte por el Pulse siguiente, el roll sobre un
+ritmo disperso, la perforación por Probability y que con Repeats en 0 el Pattern
+suena como antes.
+
+Confirmación del usuario: «Parece funcionar ok» (2026-09-07).
+
+Defecto encontrado en la verificación, y NO es de esta fase: los parámetros del
+Bank anterior vuelven al primer giro de knob después de cambiar de Bank, también
+sobre un Bank vacío. La raíz es que ControlInput solo escribe su copia del
+Pattern en el init y nadie la reseedea; vuelve el Pattern ENTERO, no solo los
+Repeats. Registrado como track propio en conductor/tracks.md, decidido con el
+usuario: se arregla después y no dentro de esta rebanada, porque toca
+ControlInput y TransportModel y mezclaría dos cambios en un PR.
