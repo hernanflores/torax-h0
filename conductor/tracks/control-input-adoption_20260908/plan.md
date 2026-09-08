@@ -76,19 +76,19 @@ quién conoce el material.
         límite de compás.
   - [x] Comprobar que **no cambia el coste por ventana**: la escritura ocurre en
         la adopción, que ya era un camino excepcional.
-- [~] Task: El modelo aplica lo que armó (FR8, FR10)
-  - [ ] Tests (Red): con una adopción publicada, el modelo mueve
+- [x] Task: El modelo aplica lo que armó (FR8, FR10) `d0af03d`
+  - [x] Tests (Red): con una adopción publicada, el modelo mueve
         `project.selectedPattern` al hueco que armó y **limpia
         `armedPatternIndex`**.
-  - [ ] Tests (Red): y **adopta en `ControlInput`**, así que el siguiente giro de
+  - [x] Tests (Red): y **adopta en `ControlInput`**, así que el siguiente giro de
         knob escribe en el hueco nuevo — la consecuencia que destruía trabajo.
-  - [ ] Tests (Red): sin adopción pendiente, leer el contador no cambia nada.
-  - [ ] Implementación (Green): lo que se recuerda al armar y lo que se aplica al
+  - [x] Tests (Red): sin adopción pendiente, leer el contador no cambia nada.
+  - [x] Implementación (Green): lo que se recuerda al armar y lo que se aplica al
         ver el contador moverse. La decisión vive donde haya tests, no en `App`.
-- [ ] Task: La pantalla lo consulta al dibujar (FR9, NFR3)
-  - [ ] El mismo criterio que `playhead` y `cycleInCourse`: se consulta al
+- [x] Task: La pantalla lo consulta al dibujar (FR9, NFR3) `d0af03d`
+  - [x] El mismo criterio que `playhead` y `cycleInCourse`: se consulta al
         dibujar, sin callback desde el hilo de tiempo real.
-  - [ ] Dejar escrito el límite: lo que suena es exacto; lo que la pantalla
+  - [x] Dejar escrito el límite: lo que suena es exacto; lo que la pantalla
         refleja puede llegar hasta un cuadro después.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
