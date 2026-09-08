@@ -1,0 +1,82 @@
+Tareas: BipolarAccentSlider (FR11, FR18, FR19) · VelocityResponseView (FR12,
+FR13, FR14, FR15) · ModulationSummaryCard y el montaje de ModulationView (FR11,
+FR19)
+
+Las tres tareas restantes de la Fase 6 del track modulation_20260906, en un solo
+commit, por la misma razón que la Fase 5: las tres son la misma pantalla y el
+montaje no compila sin las dos piezas. El plan queda marcado con el mismo SHA en
+las tres.
+
+Ficheros:
+- Packages/Engine/Sources/Engine/Modulation.swift  (VelocityResponseStep y
+                                                    Cycle.velocityResponse)
+- Packages/Engine/Tests/EngineTests/ModulationOffsetTests.swift (5 tests más)
+- App/ModulationScreen.swift  (AccentCard, BipolarAccentSlider,
+                               VelocityResponseView, ModulationSummaryCard y el
+                               reparto de las dos columnas)
+
+EL DATO DEL PANEL VIVE EN ENGINE. Cycle.velocityResponse devuelve una entrada por
+Step con la velocity final —recorte incluido, que es lo que el panel existe para
+enseñar (FR12)— y si el Step dispara, para dibujar atenuados los que no (FR13).
+Tantas entradas como Steps tenga el Cycle: el 16 del handoff es el caso por
+defecto y no una constante, y un panel que dijera dieciséis con un anillo de
+nueve mentiría sobre lo que suena.
+
+Los Steps que NO disparan llevan igualmente su velocity, y hay test: es lo que
+hace que el panel enseñe la onda entera en vez de cuatro barras sueltas. El LFO
+corre sobre ellos (FR8), así que tienen valor y no suenan.
+
+No es código de tiempo real: asigna un array y lo consulta la interfaz al
+redibujar, como Playhead. El camino del scheduler usa Groove.modulated, que no
+asigna nada.
+
+EL IMANTADO DEL SLIDER VIVE EN LA VISTA, y es una frontera deliberada: lo que
+hace que un punto esté 'cerca' del centro son puntos de pantalla —diez, sobre una
+pista de unos doscientos— y no unidades del parámetro. Accent cruza el cero como
+cualquier otro valor y hay un test que lo fija. Es la misma frontera que separa
+el dibujo de la forma de la forma misma.
+
+Se imanta SOLO el 0: es el único valor que hay que poder recuperar sin mirar —el
+que apaga la modulación—. Imantar también los extremos convertiría el ajuste fino
+cerca de ±100 en saltos.
+
+El gesto es DragGesture(minimumDistance: 0), que es lo que hace que un toque
+simple sobre la pista salte a ese valor (FR18): sin él, tocar sin arrastrar no
+produciría ningún evento.
+
+TRES DEFECTOS ENCONTRADOS EN EL SIMULADOR Y CORREGIDOS, que es exactamente para
+lo que sirve mirarlo:
+
+1. layoutPriority NO reparte proporciones. Se usó para el 70/30 de FR11 y la
+   prioridad decide quién pide primero, no cuánto: la columna izquierda, con
+   maxWidth infinito, se quedaba con todo y la derecha bajaba a unos cuarenta
+   puntos, con 'accent' partido en una letra por línea. Se sustituye por una
+   fracción del ancho medido con GeometryReader.
+
+2. La línea de centro se dibujaba SOBRE las barras y parecía partir cada una en
+   dos. Es una referencia para leer la onda, no un dato — y lo que no es dato no
+   tapa al dato. Ahora va detrás.
+
+3. La onda del panel trazaba DOS ciclos. El card de la rejilla dibuja dos a
+   propósito —con uno solo, saw y triangle se distinguen mal— pero el panel
+   dibuja UNA VUELTA del anillo, que es exactamente un ciclo (FR4). Dos sobre
+   dieciséis barras decían que la modulación va al doble de velocidad de la que
+   va. WaveformPreview gana un parámetro  y el panel pide uno.
+
+Verificación en simulador (iPad Pro 11, iOS 26.3), dos capturas:
+- accent 0: las dieciséis barras iguales —la línea recta que suena—, el pulgar
+  del slider en el centro exacto, la lectura '0' sin signo.
+- accent +100: las barras siguen la onda y SE APLANAN CONTRA 127 mientras la
+  línea de la onda sigue subiendo por encima. Eso es el recorte, visible, que es
+  lo que FR12 pide y lo que las Known Limitations anotan como silencioso en el
+  sonido.
+La lectura grande dice '+100' en mauve y el card resumen repite waveform y
+accent.
+
+Lo que el simulador no verifica: sin destinos MIDI no hay transporte, así que el
+playhead del panel (FR14) no se ha visto correr. Queda para el dispositivo.
+
+Verificación:
+  swift test --package-path Packages/Engine        878 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0                 BUILD SUCCEEDED
+Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
