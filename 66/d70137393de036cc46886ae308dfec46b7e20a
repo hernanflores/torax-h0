@@ -1,0 +1,31 @@
+Task: Los cuatro CC en ControlMapping (FR4)
+
+La asignación en sí entró en la Fase 2, arrastrada por el invariante 'todo
+TrackParameter tiene su controlador' (ver la git note de fe7f169). Esta tarea
+cierra lo que quedaba: los tests que lo fijan y la documentación que había
+quedado mintiendo.
+
+Qué cambia:
+- El comentario de defaultKnobBlock. Decía que los nueve primeros knobs eran los
+  nueve parámetros en el orden de TrackParameter y que los siete restantes eran
+  de v2 'con Cycles, Accent, Repeats, Time, Voicing y Range'. De esa lista ya
+  entraron tres. Ahora dice lo que hay: catorce asignados, y libres el 15 y el 16.
+- Cuatro tests nuevos en PresetMappingTests: los CC del Note Repeater, que el 82
+  sigue siendo el Cycle, que las tres familias no se pisan, y que los números
+  declarados siguen al knobBlock.
+
+Desviación anotada, y es anterior a esta rebanada: el plan pedía un test de que
+'con un knobBlock distinto los cuatro siguen al bloque'. No es cierto para
+NINGÚN parámetro — assignments guarda CC absolutos, no desplazamientos, desde
+antes de esta rebanada. Lo que sí sigue al bloque es lo declarado y el knob del
+Cycle, y eso es lo que el test comprueba; la limitación queda escrita en el
+propio test para que nadie la lea como una promesa que el tipo no hace.
+
+Corrección del plan: dice 'los tres que siguen libres' y son dos, el 15 y el 16.
+Con Pace en el knob 14 no salen tres.
+
+Ficheros modificados:
+- Packages/MIDI/Sources/MIDI/ControlMapping.swift (comentario)
+- Packages/MIDI/Tests/MIDITests/PresetMappingTests.swift (4 tests)
+
+Verificación: MIDI 682 tests, 0 fallos.
