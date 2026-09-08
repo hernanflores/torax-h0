@@ -92,18 +92,18 @@ seguir.
         cero.
   - [x] Implementar (Green): tabla estática de enteros para `sine`, aritmética
         entera para las otras tres. Marca `/// Realtime:` en la función.
-- [ ] Task: El offset de velocity y su acotado (FR6, FR7)
-  - [ ] Tests (Red): `accent = 0` da offset 0 en los Steps de la vuelta, para las
+- [x] Task: El offset de velocity y su acotado (FR6, FR7) `2a36a7d`
+  - [x] Tests (Red): `accent = 0` da offset 0 en los Steps de la vuelta, para las
         cuatro ondas.
-  - [ ] Tests (Red): `accent = ±100` sobre el pico da ±63 unidades MIDI.
-  - [ ] Tests (Red): `accent = −n` es el complemento exacto de `accent = +n`
+  - [x] Tests (Red): `accent = ±100` sobre el pico da ±63 unidades MIDI.
+  - [x] Tests (Red): `accent = −n` es el complemento exacto de `accent = +n`
         respecto de la base, salvo donde el acotado muerde.
-  - [ ] Tests (Red): con `Velocity 127` y accent positivo nada supera 127; con
+  - [x] Tests (Red): con `Velocity 127` y accent positivo nada supera 127; con
         `Velocity 1` y accent negativo nada baja de 1 — reutilizando
         `Velocity.advanced(by:)`, no un segundo acotado.
-  - [ ] Tests (Red): la aritmética es entera y el redondeo está fijado por test
+  - [x] Tests (Red): la aritmética es entera y el redondeo está fijado por test
         en los valores que caen a mitad de unidad.
-  - [ ] Implementar (Green).
+  - [x] Implementar (Green).
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: EL `Cycle` LLEVA SU `Modulation`
