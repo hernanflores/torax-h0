@@ -157,6 +157,13 @@ final class TransportModel {
     /// **La regla de cómo entra la decide el transporte** (FR5, FR6): parado es
     /// inmediato, sonando espera al compás. Aquí solo se anota qué hueco es el
     /// que entra, para que la pantalla pueda decir `queued`.
+    ///
+    /// **Y la entrada de control adopta el material nuevo**, que es el fallo que
+    /// arregla `control-input-adoption` (FR6): `ControlInput` guarda su propia
+    /// copia del Pattern y nadie la reseedeaba, así que el primer giro de knob
+    /// republicaba el Pattern anterior entero encima. La rama que suena todavía
+    /// no adopta: ahí el material entra en el límite de compás, dentro del hilo
+    /// del scheduler, y quien lo cuenta es la vía de vuelta.
     func selectPattern(_ index: Int) {
         guard let material = bank.pattern(at: index) else { return }
 
@@ -166,6 +173,7 @@ final class TransportModel {
         } else {
             project = project.selectingPattern(index)
             pattern = material
+            controlInput.adopt(material)
             transport?.publish(material)
             armedPatternIndex = nil
         }
@@ -173,6 +181,8 @@ final class TransportModel {
     }
 
     /// Elige otro Bank: su Pattern seleccionado y su tempo (FR11).
+    ///
+    /// Adopta con el transporte parado, por lo mismo que `selectPattern(_:)`.
     func selectBank(_ index: Int) {
         guard let target = project.bank(at: index) else { return }
 
@@ -181,6 +191,7 @@ final class TransportModel {
 
         if !isPlaying {
             pattern = target.pattern(at: project.selectedPattern) ?? Pattern()
+            controlInput.adopt(pattern)
             armedPatternIndex = nil
         } else {
             armedPatternIndex = project.selectedPattern
@@ -214,6 +225,8 @@ final class TransportModel {
 
     /// Vuelve al punto de retorno. **Cuantizado**, por el mismo camino que un
     /// cambio de Pattern (FR17).
+    ///
+    /// Adopta con el transporte parado, por lo mismo que `selectPattern(_:)`.
     func reloadBank() {
         guard let saved = try? store.restorePoint(at: project.selectedBank) else { return }
 
@@ -222,6 +235,7 @@ final class TransportModel {
 
         if !isPlaying {
             pattern = saved.pattern(at: project.selectedPattern) ?? Pattern()
+            controlInput.adopt(pattern)
         }
         autosave.changed(saved, at: project.selectedBank)
     }
