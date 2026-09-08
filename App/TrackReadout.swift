@@ -339,50 +339,25 @@ struct TonalCard: View {
                 .font(Typography.parameterLine)
                 .foregroundStyle(isActive ? Palette.tonal : Palette.muted)
 
-            // **Una sola fila: el marco y el material.** El pool bajaba a un
-            // renglón propio y eso costaba una fila entera de card para ocho
-            // celdas que caben de sobra al lado — con la segunda línea de Shape
-            // dentro, esa fila era lo que dejaba la tira de Cycles cortada
-            // (2026-09-07). El pool tiene un máximo de ocho alturas, así que su
-            // ancho está acotado por construcción.
-            HStack(alignment: .center, spacing: 12) {
-                labelled("scale", scaleName)
-                labelled("root", "\(frame.root)")
-
-                if pool.isEmpty {
-                    // **El pool vacío se dice, no se disimula.** Es el estado de
-                    // once Tracks al arrancar: disparan sus Pulses y no tienen
-                    // material que emitir.
-                    Text(display: "pool \(PitchPool().countDescription)")
-                        .font(Typography.caption)
-                        .foregroundStyle(Palette.muted)
-                } else {
-                    // **Celdas de ancho propio, no repartidas.** Con
-                    // `maxWidth: .infinity` un pool de una sola altura dibujaba
-                    // una celda del ancho del card: parecía un campo de texto
-                    // vacío en vez de una nota. Lo que hay que ver es cuántas
-                    // hay, así que cada una mide lo suyo.
-                    HStack(spacing: 4) {
-                        ForEach(Array(pool.enumerated()), id: \.offset) { _, name in
-                            Text(display: name)
-                                .font(Typography.captionStrong)
-                                .foregroundStyle(Palette.mutedBright)
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8)
-                                .frame(minWidth: 30, minHeight: 26)
-                                .background(
-                                    Palette.surface,
-                                    in: RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
-                                )
-                                .overlay {
-                                    RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
-                                        .stroke(Palette.border, lineWidth: Brutalist.stroke)
-                                }
-                        }
-                    }
+            // **Una fila cuando cabe, dos cuando hace falta.** Mantener el card
+            // bajo deja sitio a Cycles en el ancho del iPad, pero no puede ser a
+            // costa de comprimir las ocho alturas. La primera variante conserva
+            // esa densidad; la segunda baja el pool y lo envuelve si el readout
+            // recibe menos ancho.
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: 12) {
+                    frameLabels
+                    poolRow
+                    Spacer(minLength: 0)
                 }
 
-                Spacer(minLength: 0)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .center, spacing: 12) {
+                        frameLabels
+                        Spacer(minLength: 0)
+                    }
+                    poolGrid
+                }
             }
         }
         .padding(8)
@@ -395,6 +370,76 @@ struct TonalCard: View {
                     lineWidth: isActive ? Brutalist.strokeEmphasis : Brutalist.stroke
                 )
         }
+    }
+
+    @ViewBuilder
+    private var frameLabels: some View {
+        labelled("scale", scaleName)
+        labelled("root", "\(frame.root)")
+    }
+
+    @ViewBuilder
+    private var poolRow: some View {
+        if pool.isEmpty {
+            emptyPool
+        } else {
+            // Impide que `ViewThatFits` acepte esta variante comprimiendo las
+            // celdas por debajo de su tamaño legible.
+            HStack(spacing: 4) {
+                ForEach(Array(pool.enumerated()), id: \.offset) { _, name in
+                    noteCell(name)
+                }
+            }
+            .fixedSize(horizontal: true, vertical: false)
+        }
+    }
+
+    @ViewBuilder
+    private var poolGrid: some View {
+        if pool.isEmpty {
+            emptyPool
+        } else {
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 30, maximum: 44), spacing: 4)],
+                alignment: .leading,
+                spacing: 4
+            ) {
+                ForEach(Array(pool.enumerated()), id: \.offset) { _, name in
+                    noteCell(name, fillsWidth: true)
+                }
+            }
+        }
+    }
+
+    /// **El pool vacío se dice, no se disimula.** Es el estado de once Tracks
+    /// al arrancar: disparan sus Pulses y no tienen material que emitir.
+    private var emptyPool: some View {
+        Text(display: "pool \(PitchPool().countDescription)")
+            .font(Typography.caption)
+            .foregroundStyle(Palette.muted)
+    }
+
+    /// Celdas de ancho propio en la fila y repartidas solo dentro de las
+    /// columnas acotadas de la rejilla adaptativa.
+    private func noteCell(_ name: String, fillsWidth: Bool = false) -> some View {
+        Text(display: name)
+            .font(Typography.captionStrong)
+            .foregroundStyle(Palette.mutedBright)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .frame(
+                minWidth: 30,
+                maxWidth: fillsWidth ? .infinity : nil,
+                minHeight: 26
+            )
+            .background(
+                Palette.surface,
+                in: RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+                    .stroke(Palette.border, lineWidth: Brutalist.stroke)
+            }
     }
 
     private func labelled(_ label: String, _ value: String) -> some View {

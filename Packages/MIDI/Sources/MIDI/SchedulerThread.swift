@@ -351,17 +351,22 @@ public final class SchedulerThread: @unchecked Sendable {
                 // tirada se despegaría de la rejilla que la contiene.
                 emitRepetition: { track, source, step, pitch, velocity, gate, offset in
                     guard let repetitionHandler else { return }
+                    let gridStart = budgetNanoseconds + offset
+                    let wallStart = tempoMap.wallNanoseconds(forGridNanoseconds: gridStart)
+                    // El gate es una duración entre dos posiciones musicales.
+                    // Restarlas después de mapearlas conserva la pendiente del
+                    // tempo y cancela tanto el rebase como las correcciones de
+                    // fase que desplazan el origen.
+                    let wallGate =
+                        tempoMap.wallNanoseconds(forGridNanoseconds: gridStart + gate)
+                        - wallStart
                     let hostTime =
                         startHostTicks
                         &+ HostClock.hostTicks(
-                            fromNanoseconds: UInt64(
-                                max(
-                                    0,
-                                    tempoMap.wallNanoseconds(
-                                        forGridNanoseconds: budgetNanoseconds + offset))))
+                            fromNanoseconds: UInt64(max(0, wallStart)))
                     repetitionHandler(
                         track, source, step, pitch, velocity,
-                        tempoMap.wallNanoseconds(forGridNanoseconds: gate), hostTime)
+                        wallGate, hostTime)
                 }
             ) {
                 track, source, step, pitch, groove, offset in
