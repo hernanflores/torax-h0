@@ -149,22 +149,22 @@ seguir.
 
 ## FASE 4: EL ACENTO SUENA
 
-- [ ] Task: El `TrackScheduler` aplica la modulación (FR4, FR8)
-  - [ ] Tests (Red): con `accent = 0` la secuencia emitida es **idéntica** a la
+- [x] Task: El `TrackScheduler` aplica la modulación (FR4, FR8) `4454140`
+  - [x] Tests (Red): con `accent = 0` la secuencia emitida es **idéntica** a la
         de antes —instantes, velocities y consumo de aleatoriedad—. Es el
         criterio 1 y se queda dentro de la suite.
-  - [ ] Tests (Red): con `triangle` y `accent = +100`, las velocities de una
+  - [x] Tests (Red): con `triangle` y `accent = +100`, las velocities de una
         vuelta siguen la forma; el Step 0 de cada vuelta vuelve a la base.
-  - [ ] Tests (Red): la fase usa `cycleStep`, no el Step absoluto: dos vueltas
+  - [x] Tests (Red): la fase usa `cycleStep`, no el Step absoluto: dos vueltas
         seguidas emiten la misma serie de velocities.
-  - [ ] Tests (Red): un Step apagado por Probability **no desplaza la fase** —
+  - [x] Tests (Red): un Step apagado por Probability **no desplaza la fase** —
         los siguientes valen lo mismo que si hubiera sonado.
-  - [ ] Tests (Red): un Step que no es pulso euclidiano tampoco la desplaza.
-  - [ ] Tests (Red): al avanzar de Cycle en el límite de vuelta, la modulación
+  - [x] Tests (Red): un Step que no es pulso euclidiano tampoco la desplaza.
+  - [x] Tests (Red): al avanzar de Cycle en el límite de vuelta, la modulación
         que se aplica es la del Cycle nuevo desde su Step 0.
-  - [ ] Implementar (Green): componer el `Groove` modulado donde el scheduler ya
+  - [x] Implementar (Green): componer el `Groove` modulado donde el scheduler ya
         tiene `cycleStep` y `stepCount` a mano, sin releer el snapshot.
-  - [ ] Verificar a mano que no entra ninguna asignación, bloqueo ni coma
+  - [x] Verificar a mano que no entra ninguna asignación, bloqueo ni coma
         flotante en el bucle de ventana (NFR1, Quality Gates).
 - [ ] Task: Cada Track modula con su propio anillo (FR4)
   - [ ] Tests (Red): dos Tracks con Steps distintos completan su ciclo en vueltas
