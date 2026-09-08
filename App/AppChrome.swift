@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Los cuatro módulos de la app.
+/// Los cinco módulos de la app.
 ///
-/// **Los cuatro existen.** Hasta el 2026-09-06 la navegación dibujaba dos
+/// **Los cinco existen.** Hasta el 2026-09-06 la navegación dibujaba dos
 /// pestañas con borde discontinuo —el signo de «no disponible»— porque Banks y
 /// la lista de Tracks no estaban hechas. Ya no: el rediseño las construye, así
 /// que el signo se retira en vez de quedarse como decoración.
@@ -10,11 +10,19 @@ import SwiftUI
 /// **Sin prefijo numérico.** Se llamaban `1 · Track`, `2 · Scale`, `3 · MIDI`,
 /// que ordenaba una lista de rebanadas pendientes, no de módulos. El handoff los
 /// nombra por lo que son.
+///
+/// > **`modulation` es el quinto, desde el 2026-09-08** (FR10). Va **al final y
+/// > no junto a `track`**: el orden de esta lista es el de la fila, y la fila va
+/// > de lo que se mira tocando a lo que se configura antes. `modulation` es lo
+/// > último que se ajusta y lo que menos se visita, así que ocupa el extremo.
+/// > Meterlo en medio movería de sitio cuatro pestañas que ya se alcanzan sin
+/// > mirar.
 enum Module: String, CaseIterable, Identifiable {
     case track
     case scale
     case midi
     case banks
+    case modulation
 
     var id: String { rawValue }
 
@@ -331,9 +339,9 @@ struct AppChrome: View {
     }
 }
 
-/// La navegación persistente: `track`, `scale`, `midi`, `banks`.
+/// La navegación persistente: `track`, `scale`, `midi`, `banks`, `modulation`.
 ///
-/// **Las cuatro, siempre visibles y siempre alcanzables** (FR7). Es lo que la
+/// **Las cinco, siempre visibles y siempre alcanzables** (FR7). Es lo que la
 /// pantalla anterior no podía prometer: dibujaba las que faltaban con borde
 /// discontinuo —el signo de «existe y todavía no se puede usar»— y era honesto
 /// entonces. Ahora las cuatro existen, así que el signo se retira; dejarlo sería
@@ -372,6 +380,16 @@ struct ModuleNavigation: View {
         }
     }
 
+    /// El relleno lateral de cada pestaña.
+    ///
+    /// > **Baja de 28 a 20 puntos con la quinta** (2026-09-08). `modulation` es
+    /// > la palabra más larga de las cinco y con el relleno anterior la fila
+    /// > sumaba más de lo que cabe cómodo: no se salía —cada columna se reparte
+    /// > el ancho por igual— pero dejaba las etiquetas casi tocándose. Veinte
+    /// > puntos siguen dando de sobra el objetivo táctil, porque **el objetivo es
+    /// > la columna entera** y no el relleno del texto.
+    private static let itemPadding: CGFloat = 20
+
     private func item(_ candidate: Module) -> some View {
         let isActive = candidate == module
 
@@ -381,8 +399,10 @@ struct ModuleNavigation: View {
             Text(display: candidate.title)
                 .font(isActive ? Typography.navigationItemActive : Typography.navigationItem)
                 .foregroundStyle(isActive ? Palette.text : Palette.muted)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
                 .frame(height: Self.height)
-                .padding(.horizontal, 28)
+                .padding(.horizontal, Self.itemPadding)
                 .overlay(alignment: .bottom) {
                     // **El subrayado se dibuja siempre y se pinta o no.**
                     // Meterlo en un `if` cambiaría la altura del texto al

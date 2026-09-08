@@ -60,6 +60,23 @@ final class TransportModel {
         syncFromControlInput()
     }
 
+    /// Cambia la modulación del Cycle en edición del Track seleccionado.
+    ///
+    /// Táctil, como Scale, Root y el canal: `modulation` cae del lado táctil de
+    /// la frontera del 2026-09-06. La regla de sobre qué Cycle escribe vive en
+    /// `ControlInput`, que es donde se testea sin pantalla de por medio.
+    func setModulation(_ modulation: Modulation) {
+        controlInput.setModulation(modulation)
+        syncFromControlInput()
+    }
+
+    /// La modulación del Cycle **en edición** del Track seleccionado.
+    ///
+    /// **No es la del que suena** (FR16). Es lo que la pantalla dibuja y lo que
+    /// su etiqueta de contexto nombra: editar el B mientras suena el A tiene que
+    /// verse, o la pantalla parece que miente.
+    var modulation: Modulation { track.modulation }
+
     /// Cambia el canal del Track seleccionado.
     ///
     /// Táctil, como Scale y Root: es configuración y no material generativo.

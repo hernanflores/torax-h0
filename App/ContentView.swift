@@ -124,11 +124,23 @@ struct ContentView: View {
         case .scale: scaleScreen
         case .midi: midiScreen
         case .banks: banksScreen
+        case .modulation: modulationScreen
         }
     }
 
     private var banksScreen: some View {
         BanksScreen(model: model)
+    }
+
+    /// La quinta, desde el 2026-09-08.
+    ///
+    /// **Navegar a ella y volver no interrumpe el transporte ni mueve el
+    /// playhead** (FR10, criterio 9), y no por cuidado sino por construcción: el
+    /// modelo lo posee la escena, no esta vista, así que cambiar de módulo
+    /// recompone el cuerpo sin volver a crear nada. Es la misma garantía que ya
+    /// tenían las otras cuatro.
+    private var modulationScreen: some View {
+        ModulationScreen(model: model)
     }
 
     // MARK: - Las cuatro pantallas
