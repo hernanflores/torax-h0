@@ -19,3 +19,18 @@ PendingAdoption.swift 100%.
 Suite: MIDI 21 + 719, Engine 800, Persistence 62, 0 fallos. BUILD SUCCEEDED.
 
 Sin medición de jitter (NFR4).
+
+--- Verificación de fase: FASE 4 — DISPOSITIVO Y CIERRE ---
+
+Comandos: suite completa de los tres paquetes, cobertura de MIDI y Engine,
+xcodebuild build.
+
+Resultado: MIDI 21 + 719 (92,36% líneas), Engine 800 (98,54%), Persistence 62.
+0 fallos. BUILD SUCCEEDED.
+
+Verificación manual: los catorce puntos de device-verification.md, en iPad con
+BeatStep Pro. Sin discrepancias. Confirmación del usuario: «Funcionó».
+
+PR #41 contra main. CI: build pass en 2m46s, sin el flake de CoreMIDI.
+
+Confirmación del usuario para publicar: «Sí, push y PR» (2026-09-08).
