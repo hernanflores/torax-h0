@@ -108,15 +108,15 @@ seguir.
 
 ## FASE 3: EL `Cycle` LLEVA SU `Modulation`
 
-- [ ] Task: `Modulation` dentro del `Cycle`, sin dejar de ser POD (FR1, NFR2)
-  - [ ] Tests (Red): `_isPOD(Cycle.self)` sigue siendo cierto con el campo nuevo.
-  - [ ] Tests (Red): un `Cycle` recién creado tiene `accent = 0` y
+- [x] Task: `Modulation` dentro del `Cycle`, sin dejar de ser POD (FR1, NFR2) `309a2ba`
+  - [x] Tests (Red): `_isPOD(Cycle.self)` sigue siendo cierto con el campo nuevo.
+  - [x] Tests (Red): un `Cycle` recién creado tiene `accent = 0` y
         `waveform = .triangle`.
-  - [ ] Tests (Red): `Cycle.with(modulation:)` devuelve un valor nuevo y no toca
+  - [x] Tests (Red): `Cycle.with(modulation:)` devuelve un valor nuevo y no toca
         nada más; la igualdad distingue dos Cycles que solo difieren en la onda.
-  - [ ] Tests (Red): los dieciséis Cycles de un `Track` llevan el suyo — cambiar
+  - [x] Tests (Red): los dieciséis Cycles de un `Track` llevan el suyo — cambiar
         el del Cycle en edición no toca a los otros quince.
-  - [ ] Implementar (Green), con el campo entrando **por default** en el
+  - [x] Implementar (Green), con el campo entrando **por default** en el
         inicializador, como entraron Timing y Delay: código que no lo pide sigue
         compilando y sonando igual.
 - [ ] Task: `Modulation` en disco, o se pierde al guardar (FR1)
