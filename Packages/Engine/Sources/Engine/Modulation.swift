@@ -219,6 +219,15 @@ extension Waveform {
     /// **La forma es una aproximación entera**, y a 16 Steps o menos —donde el
     /// muestreo pasa por una de cada seis entradas— es indistinguible de la
     /// curva exacta. Es la limitación que la spec del track anota.
+    ///
+    /// > **Es un global de inicialización perezosa, y eso se lee desde el hilo
+    /// > del scheduler.** Leer una entrada no asigna nada, pero la **primera**
+    /// > lectura del proceso corre el `swift_once` que construye el array. Es
+    /// > exactamente el mismo idioma que `RepeatTime.ordered`, que la rebanada 5
+    /// > ya lee desde ese hilo, así que no se inventa aquí un patrón nuevo. Si
+    /// > algún día se quiere quitar del todo, la vía es una tupla de tamaño fijo
+    /// > leída con `withUnsafePointer` — más barata y bastante menos legible, y
+    /// > no se paga hasta que haya un motivo medido para pagarla.
     static let quarterSine: [Int] = [
         0, 2, 3, 5, 6, 8, 9, 11, 13, 14,
         16, 17, 19, 20, 22, 23, 25, 26, 28, 29,
@@ -341,5 +350,45 @@ extension Modulation {
     public func velocity(atStep step: Int, of stepCount: Int, from base: Velocity) -> Velocity {
         guard accent.percent != 0 else { return base }
         return base.advanced(by: offset(atStep: step, of: stepCount))
+    }
+}
+
+extension Groove {
+
+    /// El mismo Groove con la velocity que le toca a este Step de la vuelta.
+    ///
+    /// **Es el único punto donde la modulación se aplica**, y por eso vive aquí
+    /// y no en el scheduler: `workflow.md` dice que si algo merece un test está
+    /// donde se testea, y una velocity mal compuesta se oye como un acento que
+    /// no está donde debería.
+    ///
+    /// **Solo toca la velocity.** Sustain, Probability, Timing y Delay salen
+    /// intactos: la modulación cambia con cuánta fuerza suena un Step, no cuándo
+    /// suena ni cuánto dura. Es lo que sostiene NFR3 —no mueve ningún instante,
+    /// así que no hay jitter que medir—.
+    ///
+    /// **Con `accent` en 0 devuelve `self`**, sin construir nada: es el criterio
+    /// 1 de la rebanada, y hace que el camino nuevo no cueste nada a quien no lo
+    /// pide.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await, sin coma flotante.
+    ///
+    /// Applies the modulation to this groove's velocity at one step of the turn.
+    /// - Parameters:
+    ///   - modulation: The waveform and accent of the cycle.
+    ///   - step: The step index within the turn.
+    ///   - stepCount: How many steps the turn has.
+    /// - Returns: The same groove with the velocity of that step.
+    public func modulated(by modulation: Modulation, atStep step: Int, of stepCount: Int) -> Groove
+    {
+        guard modulation.accent.percent != 0 else { return self }
+        return Groove(
+            velocity: modulation.velocity(atStep: step, of: stepCount, from: velocity),
+            sustain: sustain,
+            probability: probability,
+            timing: timing,
+            delay: delay
+        )
     }
 }

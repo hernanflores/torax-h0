@@ -96,6 +96,23 @@ public enum SchedulerMaterial: Equatable, Sendable {
         }
     }
 
+    /// Con qué forma y cuánta amplitud se mueve la velocity a lo largo de la
+    /// vuelta.
+    ///
+    /// **El arnés usa el neutro y no modula**, por la misma razón por la que usa
+    /// el `Groove` por defecto y no repite: mide la rejilla temporal, no el
+    /// material musical. Le da igual con qué fuerza suene mientras suene
+    /// siempre.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    var modulation: Modulation {
+        switch self {
+        case .cycle(let cycle): cycle.modulation
+        case .everyStep: .default
+        }
+    }
+
     /// Cuántos triggers extra cuelgan de cada Pulse.
     ///
     /// **El arnés usa el neutro y no repite** (FR14), por la misma razón por la
@@ -439,12 +456,31 @@ public struct TrackScheduler {
                 + groove.shiftNanoseconds(
                     atStep: cycleStep, stepDurationNanoseconds: stepDurationNanoseconds)
 
+            // **La modulación se compone aquí, con `cycleStep` y el anillo ya a
+            // mano.** La fase sale del índice dentro de la vuelta, así que un
+            // ciclo de modulación dura exactamente una vuelta y cada Track
+            // modula a su velocidad — no hay reloj de modulación que sincronizar
+            // (FR4).
+            //
+            // **Va después de la tirada de Probability y del cálculo del
+            // instante, y no antes.** Un Step callado o un Step que no dispara
+            // consumen igualmente su posición del ciclo, porque la fase depende
+            // del índice y nunca de si hubo nota (FR8): atarla a una tirada
+            // aleatoria haría que «un ciclo por vuelta» dejara de ser cierto.
+            // Como el valor sale del índice y no de un acumulador, eso sale
+            // gratis: no hay nada que avanzar.
+            //
+            // **Con `accent` en 0 devuelve el mismo `Groove`**, sin pasar por la
+            // onda ni por el acotado, que es el criterio 1 de la rebanada.
+            let voiced = groove.modulated(
+                by: material.modulation, atStep: cycleStep, of: material.stepCount ?? 1)
+
             if pulseSounds, material.emitsAnything {
                 emit(
                     material.cycle,
                     step,
                     material.pitch(atStep: cycleStep),
-                    groove,
+                    voiced,
                     pulseOffset
                 )
             }
@@ -503,7 +539,18 @@ public struct TrackScheduler {
         let base = repeater.time.gapNanoseconds(
             forStep: stepDurationNanoseconds, division: cycle.shape.division)
         let pitch = cycle.pitch(atStep: cycleStep)
-        let groove = cycle.groove
+
+        // **Las repeticiones heredan la velocity ya modulada del Pulse.** Ramp
+        // recorre las repeticiones de un Pulse y `accent` recorre la vuelta del
+        // anillo: son dos ejes distintos, así que se componen en vez de
+        // excluirse. Si no lo hicieran, subir Repeats diluiría el acento —el
+        // Pulse sonaría acentuado y su tirada no—, que es justo lo contrario de
+        // lo que las dos cosas prometen.
+        //
+        // La Pre Spec pone a Ramp «relativo a la Velocity general del Track», y
+        // la Velocity general de **este Step** es la modulada.
+        let groove = cycle.groove.modulated(
+            by: cycle.modulation, atStep: cycleStep, of: cycle.shape.steps.count)
 
         var elapsed: Int64 = 0
         for index in 1...count {

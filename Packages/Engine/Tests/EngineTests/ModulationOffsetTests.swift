@@ -207,6 +207,72 @@ final class ModulationOffsetTests: XCTestCase {
         XCTAssertEqual(modulation.offset(atStep: 4, of: 16), 0)
     }
 
+    // MARK: - El Groove modulado
+
+    /// **Solo toca la velocity.** Sustain, Probability, Timing y Delay salen
+    /// intactos: la modulación cambia con cuánta fuerza suena un Step, no cuándo
+    /// suena ni cuánto dura. Es lo que sostiene NFR3.
+    func testTheModulatedGrooveOnlyChangesTheVelocity() {
+        let groove = Groove(
+            velocity: Velocity(64)!,
+            sustain: Sustain(percent: 150)!,
+            probability: Probability(percent: 40)!,
+            timing: Timing(percent: 66)!,
+            delay: Delay(percent: -30)!
+        )
+        let modulation = Modulation(waveform: .triangle, accent: Accent(percent: 100)!)
+        let voiced = groove.modulated(by: modulation, atStep: 4, of: 16)
+
+        XCTAssertEqual(voiced.velocity.value, 127)
+        XCTAssertEqual(voiced.sustain, groove.sustain)
+        XCTAssertEqual(voiced.probability, groove.probability)
+        XCTAssertEqual(voiced.timing, groove.timing)
+        XCTAssertEqual(voiced.delay, groove.delay)
+    }
+
+    /// **Con `accent` en 0 devuelve el mismo Groove**, sin construir nada. Es el
+    /// criterio 1, y hace que el camino nuevo no cueste nada a quien no lo pide.
+    func testAGrooveWithoutAccentComesBackUntouched() {
+        let groove = Groove(velocity: base, sustain: .default, probability: .default)
+        for waveform in Waveform.allCases {
+            for step in 0..<16 {
+                XCTAssertEqual(
+                    groove.modulated(by: Modulation(waveform: waveform), atStep: step, of: 16),
+                    groove,
+                    "\(waveform) step \(step)"
+                )
+            }
+        }
+    }
+
+    /// La serie de velocities finales de una vuelta, con recorte incluido. Es el
+    /// dato que el panel `velocity response` dibuja (FR12), y por eso se prueba
+    /// aquí con números y no mirándolo.
+    func testTheWholeTurnOfFinalVelocities() {
+        let groove = Groove(velocity: base, sustain: .default, probability: .default)
+        let modulation = Modulation(waveform: .triangle, accent: Accent(percent: 100)!)
+        let turn = (0..<16).map {
+            groove.modulated(by: modulation, atStep: $0, of: 16).velocity.value
+        }
+        XCTAssertEqual(
+            turn,
+            [100, 115, 127, 127, 127, 127, 127, 115, 100, 85, 69, 53, 37, 53, 69, 85]
+        )
+    }
+
+    /// Y sobre un anillo de nueve, que es el caso que el panel tiene que dibujar
+    /// con nueve barras y no con dieciséis (FR13).
+    func testTheWholeTurnOfANineStepRing() {
+        let groove = Groove(velocity: Velocity(64)!, sustain: .default, probability: .default)
+        let modulation = Modulation(waveform: .triangle, accent: Accent(percent: 100)!)
+        let turn = (0..<9).map {
+            groove.modulated(by: modulation, atStep: $0, of: 9).velocity.value
+        }
+        XCTAssertEqual(turn.count, 9)
+        XCTAssertEqual(turn[0], 64)
+        XCTAssertEqual(turn, [64, 91, 119, 106, 78, 51, 23, 8, 36])
+    }
+
     // MARK: - El valor
 
     /// Los defaults del producto: sin modulación, sobre `triangle`.
