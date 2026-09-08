@@ -243,23 +243,24 @@ revisar antes de seguir (NFR1).
 
 ## FASE 5: LOS CUATRO KNOBS Y EL PRESET
 
-- [~] Task: Los cuatro CC en `ControlMapping` (FR4)
-  - [ ] Tests (Red): CC 79 mueve Repeats, 80 Time, 81 Ramp y 83 Pace; el 82
+- [x] Task: Los cuatro CC en `ControlMapping` (FR4) — 66d7013
+  - [x] Tests (Red): CC 79 mueve Repeats, 80 Time, 81 Ramp y 83 Pace; el 82
         sigue moviendo el Cycle en edición y ningún otro parámetro cambia de CC.
-  - [ ] Tests (Red): con un `knobBlock` distinto del por defecto, los cuatro
+  - [x] Tests (Red): con un `knobBlock` distinto del por defecto, los cuatro
         siguen al bloque — ningún número queda clavado.
-  - [ ] Tests (Red): las tres familias del preset siguen sin pisarse.
-  - [ ] Implementación (Green): las cuatro entradas en `assignments`.
-  - [ ] Reescribir el comentario de `defaultKnobBlock`, que hoy dice que los
+  - [x] Tests (Red): las tres familias del preset siguen sin pisarse.
+  - [x] Implementación (Green): las cuatro entradas en `assignments`.
+  - [x] Reescribir el comentario de `defaultKnobBlock`, que hoy dice que los
         knobs 10 a 16 «se declaran y no se asignan; su sitio es de v2, con
         Cycles, Accent, Repeats, Time, Voicing y Range». Quedan libres tres.
-- [ ] Task: El preset y su tabla (FR18)
-  - [ ] Tests (Red): `PresetMappingTests` compara JSON, README y `ControlMapping`
+- [x] Task: El preset y su tabla (FR18) — fe7f169
+  - [x] Tests (Red): `PresetMappingTests` compara JSON, README y `ControlMapping`
         con los números nuevos, y falla si uno de los tres se queda atrás.
-  - [ ] `preset/torax-h0.beatstep-pro.json`: los cuatro knobs, subiendo
+  - [x] `preset/torax-h0.beatstep-pro.json`: los cuatro knobs, subiendo
         `version` y `updated`.
-  - [ ] `preset/README.md`: la tabla de knobs, con los cuatro y los tres que
-        siguen libres.
+  - [x] `preset/README.md`: la tabla de knobs, con los cuatro y los que siguen
+        libres. *(Corregido el 2026-09-07: son **dos**, el 15 y el 16, no tres.
+        Con Pace en el knob 14 no salen tres.)*
 - [ ] Task: Temp y Ctrl All alcanzan a los cuatro (FR17)
   - [ ] Tests (Red): con [13] hundido, girar REPEATS iguala el valor en los
         Cycles activos del Track seleccionado y soltar devuelve el de cada uno.
