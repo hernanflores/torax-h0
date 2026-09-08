@@ -94,20 +94,20 @@ quién conoce el material.
 
 ## FASE 4: DISPOSITIVO Y CIERRE
 
-- [~] Task: Verificación en iPad con BeatStep Pro
-  - [ ] **El fallo reportado, primero**: cambiar de Bank —incluido uno vacío— y
+- [x] Task: Verificación en iPad con BeatStep Pro `9e1a788`
+  - [x] **El fallo reportado, primero**: cambiar de Bank —incluido uno vacío— y
         girar un knob. El Pattern anterior no vuelve.
-  - [ ] `selectPattern` y `reloadBank` con el transporte parado.
-  - [ ] **Con el transporte corriendo**: cambiar de Pattern, oír que entra en el
+  - [x] `selectPattern` y `reloadBank` con el transporte parado.
+  - [x] **Con el transporte corriendo**: cambiar de Pattern, oír que entra en el
         compás, y ver que la cuenta atrás desaparece y la rejilla marca el hueco
         correcto. Girar un knob y comprobar que escribe **en ese hueco**.
-  - [ ] Temp y Ctrl All hundidos durante un cambio de Bank: soltar no escribe
+  - [x] Temp y Ctrl All hundidos durante un cambio de Bank: soltar no escribe
         nada del Pattern viejo.
-  - [ ] Escribir `device-verification.md` con lo que se probó y lo que falló.
-- [ ] Task: Cobertura y suite completa
-  - [ ] `Engine` ≥90%, `MIDI` ≥80% medida en un proceso e ignorando
+  - [x] Escribir `device-verification.md` con lo que se probó y lo que falló.
+- [x] Task: Cobertura y suite completa `9e1a788`
+  - [x] `Engine` ≥90%, `MIDI` ≥80% medida en un proceso e ignorando
         `Engine/Sources`, como dice `workflow.md`.
-- [ ] Task: Pull Request
+- [~] Task: Pull Request
   - [ ] Rama `fix/control-input-adoption`, PR contra `main`. Cuerpo corto.
 - [ ] Task: Cerrar los dos defectos en el registro
   - [ ] Marcar este track **y el defecto hermano** —«El cambio de Pattern no
