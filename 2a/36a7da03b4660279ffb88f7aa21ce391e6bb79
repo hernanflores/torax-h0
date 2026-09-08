@@ -1,0 +1,49 @@
+Task: El offset de velocity y su acotado (FR6, FR7)
+
+Tercera y última tarea de la Fase 2 del track modulation_20260906. TDD: los 16
+tests se escribieron primero y fallaron con 'cannot find Modulation in scope'.
+
+Ficheros:
+- Packages/Engine/Sources/Engine/Modulation.swift (extendido: struct Modulation)
+- Packages/Engine/Tests/EngineTests/ModulationOffsetTests.swift (creado)
+
+El valor: Modulation { waveform, accent }, con default (.triangle, 0) y
+with(waveform:accent:) — el idioma de Cycle.with(...) y NoteRepeater.with(...),
+que existe porque reconstruir a mano pierde en silencio lo que no se nombre.
+
+Almacena un Int8 y no un Accent, siguiendo el precedente de NoteRepeater: dos
+bytes por Cycle (la onda es un enum sin carga) contra los dieciséis de guardar
+los dos tipos enteros. Con 12 Tracks x 16 Cycles son ~2,7 KB de diferencia sobre
+los ~37 KB del snapshot, y NFR2 presupone que este campo no se nota. La cifra la
+mide la Fase 3.
+
+La aritmética: offset = wave(p) · accent · 63 / 10000, entera, multiplicando
+antes de dividir como Sustain.gateNanoseconds(over:).
+
+Tres decisiones con su porqué:
+
+- El 63 es media excursión del rango MIDI. Con la Velocity en el centro (64), un
+  accent al extremo barre 1…127 exacto sin recortar — fijado por test. Con la
+  Velocity por defecto (100) recorta arriba, y enseñar ese recorte es para lo que
+  sirve el panel velocity response (FR12).
+
+- La división trunca HACIA CERO, que es lo que hace simétrico el signo. Truncar
+  hacia abajo separaría +n de −n en una unidad sobre la mitad de los Steps, y el
+  criterio 4 pide que uno sea el complemento exacto del otro. Fijado por test en
+  el valor que cae a mitad de unidad: triangle en el Step 2 de 16 vale 50, y
+  50·100·63/10000 es 31,5 exacto — sale 31, y su simétrico −31.
+
+- El acotado lo hace Velocity.advanced(by:), que ya existe y ya está cubierto. No
+  se escribe un segundo acotado que pueda discrepar del primero, y el extremo
+  inferior sigue excluyendo el 0 porque un note-on con velocity 0 es un note-off.
+
+Y un cortocircuito que es requisito y no optimización: con accent = 0,
+velocity(atStep:of:from:) devuelve la base sin pasar por la onda ni por el
+acotado. La no regresión de la rebanada no cuesta nada a quien no la pide.
+
+Cubierto por barrida exhaustiva: ninguna combinación de las cuatro formas x cinco
+accents x cuatro Velocities base x tres longitudes de vuelta se sale de 1…127.
+
+Verificación: swift test --package-path Packages/Engine
+Engine 846 tests, 0 fallos (830 antes de la tarea, +16).
+Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
