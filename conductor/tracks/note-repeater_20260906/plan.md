@@ -293,18 +293,18 @@ revisar antes de seguir (NFR1).
 
 ## FASE 7: DISPOSITIVO Y CIERRE
 
-- [~] Task: Verificación en iPad con BeatStep Pro (NFR6)
-  - [ ] Los cuatro knobs mueven su parámetro, con valor grande transitorio y
+- [x] Task: Verificación en iPad con BeatStep Pro (NFR6) — 8845ac3
+  - [x] Los cuatro knobs mueven su parámetro, con valor grande transitorio y
         cambio audible **en el Step siguiente**.
-  - [ ] Un ratchet de hi-hat: Repeats 3, Time 1/32. Un roll: Repeats 8, Time
+  - [x] Un ratchet de hi-hat: Repeats 3, Time 1/32. Un roll: Repeats 8, Time
         1/64. Ramp arriba y abajo. Pace a los dos lados.
-  - [ ] **Al oído, lo que no se puede medir** (NFR6): que la tirada no se
+  - [x] **Al oído, lo que no se puede medir** (NFR6): que la tirada no se
         arrastre ni se adelante, que el swing la lleve entera y que Sustain no
         deje notas colgadas.
-  - [ ] Probability al 50% con Repeats altos: textura agujereada, no huecos
+  - [x] Probability al 50% con Repeats altos: textura agujereada, no huecos
         enteros.
-  - [ ] Temp y Ctrl All sobre REPEATS: el fill sube, soltar lo devuelve.
-  - [ ] Escribir `device-verification.md` con lo que se probó y lo que se oyó,
+  - [x] Temp y Ctrl All sobre REPEATS: el fill sube, soltar lo devuelve.
+  - [x] Escribir `device-verification.md` con lo que se probó y lo que se oyó,
         **incluido lo que no cumplió**.
 - [x] Task: Cobertura y suite completa
   - [x] `swift test --package-path Packages/Engine --enable-code-coverage` — ≥90%.
