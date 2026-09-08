@@ -145,6 +145,26 @@ cuándo suena.
   controlador**. Siguen fuera, como los dejó `persistence_20260907`.
 - **Medición de jitter** (NFR4).
 
+## Correcciones al implementar
+
+> **Nota del 2026-09-08.** Lo que cambió respecto a lo escrito arriba, al
+> implementarlo:
+>
+> - **FR9 se implementa como un poll de la app, no dentro del cuerpo de la
+>   vista.** Ver la nota fechada en FR9: aplicar escribe en el modelo y
+>   `playhead`/`cycleInCourse` solo leen. La propiedad que FR9 protege se cumple
+>   entera.
+> - **FR8 hizo falta un caso que la spec no nombraba**: armar encima de algo que
+>   ya aterrizó sin haber mirado en medio. Suena el que entró en el compás, no el
+>   que espera al siguiente, así que el aterrizaje se guarda en vez de perderse.
+>   Hace falta pulsar dos Patterns dentro del mismo cuadro a caballo de un límite
+>   de compás — poco probable, y por eso resuelto con un test en vez de confiando
+>   en que no pase. Vive en `PendingAdoption`.
+> - **Stop también mueve el contador**, porque `Transport.stop()` adopta lo
+>   pendiente (FR10 de `persistence`). No estaba previsto y resulta ser lo
+>   correcto: la pantalla refleja el Pattern que Stop dejó vigente.
+> - Nada más. FR1–FR7 y FR10 quedaron como estaban escritos.
+
 ## Known Limitations
 
 - **La pantalla puede ir hasta un cuadro por detrás del sonido** en el momento de
