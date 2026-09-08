@@ -62,6 +62,7 @@ suspendida desde el 2026-09-02.
 
 -   [Specification](./spec.md)
 -   [Implementation Plan](./plan.md)
+-   [Verificación en simulador](./simulator-verification.md)
 -   [Metadata](./metadata.json)
 
 ## Project Context
