@@ -61,7 +61,7 @@ lo que sirve mirarlo:
    propósito —con uno solo, saw y triangle se distinguen mal— pero el panel
    dibuja UNA VUELTA del anillo, que es exactamente un ciclo (FR4). Dos sobre
    dieciséis barras decían que la modulación va al doble de velocidad de la que
-   va. WaveformPreview gana un parámetro  y el panel pide uno.
+   va. WaveformPreview gana un parámetro cycles y el panel pide uno.
 
 Verificación en simulador (iPad Pro 11, iOS 26.3), dos capturas:
 - accent 0: las dieciséis barras iguales —la línea recta que suena—, el pulgar
