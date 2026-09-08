@@ -3,6 +3,9 @@ import XCTest
 
 @testable import MIDI
 
+/// Ver la nota de `PatternHandoffTests` sobre la ambigüedad del nombre.
+private typealias Pattern = Engine.Pattern
+
 /// Tests de la modulación en el camino de emisión (FR4, FR8).
 ///
 /// **La fase sale de `cycleStep`, el índice dentro de la vuelta**, no del Step
@@ -20,6 +23,7 @@ import XCTest
 /// 1, y se queda dentro de la suite.
 final class ModulationInSchedulerTests: XCTestCase {
 
+    private let tempo = Tempo(beatsPerMinute: 120)!
     private let stepNanoseconds: Int64 = 125_000_000
     private let timeline = MusicalTimeline(
         tempo: Tempo(beatsPerMinute: 120)!,
@@ -209,7 +213,7 @@ final class ModulationInSchedulerTests: XCTestCase {
 
         var track = Track(flat).withActiveCount(2)
         track = track.replacing(flat, at: 0).replacing(accented, at: 1)
-        let pattern = Engine.Pattern().replacing(track, at: 0)
+        let pattern = Pattern().replacing(track, at: 0)
 
         let scheduler = PatternScheduler(
             tempo: Tempo(beatsPerMinute: 120)!, pattern: pattern)
@@ -257,5 +261,80 @@ final class ModulationInSchedulerTests: XCTestCase {
         XCTAssertEqual(sequence.count, 18)
         XCTAssertEqual(Array(sequence[0..<9]), Array(sequence[9..<18]))
         XCTAssertEqual(sequence[0], 64)
+    }
+
+    // MARK: - Doce a la vez
+
+    /// **Dos Tracks con Steps distintos sonando juntos completan su ciclo en
+    /// vueltas distintas** (FR4), cada uno con el suyo. El LFO está atado al
+    /// material del Track y no a un reloj común, así que el desfase entre los dos
+    /// es la función y no un defecto.
+    func testTwoTracksOfDifferentLengthsModulateAtTheirOwnRate() {
+        let long = cycle(velocity: 64, accent: 100)
+        let short = cycle(steps: 8, pulses: 8, velocity: 64, accent: 100)
+        let pattern = Pattern()
+            .replacing(Track(long), at: 0)
+            .replacing(Track(short), at: 1)
+
+        let byTrack = run(pattern, upToStep: 16)
+
+        // El de dieciséis recorre su onda una vez: pico en el 4, valle en el 12.
+        XCTAssertEqual(byTrack[0]?[4], 127)
+        XCTAssertEqual(byTrack[0]?[12], 1)
+        XCTAssertEqual(byTrack[0]?[0], 64)
+        // El de ocho la recorre dos veces en el mismo tiempo: dos picos y dos
+        // valles, y vuelve a la base en el 0 y en el 8.
+        XCTAssertEqual(byTrack[1]?[2], 127)
+        XCTAssertEqual(byTrack[1]?[6], 1)
+        XCTAssertEqual(byTrack[1]?[10], 127)
+        XCTAssertEqual(byTrack[1]?[14], 1)
+        XCTAssertEqual(byTrack[1]?[0], 64)
+        XCTAssertEqual(byTrack[1]?[8], 64)
+    }
+
+    /// **Un Track muteado sigue avanzando su fase.** La rejilla del muteado
+    /// corre —es un mute de mixer y no un stop— y la modulación va con ella: al
+    /// quitar el mute cae en la misma velocity que el vecino que nunca calló.
+    func testAMutedTrackKeepsAdvancingItsPhase() {
+        let modulated = cycle(velocity: 64, accent: 100)
+        let pattern = Pattern()
+            .replacing(Track(modulated), at: 0)
+            .replacing(Track(modulated), at: 1)
+
+        let mutes = MuteMask()
+        var scheduler = PatternScheduler(tempo: tempo, pattern: pattern, mutes: mutes)
+
+        mutes.toggleMute(0)
+        _ = collect(&scheduler, upToStep: 8)
+        mutes.toggleMute(0)
+
+        let byTrack = collect(&scheduler, upToStep: 16)
+
+        // Vuelve por donde iba, no por el principio: los Steps 8–15 del muteado
+        // valen lo mismo que los del vecino.
+        XCTAssertEqual(byTrack[0], byTrack[1])
+        XCTAssertFalse(byTrack[0]?.isEmpty ?? true, "el Track no volvió a sonar")
+        XCTAssertEqual(byTrack[0]?[12], 1, "la fase del muteado no había avanzado")
+    }
+
+    // MARK: - Ayuda para el Pattern entero
+
+    private func run(_ pattern: Pattern, upToStep stepIndex: Int) -> [Int: [Int: Int]] {
+        var scheduler = PatternScheduler(tempo: tempo, pattern: pattern)
+        return collect(&scheduler, upToStep: stepIndex)
+    }
+
+    /// Por Track, la velocity con la que salió cada Step.
+    private func collect(
+        _ scheduler: inout PatternScheduler, upToStep stepIndex: Int
+    ) -> [Int: [Int: Int]] {
+        var byTrack: [Int: [Int: Int]] = [:]
+        scheduler.advance(
+            toHorizon: Int64(stepIndex) * stepNanoseconds,
+            refreshingFrom: nil
+        ) { track, _, step, _, groove, _ in
+            byTrack[track, default: [:]][step] = groove.velocity.value
+        }
+        return byTrack
     }
 }
