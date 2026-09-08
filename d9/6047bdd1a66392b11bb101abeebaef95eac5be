@@ -1,0 +1,38 @@
+Task: Verificar la pantalla en simulador (criterio 13)
+
+Primera tarea de la Fase 7 del track modulation_20260906.
+
+Ficheros:
+- conductor/tracks/modulation_20260906/simulator-verification.md (creado)
+- conductor/tracks/modulation_20260906/index.md (enlazado)
+
+Sigue el precedente de las rebanadas 2, 3 y 5, que dejan su verificación como
+documento del track en vez de solo en una nota. Se descartó un commit vacío: el
+documento es el artefacto, y se puede leer sin git.
+
+Seis capturas en iPad Pro 11 (iOS 26.3): las cuatro ondas con accent +100, el
+caso de nueve Steps, y el neutro.
+
+CÓMO SE FORZARON LOS ESTADOS, que conviene que quede escrito: simctl no puede
+tocar la pantalla, así que cada captura se hizo construyendo una app con el
+estado dentro —arranque en modulation, y la onda o el anillo fijados en la
+vista— y revirtiendo el cambio después. Es técnica de verificación, no código
+entregado: se comprobó que el árbol quedaba limpio (grep de las constantes de
+prueba a 0) antes de commitear.
+
+Lo que cumple: el chrome de cinco (FR10), la rejilla 2x2 con su gramática de
+seleccionado (FR11, FR19, FR20), el recorte visible (FR12), nueve barras con un
+anillo de nueve (FR13) con las alturas exactas que ModulationOffsetTests fija,
+la etiqueta de contexto como etiqueta y no selector (FR16, FR17), el pie y el
+card resumen (FR15, FR19) y la lectura con signo.
+
+Lo que el simulador NO puede decidir, y queda para el dispositivo: que el acento
+se OIGA (criterio 13), el playhead del panel (FR14) y el gesto del slider con su
+imantado (FR18). Sin destinos MIDI canPlay es falso.
+
+El documento deja escritos los TRES DEFECTOS que se encontraron mirándolo y que
+pasaban todos los tests —saw dentado, layoutPriority que no reparte proporciones,
+y la línea de centro tapando las barras más la onda a dos ciclos—, porque son la
+justificación de que esta tarea exista.
+
+Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
