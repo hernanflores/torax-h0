@@ -202,24 +202,24 @@ seguir.
   - [x] Tests (Red): `+34`, `−12` y `0` — el signo se ve en el positivo, como
         `Rotate`, y el 0 va sin signo.
   - [x] Implementar (Green) junto a `Accent`, no en la vista.
-- [ ] Task: `BipolarAccentSlider` (FR11, FR18, FR19)
-  - [ ] Arrastre continuo, `+100` arriba, `0` en el centro exacto, `−100` abajo.
-  - [ ] Imantado al 0 cerca del centro y toque simple sobre la pista.
-  - [ ] Pulgar mauve, marcador de centro off-white, etiqueta `bipolar velocity`.
-- [ ] Task: `VelocityResponseView` (FR12, FR13, FR14, FR15)
-  - [ ] Tests (Red, en `Engine`): la serie de velocities finales de una vuelta —
+- [x] Task: `BipolarAccentSlider` (FR11, FR18, FR19) `411c1cc`
+  - [x] Arrastre continuo, `+100` arriba, `0` en el centro exacto, `−100` abajo.
+  - [x] Imantado al 0 cerca del centro y toque simple sobre la pista.
+  - [x] Pulgar mauve, marcador de centro off-white, etiqueta `bipolar velocity`.
+- [x] Task: `VelocityResponseView` (FR12, FR13, FR14, FR15) `411c1cc`
+  - [x] Tests (Red, en `Engine`): la serie de velocities finales de una vuelta —
         con base, accent, onda y **recorte**— para 9 y 16 Steps. Es el dato que
         el panel dibuja, y por eso se testea aquí y no mirándolo.
-  - [ ] Barras: tantas como Steps, altura = velocity final, off-white con
+  - [x] Barras: tantas como Steps, altura = velocity final, off-white con
         realces mauve; los Steps que no son pulso, atenuados.
-  - [ ] La onda seleccionada trazada sobre una línea de centro discreta.
-  - [ ] Playhead off-white, **un redibujo por Step**, oculto con el transporte
+  - [x] La onda seleccionada trazada sobre una línea de centro discreta.
+  - [x] Playhead off-white, **un redibujo por Step**, oculto con el transporte
         parado; las barras se quedan.
-  - [ ] Pie: `1 cycle per pattern`.
-- [ ] Task: `ModulationSummaryCard` y el montaje de `ModulationView` (FR11, FR19)
-  - [ ] Card resumen: `waveform` / la onda, `accent` / el valor con signo.
-  - [ ] Dos columnas ~70/30, el card alto `accent` a la derecha.
-  - [ ] Repasar que en `App` no haya quedado lógica que merezca un test
+  - [x] Pie: `1 cycle per pattern`.
+- [x] Task: `ModulationSummaryCard` y el montaje de `ModulationView` (FR11, FR19) `411c1cc`
+  - [x] Card resumen: `waveform` / la onda, `accent` / el valor con signo.
+  - [x] Dos columnas ~70/30, el card alto `accent` a la derecha.
+  - [x] Repasar que en `App` no haya quedado lógica que merezca un test
         (`workflow.md`, *Coverage Requirements*).
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
