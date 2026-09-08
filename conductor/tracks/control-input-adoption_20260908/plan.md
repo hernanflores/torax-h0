@@ -62,7 +62,7 @@ quién conoce el material.
         sin avisar — si aparece uno, entra aquí.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: LA VÍA DE VUELTA — EL SCHEDULER DICE QUE ADOPTÓ
+## FASE 3: LA VÍA DE VUELTA — EL SCHEDULER DICE QUE ADOPTÓ [checkpoint: d0af03d]
 
 - [x] Task: La palabra atómica de la adopción (FR7, NFR1) `e99ba9e`
   - [x] Tests (Red): el contador arranca en cero y **se mueve exactamente una vez
@@ -90,11 +90,11 @@ quién conoce el material.
         dibujar, sin callback desde el hilo de tiempo real.
   - [x] Dejar escrito el límite: lo que suena es exacto; lo que la pantalla
         refleja puede llegar hasta un cuadro después.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: DISPOSITIVO Y CIERRE
 
-- [ ] Task: Verificación en iPad con BeatStep Pro
+- [~] Task: Verificación en iPad con BeatStep Pro
   - [ ] **El fallo reportado, primero**: cambiar de Bank —incluido uno vacío— y
         girar un knob. El Pattern anterior no vuelve.
   - [ ] `selectPattern` y `reloadBank` con el transporte parado.
