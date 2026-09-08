@@ -1,0 +1,29 @@
+Task: El card de Shape, en dos líneas (FR15)
+
+Qué cambia:
+- Engine: TrackParameter.isNoteRepeater. Es dato de dominio y no de
+  presentación: los cuatro están en la familia Shape y aun así no son el ritmo.
+  Que la vista lo dedujera con una lista escrita a mano pondría una decisión del
+  modelo donde no hay tests.
+- App: ParameterFamilyCard pasa de recibir 'entries' a recibir 'rows', y dibuja
+  una fila por línea. ContentView construye las filas preguntando a Engine.
+- App: el card lleva .fixedSize(horizontal: false, vertical: true).
+
+Lo que la captura en simulador encontró, y por qué el fixedSize:
+Con la segunda línea, la columna derecha pasó a pedir más alto del disponible y
+quien cedía era este card. SwiftUI le aplicaba el minimumScaleFactor y los ocho
+valores de Shape se dibujaban a la MITAD de tamaño que los cinco de Groove
+—comparado sobre la captura, recortando los dos cards juntos—. Ilegible a un
+metro, que es requisito de product-guidelines.md y no una preferencia. Con el
+fixedSize el card no cede y lo que cede es el anillo, que tiene de sobra: la
+captura posterior muestra los dos cards con el mismo tamaño de texto, y el
+anillo, la tira de Cycles y el selector de Tracks enteros.
+
+El anillo no se toca: dibuja Pulses, no repeticiones.
+
+Ficheros modificados:
+- Packages/Engine/Sources/Engine/TrackParameter.swift (+ 1 test)
+- App/TrackReadout.swift, App/ContentView.swift
+
+Verificación: Engine 800 tests, 0 fallos. Build para iPadOS y para simulador,
+las dos SUCCEEDED. Captura revisada en iPad Pro 11-inch.
