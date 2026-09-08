@@ -312,11 +312,11 @@ revisar antes de seguir (NFR1).
         `Engine/Sources`, como dice `workflow.md` — ≥80%.
   - [x] Si aparece `clientCreationFailed(-50)` en `VirtualLoopbackTests`, correr
         3–4 pasadas y comparar contra `main` antes de atribuirlo al cambio.
-- [~] Task: Pull Request
-  - [ ] Rama `feat/note-repeater`, PR contra `main`. Nada entra en `main` sin PR.
-  - [ ] **Cuerpo corto**: qué cambia, cómo se verificó en números, qué queda
+- [x] Task: Pull Request — #40
+  - [x] Rama `feat/note-repeater`, PR contra `main`. Nada entra en `main` sin PR.
+  - [x] **Cuerpo corto**: qué cambia, cómo se verificó en números, qué queda
         pendiente. Las decisiones se enlazan al `spec.md`, no se copian.
-  - [ ] Anotar en el cuerpo que **no lleva medición de jitter** y por qué, que es
+  - [x] Anotar en el cuerpo que **no lleva medición de jitter** y por qué, que es
         la pregunta que un revisor va a hacer en un track que crea instantes
         nuevos entre los Steps.
 - [x] Task: Actualizar el registro y cerrar el track
