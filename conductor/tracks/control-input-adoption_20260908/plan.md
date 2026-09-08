@@ -23,7 +23,7 @@ quién conoce el material.
 
 ## FASE 1: LA VÍA DE IDA — `ControlInput` ADOPTA
 
-- [~] Task: `ControlInput` adopta un Pattern entero (FR1, FR2, FR3, FR4)
+- [x] Task: `ControlInput` adopta un Pattern entero (FR1, FR2, FR3, FR4) `da357ba`
   - [x] Tests (Red): adoptar sustituye los doce Tracks —Shape, pool, Groove,
         canal, marco tonal y registro de pads— por los del Pattern nuevo.
   - [x] Tests (Red): **el Track seleccionado se conserva**, y con él a quién
@@ -37,7 +37,7 @@ quién conoce el material.
   - [x] Implementación (Green): la vía pública, junto a `setFrame` y
         `setActiveCycleCount`, que son las otras entradas que no vienen del
         controlador.
-- [ ] Task: Los modificadores se cancelan al adoptar (FR5)
+- [~] Task: Los modificadores se cancelan al adoptar (FR5)
   - [ ] Tests (Red): con Temp hundido, adoptar y soltar **no escribe nada**; el
         Pattern queda como lo dejó la adopción.
   - [ ] Tests (Red): lo mismo con Ctrl All, incluido el caso de haber girado
