@@ -315,18 +315,18 @@ escalón es el que se nota.
   arriba, incluida la consecuencia que destruye trabajo. **Cambiar de Bank sí
   funciona.**
 
-  **La verificación en dispositivo quedó parcial.** Se comprobó el arranque y el
-  cambio de Bank —y ahí salieron cuatro fallos de cableado del modelo, tres
-  arreglados y uno abierto—; la cuenta atrás, los cuatro estados con el
-  transporte corriendo, `Save`/`Reload` de punta a punta, el reloj externo y el
-  presupuesto de 100 ms de NFR3 **no se llegaron a comprobar**. El guion está en
-  `device-verification.md`.
+  **La verificación en dispositivo quedó parcial el 2026-09-07** — se comprobó
+  el arranque y el cambio de Bank, y ahí salieron cuatro fallos de cableado del
+  modelo, tres arreglados y uno abierto — **y se completó el 2026-09-08**: la
+  cuenta atrás, los cuatro estados con el transporte corriendo, `Save`/`Reload`
+  de punta a punta, el reloj externo y el presupuesto de 100 ms de NFR3 quedaron
+  todos verificados. El guion está en `device-verification.md`.
 
   **Sin medición de jitter**, por las dos vías escritas en la Fase 1.
 
 ---
 
-- [x] **Track: Persistencia — primer intento (un Bank, sin `Project`)** — **abandonado sin mergear el 2026-09-07**; el trabajo sigue en la rama `feat/persistence`
+- [x] **Track: Persistencia — primer intento (un Bank, sin `Project`)** — **cancelado el 2026-09-08**; abandonado sin mergear el 2026-09-07, rama `feat/persistence` borrada
   *Sin enlace: el track `persistence_20260904` nunca llegó a `main`. Vive en la
   rama `feat/persistence`, en `conductor/tracks/persistence_20260904/`.*
 
@@ -357,8 +357,12 @@ escalón es el que se nota.
   **Decidido el 2026-09-07: no se rescata.** Se evaluó portar el núcleo —el
   paquete y los DTO son directamente reutilizables— y se eligió reescribirlo con
   el spec nuevo delante, para no heredar decisiones tomadas para otro alcance.
-  **La rama no se borra**: es la única copia de siete fases de trabajo y de un
-  guion de verificación en dispositivo que sigue sirviendo.
+
+  **Cancelado el 2026-09-08: la rama `feat/persistence` se borra**, por decisión
+  explícita del usuario que revierte la del día 7 —"no se borra"—. `persistence_20260907`
+  ya reemplazó el alcance entero y su verificación en dispositivo está completa
+  desde el 2026-09-08, así que no queda guion de `feat/persistence` que siga
+  sirviendo.
 
 ---
 
@@ -508,6 +512,7 @@ escalón es el que se nota.
 
 - [x] **Track: Feedback visual en el controlador** — **cancelado en la Fase 1**: el BeatStep Pro no ilumina desde el host, ni por MIDI de canal ni por SysEx
   *Link: [conductor/tracks/controller-feedback_20260904/index.md](./tracks/controller-feedback_20260904/index.md)*
+  *Cerrado en conductor el 2026-09-08 y trasladado a [issue #45](https://github.com/hernanflores/torax-h0/issues/45).*
 
   **Planificado el 2026-09-04, en siete fases.** Sale de la misma petición que la sincronía —2026-09-03— y se
   separa por el mismo criterio que partió la rebanada 7 del MVP en preset y MIDI
@@ -945,28 +950,28 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: La sesión MIDI de red monopoliza la entrada**
+- [x] **Track: La sesión MIDI de red monopoliza la entrada** — **cerrado en conductor el 2026-09-08, trasladado a [issue #43](https://github.com/hernanflores/torax-h0/issues/43)**
   *Link: [conductor/tracks/network-session-source_20260828/index.md](./tracks/network-session-source_20260828/index.md)*
 
-  Encontrado el 2026-08-28 verificando la rebanada 2 en iPad. iPadOS publica siempre `Red Session 1` como fuente, así que la lista nunca está vacía: la app la autoselecciona, el estado `No MIDI input` de `product-guidelines.md` es **inalcanzable en el dispositivo de destino**, y el controlador real no se elige solo al conectarlo. No bloquea a nadie ni depende de la cadena de CoreMIDI.
+  Encontrado el 2026-08-28 verificando la rebanada 2 en iPad. iPadOS publica siempre `Red Session 1` como fuente, así que la lista nunca está vacía: la app la autoselecciona, el estado `No MIDI input` de `product-guidelines.md` es **inalcanzable en el dispositivo de destino**, y el controlador real no se elige solo al conectarlo. No bloquea a nadie ni depende de la cadena de CoreMIDI. Sigue bloqueando a `MVP rebanada 8 — MIDI Learn`; el seguimiento continúa en la issue.
 
 ---
 
 - [ ] **Track: Ciclo de vida del scheduler y desmontaje de CoreMIDI**
   *Link: [conductor/tracks/scheduler-lifecycle_20260826/index.md](./tracks/scheduler-lifecycle_20260826/index.md)*
 
-  **Investigado el 2026-08-27; parado en su Fase 3.** La carrera es real y está resuelta en la rama `fix/scheduler-lifecycle`, que no se integra: cerrarla empeora la tasa de `clientCreationFailed(-50)` de 0 a 3 ocurrencias por pasada. La hipótesis sobre la que se construyó su plan —que un cierre explícito y ordenado de CoreMIDI estabilizaría el desmontaje— resultó falsa: el join y el desmontaje del arnés rompen la suite **por separado**. Lo que ambos tienen en común es retrasar el desmontaje, lo que apunta a diagnóstico de CoreMIDI: alcance de [`midi-test-flake_20260826`](./tracks/midi-test-flake_20260826/index.md), que pasa a ser el bloqueante.
+  **Investigado el 2026-08-27; parado en su Fase 3.** La carrera es real y está resuelta en la rama `fix/scheduler-lifecycle`, que no se integra: cerrarla empeora la tasa de `clientCreationFailed(-50)` de 0 a 3 ocurrencias por pasada — trasladado a [issue #46](https://github.com/hernanflores/torax-h0/issues/46) el 2026-09-08. La hipótesis sobre la que se construyó su plan —que un cierre explícito y ordenado de CoreMIDI estabilizaría el desmontaje— resultó falsa: el join y el desmontaje del arnés rompen la suite **por separado**. Lo que ambos tienen en común es retrasar el desmontaje, lo que apunta a diagnóstico de CoreMIDI: alcance de [`midi-test-flake_20260826`](./tracks/midi-test-flake_20260826/index.md), que pasa a ser el bloqueante.
 
   Datos completos en `plan.md` del track y en las git notes de la rama.
 
 ---
 
-- [ ] **Track: Flake `clientCreationFailed(-50)` en MIDITests** — *aplazado a después de la v2 (2026-08-29)*
+- [x] **Track: Flake `clientCreationFailed(-50)` en MIDITests** — *aplazado a después de la v2 (2026-08-29)*, **cerrado en conductor el 2026-09-08, trasladado a [issue #44](https://github.com/hernanflores/torax-h0/issues/44)**
   *Link: [conductor/tracks/midi-test-flake_20260826/index.md](./tracks/midi-test-flake_20260826/index.md)*
 
   La investigación del 2026-08-27 invirtió la dependencia. El ciclo de vida del scheduler no se puede cerrar sin entender antes por qué retrasar el desmontaje inutiliza la creación de endpoints virtuales de CoreMIDI.
 
-  **Aplazado a después de la v2 el 2026-08-29.** No bloquea a ninguna rebanada del MVP: se convive con el ruido en CI y se descarta comparando pasadas. Sigue bloqueando a `scheduler-lifecycle`, que también espera.
+  **Aplazado a después de la v2 el 2026-08-29.** No bloquea a ninguna rebanada del MVP: se convive con el ruido en CI y se descarta comparando pasadas. Sigue bloqueando a `scheduler-lifecycle`, que también espera. El seguimiento continúa en la issue.
 
   Dato acumulado por si sirve al diagnóstico: en la rebanada 5 apareció en 2 de 8 pasadas y **siempre con la misma firma** —las 4 pruebas de `VirtualLoopbackTests`, ningún otro test—. El fallo está localizado en la creación de endpoints virtuales, no es difuso.
 

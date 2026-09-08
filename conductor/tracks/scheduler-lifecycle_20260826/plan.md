@@ -35,7 +35,7 @@ Sigue la metodología definida en [`workflow.md`](../../workflow.md): tests fall
 - [x] Task: `JitterHarness` desmonta en orden — `9bfb02a`
   - [x] Implementación: dejar de programar → drenar la ventana entregada → dejar de enviar → destruir endpoints → destruir clientes
   - [x] Sustituir la confianza en el orden de liberación de ARC por el cierre explícito
-  - [~] Verificar que la tasa de `-50` no empeora respecto a la medida en la Fase 1 — **NO SE CUMPLE**: 3 ocurrencias contra 0 en `main`. Ver abajo.
+  - [x] Verificar que la tasa de `-50` no empeora respecto a la medida en la Fase 1 — **NO SE CUMPLE**: 3 ocurrencias contra 0 en `main`. Trasladado a [issue #46](https://github.com/hernanflores/torax-h0/issues/46) el 2026-09-08. Ver abajo.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## Phase 3: Cerrar la carrera

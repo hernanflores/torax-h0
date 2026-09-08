@@ -231,11 +231,10 @@ seguir.
   - [x] Comprobar contra el handoff: rejilla, columnas, mauve, minúsculas,
         bordes y sombra dura.
   - [x] Comprobar el panel con un Track de 9 Steps: nueve barras, no dieciséis.
-  - [~] Comprobar el imantado del slider y que la etiqueta de contexto sigue al
-        Cycle en edición. **La etiqueta, sí. El imantado, no:** `simctl` no toca
-        la pantalla, así que el arrastre no se puede provocar desde aquí y pasa
-        a la verificación en dispositivo. Corregido el 2026-09-08 al cerrar la
-        tarea — estaba marcado como hecho y no lo estaba.
+  - [x] Comprobar el imantado del slider y que la etiqueta de contexto sigue al
+        Cycle en edición. **La etiqueta, sí. El imantado, no** desde `simctl`:
+        no toca la pantalla, así que el arrastre no se pudo provocar desde ahí.
+        **Validado en dispositivo el 2026-09-08.**
   - [x] Anotar en la git note lo que el simulador **no** puede verificar: sin
         destinos MIDI no hay transporte, así que ni playhead ni acento audible.
 - [x] Task: Verificar en iPad con BeatStep Pro (criterios 3, 5, 13) `d3d0667`
