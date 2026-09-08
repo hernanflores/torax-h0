@@ -1,0 +1,83 @@
+Tareas: Module.modulation y la navegación de cinco (FR10) · WaveformPreview y
+WaveformCard (FR11, FR19, FR20) · WaveformSelector y la etiqueta de contexto
+(FR11, FR16, FR17)
+
+Las TRES tareas de la Fase 5 del track modulation_20260906, en un solo commit.
+
+DESVIACIÓN DEL WORKFLOW, dicha aquí para que no haya que deducirla: el Task
+Workflow §9 pide un commit por tarea y esto son tres. La razón es que la pantalla
+no se puede partir en tres commits que compilen: Module.modulation obliga a que
+ContentView enrute a algo, y ese algo es ModulationScreen, que necesita
+WaveformSelector, que necesita WaveformCard y WaveformPreview. Tres commits
+habrían sido dos rotos y uno bueno. El plan queda marcado con el mismo SHA en las
+tres.
+
+Ficheros:
+- App/AppChrome.swift            (el quinto caso y el reparto de la fila)
+- App/ContentView.swift          (el enrutado)
+- App/ModulationScreen.swift     (creado)
+- App/TransportModel.swift       (setModulation y la lectura)
+- Packages/MIDI/Sources/MIDI/ControlInput.swift        (setModulation)
+- Packages/MIDI/Tests/MIDITests/ModulationInputTests.swift  (creado, 10 tests)
+
+DÓNDE VIVE LA LÓGICA. En App no queda ninguna: la regla de sobre qué Cycle se
+escribe está en ControlInput.setModulation, que sí se testea, y la forma de cada
+onda sale de Waveform.value(atStep:of:). Lo que queda en la pantalla es el dibujo
+y el gesto, que es lo que workflow.md pide de App.
+
+Los 10 tests de la vía de escritura:
+- Escribe sobre el Cycle EN EDICIÓN y no sobre el que suena (FR16).
+- No toca a los otros once Tracks ni ninguno de los otros siete campos del Cycle.
+- No mueve la selección ni el cursor de edición (FR17).
+- Publica —el scheduler lee la modulación del snapshot en cada Step— y NO publica
+  un snapshot idéntico cuando se reelige lo que ya estaba, que es el criterio de
+  setFrame y setChannel.
+- Barrido de los 128 controladores x 3 valores: ninguno mueve la modulación de
+  ninguno de los doce Tracks (FR9). Y TrackParameter no la nombra.
+
+Decisiones de la pantalla:
+
+- modulation va AL FINAL de la fila y no junto a track. El orden de la fila va de
+  lo que se mira tocando a lo que se configura antes; meterlo en medio movería de
+  sitio cuatro pestañas que ya se alcanzan sin mirar.
+
+- El relleno lateral de las pestañas baja de 28 a 20 puntos. Con cinco y la
+  palabra más larga del conjunto, 28 dejaba las etiquetas casi tocándose. No
+  encoge el objetivo táctil: el objetivo es la columna entera, no el texto.
+
+- WaveformPreview dibuja llamando a la MISMA función que suena. Una fórmula
+  propia habría sido más corta y sería una segunda definición de la forma, capaz
+  de discrepar en silencio de lo que se emite. La resolución (64 puntos por
+  ciclo, dos ciclos) es del dibujo; la forma es del motor.
+
+- El mauve es Palette.groove, que ya era #AA6DA8. No se añade un cuarto acento:
+  lo que se modula es velocity, que es Groove, así que el color sigue codificando
+  qué tipo de parámetro se toca.
+
+- La etiqueta de contexto es etiqueta y NO selector (FR17): no lleva la franja de
+  doce que sí tiene scale. El Track lo elige el controlador.
+
+- SwiftUI.Shape va calificado porque Engine.Shape es la familia de Steps, Pulses,
+  Rotate y Division y el fichero importa los dos módulos.
+
+UN DEFECTO ENCONTRADO Y CORREGIDO EN EL SIMULADOR, que es para lo que sirve
+mirarlo: saw se dibujaba como una escalera dentada. El paso horizontal+vertical
+se aplicaba en CADA muestra de saw y de pulse; pulse salía bien —dos valores, el
+escalón coincide con la forma— y saw no. Lo que distingue un corte de una
+pendiente es el TAMAÑO del salto, no de qué onda se trate: ahora el vertical se
+dibuja solo cuando el valor salta 120 unidades o más, y los dos cortes que
+existen valen 190 y 200.
+
+Verificación:
+  swift test --package-path Packages/MIDI (partición de CI)   747 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0                            BUILD SUCCEEDED
+  Simulador iPad Pro 11: las cinco pestañas caben sin apretar; la pantalla dibuja
+  la rejilla 2x2 con triangle en mauve y etiqueta oscura, los otros tres hundidos
+  con borde neutro, el título 'waveform' y la etiqueta 'track 01 · cycle 01'.
+
+Lo que el simulador NO verifica: sin destinos MIDI no hay transporte, así que ni
+playhead ni acento audible.
+
+Pendiente de la Fase 6: la columna derecha está vacía —el card de accent y el
+resumen— y por eso el reparto 70/30 de FR11 todavía no se ve; la rejilla ocupa el
+ancho entero.
