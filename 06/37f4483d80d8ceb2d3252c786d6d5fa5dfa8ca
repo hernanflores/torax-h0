@@ -1,0 +1,42 @@
+Task: El coste del snapshot, medido y no supuesto (NFR2)
+
+Última tarea de la Fase 3 del track modulation_20260906.
+
+Ficheros:
+- Packages/MIDI/Tests/MIDITests/CycleSnapshotCostTests.swift (dos tests nuevos)
+
+LA CIFRA, que es el punto de la tarea:
+
+  Pattern con modulación   27.936 bytes   load() ~613 ns   0,0031% de la ventana
+  Pattern en main          27.936 bytes   load() ~695 ns
+  Cycle                       144 bytes   (2 de ellos, la Modulation)
+
+La modulación NO CUESTA NI UN BYTE. Los dos bytes de Modulation caben en el
+relleno que el Cycle ya tenía, comprobado midiendo main en la misma máquina con
+un worktree temporal. Es mejor que el 1% que NFR2 presuponía.
+
+Y es la justificación retrospectiva de guardar un Int8 y no un Accent: con una
+palabra entera el campo no habría cabido en el hueco y el snapshot habría
+crecido de verdad. La decisión de la Fase 2 se paga aquí.
+
+La serie, para que siga siendo comparable:
+  2026-08-31   2,25 KB     274 ns    antes de los Cycles
+  2026-09-01   ~37 KB      ~870 ns   con los 16 Cycles, sobre 16 Tracks
+  2026-09-08   27.936 B    ~613 ns   12 Tracks x 16 Cycles, con modulación
+
+(El salto de ~37 KB a ~28 KB no es de esta rebanada: es la bajada a doce Tracks
+del 2026-09-02. La cifra de ~37 KB se midió sobre el ProbePattern de dieciséis,
+que sigue en el fichero y sigue midiéndose.)
+
+El segundo test comprueba que el campo no rompió la trivialidad del snapshot
+REAL —Modulation, Cycle y Pattern siguen POD—, que es lo que hace legal copiarlo
+en el hilo del scheduler. Los tests de la Fase 3 en Engine ya lo comprobaban
+sobre los tipos; este lo comprueba desde el lado que de verdad lo copia.
+
+Lo que se afirma por assert es el presupuesto —el 1% de la ventana de 20 ms— y
+no la cifra: fijar los nanosegundos exactos fallaría en cualquier máquina
+distinta, y fijar el tamaño convertiría una mejora de Engine en un fallo.
+
+Verificación:
+  swift test --package-path Packages/MIDI (partición de CI)   21 + 722, 0 fallos
+Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
