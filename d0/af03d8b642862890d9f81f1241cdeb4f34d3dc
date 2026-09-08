@@ -39,3 +39,26 @@ Ficheros:
 
 Verificación: Red 10 de 10 sin compilar; Green 10 de 10. Suite MIDI 719 tests,
 0 fallos. BUILD SUCCEEDED.
+
+--- Verificación de fase: FASE 3 — LA VÍA DE VUELTA ---
+
+Comandos:
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+  swift test --package-path Packages/Engine
+  swift test --package-path Packages/Persistence
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado: MIDI 21 + 719, Engine 800, Persistence 62, 0 fallos. BUILD SUCCEEDED.
+
+Verificación manual en iPad con BeatStep Pro (encoders en Relative #2):
+1. Transporte parado: cambio a Bank vacío + giro de knob, selectPattern,
+   reloadBank, Track seleccionado conservado, Temp y Ctrl All hundidos.
+2. Sonando: cambio de Pattern, cuenta atrás y hueco queued, entrada en el límite
+   de compás, y al entrar la cuenta atrás desaparece y la rejilla marca el hueco.
+3. Giro de knob después de la adopción: escribe en el hueco que suena.
+4. Cambio de Bank sonando.
+5. Dos Patterns seguidos antes del compás: entra el último.
+6. Armar y pulsar Stop antes del compás.
+
+Confirmación del usuario: «Funcionó» (2026-09-08).
