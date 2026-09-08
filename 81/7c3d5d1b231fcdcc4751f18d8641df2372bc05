@@ -1,0 +1,32 @@
+Task: Anotar la modulación en la Pre Spec (NFR7)
+
+Fase 1 del track modulation_20260906. Tarea de documentación: el Task Workflow
+§8 exige que una desviación de la Pre Spec quede escrita ANTES de implementar, y
+esta rebanada tiene tres.
+
+Ficheros modificados:
+- Pre Spec Torax H-0.md — tres notas fechadas el 2026-09-08.
+
+Qué dice cada nota:
+
+1. §4 «Modulación LFO y Random». Tabla de qué entra y qué no: entra el LFO
+   cíclico sobre velocity, por Cycle, con cuatro formas; no entran el destino
+   Phrase/Range, Random Modulation entera, ni modular nada que no sea velocity.
+   Traduce «sincronizada al tempo» a «un ciclo por vuelta del anillo del propio
+   Track», y fija el vocabulario: modulation, waveform, accent, saw, triangle,
+   sine, pulse — sin «LFO» como parámetro, sin «shape», sin «amount».
+
+2. Fila Accent de §5 (Groove). Las tres desviaciones: waveform en vez de Groove
+   (la Pre Spec usa Groove para dos cosas y el motor gastó el término en la
+   familia de parámetros); longitud fija en vez de ajustable (la fila promete
+   cambiarla, y el default de 4 compases del brief no se implementa); y accent
+   táctil en vez de knob, con el coste escrito — Ctrl All, Temp y la lectura
+   transitoria grande no lo alcanzan porque operan sobre TrackParameter.
+
+3. Retrigger. La Pre Spec promete que Retrigger reinicia Accent; accent se
+   entrega sin ese reinicio porque Retrigger no existe en ningún Step. Deuda
+   heredada, anotada para que se descubra leyendo y no tocando.
+
+El porqué: product-guidelines.md pide un solo término por concepto, y la
+ambigüedad de 'Groove' cae justo donde más se lee — el tipo Groove de Engine ya
+nombra la familia de Velocity, Sustain, Probability, Timing y Delay.
