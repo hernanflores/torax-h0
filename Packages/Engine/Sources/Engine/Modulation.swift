@@ -126,3 +126,110 @@ extension Accent {
         Accent(unchecked: Self.validRange.clamping(percent + delta))
     }
 }
+
+extension Waveform {
+
+    /// La excursión de la modulación, muestreada en el Step `step` de una vuelta
+    /// de `stepCount` (FR4, FR5). Devuelve −100…100.
+    ///
+    /// **La fase sale del índice de Step dentro de la vuelta**, `p = step /
+    /// stepCount`, y ahí está todo el diseño de la rebanada: un ciclo dura
+    /// exactamente una vuelta del anillo porque así se calcula la fase, no
+    /// porque nadie lo vigile. No hay reloj de modulación ni estado que
+    /// mantener, y cada Track modula a su velocidad porque cada uno tiene sus
+    /// Steps y su Division.
+    ///
+    /// **El índice envuelve sobre la vuelta**, como `Cycle.triggers(atStep:)`.
+    ///
+    /// **Todo pasa por `t = 400 · step / stepCount`**, la fase en cuartos de
+    /// vuelta por cien: 0 en el arranque, 100 en el cuarto, 200 en la mitad, 300
+    /// en los tres cuartos. Las cuatro formas son cuatro lecturas de ese mismo
+    /// número, que es lo que garantiza que todas tengan el pico en el mismo
+    /// sitio — cambiar de forma cambia el recorrido, no dónde cae el acento.
+    ///
+    /// - `triangle`: `t` mientras sube, `200 − t` mientras baja, `t − 400` en el
+    ///   último cuarto. Los tres tramos coinciden en sus fronteras, así que la
+    ///   forma es continua sin caso especial.
+    /// - `saw`: la misma subida hasta el cuarto, y después **un solo corte** —
+    ///   cae al fondo y vuelve a subir a un tercio de la pendiente, porque le
+    ///   quedan tres cuartos de vuelta para recorrer lo que la subida hizo en
+    ///   uno. El corte va en `p=¼` y no a media vuelta para que su pico coincida
+    ///   con el de las otras tres.
+    /// - `sine`: `sin(2πp)` **por tabla escrita de un cuarto de onda**, con las
+    ///   otras tres cuartas partes por simetría. No se calcula con `sin()`:
+    ///   `Engine` no importa nada fuera de la stdlib (NFR5) y esto corre en el
+    ///   hilo del scheduler (NFR1).
+    /// - `pulse`: arriba mientras la fase no llega a la mitad, abajo después.
+    ///   **Con Steps impares el Step del medio cae en la mitad alta** —`t < 200`
+    ///   equivale a `2·step < stepCount`— así que acentúa `ceil(steps/2)` de
+    ///   `steps`. Es la misma regla, no un caso especial.
+    ///
+    /// **`pulse` es la excepción a «empieza en el centro» y no puede no serlo:**
+    /// una onda de dos valores no pasa por el centro. Empieza arriba, que es lo
+    /// que hace la forma útil para lo que sirve — acentuar media vuelta entera.
+    ///
+    /// Con `stepCount` no positivo devuelve el centro en vez de dividir por
+    /// cero. `Steps` valida 1…64 y no puede producirlo, pero esto corre en el
+    /// hilo del scheduler y ahí una división por cero es un crash.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await, sin coma flotante.
+    ///
+    /// Samples the modulation waveform at one step of a turn.
+    /// - Parameters:
+    ///   - step: The step index; it wraps around the turn.
+    ///   - stepCount: How many steps the turn has.
+    /// - Returns: The excursion, from −100 to 100.
+    public func value(atStep step: Int, of stepCount: Int) -> Int {
+        guard stepCount > 0 else { return 0 }
+
+        // El módulo de Swift conserva el signo del dividendo, así que un índice
+        // negativo se lleva de vuelta al anillo sumando una vuelta.
+        let wrapped = ((step % stepCount) + stepCount) % stepCount
+        let t = 400 * wrapped / stepCount
+
+        switch self {
+        case .triangle:
+            if t <= 100 { return t }
+            if t <= 300 { return 200 - t }
+            return t - 400
+
+        case .saw:
+            if t <= 100 { return t }
+            return -100 + (t - 100) / 3
+
+        case .sine:
+            if t <= 100 { return Self.quarterSine[t] }
+            if t <= 200 { return Self.quarterSine[200 - t] }
+            if t <= 300 { return -Self.quarterSine[t - 200] }
+            return -Self.quarterSine[400 - t]
+
+        case .pulse:
+            return t < 200 ? 100 : -100
+        }
+    }
+
+    /// Un cuarto de onda de seno, escrito y no calculado (NFR5).
+    ///
+    /// `quarterSine[i] = round(100 · sin(π·i/200))` para `i` de 0 a 100, que es
+    /// el recorrido de la fase de 0 a un cuarto de vuelta. Las otras tres
+    /// cuartas partes salen de esta por simetría, así que la tabla cuesta 101
+    /// enteros y no 400.
+    ///
+    /// **La forma es una aproximación entera**, y a 16 Steps o menos —donde el
+    /// muestreo pasa por una de cada seis entradas— es indistinguible de la
+    /// curva exacta. Es la limitación que la spec del track anota.
+    static let quarterSine: [Int] = [
+        0, 2, 3, 5, 6, 8, 9, 11, 13, 14,
+        16, 17, 19, 20, 22, 23, 25, 26, 28, 29,
+        31, 32, 34, 35, 37, 38, 40, 41, 43, 44,
+        45, 47, 48, 50, 51, 52, 54, 55, 56, 58,
+        59, 60, 61, 63, 64, 65, 66, 67, 68, 70,
+        71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+        81, 82, 83, 84, 84, 85, 86, 87, 88, 88,
+        89, 90, 90, 91, 92, 92, 93, 94, 94, 95,
+        95, 96, 96, 96, 97, 97, 98, 98, 98, 99,
+        99, 99, 99, 99, 100, 100, 100, 100, 100, 100,
+        100,
+    ]
+}
