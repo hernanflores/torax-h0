@@ -101,6 +101,25 @@ public final class PatternHandoff: @unchecked Sendable {
     /// sin que nadie tenga que limpiar nada.
     private let armedGeneration = AtomicCounter(0)
 
+    /// Cuántas veces se ha adoptado un Pattern armado. **La vía de vuelta**
+    /// (FR7).
+    ///
+    /// **Es un contador de generación: lo que importa es que cambió, no su
+    /// valor.** El hilo del scheduler es quien sabe cuándo llega el límite de
+    /// compás, y hasta la v2 no había forma de que el modelo se enterase de que
+    /// la adopción ocurrió: la pantalla seguía enseñando el hueco viejo y —lo
+    /// caro— el siguiente giro de knob escribía en él.
+    ///
+    /// **Sin callback hacia el modelo**, que sería trabajo en el camino de
+    /// tiempo real. Se lee al dibujar, con el mismo criterio que `playhead` y
+    /// `cycleInCourse` (FR9).
+    ///
+    /// La forma es la de `CyclePlaybackClock`: una palabra atómica que el hilo
+    /// escribe en un límite y cualquiera lee cuando le viene bien. No cambia el
+    /// coste por ventana, porque la escritura ocurre en la adopción y no en cada
+    /// vuelta: adoptar ya era el camino excepcional.
+    private let adoptionGeneration = AtomicCounter(0)
+
     /// Generación publicada. Monótona: solo avanza.
     ///
     /// `AtomicCounter` ya hace `store` con release y `load` con acquire, que es
@@ -254,7 +273,21 @@ public final class PatternHandoff: @unchecked Sendable {
         guard hasArmedPattern else { return false }
         publish(armedSlot.pointee)
         disarm()
+        // **Se mueve una vez por adopción, no una por ventana** (FR7): el guard
+        // de arriba ya descartó el caso vacío, que es casi siempre.
+        adoptionGeneration.increment()
         return true
     }
+
+    /// Cuántas adopciones ha visto este handoff. **Monótono: solo avanza.**
+    ///
+    /// **Lo lee el modelo al dibujar** para aplicar lo que armó: mover
+    /// `selectedPattern`, limpiar lo pendiente y adoptar en `ControlInput`
+    /// (FR8). Lo que importa es que el número cambió respecto al último visto;
+    /// su valor no significa nada.
+    ///
+    /// Lo que suena entra exacto en el compás; lo que la pantalla y el `Project`
+    /// reflejan puede llegar hasta un cuadro después, y nadie lo oye (FR9).
+    public var adoptionCount: UInt64 { adoptionGeneration.value }
 
 }

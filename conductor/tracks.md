@@ -804,7 +804,20 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: `ControlInput` no adopta el Pattern del Bank nuevo**
+- [x] **Track: `ControlInput` no adopta el Pattern del Bank nuevo**
+  *Link: [conductor/tracks/control-input-adoption_20260908/index.md](./tracks/control-input-adoption_20260908/index.md)*
+
+  **Planificado el 2026-09-08**, en cuatro fases. **Absorbe el defecto hermano de
+  abajo** —«El cambio de Pattern no llega a la pantalla ni al Project»—: comparten
+  la pieza que falta, porque con el transporte corriendo cambiar de Bank también
+  arma y el material entra en el límite de compás.
+
+  **Al cerrar la Fase 2 el fallo reportado ya está arreglado** para el transporte
+  parado. La Fase 3 es la cara: la palabra atómica que el hilo del scheduler
+  escribe al adoptar, con la forma de `CyclePlaybackClock`.
+
+  **Los mutes quedan fuera**: no viajan en el `Pattern` y hoy no se tocan al
+  cambiar de Bank. Se anota como límite conocido, sin cambiar comportamiento.
 
   Encontrado el 2026-09-07 verificando la Fase 4 de `note-repeater_20260906` en
   dispositivo. **Los parámetros del Bank anterior vuelven en cuanto se gira un
@@ -850,7 +863,14 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: El cambio de Pattern no llega a la pantalla ni al Project**
+- [x] **Track: El cambio de Pattern no llega a la pantalla ni al Project**
+
+  **Cerrado el 2026-09-08 por `control-input-adoption_20260908`**, que lo
+  absorbió. La pieza que falta descrita abajo —«una palabra atómica que el
+  scheduler escriba al adoptar y que el modelo lea»— es exactamente
+  `PatternHandoff.adoptionCount`, y quien la lee y aplica es `PendingAdoption`
+  con `TransportModel.applyPendingAdoption()`. Las tres consecuencias listadas
+  quedan resueltas y verificadas en dispositivo.
 
   Encontrado el 2026-09-07 verificando `persistence_20260907` en dispositivo.
   **Cambiar de Bank funciona; cambiar de Pattern con el transporte corriendo,

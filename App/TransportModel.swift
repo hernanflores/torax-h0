@@ -140,7 +140,13 @@ final class TransportModel {
     }
 
     /// Qué hueco espera al compás, si alguno.
-    private(set) var armedPatternIndex: Int?
+    ///
+    /// Lo recuerda `PendingAdoption`, que vive en `MIDI` porque decidir cuándo
+    /// lo armado pasa a vigente tiene casos límite y `App` no se mide (NFR3).
+    var armedPatternIndex: Int? { pendingAdoption.armedPatternIndex }
+
+    /// Lo armado esperando a que el scheduler diga que lo adoptó (FR8).
+    private let pendingAdoption = PendingAdoption()
 
     /// Cuántas negras faltan para que entre el Pattern armado, o `nil` si no hay
     /// ninguno esperando.
@@ -157,22 +163,74 @@ final class TransportModel {
     /// **La regla de cómo entra la decide el transporte** (FR5, FR6): parado es
     /// inmediato, sonando espera al compás. Aquí solo se anota qué hueco es el
     /// que entra, para que la pantalla pueda decir `queued`.
+    ///
+    /// **Y la entrada de control adopta el material nuevo**, que es el fallo que
+    /// arregla `control-input-adoption` (FR6): `ControlInput` guarda su propia
+    /// copia del Pattern y nadie la reseedeaba, así que el primer giro de knob
+    /// republicaba el Pattern anterior entero encima. La rama que suena todavía
+    /// no adopta: ahí el material entra en el límite de compás, dentro del hilo
+    /// del scheduler, y quien lo cuenta es la vía de vuelta.
     func selectPattern(_ index: Int) {
         guard let material = bank.pattern(at: index) else { return }
 
         if isPlaying {
             transport?.armForNextBar(material)
-            armedPatternIndex = index
+            pendingAdoption.arm(
+                PendingAdoption.Adoption(
+                    bankIndex: project.selectedBank,
+                    patternIndex: index,
+                    pattern: material
+                ),
+                adoptionCount: transport?.adoptionCount ?? 0
+            )
         } else {
             project = project.selectingPattern(index)
             pattern = material
+            controlInput.adopt(material)
             transport?.publish(material)
-            armedPatternIndex = nil
+            pendingAdoption.cancel()
         }
         autosave.changedHeader(project)
     }
 
+    /// Aplica la adopción que el scheduler dice haber hecho, si la hay (FR8,
+    /// FR10).
+    ///
+    /// **Es la vía de vuelta, y por eso es un poll y no un callback** (NFR1): el
+    /// hilo del scheduler solo incrementa una palabra atómica al adoptar, y
+    /// llamar hacia el modelo desde ahí sería trabajo en el camino de tiempo
+    /// real. La decisión de si toca aplicar algo vive en `PendingAdoption`, en
+    /// `MIDI`, donde hay tests.
+    ///
+    /// Al aplicar: mueve `project.selectedPattern` al hueco que sonó, deja de
+    /// haber nada armado —así desaparece la cuenta atrás y la rejilla marca el
+    /// hueco correcto— y **`ControlInput` adopta**, que es la consecuencia que
+    /// destruía trabajo.
+    ///
+    /// El material es el mismo snapshot que se armó. También conserva el Bank y
+    /// el hueco de entonces, para que cambiar de selección antes del poll no
+    /// desincronice el `Project` y `ControlInput` de lo que empezó a sonar.
+    ///
+    /// **Lo que suena entra exacto en el compás; esto puede llegar hasta un
+    /// cuadro después** (FR9), y nadie lo oye.
+    func applyPendingAdoption() {
+        guard let transport else { return }
+        guard let adoption = pendingAdoption.landed(adoptionCount: transport.adoptionCount) else {
+            return
+        }
+
+        project =
+            project
+            .selectingBank(adoption.bankIndex)
+            .selectingPattern(adoption.patternIndex)
+        pattern = adoption.pattern
+        controlInput.adopt(adoption.pattern)
+        autosave.changedHeader(project)
+    }
+
     /// Elige otro Bank: su Pattern seleccionado y su tempo (FR11).
+    ///
+    /// Adopta con el transporte parado, por lo mismo que `selectPattern(_:)`.
     func selectBank(_ index: Int) {
         guard let target = project.bank(at: index) else { return }
 
@@ -181,9 +239,17 @@ final class TransportModel {
 
         if !isPlaying {
             pattern = target.pattern(at: project.selectedPattern) ?? Pattern()
-            armedPatternIndex = nil
+            controlInput.adopt(pattern)
+            pendingAdoption.cancel()
         } else {
-            armedPatternIndex = project.selectedPattern
+            pendingAdoption.arm(
+                PendingAdoption.Adoption(
+                    bankIndex: project.selectedBank,
+                    patternIndex: project.selectedPattern,
+                    pattern: target.pattern(at: project.selectedPattern) ?? Pattern()
+                ),
+                adoptionCount: transport?.adoptionCount ?? 0
+            )
         }
         autosave.changedHeader(project)
     }
@@ -214,6 +280,8 @@ final class TransportModel {
 
     /// Vuelve al punto de retorno. **Cuantizado**, por el mismo camino que un
     /// cambio de Pattern (FR17).
+    ///
+    /// Adopta con el transporte parado, por lo mismo que `selectPattern(_:)`.
     func reloadBank() {
         guard let saved = try? store.restorePoint(at: project.selectedBank) else { return }
 
@@ -222,6 +290,17 @@ final class TransportModel {
 
         if !isPlaying {
             pattern = saved.pattern(at: project.selectedPattern) ?? Pattern()
+            controlInput.adopt(pattern)
+            pendingAdoption.cancel()
+        } else {
+            pendingAdoption.arm(
+                PendingAdoption.Adoption(
+                    bankIndex: project.selectedBank,
+                    patternIndex: project.selectedPattern,
+                    pattern: saved.pattern(at: project.selectedPattern) ?? Pattern()
+                ),
+                adoptionCount: transport?.adoptionCount ?? 0
+            )
         }
         autosave.changed(saved, at: project.selectedBank)
     }
