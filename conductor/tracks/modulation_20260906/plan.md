@@ -34,22 +34,22 @@ seguir.
 
 ## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
 
-- [ ] Task: Anotar la modulación en la Pre Spec (NFR7)
-  - [ ] Nota fechada en `Pre Spec Torax H-0.md`, §4 «Modulación LFO y Random» y
+- [x] Task: Anotar la modulación en la Pre Spec (NFR7) `817c3d5`
+  - [x] Nota fechada en `Pre Spec Torax H-0.md`, §4 «Modulación LFO y Random» y
         en la fila `Accent` de §5: qué se entrega y qué no.
-  - [ ] **La forma se llama `waveform`, no `Groove`.** La Pre Spec usa *Groove*
+  - [x] **La forma se llama `waveform`, no `Groove`.** La Pre Spec usa *Groove*
         para dos cosas —la familia de parámetros y el knob que elige la forma— y
         el motor ya gastó el término en la primera. Escribir el porqué:
         `product-guidelines.md` pide un solo término por concepto.
-  - [ ] **La longitud no se puede cambiar.** La Pre Spec dice «se puede cambiar
+  - [x] **La longitud no se puede cambiar.** La Pre Spec dice «se puede cambiar
         su longitud»; se entrega fija a un ciclo por vuelta del anillo, y el
         default de 4 compases del brief de producto no se implementa.
-  - [ ] **Accent no tiene knob.** La §5 lo lista entre los parámetros de Groove,
+  - [x] **Accent no tiene knob.** La §5 lo lista entre los parámetros de Groove,
         que son todos de knob; aquí es táctil. Con el coste delante: Ctrl All,
         Temp y la lectura transitoria grande no lo alcanzan.
-  - [ ] **Retrigger reiniciaría Accent y Retrigger no existe.** Anotarlo donde la
+  - [x] **Retrigger reiniciaría Accent y Retrigger no existe.** Anotarlo donde la
         Pre Spec lo promete, para que la deuda esté escrita y no se descubra.
-  - [ ] Fijar el vocabulario: `modulation`, `waveform`, `accent`, `saw`,
+  - [x] Fijar el vocabulario: `modulation`, `waveform`, `accent`, `saw`,
         `triangle`, `sine`, `pulse`. Ni «LFO» como nombre de parámetro, ni
         «shape» —que ya es una familia—, ni «amount».
 - [ ] Task: Sacar el LFO de «Fuera de v1» en `product.md` (NFR7)
