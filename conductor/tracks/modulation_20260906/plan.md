@@ -52,16 +52,16 @@ seguir.
   - [x] Fijar el vocabulario: `modulation`, `waveform`, `accent`, `saw`,
         `triangle`, `sine`, `pulse`. Ni «LFO» como nombre de parámetro, ni
         «shape» —que ya es una familia—, ni «amount».
-- [ ] Task: Sacar el LFO de «Fuera de v1» en `product.md` (NFR7)
-  - [ ] Nota fechada en `conductor/product.md`: de «LFO y Random Modulation»
+- [x] Task: Sacar el LFO de «Fuera de v1» en `product.md` (NFR7) `d6ba133`
+  - [x] Nota fechada en `conductor/product.md`: de «LFO y Random Modulation»
         entra **solo la primera mitad, y solo sobre velocity**, por la misma vía
         que salieron Cycles y los múltiples Tracks.
-  - [ ] Describirlo en *Interaction Model*: **capa sobre la dinámica, no sobre el
+  - [x] Describirlo en *Interaction Model*: **capa sobre la dinámica, no sobre el
         material**. Steps, Pulses, Rotate y el pool no cambian.
-  - [ ] Anotar que la app pasa a tener **cinco pantallas**, y de qué lado de la
+  - [x] Anotar que la app pasa a tener **cinco pantallas**, y de qué lado de la
         frontera del tacto cae `modulation`: se configura antes de tocar, como
         `scale`, `midi` y `banks`.
-  - [ ] Anotar que **no se mide jitter** y por qué la regla del 2026-08-28 lo
+  - [x] Anotar que **no se mide jitter** y por qué la regla del 2026-08-28 lo
         excluye, para que la ausencia se lea como decisión.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
