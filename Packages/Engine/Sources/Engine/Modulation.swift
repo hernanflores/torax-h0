@@ -233,3 +233,113 @@ extension Waveform {
         100,
     ]
 }
+
+/// Los dos parámetros de la modulación de un Cycle.
+///
+/// **Vive dentro del `Cycle`**, junto a Shape, Groove, el pool y el Note
+/// Repeater, por la misma razón que ellos: el hilo del scheduler necesita los
+/// dos para decidir con cuánta fuerza emite un Step, y lo único que ese hilo lee
+/// es el snapshot publicado. Cada Cycle tiene el suyo, así que un desarrollo A/B
+/// puede acentuar solo en el B.
+///
+/// **Guarda un `Int8` y no un `Accent`**, que es el idioma que `NoteRepeater` ya
+/// fijó: el campo cuesta dos bytes por Cycle —la onda es un `enum` sin carga—
+/// contra los dieciséis que costaría almacenar los dos tipos enteros. Con doce
+/// Tracks × dieciséis Cycles la diferencia son ~2,7 KB sobre los ~37 KB del
+/// snapshot, y NFR2 presupone que este campo no se nota.
+///
+/// **Con el neutro no cambia nada de lo entregado**: `accent` en 0 devuelve la
+/// Velocity base sin tocarla, igual que Repeats en 0 no ejecuta nada del camino
+/// del Note Repeater.
+public struct Modulation: Equatable, Sendable {
+
+    /// El neutro: sin modulación, sobre `triangle`. Con él, la salida es la de
+    /// antes de la rebanada — instantes, velocities y consumo de aleatoriedad.
+    public static let `default` = Modulation()
+
+    /// La forma del movimiento.
+    public let waveform: Waveform
+
+    private let storedAccent: Int8
+
+    public init(waveform: Waveform = .default, accent: Accent = .default) {
+        self.waveform = waveform
+        storedAccent = Int8(accent.percent)
+    }
+
+    /// Cuánto se desvía la velocity, con signo.
+    public var accent: Accent { Accent(unchecked: Int(storedAccent)) }
+
+    /// La misma `Modulation` con lo que se le cambie, y todo lo demás intacto.
+    ///
+    /// Mismo idioma que `Cycle.with(...)` y `NoteRepeater.with(...)`, y por la
+    /// misma razón: reconstruirla a mano pierde en silencio lo que no se nombre.
+    public func with(waveform: Waveform? = nil, accent: Accent? = nil) -> Modulation {
+        Modulation(waveform: waveform ?? self.waveform, accent: accent ?? self.accent)
+    }
+}
+
+extension Modulation {
+
+    /// Cuánto se desvía la velocity en el Step `step` de una vuelta de
+    /// `stepCount`, en unidades MIDI con signo (FR6).
+    ///
+    /// ```
+    /// offset = wave(p) · accent · 63 / 10000      // wave ∈ −100…100
+    /// ```
+    ///
+    /// **El 63 es media excursión del rango MIDI**, así que `accent = ±100`
+    /// sobre el pico de la onda desplaza media escala. Con la Velocity en el
+    /// centro del rango, un accent al extremo barre prácticamente 1…127 sin
+    /// recortar; con la Velocity por defecto —100— recorta arriba, y enseñar ese
+    /// recorte es justo para lo que sirve el panel `velocity response` (FR12).
+    ///
+    /// **La división trunca hacia cero, que es lo que hace simétrico el signo.**
+    /// Truncar hacia abajo separaría `+n` de `−n` en una unidad sobre la mitad
+    /// de los Steps, y el criterio 4 pide que uno sea el complemento exacto del
+    /// otro. Multiplicando antes de dividir, como
+    /// `Sustain.gateNanoseconds(over:)`.
+    ///
+    /// El producto no puede desbordar: 100 · 100 · 63 son 630.000.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await, sin coma flotante.
+    ///
+    /// Calculates the velocity offset of one step of the turn.
+    /// - Parameters:
+    ///   - step: The step index within the turn; it wraps around it.
+    ///   - stepCount: How many steps the turn has.
+    /// - Returns: The offset in MIDI units, from −63 to 63.
+    public func offset(atStep step: Int, of stepCount: Int) -> Int {
+        guard accent.percent != 0 else { return 0 }
+        let excursion = waveform.value(atStep: step, of: stepCount)
+        return excursion * accent.percent * 63 / 10000
+    }
+
+    /// La velocity que se emite en el Step `step` de una vuelta de `stepCount`,
+    /// partiendo de la del Cycle (FR6, FR7).
+    ///
+    /// **El acotado a 1…127 lo hace `Velocity.advanced(by:)`**, que ya existe y
+    /// ya está cubierto: la modulación lo reutiliza en vez de escribir un
+    /// segundo acotado que pudiera discrepar. El extremo inferior sigue
+    /// excluyendo el 0 por la razón de siempre — un note-on con velocity 0 es un
+    /// note-off, y para no sonar está Probability.
+    ///
+    /// **Con `accent` en 0 devuelve la base intacta**, sin pasar por la onda ni
+    /// por el acotado. Es la no regresión de la rebanada, y es también lo que
+    /// hace que el camino nuevo no cueste nada a quien no lo pide.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await, sin coma flotante.
+    ///
+    /// Calculates the velocity emitted at one step of the turn.
+    /// - Parameters:
+    ///   - step: The step index within the turn; it wraps around it.
+    ///   - stepCount: How many steps the turn has.
+    ///   - base: The velocity of the cycle.
+    /// - Returns: A velocity clamped to `Velocity.validRange`.
+    public func velocity(atStep step: Int, of stepCount: Int, from base: Velocity) -> Velocity {
+        guard accent.percent != 0 else { return base }
+        return base.advanced(by: offset(atStep: step, of: stepCount))
+    }
+}

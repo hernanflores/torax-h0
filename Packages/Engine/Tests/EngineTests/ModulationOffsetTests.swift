@@ -1,0 +1,233 @@
+import XCTest
+
+@testable import Engine
+
+/// Tests del offset de velocity y su acotado (FR6, FR7).
+///
+/// ```
+/// offset = wave(p) · accent · 63 / 10000      // entero, wave ∈ −100…100
+/// ```
+///
+/// **`accent = ±100` sobre el pico desplaza ±63 unidades MIDI**, media excursión
+/// del rango. Con la Velocity en el centro, un accent al extremo barre casi
+/// 1…127 sin recortar; con la Velocity por defecto —100— recorta arriba, y ver
+/// ese recorte es justo lo que el panel de la pantalla sirve para enseñar.
+///
+/// **El acotado a 1…127 lo hace `Velocity.advanced(by:)`, que ya existe y ya
+/// está cubierto.** La modulación lo reutiliza en vez de escribir un segundo
+/// acotado: el extremo inferior sigue excluyendo el 0 porque un note-on con
+/// velocity 0 es un note-off, y para no sonar está Probability.
+///
+/// **Con `accent = 0` el offset es 0 para las cuatro formas.** Es el criterio 1
+/// de aceptación de la rebanada, y aquí es donde se prueba con números.
+final class ModulationOffsetTests: XCTestCase {
+
+    private let base = Velocity(100)!
+
+    // MARK: - El neutro
+
+    /// Con `accent = 0` no hay desviación en ningún Step de la vuelta, sea cual
+    /// sea la forma. Es la no regresión de la rebanada entera.
+    func testWithoutAccentThereIsNoOffsetForAnyWaveform() {
+        for waveform in Waveform.allCases {
+            let modulation = Modulation(waveform: waveform)
+            for step in 0..<16 {
+                XCTAssertEqual(
+                    modulation.offset(atStep: step, of: 16), 0, "\(waveform) step \(step)")
+            }
+        }
+    }
+
+    /// Y la velocity emitida es la base, intacta, en los dieciséis.
+    func testWithoutAccentEveryStepSoundsAtTheBaseVelocity() {
+        for waveform in Waveform.allCases {
+            let modulation = Modulation(waveform: waveform)
+            for step in 0..<16 {
+                XCTAssertEqual(
+                    modulation.velocity(atStep: step, of: 16, from: base).value,
+                    100,
+                    "\(waveform) step \(step)"
+                )
+            }
+        }
+    }
+
+    // MARK: - Los extremos
+
+    /// **`accent = +100` sobre el pico da +63 unidades**, media excursión del
+    /// rango MIDI (FR6).
+    func testFullPositiveAccentMovesSixtyThreeUnitsAtThePeak() {
+        let modulation = Modulation(waveform: .triangle, accent: Accent(percent: 100)!)
+        XCTAssertEqual(modulation.offset(atStep: 4, of: 16), 63)
+        XCTAssertEqual(modulation.offset(atStep: 12, of: 16), -63)
+    }
+
+    /// Y `accent = −100` lo mismo del otro lado: el signo invierte la onda, no
+    /// la deforma.
+    func testFullNegativeAccentMovesSixtyThreeUnitsTheOtherWay() {
+        let modulation = Modulation(waveform: .triangle, accent: Accent(percent: -100)!)
+        XCTAssertEqual(modulation.offset(atStep: 4, of: 16), -63)
+        XCTAssertEqual(modulation.offset(atStep: 12, of: 16), 63)
+    }
+
+    /// Con la Velocity en el centro del rango, un accent al extremo barre
+    /// prácticamente 1…127 sin recortar — que es lo que «media excursión»
+    /// significa en la práctica.
+    func testFromTheCentreOfTheRangeFullAccentSweepsAlmostEverything() {
+        let centre = Velocity(64)!
+        let modulation = Modulation(waveform: .triangle, accent: Accent(percent: 100)!)
+        XCTAssertEqual(modulation.velocity(atStep: 4, of: 16, from: centre).value, 127)
+        XCTAssertEqual(modulation.velocity(atStep: 12, of: 16, from: centre).value, 1)
+    }
+
+    // MARK: - La simetría del signo
+
+    /// **`accent = −n` es el complemento exacto de `accent = +n`** respecto de
+    /// la base, Step a Step y para las cuatro formas (criterio 4). Es lo que
+    /// hace que el signo se lea como «al revés» y no como «otra cosa».
+    ///
+    /// La división entera trunca hacia cero, que es simétrica: si truncara hacia
+    /// abajo, `+n` y `−n` se separarían una unidad en la mitad de los Steps.
+    func testNegativeAccentIsTheExactComplementOfPositiveAccent() {
+        for waveform in Waveform.allCases {
+            for percent in [17, 50, 63, 100] {
+                let up = Modulation(waveform: waveform, accent: Accent(percent: percent)!)
+                let down = Modulation(waveform: waveform, accent: Accent(percent: -percent)!)
+                for step in 0..<16 {
+                    XCTAssertEqual(
+                        up.offset(atStep: step, of: 16),
+                        -down.offset(atStep: step, of: 16),
+                        "\(waveform) accent \(percent) step \(step)"
+                    )
+                }
+            }
+        }
+    }
+
+    /// Sobre la velocity, la simetría vale **salvo donde el acotado muerde**
+    /// (criterio 4): desde el centro del rango no muerde, y las dos se separan
+    /// lo mismo de la base.
+    func testTheComplementHoldsOnVelocityWhereTheClampDoesNotBite() {
+        let centre = Velocity(64)!
+        let up = Modulation(waveform: .sine, accent: Accent(percent: 40)!)
+        let down = Modulation(waveform: .sine, accent: Accent(percent: -40)!)
+        for step in 0..<16 {
+            let above = up.velocity(atStep: step, of: 16, from: centre).value - 64
+            let below = 64 - down.velocity(atStep: step, of: 16, from: centre).value
+            XCTAssertEqual(above, below, "step \(step)")
+        }
+    }
+
+    // MARK: - El acotado
+
+    /// Con `Velocity = 127` y accent positivo, **nada supera 127** (criterio 5).
+    func testNothingExceedsTheTopFromTheTopVelocity() {
+        let top = Velocity(127)!
+        for waveform in Waveform.allCases {
+            let modulation = Modulation(waveform: waveform, accent: Accent(percent: 100)!)
+            for step in 0..<16 {
+                XCTAssertLessThanOrEqual(
+                    modulation.velocity(atStep: step, of: 16, from: top).value,
+                    127,
+                    "\(waveform) step \(step)"
+                )
+            }
+        }
+    }
+
+    /// Con `Velocity = 1` y accent negativo, **nada baja de 1** (criterio 5).
+    /// El 0 queda fuera porque un note-on con velocity 0 es un note-off.
+    func testNothingFallsBelowOneFromTheBottomVelocity() {
+        let bottom = Velocity(1)!
+        for waveform in Waveform.allCases {
+            let modulation = Modulation(waveform: waveform, accent: Accent(percent: -100)!)
+            for step in 0..<16 {
+                XCTAssertGreaterThanOrEqual(
+                    modulation.velocity(atStep: step, of: 16, from: bottom).value,
+                    1,
+                    "\(waveform) step \(step)"
+                )
+            }
+        }
+    }
+
+    /// La barrida completa: ninguna combinación de forma, accent, base y
+    /// longitud de vuelta se sale de 1…127.
+    func testTheEmittedVelocityNeverLeavesTheMidiRange() {
+        for waveform in Waveform.allCases {
+            for percent in [-100, -37, 0, 37, 100] {
+                let modulation = Modulation(waveform: waveform, accent: Accent(percent: percent)!)
+                for baseValue in [1, 64, 100, 127] {
+                    let from = Velocity(baseValue)!
+                    for stepCount in [1, 9, 16] {
+                        for step in 0..<stepCount {
+                            let value = modulation.velocity(
+                                atStep: step, of: stepCount, from: from
+                            ).value
+                            XCTAssertTrue(
+                                Velocity.validRange.contains(value),
+                                "\(waveform)/\(percent)/\(baseValue)/\(stepCount)/\(step) dio \(value)"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// El recorte que la spec anota como limitación: con la Velocity por defecto
+    /// —100— y accent alto, media onda se aplasta contra 127. Se ve en el panel
+    /// y no se avisa de otra forma.
+    func testTheDefaultVelocityClipsAgainstTheTopWithHighAccent() {
+        let modulation = Modulation(waveform: .triangle, accent: Accent(percent: 100)!)
+        XCTAssertEqual(modulation.velocity(atStep: 4, of: 16, from: base).value, 127)
+        XCTAssertEqual(modulation.velocity(atStep: 3, of: 16, from: base).value, 127)
+        // Y abajo no recorta: 100 − 63 = 37, con margen de sobra.
+        XCTAssertEqual(modulation.velocity(atStep: 12, of: 16, from: base).value, 37)
+    }
+
+    // MARK: - El redondeo
+
+    /// **La aritmética es entera y trunca hacia cero.** Fijado en los valores
+    /// que caen a mitad de unidad: `triangle` en el Step 2 de 16 vale 50, y
+    /// `50 · 100 · 63 / 10000` es 31,5 exacto — sale 31, y su simétrico −31.
+    func testTheHalfUnitRoundingTruncatesTowardsZero() {
+        let up = Modulation(waveform: .triangle, accent: Accent(percent: 100)!)
+        let down = Modulation(waveform: .triangle, accent: Accent(percent: -100)!)
+        XCTAssertEqual(Waveform.triangle.value(atStep: 2, of: 16), 50)
+        XCTAssertEqual(up.offset(atStep: 2, of: 16), 31)
+        XCTAssertEqual(down.offset(atStep: 2, of: 16), -31)
+    }
+
+    /// Un accent pequeño sobre una onda pequeña se queda en 0 y no en 1: la
+    /// modulación no inventa una unidad que la aritmética no da.
+    func testASmallAccentOnASmallExcursionRoundsAwayToNothing() {
+        let modulation = Modulation(waveform: .triangle, accent: Accent(percent: 1)!)
+        XCTAssertEqual(modulation.offset(atStep: 1, of: 16), 0)
+        XCTAssertEqual(modulation.offset(atStep: 4, of: 16), 0)
+    }
+
+    // MARK: - El valor
+
+    /// Los defaults del producto: sin modulación, sobre `triangle`.
+    func testModulationDefaultsToTriangleWithoutAccent() {
+        XCTAssertEqual(Modulation.default.waveform, .triangle)
+        XCTAssertEqual(Modulation.default.accent, .default)
+    }
+
+    /// El mismo `Modulation` con lo que se le cambie y todo lo demás intacto —
+    /// mismo idioma que `Cycle.with(...)` y `NoteRepeater.with(...)`.
+    func testWithChangesOnlyWhatItIsGiven() {
+        let modulation = Modulation(waveform: .pulse, accent: Accent(percent: 40)!)
+        XCTAssertEqual(modulation.with(waveform: .sine).waveform, .sine)
+        XCTAssertEqual(modulation.with(waveform: .sine).accent.percent, 40)
+        XCTAssertEqual(modulation.with(accent: Accent(percent: -5)!).waveform, .pulse)
+        XCTAssertEqual(modulation.with(accent: Accent(percent: -5)!).accent.percent, -5)
+    }
+
+    /// La igualdad distingue dos modulaciones que solo difieren en la onda.
+    func testEqualityDistinguishesTheWaveform() {
+        XCTAssertNotEqual(Modulation(waveform: .saw), Modulation(waveform: .sine))
+        XCTAssertEqual(Modulation(waveform: .saw), Modulation(waveform: .saw))
+    }
+}
