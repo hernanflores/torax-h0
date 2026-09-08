@@ -218,6 +218,12 @@ final class RecordRoundTripTests: XCTestCase {
     /// **Y ni una clave más.** Es la mitad que impide perder un dato en
     /// silencio: cuando las rebanadas 5 y 6 añadan Repeats o waveform al
     /// `Cycle`, este test falla hasta que alguien decida cómo se guarda.
+    ///
+    /// > **Cumplió las dos veces**, el 2026-09-07 con el Note Repeater y el
+    /// > 2026-09-08 con la modulación. Y la segunda dejó ver su límite: este test
+    /// > se dispara cuando **sobra** una clave, no cuando **falta** un campo. Lo
+    /// > que destapó la pérdida silenciosa de la modulación fue el round trip del
+    /// > Cycle entero, no este. Los dos hacen falta.
     func testTheCycleJSONHasNoOtherKeys() throws {
         let expected: Set<String> = [
             "steps", "pulses", "rotate", "divisionNumerator", "divisionDenominator",
@@ -225,6 +231,8 @@ final class RecordRoundTripTests: XCTestCase {
             "channel", "scale", "root", "padOctaveShift",
             // Los cuatro del Note Repeater, desde el 2026-09-07.
             "repeats", "repeatTimeDenominator", "ramp", "pace",
+            // Las dos de la modulación, desde el 2026-09-08.
+            "waveform", "accent",
         ]
         let cycle = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!))
         XCTAssertEqual(Set(try dictionary(from: CycleRecord(cycle)).keys), expected)
