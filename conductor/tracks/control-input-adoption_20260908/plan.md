@@ -92,7 +92,7 @@ quién conoce el material.
         refleja puede llegar hasta un cuadro después.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 4: DISPOSITIVO Y CIERRE
+## FASE 4: DISPOSITIVO Y CIERRE [checkpoint: 9e1a788]
 
 - [x] Task: Verificación en iPad con BeatStep Pro `9e1a788`
   - [x] **El fallo reportado, primero**: cambiar de Bank —incluido uno vacío— y
@@ -114,4 +114,4 @@ quién conoce el material.
         llega a la pantalla ni al Project»—, que este track absorbe.
   - [x] Anotar en el `spec.md` lo que se haya corregido al implementar, con
         fecha.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)

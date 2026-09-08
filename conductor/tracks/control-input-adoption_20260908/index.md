@@ -1,6 +1,6 @@
 # Track: `ControlInput` no adopta el Pattern del Bank nuevo
 
-**ID:** `control-input-adoption_20260908` · **Type:** Bug · **Status:** new
+**ID:** `control-input-adoption_20260908` · **Type:** Bug · **Status:** complete
 
 Cambiar de Bank suena, pero no se edita. `ControlInput` guarda su propia copia
 del Pattern y **solo la escribe en su `init`**: nadie la reseedea. Después de
