@@ -47,3 +47,39 @@ accents x cuatro Velocities base x tres longitudes de vuelta se sale de 1…127.
 Verificación: swift test --package-path Packages/Engine
 Engine 846 tests, 0 fallos (830 antes de la tarea, +16).
 Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
+
+--- VERIFICACIÓN DE FASE 2: EL VALOR PURO — Modulation EN Engine ---
+
+Comando de tests:
+  swift test --package-path Packages/Engine --enable-code-coverage
+
+Resultado: Engine 846 tests, 0 fallos (800 al abrir la fase, +46 en tres tareas).
+
+Cobertura: Modulation.swift 100,00% de líneas (65/65), 100% de regiones y de
+funciones. Engine en total 98,59% de líneas, contra el umbral de 90% que fija
+workflow.md. Medida con llvm-cov sobre el .profdata de la pasada, excluyendo
+.build y Tests.
+
+Ficheros de código de la fase y su test correspondiente:
+  Modulation.swift -> ModulationTypesTests, WaveformSampleTests, ModulationOffsetTests
+
+Jitter: no aplica (NFR3 — cambia el cuánto y no el cuándo), y suspendido desde
+el 2026-09-02.
+
+Pasos de verificación manual propuestos:
+1. git show b0b75e1 — las cuatro formas tienen el pico en el Step 4 de 16, el
+   cuarto de vuelta. Es lo que hace que cambiar de forma no mueva el acento de
+   sitio, y la razón de que saw corte en p=1/4 y no a media vuelta.
+2. pulse empieza arriba y las otras tres en el centro — la excepción del spec,
+   que no puede no serlo: una onda de dos valores no pasa por el centro.
+3. git show 2a36a7d — con accent +100 sobre el pico, ±63 unidades MIDI; sobre la
+   Velocity por defecto (100) eso da 127 recortado en el pico y 37 en el valle.
+4. El redondeo: triangle en el Step 2 de 16 vale 50, y 50·100·63/10000 es 31,5
+   exacto — sale 31 y su simétrico −31. Trunca hacia cero, que es lo que hace
+   que −n sea el complemento exacto de +n.
+5. swift test --package-path Packages/Engine --filter Modulation / WaveformSample
+
+Lo que esta fase NO verifica, dicho a propósito: nada suena todavía. El Cycle no
+lleva su Modulation (Fase 3) y el scheduler no la aplica (Fase 4).
+
+Confirmación del usuario: «ok» — aprobado sin cambios.
