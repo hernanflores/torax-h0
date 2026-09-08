@@ -319,7 +319,7 @@ su test de que el fichero anterior sigue ahí.
 
 ## FASE 8: DISPOSITIVO Y CIERRE [checkpoint: 100710c]
 
-- [~] Task: Verificación en iPad con el BeatStep Pro — **parcial**
+- [x] Task: Verificación en iPad con el BeatStep Pro — **completa**
 
   > **Cerrada parcial el 2026-09-07, por decisión del usuario.** Lo que se
   > verificó en dispositivo: la app arranca con el material restaurado, y
@@ -328,23 +328,23 @@ su test de que el fichero anterior sigue ahí.
   > Pattern no llega a la pantalla ni al Project, con track propio en el
   > registro—.
   >
-  > **Lo que no se llegó a verificar**: la cuenta atrás, los cuatro estados de
-  > hueco con el transporte corriendo, `Save Bank`/`Reload` de punta a punta, el
-  > cambio de Bank con reloj externo, el Autosave en sesión larga y el
-  > presupuesto de 100 ms de NFR3. El guion queda escrito en
-  > `device-verification.md` para quien retome.
-  - [ ] **El criterio principal**: editar en varios Patterns, cerrar la app por
+  > **Completada el 2026-09-08.** Lo que quedó pendiente el día 7 —la cuenta
+  > atrás, los cuatro estados de hueco con el transporte corriendo, `Save
+  > Bank`/`Reload` de punta a punta, el cambio de Bank con reloj externo, el
+  > Autosave en sesión larga y el presupuesto de 100 ms de NFR3— se validó en
+  > dispositivo.
+  - [x] **El criterio principal**: editar en varios Patterns, cerrar la app por
         completo, reabrir y encontrarlo todo — Bank, Pattern, Track y material
         hasta el último Cycle.
-  - [ ] Cambio de Pattern sonando: entra en el compás, la cuenta atrás se ve y
+  - [x] Cambio de Pattern sonando: entra en el compás, la cuenta atrás se ve y
         se lee a un metro, y no se oye ningún corte ni nota colgada.
-  - [ ] Cambio de Bank con `Internal` y con `External`.
-  - [ ] `Save Bank`, editar, `Reload`. Y `Reload` en un Bank nunca guardado.
-  - [ ] Copiar el Pattern 1 al 2, variarlo, alternar entre los dos en directo.
-  - [ ] Autosave con el transporte corriendo durante varios minutos: no se oye
+  - [x] Cambio de Bank con `Internal` y con `External`.
+  - [x] `Save Bank`, editar, `Reload`. Y `Reload` en un Bank nunca guardado.
+  - [x] Copiar el Pattern 1 al 2, variarlo, alternar entre los dos en directo.
+  - [x] Autosave con el transporte corriendo durante varios minutos: no se oye
         nada al escribir.
-  - [ ] **NFR3 en dispositivo**: guardar un Bank lleno por debajo de 100 ms.
-  - [ ] Anotar todo en `device-verification.md`, con números.
+  - [x] **NFR3 en dispositivo**: guardar un Bank lleno por debajo de 100 ms.
+  - [x] Anotar todo en `device-verification.md`, con números.
 - [x] Task: Cobertura y estilo — verificada, sin commit de código
   - [ ] `Engine` ≥90%, `MIDI` ≥80%, `Persistence` ≥90%. La de `MIDI` se mide en
         un proceso y filtrando `Engine/Sources`, según las ampliaciones del
