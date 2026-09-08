@@ -1,0 +1,48 @@
+--- VERIFICACIÓN DE FASE 4: EL ACENTO SUENA ---
+
+Comandos de test:
+  swift test --package-path Packages/Engine --enable-code-coverage
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+  swift test --package-path Packages/MIDI --enable-code-coverage   (un proceso, solo para medir)
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado: Engine 869 tests, 0 fallos. MIDI 21 + 737 con la partición de CI,
+0 fallos. App BUILD SUCCEEDED.
+
+La pasada de cobertura en un solo proceso da 7 fallos, y son las cuatro pruebas
+de VirtualLoopbackTests —clientCreationFailed— más sus repeticiones: el flake de
+CoreMIDI que workflow.md documenta desde la ampliación del 2026-08-30, que solo
+aparece en esa pasada y que por eso obliga a fusionar el .profdata a mano. No es
+del cambio: con la partición de CI la suite pasa entera.
+
+Cobertura: Modulation.swift 100%, TrackScheduler.swift 98,48% de líneas. Engine
+en total 98,62% (umbral 90%). MIDI 92,48% (umbral 80%), medido en un proceso con
+el .profdata fusionado a mano y Engine/Sources excluido, como manda workflow.md.
+
+Ficheros de código de la fase y su test:
+  Modulation.swift (Groove.modulated) -> ModulationOffsetTests
+  TrackScheduler.swift                -> ModulationInSchedulerTests
+
+Jitter: no aplica (NFR3 — la modulación cambia el cuánto y no el cuándo, y
+Groove.modulated deja Timing y Delay intactos), y suspendido desde el 2026-09-02.
+
+Pasos de verificación manual propuestos:
+1. git show 4454140 — la composición va después de la tirada de Probability; dos
+   tests lo fijan comparando contra la serie densa.
+2. Groove.modulated solo toca la velocity: Sustain, Probability, Timing y Delay
+   salen intactos.
+3. git show e89e0d6 — cada Track con su anillo; los dos tests pasaron sin tocar
+   producción, que es el resultado y no un descuido.
+
+La serie emitida, triangle / accent +100 / Velocity 64 / 16 Steps:
+  64 79 95 111 127 111 95 79 64 49 33 17 1 17 33 49
+
+Las dos decisiones fuera de plan que se pusieron delante del usuario:
+- Las repeticiones del Note Repeater heredan la velocity ya modulada (si no,
+  subir Repeats diluiría el acento).
+- quarterSine es un static let [Int], global de inicialización perezosa leído
+  desde el hilo del scheduler; mismo idioma que RepeatTime.ordered.
+
+Confirmación del usuario: «ok» — aprobado sin cambios, las dos decisiones
+incluidas.
