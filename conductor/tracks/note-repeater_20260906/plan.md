@@ -241,7 +241,7 @@ revisar antes de seguir (NFR1).
         anteriores y se arregla ahí, no con un caso especial para Repeats 0.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 5: LOS CUATRO KNOBS Y EL PRESET
+## FASE 5: LOS CUATRO KNOBS Y EL PRESET [checkpoint: 9fd433a]
 
 - [x] Task: Los cuatro CC en `ControlMapping` (FR4) — 66d7013
   - [x] Tests (Red): CC 79 mueve Repeats, 80 Time, 81 Ramp y 83 Pace; el 82
@@ -270,7 +270,7 @@ revisar antes de seguir (NFR1).
         sobre `TrackParameter`. Si hace falta tocar `ControlInput` o
         `ParameterOverlay`, es que hay una lista de parámetros escrita a mano en
         algún sitio: quitarla es parte de la tarea.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: LA PANTALLA
 
