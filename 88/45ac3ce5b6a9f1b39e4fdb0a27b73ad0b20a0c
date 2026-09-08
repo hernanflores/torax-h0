@@ -22,3 +22,31 @@ forma del arreglo.
 
 Ficheros creados:
 - conductor/tracks/note-repeater_20260906/device-verification.md
+
+--- Verificación de la FASE 7: DISPOSITIVO Y CIERRE (2026-09-07) ---
+
+Suite completa y cobertura, medidas como manda workflow.md:
+  Engine       800 tests · 98,54% de líneas (umbral 90)
+  MIDI         708 tests (1 skipped) · 92,65% (umbral 80), en UN proceso, con el
+               .profdata fusionado a mano e ignorando Engine/Sources
+  Persistence   62 tests · 97,52% (umbral 90)
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+
+Sin flake clientCreationFailed(-50): la suite de MIDI pasó entera en un solo
+proceso, así que no hizo falta la comparación de 3-4 pasadas contra main que pide
+workflow.md. Merece anotarse porque la ampliación del 2026-08-30 decía que en
+ramas que arrancan más hilos de scheduler el fallo dejaba de ser intermitente, y
+esta rama no lo reprodujo.
+
+Verificación en dispositivo: los ocho bloques del guion cumplen. Ver
+device-verification.md, con el detalle y el único hallazgo —el defecto de
+ControlInput, que no es de esta rebanada—.
+
+Pull Request #40 contra main, con la CI en verde (build pass, 4m22s).
+
+Registro y spec actualizados: la entrada de conductor/tracks.md queda cerrada con
+lo que entrega, las dos enmiendas y el defecto que deja anotado; el spec.md lleva
+una sección fechada con las siete correcciones que salieron al implementar.
+
+Confirmación del usuario: los ocho bloques «OK», el 8 «OK con el aviso»
+(2026-09-07).
