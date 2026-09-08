@@ -196,7 +196,7 @@ seguir.
   - [x] Área táctil suficiente y legible sin zoom (Code Review Process §6).
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 6: EL ACENTO SE VE
+## FASE 6: EL ACENTO SE VE [checkpoint: 411c1cc]
 
 - [x] Task: El formato de la lectura vive en `Engine` (NFR6) `ab13f2c`
   - [x] Tests (Red): `+34`, `−12` y `0` — el signo se ve en el positivo, como
@@ -221,7 +221,7 @@ seguir.
   - [x] Dos columnas ~70/30, el card alto `accent` a la derecha.
   - [x] Repasar que en `App` no haya quedado lógica que merezca un test
         (`workflow.md`, *Coverage Requirements*).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 7: SIMULADOR, DISPOSITIVO Y CIERRE
 
