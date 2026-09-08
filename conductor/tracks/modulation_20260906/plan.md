@@ -252,7 +252,7 @@ seguir.
         arrastrar cerca del centro deja `accent` en 0 exacto, y un toque simple
         sobre la pista salta a ese valor. `simctl` no toca la pantalla, así que
         es aquí donde se comprueba (criterio 11). **Cumple, 2026-09-08.**
-- [ ] Task: Cobertura, estilo y cierre del track
+- [~] Task: Cobertura, estilo y cierre del track
   - [ ] `Engine` ≥90% y `MIDI` ≥80%, esta última medida como dice `workflow.md`:
         un solo proceso, `.profdata` fusionado a mano, `Engine/Sources` fuera del
         informe.

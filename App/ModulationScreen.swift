@@ -64,7 +64,8 @@ struct ModulationScreen: View {
                 VelocityResponseView(
                     response: model.track.velocityResponse,
                     waveform: model.modulation.waveform,
-                    playhead: model.playheads[safe: model.selectedTrackIndex] ?? nil
+                    isPlaying: model.isPlaying,
+                    playhead: { model.playheads[safe: model.selectedTrackIndex] ?? nil }
                 )
 
                 Spacer(minLength: 0)
@@ -475,8 +476,24 @@ struct VelocityResponseView: View {
     let response: [VelocityResponseStep]
     let waveform: Waveform
 
+    /// Si el transporte está corriendo. Para el redibujado cuando no lo está.
+    let isPlaying: Bool
+
     /// Dónde está el tiempo, o `nil` con el transporte parado.
-    let playhead: Playhead?
+    ///
+    /// > **Es un cierre y no un valor, y esa es la corrección del 2026-09-08.**
+    /// > Se entregó como valor y **el playhead no se movía** — lo encontró la
+    /// > verificación en dispositivo, que es el único sitio donde se puede ver:
+    /// > el simulador no tiene destinos MIDI, así que ahí no hay transporte que
+    /// > lo mueva y el defecto era invisible.
+    /// >
+    /// > La causa: `TransportModel.playheads` **no es estado observable y no debe
+    /// > serlo** —cambia de forma continua, y publicarlo obligaría a invalidar la
+    /// > vista entera a 60 Hz—. Se consulta al dibujar, y quien lo dibuja tiene
+    /// > que provocar su propio redibujado. El anillo lo hace desde hace tiempo
+    /// > con un `TimelineView`; este panel leía el valor una sola vez, al
+    /// > construir el cuerpo, y no volvía a preguntar.
+    let playhead: () -> Playhead?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -505,7 +522,18 @@ struct VelocityResponseView: View {
                         .stroke(Palette.groove, lineWidth: Brutalist.stroke)
                         .frame(width: area.size.width, height: area.size.height)
 
-                    playheadMark(in: area.size)
+                    // **Solo el playhead se repinta al ritmo de la pantalla.**
+                    // Las barras se quedan fuera del `TimelineView` a propósito:
+                    // son estado y no animación (FR14), y meterlas dentro
+                    // reconstruiría dieciséis vistas por fotograma para dibujar
+                    // exactamente lo mismo.
+                    //
+                    // **No es un temporizador nuevo**: es el mismo mecanismo que
+                    // el playhead del anillo, que ya existe y ya está medido, y
+                    // que se detiene solo con el transporte parado.
+                    TimelineView(.animation(paused: !isPlaying)) { _ in
+                        playheadMark(in: area.size)
+                    }
                 }
             }
             .frame(height: 180)
@@ -534,7 +562,6 @@ struct VelocityResponseView: View {
                             Brutalist.stroke
                         )
                     )
-                    .opacity(isUnderPlayhead(index) ? 1 : 0.85)
             }
         }
         .frame(width: size.width, height: size.height, alignment: .bottom)
@@ -547,7 +574,7 @@ struct VelocityResponseView: View {
     /// publica. Con el transporte parado no se dibuja.
     @ViewBuilder
     private func playheadMark(in size: CGSize) -> some View {
-        if let playhead, !response.isEmpty {
+        if let playhead = playhead(), !response.isEmpty {
             let step = playhead.step % response.count
             let width = size.width / CGFloat(response.count)
             Rectangle()
@@ -557,10 +584,6 @@ struct VelocityResponseView: View {
         }
     }
 
-    private func isUnderPlayhead(_ index: Int) -> Bool {
-        guard let playhead, !response.isEmpty else { return false }
-        return playhead.step % response.count == index
-    }
 }
 
 /// El card resumen al pie de la columna derecha (FR11, FR19).

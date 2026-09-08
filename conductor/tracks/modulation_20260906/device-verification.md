@@ -43,7 +43,7 @@ nada nuevo.
 3. Un Bank guardado antes del cambio **abre y suena igual**, con la modulación en
    su neutro: `waveform triangle · accent 0`.
 
-- [ ] Resultado:
+- [X] Resultado: OK
 
 ### 2. El acento se oye (criterio 13)
 
@@ -54,7 +54,7 @@ nada nuevo.
    primero de cada vuelta vuelve al medio.
 3. `accent` a 0 y el Track vuelve a sonar plano, en el acto.
 
-- [ ] Resultado:
+- [X] Resultado: OK
 
 ### 3. `pulse` acentúa media vuelta entera
 
@@ -63,7 +63,7 @@ nada nuevo.
    sin nada intermedio. Con Steps impares, el Step del medio cae en la mitad
    **alta**.
 
-- [ ] Resultado:
+- [X] Resultado: OK
 
 ### 4. El recorte, que se ve y no se avisa
 
@@ -74,7 +74,7 @@ nada nuevo.
    declara «silenciosa en el sonido y visible solo en el panel», y aquí es donde
    se comprueba que la descripción es justa.
 
-- [ ] Resultado:
+- [X] Resultado: OK
 
 ### 5. El playhead del panel (FR14)
 
@@ -87,7 +87,7 @@ Es lo único de la pantalla que el simulador no pudo verificar.
 3. Al parar, el playhead **desaparece** y las barras se quedan dibujadas: son
    estado, no animación.
 
-- [ ] Resultado:
+- [ ] Resultado: No OK
 
 ### 6. Cada Track con su anillo (FR4)
 
@@ -96,7 +96,7 @@ Es lo único de la pantalla que el simulador no pudo verificar.
 2. El de ocho tiene que respirar **al doble de velocidad** que el de dieciséis.
    El desfase es la función, no un defecto.
 
-- [ ] Resultado:
+- [X] Resultado: OK
 
 ### 7. El Cycle en edición, y que la etiqueta no mienta (FR16)
 
@@ -105,7 +105,7 @@ Es lo único de la pantalla que el simulador no pudo verificar.
    **La etiqueta tiene que decir `cycle 02`** mientras suena el A.
 3. Al cerrar la vuelta, el B entra **ya acentuado desde su primer Step**.
 
-- [ ] Resultado:
+- [X] Resultado: OK
 
 ### 8. El slider, con el dedo (FR18, criterio 11)
 
@@ -121,15 +121,15 @@ Es lo único de la pantalla que el simulador no pudo verificar.
    de la envolvente sin acercarse.
 2. La lectura grande de `accent` —`+34`, `-12`, `0`— se lee a la misma distancia.
 
-- [ ] Resultado:
+- [X] Resultado: OK
 
 ### 10. Sin controlador conectado
 
 1. Desenchufar el BeatStep Pro. La pantalla `modulation` **no cambia**: es
    táctil de principio a fin y no depende de que haya knobs.
 
-- [ ] Resultado:
+- [X] Resultado: OK
 
 ## Veredicto
 
-- [ ] **Pendiente.** Rellenar al ejecutar el guion.
+- [X] Solo Falla FR14, el resto paso OK.
