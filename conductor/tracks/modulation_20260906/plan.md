@@ -119,24 +119,24 @@ seguir.
   - [x] Implementar (Green), con el campo entrando **por default** en el
         inicializador, como entraron Timing y Delay: código que no lo pide sigue
         compilando y sonando igual.
-- [ ] Task: `Modulation` en disco, o se pierde al guardar (FR1)
-  - [ ] **Enmienda del 2026-09-08, escrita al implementar.** El plan daba la
+- [x] Task: `Modulation` en disco, o se pierde al guardar (FR1) `1223a21`
+  - [x] **Enmienda del 2026-09-08, escrita al implementar.** El plan daba la
         persistencia por inexistente —la spec la lista en *Out of Scope*, y se
         escribió el 2026-09-06— pero entró el 2026-09-07 con
         `persistence_20260907`. Añadir el campo al `Cycle` sin tocar
         `CycleRecord` **perdería `waveform` y `accent` al guardar, en silencio**.
         Es el mismo hueco que la rebanada 5 se encontró, y `ProjectRecord.swift`
         ya lo deja escrito por adelantado.
-  - [ ] Tests (Red): `RecordRoundTripTests.testTheCycleJSONHasNoOtherKeys` falla
+  - [x] Tests (Red): `RecordRoundTripTests.testTheCycleJSONHasNoOtherKeys` falla
         con el campo nuevo hasta que las claves se declaran. Es la red, y tiene
         que dispararse.
-  - [ ] Tests (Red): las dos claves nuevas se escriben —también el neutro—, y
+  - [x] Tests (Red): las dos claves nuevas se escriben —también el neutro—, y
         vuelven enteras del round trip.
-  - [ ] Tests (Red): un fichero **sin** las dos claves se lee como el neutro
+  - [x] Tests (Red): un fichero **sin** las dos claves se lee como el neutro
         —`triangle` y `accent` 0—, que es el estado que ese fichero describía.
         `schemaVersion` se queda en 1: `validated()` exige igualdad exacta y sin
         migrador subirla dejaría sin abrir los Banks ya escritos.
-  - [ ] Implementar (Green): `waveform` por **clave estable en minúsculas** y no
+  - [x] Implementar (Green): `waveform` por **clave estable en minúsculas** y no
         por su posición en el `enum` — el orden de `allCases` lo manda la rejilla
         de la pantalla y reordenarla no puede cambiar lo que suena un Bank
         guardado. Mismo criterio que `scale`.
