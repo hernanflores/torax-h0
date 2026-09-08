@@ -76,21 +76,21 @@ seguir.
   - [x] Implementar (Green) en `Packages/Engine/Sources/Engine/Modulation.swift`.
   - [x] Documentar el porqué del bipolar y del 0 dentro del rango: es el valor
         que apaga la modulación, no un extremo.
-- [ ] Task: La onda muestreada por Step (FR4, FR5)
-  - [ ] Tests (Red): las cuatro ondas valen **0 en el Step 0** —salvo `pulse`,
+- [x] Task: La onda muestreada por Step (FR4, FR5) `b0b75e1`
+  - [x] Tests (Red): las cuatro ondas valen **0 en el Step 0** —salvo `pulse`,
         que vale +100— para 1, 9 y 16 Steps.
-  - [ ] Tests (Red): `triangle` sobre 16 Steps da el pico en el cuarto de vuelta,
+  - [x] Tests (Red): `triangle` sobre 16 Steps da el pico en el cuarto de vuelta,
         vuelve a 0 a media vuelta y es simétrico en la segunda mitad.
-  - [ ] Tests (Red): `saw` sube hasta el cuarto de vuelta, **salta** a −100 y
+  - [x] Tests (Red): `saw` sube hasta el cuarto de vuelta, **salta** a −100 y
         vuelve a subir; el salto cae exactamente donde dice el spec.
-  - [ ] Tests (Red): `pulse` produce exactamente dos valores y cambia a media
+  - [x] Tests (Red): `pulse` produce exactamente dos valores y cambia a media
         vuelta; con Steps impares, la mitad se resuelve por la misma regla y
         queda escrita.
-  - [ ] Tests (Red): `sine` es monótona donde debe serlo y su pico no se desvía
+  - [x] Tests (Red): `sine` es monótona donde debe serlo y su pico no se desvía
         del de `triangle` — la tabla aproxima la forma, no otra cosa.
-  - [ ] Tests (Red): con `stepCount` de 1 la fase es siempre 0 y no se divide por
+  - [x] Tests (Red): con `stepCount` de 1 la fase es siempre 0 y no se divide por
         cero.
-  - [ ] Implementar (Green): tabla estática de enteros para `sine`, aritmética
+  - [x] Implementar (Green): tabla estática de enteros para `sine`, aritmética
         entera para las otras tres. Marca `/// Realtime:` en la función.
 - [ ] Task: El offset de velocity y su acotado (FR6, FR7)
   - [ ] Tests (Red): `accent = 0` da offset 0 en los Steps de la vuelta, para las
