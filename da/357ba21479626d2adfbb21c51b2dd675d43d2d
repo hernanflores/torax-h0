@@ -1,0 +1,24 @@
+Task: `ControlInput` adopta un Pattern entero (FR1, FR2, FR3, FR4)
+
+Añade `ControlInput.adopt(_:)`, la vía pública que faltaba para que el modelo
+le diga a la entrada de control que el material cambió.
+
+El porqué: `ControlInput` guarda su propia copia del Pattern —está documentado
+por qué: `PatternHandoff.load()` puede descartar una lectura y perder un giro
+sería un knob que no responde— pero solo la escribía en su `init`. Las demás
+escrituras son ediciones incrementales. Así que tras cambiar de Bank el primer
+giro de knob republicaba el Pattern anterior entero encima del Bank nuevo.
+
+Decisiones:
+- Se sustituye el material entero (los doce Tracks con pools, Grooves, canales,
+  marcos y registros de pads) y se conserva el Track seleccionado, que es del
+  dedo y no del material (FR2).
+- No se re-siembra el marco tonal, a diferencia del `init` (FR3): un Pattern de
+  disco trae el suyo por Cycle y pisarlo destruiría material.
+- No publica (FR4): quien provoca el cambio ya avisa al transporte.
+
+Ficheros:
+- M Packages/MIDI/Sources/MIDI/ControlInput.swift
+- A Packages/MIDI/Tests/MIDITests/PatternAdoptionTests.swift (7 tests)
+
+Verificación: MIDI 21 + 694 tests, 0 fallos (partición de CI).
