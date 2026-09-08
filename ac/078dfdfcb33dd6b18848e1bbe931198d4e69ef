@@ -16,3 +16,22 @@ Ficheros:
 - A Packages/MIDI/Tests/MIDITests/AdoptionCancelsModifiersTests.swift (7 tests)
 
 Verificación: Red 4 de 7 fallando; Green 7 de 7. Suite MIDI 21 + 701, 0 fallos.
+
+--- Verificación de fase: FASE 1 — LA VÍA DE IDA ---
+
+Comandos:
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+  swift test --package-path Packages/Engine
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado: MIDI 21 + 701 tests, 0 fallos. Engine 800 tests, 0 fallos.
+BUILD SUCCEEDED.
+
+Verificación manual: la fase no es observable en la app. `adopt(_:)` existe y
+está probada pero nadie la llama hasta la Fase 2, así que en dispositivo el
+fallo reportado sigue reproduciéndose igual — es lo esperado según el plan, no
+una regresión. Lo comprobable es que nada empeoró: sin llamadas a `adopt` el
+camino nuevo no se ejecuta nunca.
+
+Confirmación del usuario: «go» (2026-09-08).
