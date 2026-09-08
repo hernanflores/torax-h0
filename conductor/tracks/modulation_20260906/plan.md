@@ -225,15 +225,15 @@ seguir.
 
 ## FASE 7: SIMULADOR, DISPOSITIVO Y CIERRE
 
-- [ ] Task: Verificar la pantalla en simulador (criterio 13)
-  - [ ] Captura con `simctl` de la pantalla `modulation` con cada una de las
+- [x] Task: Verificar la pantalla en simulador (criterio 13) `d96047b`
+  - [x] Captura con `simctl` de la pantalla `modulation` con cada una de las
         cuatro ondas seleccionada.
-  - [ ] Comprobar contra el handoff: rejilla, columnas, mauve, minúsculas,
+  - [x] Comprobar contra el handoff: rejilla, columnas, mauve, minúsculas,
         bordes y sombra dura.
-  - [ ] Comprobar el panel con un Track de 9 Steps: nueve barras, no dieciséis.
-  - [ ] Comprobar el imantado del slider y que la etiqueta de contexto sigue al
+  - [x] Comprobar el panel con un Track de 9 Steps: nueve barras, no dieciséis.
+  - [x] Comprobar el imantado del slider y que la etiqueta de contexto sigue al
         Cycle en edición.
-  - [ ] Anotar en la git note lo que el simulador **no** puede verificar: sin
+  - [x] Anotar en la git note lo que el simulador **no** puede verificar: sin
         destinos MIDI no hay transporte, así que ni playhead ni acento audible.
 - [ ] Task: Verificar en iPad con BeatStep Pro (criterios 3, 5, 13)
   - [ ] Con un sinte externo: `triangle` y `accent` alto **se oye** como una
