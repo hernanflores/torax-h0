@@ -804,7 +804,7 @@ en cualquier momento.
 
 ---
 
-- [~] **Track: `ControlInput` no adopta el Pattern del Bank nuevo**
+- [x] **Track: `ControlInput` no adopta el Pattern del Bank nuevo**
   *Link: [conductor/tracks/control-input-adoption_20260908/index.md](./tracks/control-input-adoption_20260908/index.md)*
 
   **Planificado el 2026-09-08**, en cuatro fases. **Absorbe el defecto hermano de
@@ -863,7 +863,14 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: El cambio de Pattern no llega a la pantalla ni al Project**
+- [x] **Track: El cambio de Pattern no llega a la pantalla ni al Project**
+
+  **Cerrado el 2026-09-08 por `control-input-adoption_20260908`**, que lo
+  absorbió. La pieza que falta descrita abajo —«una palabra atómica que el
+  scheduler escriba al adoptar y que el modelo lea»— es exactamente
+  `PatternHandoff.adoptionCount`, y quien la lee y aplica es `PendingAdoption`
+  con `TransportModel.applyPendingAdoption()`. Las tres consecuencias listadas
+  quedan resueltas y verificadas en dispositivo.
 
   Encontrado el 2026-09-07 verificando `persistence_20260907` en dispositivo.
   **Cambiar de Bank funciona; cambiar de Pattern con el transporte corriendo,
