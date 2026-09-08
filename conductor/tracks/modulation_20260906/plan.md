@@ -67,14 +67,14 @@ seguir.
 
 ## FASE 2: EL VALOR PURO — `Modulation` EN `Engine`
 
-- [ ] Task: `Waveform` y `Accent`, con sus rangos (FR2, FR3)
-  - [ ] Tests (Red): `Accent` acota −100…100 y **se detiene en los extremos**, no
+- [x] Task: `Waveform` y `Accent`, con sus rangos (FR2, FR3) `45073c4`
+  - [x] Tests (Red): `Accent` acota −100…100 y **se detiene en los extremos**, no
         envuelve, como `Velocity` y `Sustain`; el `init?` devuelve `nil` fuera de
         rango; el default es 0.
-  - [ ] Tests (Red): `Waveform` recorre sus cuatro casos y su `description` es el
+  - [x] Tests (Red): `Waveform` recorre sus cuatro casos y su `description` es el
         término en minúscula (`saw`, `triangle`, `sine`, `pulse`).
-  - [ ] Implementar (Green) en `Packages/Engine/Sources/Engine/Modulation.swift`.
-  - [ ] Documentar el porqué del bipolar y del 0 dentro del rango: es el valor
+  - [x] Implementar (Green) en `Packages/Engine/Sources/Engine/Modulation.swift`.
+  - [x] Documentar el porqué del bipolar y del 0 dentro del rango: es el valor
         que apaga la modulación, no un extremo.
 - [ ] Task: La onda muestreada por Step (FR4, FR5)
   - [ ] Tests (Red): las cuatro ondas valen **0 en el Step 0** —salvo `pulse`,
