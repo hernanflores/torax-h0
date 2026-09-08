@@ -52,13 +52,13 @@ quién conoce el material.
 
 ## FASE 2: EL CABLEADO CON EL TRANSPORTE PARADO
 
-- [~] Task: Los tres caminos adoptan (FR6, NFR3)
-  - [ ] `selectBank`, `selectPattern` y `reloadBank` llaman a la vía de la Fase 1
+- [x] Task: Los tres caminos adoptan (FR6, NFR3) `7274945`
+  - [x] `selectBank`, `selectPattern` y `reloadBank` llaman a la vía de la Fase 1
         en su rama parada, **una línea cada uno y sin lógica**.
-  - [ ] Comprobar que la rama que suena **no** adopta todavía: hasta la Fase 3,
+  - [x] Comprobar que la rama que suena **no** adopta todavía: hasta la Fase 3,
         con el transporte corriendo el material entra en el compás y el modelo no
         se entera.
-  - [ ] Revisar que no queda ningún otro sitio que cambie el material del modelo
+  - [x] Revisar que no queda ningún otro sitio que cambie el material del modelo
         sin avisar — si aparece uno, entra aquí.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
