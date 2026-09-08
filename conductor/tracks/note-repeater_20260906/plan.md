@@ -261,12 +261,12 @@ revisar antes de seguir (NFR1).
   - [x] `preset/README.md`: la tabla de knobs, con los cuatro y los que siguen
         libres. *(Corregido el 2026-09-07: son **dos**, el 15 y el 16, no tres.
         Con Pace en el knob 14 no salen tres.)*
-- [~] Task: Temp y Ctrl All alcanzan a los cuatro (FR17)
-  - [ ] Tests (Red): con [13] hundido, girar REPEATS iguala el valor en los
+- [x] Task: Temp y Ctrl All alcanzan a los cuatro (FR17) — 9fd433a
+  - [x] Tests (Red): con [13] hundido, girar REPEATS iguala el valor en los
         Cycles activos del Track seleccionado y soltar devuelve el de cada uno.
-  - [ ] Tests (Red): con [14] hundido, girar REPEATS desplaza los doce Tracks,
+  - [x] Tests (Red): con [14] hundido, girar REPEATS desplaza los doce Tracks,
         el tope sale de las bases capturadas y soltar devuelve la base exacta.
-  - [ ] Implementación (Green): **debería salir gratis** — los dos gestos operan
+  - [x] Implementación (Green): **debería salir gratis** — los dos gestos operan
         sobre `TrackParameter`. Si hace falta tocar `ControlInput` o
         `ParameterOverlay`, es que hay una lista de parámetros escrita a mano en
         algún sitio: quitarla es parte de la tarea.
