@@ -1,0 +1,46 @@
+Task: Cobertura, estilo y cierre del track
+
+Última tarea de la Fase 7 del track modulation_20260906.
+
+Ficheros:
+- conductor/tracks.md  (el track pasa a [x])
+- conductor/tracks/modulation_20260906/plan.md
+
+LOS NÚMEROS DEL CIERRE, medidos después del arreglo de FR14:
+
+  Engine   878 tests, 0 fallos   98,63% de líneas   umbral 90%
+  MIDI     21 + 747, 0 fallos    92,50% de líneas   umbral 80%
+  App      BUILD SUCCEEDED       no se mide
+
+La de MIDI, medida como manda workflow.md: un solo proceso, .profdata fusionado a
+mano y Engine/Sources excluido del informe. Esa pasada da 7 fallos y son las
+cuatro pruebas de VirtualLoopbackTests más sus repeticiones — el flake de CoreMIDI
+documentado desde el 2026-08-30, que solo aparece ahí. Con la partición de CI la
+suite pasa entera, comprobado.
+
+Ficheros nuevos y tocados con más detalle en el PR.
+
+QUALITY GATES, repasados uno a uno:
+
+- Tests pasan: sí, con la partición de CI.
+- Cobertura sobre umbral en los dos módulos medidos: sí.
+- swift format sobre App y Packages: aplicado, sin cambios pendientes.
+- Sin asignaciones, locks ni await en el camino del scheduler: revisado a mano en
+  advance() y emitRepetitions(). La única salvedad —quarterSine es un static let
+  [Int], global de inicialización perezosa— está anotada en el código, es el
+  mismo idioma que RepeatTime.ordered que la rebanada 5 ya lee desde ese hilo, y
+  lleva escrita la vía para quitarla si algún día se mide que importa.
+- Jitter: no aplica (NFR3), y suspendido desde el 2026-09-02.
+- Engine no importa nada fuera de la stdlib: comprobado con grep —cero imports en
+  todo el paquete— y DependencyBoundaryTests en verde.
+- Vocabulario sin sinónimos: 'LFO' y 'amount' aparecen solo en prosa y en
+  documentación de API, nunca como identificador. Los términos del dominio son
+  modulation, waveform, accent, saw, triangle, sine, pulse.
+- Tipos y funciones públicas documentados: sí, con el porqué y no solo el qué.
+- Sin dependencias de terceros nuevas: ninguna.
+- Documentación actualizada: la Pre Spec con tres notas fechadas, product.md con
+  cuatro ediciones, spec.md con la enmienda de persistencia, y dos documentos de
+  verificación —simulador y dispositivo—.
+
+Queda por hacer: abrir el PR contra main. Se pide al usuario aparte, porque es
+una acción hacia fuera.
