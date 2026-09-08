@@ -272,7 +272,7 @@ revisar antes de seguir (NFR1).
         algún sitio: quitarla es parte de la tarea.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 6: LA PANTALLA
+## FASE 6: LA PANTALLA [checkpoint: f12b5a9]
 
 - [x] Task: El card de Shape, en dos líneas (FR15) — d83e8ee
   - [x] Tests (Red): el texto de la familia trae las dos líneas y los ocho
@@ -289,7 +289,7 @@ revisar antes de seguir (NFR1).
   - [x] `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`.
   - [x] Captura en simulador de la pantalla `track` con las dos líneas, y
         comprobar que el card no desborda a un metro con los ocho valores.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 7: DISPOSITIVO Y CIERRE
 
