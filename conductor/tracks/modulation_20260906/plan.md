@@ -106,7 +106,7 @@ seguir.
   - [x] Implementar (Green).
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: EL `Cycle` LLEVA SU `Modulation`
+## FASE 3: EL `Cycle` LLEVA SU `Modulation` [checkpoint: 0637f44]
 
 - [x] Task: `Modulation` dentro del `Cycle`, sin dejar de ser POD (FR1, NFR2) `309a2ba`
   - [x] Tests (Red): `_isPOD(Cycle.self)` sigue siendo cierto con el campo nuevo.
@@ -145,7 +145,7 @@ seguir.
         `Pattern` de doce Tracks × dieciséis Cycles.
   - [x] Anotar la cifra en la git note del commit, junto a la anterior (~37 KB,
         `load()` ~870 ns), para que la serie siga siendo comparable.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: EL ACENTO SUENA
 
