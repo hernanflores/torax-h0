@@ -1,0 +1,70 @@
+Task: El TrackScheduler aplica la modulación (FR4, FR8)
+
+Primera tarea de la Fase 4 del track modulation_20260906. TDD: los 12 tests se
+escribieron primero y 7 fallaron con la velocity plana en la base.
+
+Ficheros:
+- Packages/Engine/Sources/Engine/Modulation.swift (Groove.modulated)
+- Packages/Engine/Tests/EngineTests/ModulationOffsetTests.swift (4 tests más)
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift (Material.modulation y la
+  composición en advance() y en emitRepetitions())
+- Packages/MIDI/Tests/MIDITests/ModulationInSchedulerTests.swift (creado)
+
+Dónde vive el cambio: Groove.modulated(by:atStep:of:) está en Engine y no en el
+scheduler, porque workflow.md dice que si algo merece un test está donde se
+testea — y una velocity mal compuesta se oye como un acento fuera de sitio. El
+scheduler solo la llama.
+
+Solo toca la velocity. Sustain, Probability, Timing y Delay salen intactos: la
+modulación cambia con cuánta fuerza suena un Step, no cuándo suena ni cuánto
+dura. Es lo que sostiene NFR3 — no mueve ningún instante, así que no hay jitter
+que medir.
+
+DÓNDE se compone, que es la decisión: después de la tirada de Probability y
+después de calcular el instante. Un Step callado o un Step que no es pulso
+euclidiano consumen igualmente su posición del ciclo (FR8), y como el valor sale
+del ÍNDICE y no de un acumulador, eso sale gratis: no hay fase que avanzar ni
+estado que mantener. Los dos casos están fijados por test comparando contra la
+serie densa: un Step que suena vale lo mismo con Probability 100 que con 50, y
+con 5 Pulses que con 16.
+
+UNA DECISIÓN QUE NO ESTABA EN EL PLAN, y conviene que se lea: las repeticiones
+del Note Repeater heredan la velocity YA MODULADA del Pulse. Ramp recorre las
+repeticiones de un Pulse y accent recorre la vuelta del anillo — son dos ejes
+distintos, así que se componen en vez de excluirse. Si no lo hicieran, subir
+Repeats diluiría el acento: el Pulse sonaría acentuado y su tirada no, que es
+justo lo contrario de lo que las dos cosas prometen. La Pre Spec pone a Ramp
+'relativo a la Velocity general del Track', y la Velocity general de ESE Step es
+la modulada. El index.md del track ya lo apuntaba al relacionar las dos
+rebanadas.
+
+El arnés de jitter usa el neutro (Material.modulation devuelve .default para
+.everyStep), por la misma razón por la que ya usa el Groove por defecto y no
+repite: mide la rejilla temporal, no el material musical.
+
+La serie que se emite, fijada por test — triangle, accent +100, Velocity 64,
+16 Steps:
+  64 79 95 111 127 111 95 79 64 49 33 17 1 17 33 49
+Con Velocity 100 la primera mitad recorta contra 127, que es la limitación que
+la spec anota y que el panel de la Fase 6 enseñará:
+  100 115 127 127 127 127 127 115 100 85 69 53 37 53 69 85
+
+REVISIÓN MANUAL DE TIEMPO REAL (NFR1, Quality Gates). En el bucle de ventana no
+entra ninguna asignación, bloqueo, await ni coma flotante: Material.modulation es
+un switch sobre un enum que devuelve un POD de dos bytes; modulated() compara un
+Int y construye un Groove en pila; value(atStep:of:) es aritmética entera y una
+lectura de tabla.
+
+Con una salvedad anotada también en el código: quarterSine es un static let
+[Int], es decir un global de inicialización perezosa. Leer una entrada no asigna,
+pero la PRIMERA lectura del proceso corre el swift_once que construye el array.
+Es el mismo idioma que RepeatTime.ordered, que la rebanada 5 ya lee desde ese
+hilo, así que no se inventa un patrón nuevo. La vía para quitarlo del todo —una
+tupla de tamaño fijo leída con withUnsafePointer— está escrita en el comentario y
+no se paga hasta que haya un motivo medido.
+
+Verificación:
+  swift test --package-path Packages/Engine                869 tests, 0 fallos
+  swift test --package-path Packages/MIDI (partición)      734 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0                         BUILD SUCCEEDED
+Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
