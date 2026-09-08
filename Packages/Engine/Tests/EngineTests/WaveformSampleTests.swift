@@ -160,7 +160,8 @@ final class WaveformSampleTests: XCTestCase {
     /// **Exactamente dos valores en una vuelta**, y ninguno entre ellos.
     func testPulseProducesExactlyTwoValues() {
         for stepCount in [9, 16] {
-            XCTAssertEqual(Set(Self.turn(of: .pulse, steps: stepCount)), [100, -100], "\(stepCount)")
+            XCTAssertEqual(
+                Set(Self.turn(of: .pulse, steps: stepCount)), [100, -100], "\(stepCount)")
         }
     }
 

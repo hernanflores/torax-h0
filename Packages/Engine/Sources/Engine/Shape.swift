@@ -217,6 +217,23 @@ public struct Cycle: Equatable, Sendable {
     /// nada del camino nuevo, igual que un pool vacío no se programa.
     public let noteRepeater: NoteRepeater
 
+    /// Con qué forma y cuánta amplitud se mueve la velocity a lo largo de la
+    /// vuelta.
+    ///
+    /// **Vive en `Cycle` por la misma razón que el Groove y el Note Repeater**:
+    /// el hilo del scheduler necesita la onda y el accent para decidir con
+    /// cuánta fuerza emite un Step, y lo único que ese hilo lee es el snapshot
+    /// publicado. Cuesta dos bytes por Cycle, que es lo que `Modulation`
+    /// documenta.
+    ///
+    /// **Con el neutro no cambia nada de lo entregado**: `accent` en 0 devuelve
+    /// la Velocity base sin tocarla, igual que Repeats en 0 no ejecuta nada del
+    /// camino del Note Repeater.
+    ///
+    /// Cada Cycle lleva el suyo, así que un desarrollo A/B puede acentuar solo
+    /// en el B.
+    public let modulation: Modulation
+
     /// En qué registro está editando los pads este Cycle.
     ///
     /// **Es la única concesión de `Cycle` a la superficie de control**, y está
@@ -233,6 +250,7 @@ public struct Cycle: Equatable, Sendable {
         channel: Channel = .first,
         frame: TonalFrame = TonalFrame(scale: .minor, root: .c),
         noteRepeater: NoteRepeater = .default,
+        modulation: Modulation = .default,
         padOctaveShift: Int = 0
     ) {
         self.shape = shape
@@ -241,6 +259,7 @@ public struct Cycle: Equatable, Sendable {
         self.channel = channel
         self.frame = frame
         self.noteRepeater = noteRepeater
+        self.modulation = modulation
         self.padOctaveShift = padOctaveShift
     }
 
@@ -265,6 +284,7 @@ public struct Cycle: Equatable, Sendable {
         channel: Channel? = nil,
         frame: TonalFrame? = nil,
         noteRepeater: NoteRepeater? = nil,
+        modulation: Modulation? = nil,
         padOctaveShift: Int? = nil
     ) -> Cycle {
         Cycle(
@@ -274,6 +294,7 @@ public struct Cycle: Equatable, Sendable {
             channel: channel ?? self.channel,
             frame: frame ?? self.frame,
             noteRepeater: noteRepeater ?? self.noteRepeater,
+            modulation: modulation ?? self.modulation,
             padOctaveShift: padOctaveShift ?? self.padOctaveShift
         )
     }
