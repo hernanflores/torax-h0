@@ -99,4 +99,37 @@ final class ModulationTypesTests: XCTestCase {
         XCTAssertEqual(Accent(percent: 5)!.advanced(by: -10).percent, -5)
         XCTAssertEqual(Accent(percent: -5)!.advanced(by: 10).percent, 5)
     }
+
+    // MARK: - Cómo se lee
+
+    /// **El signo se ve también en el positivo**, que es la convención que
+    /// `Rotate` y `Delay` ya siguen para los parámetros bipolares: sin él, `34`
+    /// sería ambiguo entre «sube 34» y «el valor es 34».
+    func testAPositiveAccentShowsItsSign() {
+        XCTAssertEqual(Accent(percent: 34)!.description, "+34")
+        XCTAssertEqual(Accent(percent: 100)!.description, "+100")
+        XCTAssertEqual(Accent(percent: 1)!.description, "+1")
+    }
+
+    /// El negativo lo lleva por la interpolación, como el resto del motor.
+    func testANegativeAccentShowsItsSign() {
+        XCTAssertEqual(Accent(percent: -12)!.description, "-12")
+        XCTAssertEqual(Accent(percent: -100)!.description, "-100")
+    }
+
+    /// **El 0 va sin signo.** No es un valor pequeño hacia ningún lado: es el
+    /// que apaga la modulación, y escribirlo `+0` le inventaría una dirección.
+    func testZeroGoesWithoutASign() {
+        XCTAssertEqual(Accent.default.description, "0")
+        XCTAssertEqual(Accent(percent: 0)!.description, "0")
+    }
+
+    /// Vive en `Engine` y no en la vista (NFR6): un formato es exactamente lo que
+    /// `workflow.md` dice que no debe estar donde no hay tests.
+    func testEveryValueOfTheRangeReadsBack() {
+        for percent in Accent.validRange {
+            let text = Accent(percent: percent)!.description
+            XCTAssertEqual(Int(text.replacingOccurrences(of: "+", with: "")), percent)
+        }
+    }
 }

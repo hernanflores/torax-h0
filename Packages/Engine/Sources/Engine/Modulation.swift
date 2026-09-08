@@ -101,6 +101,32 @@ public struct Accent: Equatable, Sendable {
     }
 }
 
+extension Accent: CustomStringConvertible {
+
+    /// Cómo se lee `accent` en pantalla: `+34`, `-12`, `0`.
+    ///
+    /// **El signo se ve también en el positivo.** Es la convención que `Rotate`
+    /// y `Delay` ya siguen para lo bipolar, y aquí es lo que separa «sube 34» de
+    /// «el valor es 34»: sin él, la lectura grande de la pantalla no diría hacia
+    /// dónde se desvía la velocity.
+    ///
+    /// **El 0 va sin signo.** No es un valor pequeño hacia ningún lado — es el
+    /// que apaga la modulación—, y escribirlo `+0` le inventaría una dirección
+    /// que no tiene.
+    ///
+    /// **Sin `%`.** El rango es −100…100 pero no es un porcentaje de nada
+    /// nombrable: lo que desplaza son unidades MIDI, y el factor está en FR6.
+    /// Ponerle el signo diría que es un porcentaje de la Velocity base, que es
+    /// justo lo que no es.
+    ///
+    /// **Vive en `Engine` y no en la vista** (NFR6), por la razón de siempre:
+    /// `workflow.md` dice que si algo en `App` merece un test está en el sitio
+    /// equivocado, y un formato es exactamente eso.
+    public var description: String {
+        percent > 0 ? "+\(percent)" : "\(percent)"
+    }
+}
+
 extension Accent {
 
     /// El accent resultante de mover el slider `delta` unidades.
