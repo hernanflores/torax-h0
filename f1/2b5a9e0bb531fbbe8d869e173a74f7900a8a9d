@@ -21,3 +21,25 @@ Ficheros modificados:
 - App/TrackReadout.swift
 
 Verificación: Engine 800 tests, 0 fallos. xcodebuild iPadOS SUCCEEDED.
+
+--- Verificación de la FASE 6: LA PANTALLA (2026-09-07) ---
+
+Tests automáticos ejecutados:
+  swift test --package-path Packages/Engine → 800, 0 fallos
+  swift test --package-path Packages/MIDI (partición de CI) → 21 (1 skipped) + 687, 0 fallos
+  swift test --package-path Packages/Persistence → 62, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → SUCCEEDED
+  xcodebuild build para simulador (iPad Pro 11-inch) → SUCCEEDED
+
+Verificación en simulador, con capturas: el card de Shape en dos líneas con el
+mismo tamaño de texto que Groove, el card tonal en una sola fila con las ocho
+celdas del pool junto a scale y root, y la tira de Cycles entera.
+
+Dos fallos encontrados y arreglados dentro de la fase:
+1. El card de Shape cedía altura y SwiftUI le encogía el texto a la mitad.
+   Arreglado con .fixedSize vertical (d83e8ee).
+2. Reportado por el usuario en dispositivo: «Cycles está cortado y es incómodo».
+   El card tonal baja de dos filas a una (f12b5a9), verificado con el pool lleno
+   de ocho alturas sembrando Pattern.initial temporalmente.
+
+Confirmación del usuario: pidió seguir con la Fase 7 (2026-09-07).
