@@ -140,10 +140,10 @@ seguir.
         por su posición en el `enum` — el orden de `allCases` lo manda la rejilla
         de la pantalla y reordenarla no puede cambiar lo que suena un Bank
         guardado. Mismo criterio que `scale`.
-- [ ] Task: El coste del snapshot, medido y no supuesto (NFR2)
-  - [ ] Tests (Red): extender `CycleSnapshotCostTests` con el tamaño nuevo del
+- [x] Task: El coste del snapshot, medido y no supuesto (NFR2) `0637f44`
+  - [x] Tests (Red): extender `CycleSnapshotCostTests` con el tamaño nuevo del
         `Pattern` de doce Tracks × dieciséis Cycles.
-  - [ ] Anotar la cifra en la git note del commit, junto a la anterior (~37 KB,
+  - [x] Anotar la cifra en la git note del commit, junto a la anterior (~37 KB,
         `load()` ~870 ns), para que la serie siga siendo comparable.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
