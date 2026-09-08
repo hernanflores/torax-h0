@@ -772,6 +772,52 @@ en cualquier momento.
 
 ---
 
+- [ ] **Track: `ControlInput` no adopta el Pattern del Bank nuevo**
+
+  Encontrado el 2026-09-07 verificando la Fase 4 de `note-repeater_20260906` en
+  dispositivo. **Los parámetros del Bank anterior vuelven en cuanto se gira un
+  knob, incluso sobre un Bank vacío.**
+
+  **La raíz.** `ControlInput` guarda su propia copia del Pattern
+  —`ControlInput.swift:32`, y está documentado por qué: `PatternHandoff.load()`
+  puede descartar una lectura y perder un giro sería un knob que no responde—
+  pero **solo la escribe en su `init`**. Las demás escrituras son ediciones
+  incrementales: un giro, un pad, un canal. No hay ninguna vía para reseedearla
+  con otro Pattern.
+
+  Así que al cambiar de Bank: `selectBank` mueve el `Project`, avisa al
+  transporte y actualiza el `pattern` del modelo —por eso **lo que suena sí
+  cambia**—, pero `controlInput` se queda con el Pattern del Bank anterior. Al
+  primer giro de knob, `TransportModel.swift:260` hace
+  `pattern = controlInput.pattern` y **republica el Pattern viejo entero encima
+  del Bank nuevo**.
+
+  **No son solo los Repeats.** Vuelven Steps, Pulses, Rotate, el pool, el Groove
+  y el marco tonal — el Pattern completo. Se descubrió con el Note Repeater
+  porque un ratchet sobre un Bank que se creía vacío es inconfundible, mientras
+  que el resto pasa por «no cambió nada».
+
+  **Alcanza también a `selectPattern` y a `reloadBank`**, por la misma vía: los
+  tres cambian el material del modelo y ninguno se lo dice a `ControlInput`.
+
+  **Es familia del defecto de abajo, no el mismo.** Aquél es el hilo del
+  scheduler sin vía de vuelta hacia el modelo; éste es el modelo sin vía de ida
+  hacia `ControlInput`. La entrada de abajo dice que «`selectBank` no tiene el
+  problema», y eso resulta ser cierto solo para lo que suena, no para lo que se
+  edita después.
+
+  **La forma del arreglo**, para quien lo tome: una vía en `ControlInput` que
+  adopte un Pattern entero conservando lo que es suyo y no del material —el Track
+  seleccionado, el registro de pads, los modificadores puestos—, llamada desde
+  `selectBank`, `selectPattern` y `reloadBank`. Lo delicado es qué pasa con un
+  Temp o un Ctrl All puesto en el momento del cambio: soltarlos después
+  restauraría valores de un Pattern que ya no está.
+
+  **No bloquea a `note-repeater_20260906`**, que se cierra con este defecto
+  anotado.
+
+---
+
 - [ ] **Track: El cambio de Pattern no llega a la pantalla ni al Project**
 
   Encontrado el 2026-09-07 verificando `persistence_20260907` en dispositivo.
