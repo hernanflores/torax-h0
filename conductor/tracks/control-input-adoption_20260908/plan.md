@@ -107,11 +107,11 @@ quién conoce el material.
 - [x] Task: Cobertura y suite completa `9e1a788`
   - [x] `Engine` ≥90%, `MIDI` ≥80% medida en un proceso e ignorando
         `Engine/Sources`, como dice `workflow.md`.
-- [~] Task: Pull Request
-  - [ ] Rama `fix/control-input-adoption`, PR contra `main`. Cuerpo corto.
-- [ ] Task: Cerrar los dos defectos en el registro
-  - [ ] Marcar este track **y el defecto hermano** —«El cambio de Pattern no
+- [x] Task: Pull Request — [#41](https://github.com/hernanflores/torax-h0/pull/41)
+  - [x] Rama `fix/control-input-adoption`, PR contra `main`. Cuerpo corto.
+- [x] Task: Cerrar los dos defectos en el registro `7cf9661` `6193364`
+  - [x] Marcar este track **y el defecto hermano** —«El cambio de Pattern no
         llega a la pantalla ni al Project»—, que este track absorbe.
-  - [ ] Anotar en el `spec.md` lo que se haya corregido al implementar, con
+  - [x] Anotar en el `spec.md` lo que se haya corregido al implementar, con
         fecha.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
