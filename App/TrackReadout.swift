@@ -339,43 +339,50 @@ struct TonalCard: View {
                 .font(Typography.parameterLine)
                 .foregroundStyle(isActive ? Palette.tonal : Palette.muted)
 
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
+            // **Una sola fila: el marco y el material.** El pool bajaba a un
+            // renglón propio y eso costaba una fila entera de card para ocho
+            // celdas que caben de sobra al lado — con la segunda línea de Shape
+            // dentro, esa fila era lo que dejaba la tira de Cycles cortada
+            // (2026-09-07). El pool tiene un máximo de ocho alturas, así que su
+            // ancho está acotado por construcción.
+            HStack(alignment: .center, spacing: 12) {
                 labelled("scale", scaleName)
-                Spacer(minLength: 8)
                 labelled("root", "\(frame.root)")
-            }
 
-            if pool.isEmpty {
-                // **El pool vacío se dice, no se disimula.** Es el estado de
-                // once Tracks al arrancar: disparan sus Pulses y no tienen
-                // material que emitir.
-                Text(display: "pool \(PitchPool().countDescription)")
-                    .font(Typography.caption)
-                    .foregroundStyle(Palette.muted)
-            } else {
-                // **Celdas de ancho propio, no repartidas.** Con
-                // `maxWidth: .infinity` un pool de una sola altura dibujaba una
-                // celda del ancho del card: parecía un campo de texto vacío en
-                // vez de una nota. El pool tiene de cero a ocho elementos y lo
-                // que hay que ver es cuántos, así que cada uno mide lo suyo y
-                // sobra sitio a la derecha cuando hay pocos.
-                HStack(spacing: 6) {
-                    ForEach(Array(pool.enumerated()), id: \.offset) { _, name in
-                        Text(display: name)
-                            .font(Typography.captionStrong)
-                            .foregroundStyle(Palette.mutedBright)
-                            .frame(minWidth: 38, minHeight: 28)
-                            .background(
-                                Palette.surface,
-                                in: RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
-                            )
-                            .overlay {
-                                RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
-                                    .stroke(Palette.border, lineWidth: Brutalist.stroke)
-                            }
+                if pool.isEmpty {
+                    // **El pool vacío se dice, no se disimula.** Es el estado de
+                    // once Tracks al arrancar: disparan sus Pulses y no tienen
+                    // material que emitir.
+                    Text(display: "pool \(PitchPool().countDescription)")
+                        .font(Typography.caption)
+                        .foregroundStyle(Palette.muted)
+                } else {
+                    // **Celdas de ancho propio, no repartidas.** Con
+                    // `maxWidth: .infinity` un pool de una sola altura dibujaba
+                    // una celda del ancho del card: parecía un campo de texto
+                    // vacío en vez de una nota. Lo que hay que ver es cuántas
+                    // hay, así que cada una mide lo suyo.
+                    HStack(spacing: 4) {
+                        ForEach(Array(pool.enumerated()), id: \.offset) { _, name in
+                            Text(display: name)
+                                .font(Typography.captionStrong)
+                                .foregroundStyle(Palette.mutedBright)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                                .frame(minWidth: 30, minHeight: 26)
+                                .background(
+                                    Palette.surface,
+                                    in: RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+                                )
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: Brutalist.radiusSmall)
+                                        .stroke(Palette.border, lineWidth: Brutalist.stroke)
+                                }
+                        }
                     }
-                    Spacer(minLength: 0)
                 }
+
+                Spacer(minLength: 0)
             }
         }
         .padding(8)
