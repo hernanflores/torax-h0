@@ -23,3 +23,23 @@ Ficheros:
 
 Verificación: xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
 → BUILD SUCCEEDED. Sin tests: App no se mide.
+
+--- Verificación de fase: FASE 2 — EL CABLEADO CON EL TRANSPORTE PARADO ---
+
+Comandos:
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+  swift test --package-path Packages/Engine
+  swift test --package-path Packages/Persistence
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+
+Resultado: MIDI 21 + 701, Engine 800, Persistence 62, 0 fallos. BUILD SUCCEEDED.
+
+Verificación manual: **diferida a la Fase 4**, por decisión del usuario el
+2026-09-08 — «Avancemos para probar con el transport corriendo». El plan de
+verificación propuesto para esta fase (cambio de Bank a uno vacío, selectPattern,
+reloadBank, Track seleccionado, Temp y Ctrl All hundidos) entra tal cual en la
+verificación en dispositivo de la Fase 4, que ya lo pedía junto con la rama que
+suena. Probar dos veces el mismo iPad no aportaba nada.
+
+Confirmación del usuario: «Avancemos para probar con el transport corriendo».
