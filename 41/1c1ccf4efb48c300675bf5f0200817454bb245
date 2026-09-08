@@ -80,3 +80,46 @@ Verificación:
   swift test --package-path Packages/Engine        878 tests, 0 fallos
   xcodebuild build -scheme ToraxH0                 BUILD SUCCEEDED
 Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
+
+--- VERIFICACIÓN DE FASE 6: EL ACENTO SE VE ---
+
+Comandos:
+  swift test --package-path Packages/Engine --enable-code-coverage
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  Simulador iPad Pro 11 (iOS 26.3), dos capturas con simctl.
+
+Resultado: Engine 878 tests, 0 fallos (869 al abrir la fase, +9 en dos tareas).
+App BUILD SUCCEEDED.
+
+Cobertura: Modulation.swift 100% de líneas (93/93), regiones y funciones. Engine
+en total 98,63%, contra el umbral de 90%. App/ModulationScreen.swift no se mide
+(workflow.md, Coverage Requirements).
+
+Ficheros de código de la fase y su test:
+  Modulation.swift          -> ModulationTypesTests, ModulationOffsetTests
+  App/ModulationScreen.swift -> no se mide; la lógica que tendría está en Engine
+
+Jitter: no aplica (NFR3), y suspendido desde el 2026-09-02.
+
+Pasos de verificación manual propuestos:
+1. git show 411c1cc — el dato del panel vive en Engine. Cycle.velocityResponse da
+   una entrada por Step con la velocity final y si dispara; los que no disparan
+   llevan igualmente su velocity, que es lo que hace que el panel enseñe la onda
+   entera y no cuatro barras sueltas.
+2. El imantado es solo el 0, y vive en la vista porque lo que hace que un punto
+   esté 'cerca' son puntos de pantalla y no unidades del parámetro.
+3. git show ab13f2c — la lectura: +34, -12, 0. Signo también en el positivo, el 0
+   sin signo, sin % porque desplaza unidades MIDI.
+
+Capturas: con accent 0 las dieciséis barras son iguales y el pulgar está en el
+centro exacto; con accent +100 las barras se aplanan contra 127 mientras la línea
+de la onda sigue subiendo por encima — el recorte, visible, que es lo que FR12
+pide.
+
+Lo que el simulador NO verifica: sin destinos MIDI no hay transporte, así que el
+playhead del panel (FR14) no se ha visto correr. Queda para el dispositivo.
+
+Se puso delante del usuario que las tres tareas van en un solo commit, por la
+misma razón que en la Fase 5.
+
+Confirmación del usuario: «ok» — aprobado sin cambios.
