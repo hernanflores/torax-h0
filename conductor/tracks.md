@@ -760,7 +760,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: v2 rebanada 6 — LFO Modulation: waveform y accent**
+- [x] **Track: v2 rebanada 6 — LFO Modulation: waveform y accent**
   *Link: [conductor/tracks/modulation_20260906/index.md](./tracks/modulation_20260906/index.md)*
 
   Abierto el 2026-09-06. **Saca el LFO de «Fuera de v1»** de `product.md` —la

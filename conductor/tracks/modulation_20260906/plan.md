@@ -252,13 +252,13 @@ seguir.
         arrastrar cerca del centro deja `accent` en 0 exacto, y un toque simple
         sobre la pista salta a ese valor. `simctl` no toca la pantalla, así que
         es aquí donde se comprueba (criterio 11). **Cumple, 2026-09-08.**
-- [~] Task: Cobertura, estilo y cierre del track
-  - [ ] `Engine` ≥90% y `MIDI` ≥80%, esta última medida como dice `workflow.md`:
+- [x] Task: Cobertura, estilo y cierre del track
+  - [x] `Engine` ≥90% y `MIDI` ≥80%, esta última medida como dice `workflow.md`:
         un solo proceso, `.profdata` fusionado a mano, `Engine/Sources` fuera del
         informe.
-  - [ ] `swift format` sobre `App` y `Packages`.
-  - [ ] Repasar los Quality Gates uno a uno, incluido que `Engine` no importe
+  - [x] `swift format` sobre `App` y `Packages`.
+  - [x] Repasar los Quality Gates uno a uno, incluido que `Engine` no importe
         nada fuera de la stdlib.
-  - [ ] Actualizar `conductor/tracks.md` y abrir el PR contra `main` — cuerpo
+  - [x] Actualizar `conductor/tracks.md` y abrir el PR contra `main` — cuerpo
         corto, cinco líneas y la tabla de verificación (`workflow.md`).
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
