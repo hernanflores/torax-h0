@@ -147,7 +147,7 @@ seguir.
         `load()` ~870 ns), para que la serie siga siendo comparable.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 4: EL ACENTO SUENA
+## FASE 4: EL ACENTO SUENA [checkpoint: e89e0d6]
 
 - [x] Task: El `TrackScheduler` aplica la modulación (FR4, FR8) `4454140`
   - [x] Tests (Red): con `accent = 0` la secuencia emitida es **idéntica** a la
@@ -173,7 +173,7 @@ seguir.
         muteado avanza, y la modulación va con ella.
   - [x] Implementar (Green) si hace falta; si los tests pasan sin tocar nada, la
         tarea es el test y queda dicho en la git note.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: LA QUINTA PESTAÑA Y LAS CUATRO ONDAS
 
