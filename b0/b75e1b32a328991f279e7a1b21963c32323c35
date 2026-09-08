@@ -1,0 +1,53 @@
+Task: La onda muestreada por Step (FR4, FR5)
+
+Segunda tarea de la Fase 2 del track modulation_20260906. TDD: los 19 tests se
+escribieron primero y fallaron con 'value of type Waveform has no member value'.
+
+Ficheros:
+- Packages/Engine/Sources/Engine/Modulation.swift (extendido)
+- Packages/Engine/Tests/EngineTests/WaveformSampleTests.swift (creado)
+
+API: Waveform.value(atStep:of:) -> Int, en −100…100.
+
+La decisión que ordena todo lo demás: un solo número intermedio,
+t = 400 * step / stepCount — la fase en cuartos de vuelta por cien. 0 en el
+arranque, 100 en el cuarto, 200 en la mitad, 300 en los tres cuartos. Las cuatro
+formas son cuatro lecturas de ese mismo t, y eso es lo que garantiza que las
+cuatro tengan el pico en el mismo sitio: cambiar de forma cambia el recorrido,
+no dónde cae el acento.
+
+- triangle: t subiendo, 200−t bajando, t−400 en el último cuarto. Los tres
+  tramos coinciden en sus fronteras, así que sale continua sin caso especial.
+- saw: la misma subida hasta el cuarto y UN SOLO corte, cayendo al fondo y
+  volviendo a subir a un tercio de la pendiente — le quedan tres cuartos de
+  vuelta para recorrer lo que la subida hizo en uno. El corte va en p=1/4 y no a
+  media vuelta, que es lo que alinea su pico con el de las otras tres; así lo
+  pide FR5.
+- sine: tabla escrita de un cuarto de onda (101 enteros, round(100·sin(pi·i/200)))
+  y las otras tres cuartas partes por simetría. Cuesta 101 enteros en vez de 400.
+  No se calcula con sin(): Engine no importa nada fuera de la stdlib (NFR5) y
+  esto corre en el hilo del scheduler (NFR1).
+- pulse: t < 200 arriba, abajo después. Con Steps impares el Step del medio cae
+  en la mitad alta, porque t < 200 equivale a 2·step < stepCount — misma regla,
+  sin caso especial. Acentúa ceil(steps/2) de steps, y queda fijado por test con
+  9 y 7 Steps.
+
+Dos defensas que no son adorno:
+- El índice envuelve sobre la vuelta, como Cycle.triggers(atStep:), corrigiendo
+  el signo del módulo de Swift. Es lo que hace que 'un ciclo por vuelta' sea
+  cierto también si el llamante pasa un Step absoluto.
+- stepCount no positivo devuelve el centro. Steps valida 1…64 y no puede
+  producirlo, pero esto corre en el hilo del scheduler y ahí una división por
+  cero es un crash, no un valor raro.
+
+Casos literales fijados por test (arrays completos de una vuelta de 16):
+  triangle  0 25 50 75 100 75 50 25 0 −25 −50 −75 −100 −75 −50 −25
+  saw       0 25 50 75 100 −92 −84 −75 −67 −59 −50 −42 −34 −25 −17 −9
+  sine      0 38 71 92 100 92 71 38 0 −38 −71 −92 −100 −92 −71 −38
+  pulse     ocho +100 y ocho −100
+Y una barrida exhaustiva: ninguna forma sale de −100…100 en ninguna longitud de
+vuelta de 1 a 64, que es la invariante de la que depende el acotado del offset.
+
+Verificación: swift test --package-path Packages/Engine
+Engine 830 tests, 0 fallos (811 antes de la tarea, +19).
+Sin medición de jitter: NFR3, y suspendida desde el 2026-09-02.
