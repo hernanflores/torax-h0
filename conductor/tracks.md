@@ -701,7 +701,7 @@ escalón es el que se nota.
 
 ---
 
-- [~] **Track: v2 rebanada 5 — Note Repeater: Repeats, Time, Ramp y Pace**
+- [x] **Track: v2 rebanada 5 — Note Repeater: Repeats, Time, Ramp y Pace** — los cuatro knobs suenan y se verificaron en iPad; **sin medición de jitter**, por la suspensión del 2026-09-02
   *Link: [conductor/tracks/note-repeater_20260906/index.md](./tracks/note-repeater_20260906/index.md)*
 
   Abierto el 2026-09-06. **Saca el Note Repeater de «Fuera de v1»** de
@@ -725,6 +725,38 @@ escalón es el que se nota.
   **No lleva medición de jitter**, y es el segundo cambio desde la suspensión del
   2026-09-02 que toca la rejilla temporal. Aquí no se abre excepción —el primero,
   `external-clock_20260903`, sí la abrió—: se verifica tocando.
+
+  **Cerrado el 2026-09-07**, en siete fases. `Engine` 800 tests al 98,54%, `MIDI`
+  708 al 92,65%, `Persistence` 62 al 97,52%.
+
+  **Lo que entrega:** los cuatro parámetros en el `Cycle` —cuatro bytes por
+  Cycle, el 2% del snapshot—, la tirada colgando de cada Pulse con su corte por
+  el Pulse siguiente, la velocity de la rampa y el gate sobre el hueco de cada
+  repetición, Probability decidiendo sobre todas las notas, los cuatro knobs en
+  los CC 79, 80, 81 y 83, el preset en su versión 4, y el card de Shape en dos
+  líneas.
+
+  **Dos cosas que el plan no tenía y entraron por enmienda.** La **persistencia
+  de los cuatro**: la rebanada 4 llegó a `main` después de escribirse este plan y
+  añadir un parámetro al `Cycle` sin tocar `CycleRecord` habría perdido Repeats,
+  Time, Ramp y Pace al guardar. `schemaVersion` se queda en 1 y las claves nuevas
+  se leen con default neutro, así que los Banks ya escritos siguen abriendo. Y el
+  **preset adelantado a la Fase 2**, porque el invariante «todo `TrackParameter`
+  tiene su controlador» deja la suite roja hasta que el preset declara los CC.
+
+  **El número que decidió el diseño:** `NoteRepeater` guarda cuatro `Int8` y no
+  sus cuatro tipos. `RepeatTime` envuelve una `Division` —dos palabras— y
+  almacenarla entera habría subido el snapshot un 21% en vez del 2% que NFR2
+  presupone.
+
+  **Verificado en dispositivo, los ocho bloques del guion.** Incluido el que
+  sustituye al arnés: con Repeats 8, Time 1/128 y varios Tracks a la vez la
+  tirada no se arrastra, el swing la lleva entera y Sustain al 200% no deja notas
+  colgadas. Ver `device-verification.md`.
+
+  **Deja un defecto encontrado al verificar, que no es suyo:** `ControlInput` no
+  adopta el Pattern del Bank nuevo, así que el primer giro de knob después de
+  cambiar de Bank republica el Pattern anterior entero. Tiene track propio arriba.
 
 ---
 
