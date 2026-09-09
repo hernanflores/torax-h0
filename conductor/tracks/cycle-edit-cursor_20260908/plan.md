@@ -70,7 +70,15 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
         dedo.**
   - [x] Revisar que ninguna otra vista dependía de que la celda cambiara el
         rango al primer toque.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) — `e8a47d8`
+  - `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`:
+    BUILD SUCCEEDED.
+  - Suites verdes: `Engine` 888, `MIDI` 874 (1 skipped), `Persistence` 64.
+  - Sin tests para el cambio de `App`, que no se mide (`workflow.md`). La lógica
+    que sí se testea —el acotado y el publicar— se quedó en la Fase 1.
+  - **Verificación manual pendiente**, y es la que decide esta fase: el reparto
+    tap/hold de SwiftUI no se comprueba compilando. Los pasos están en los dos
+    subtasks abiertos de arriba.
 
 ## FASE 3: DISPOSITIVO Y CIERRE
 
