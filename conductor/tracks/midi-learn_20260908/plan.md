@@ -204,17 +204,27 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
 
 ## FASE 6: LA PANTALLA
 
-- [ ] Task: Aprender desde la pantalla `midi` (FR6, FR11)
-  - [ ] Elegir el destino, entrar en aprendizaje, ver qué se está esperando y
+- [x] Task: Aprender desde la pantalla `midi` (FR6, FR11) `cbe8336`
+  - [x] Elegir el destino, entrar en aprendizaje, ver qué se está esperando y
         salir. **Sin modal que bloquee con el transporte corriendo**
         (`product-guidelines.md`).
-  - [ ] Enseñar qué destinos han quedado **sin control** tras un aprendizaje
-        (FR4, FR5): un destino mudo que no se anuncia parece un fallo.
-  - [ ] El botón de volver al preset de fábrica (FR18).
-  - [ ] Sobre el chrome de `screens-redesign_20260906`, sin inventar un lenguaje
-        visual nuevo.
-  - [ ] La lógica que merezca un test **no vive aquí** (`workflow.md`): si
-        aparece una decisión en `App`, baja a `MIDI`.
+  - [x] Volver a pulsar el destino que espera cancela: la vía corta de FR9.
+  - [x] Enseñar qué destinos han quedado **sin control** tras un aprendizaje
+        (FR4, FR5), en el orden del dominio y antes que nada.
+  - [x] El botón de volver al preset de fábrica (FR18).
+  - [x] Sobre el chrome de `screens-redesign_20260906`, sin inventar un lenguaje
+        visual nuevo: el mismo `Card`, el mismo `brutalistControl`.
+  - [x] La lógica que merezca un test **no vive aquí**: el listado de mudos y la
+        regla de asignación están en `ControlMapping`, y en `App` queda el
+        cableado.
+  - [x] **Un mensaje que aprendió no es una edición**: el corte en `apply(_:)`
+        guarda el mapeo y vuelve, en vez de marcar el Pattern como editado y
+        anunciar un giro que no ocurrió.
+  - [x] El mapeo se restaura en el `init` desde el `Project` y se guarda con los
+        ajustes de sesión.
+  - [ ] **Comprobación visual y funcional: de dispositivo.** El simulador no
+        tiene fuentes MIDI —no llega ningún CC— y desde aquí no se puede tocar la
+        pestaña `midi`. Va en la Fase 7.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 7: DISPOSITIVO, MEDICIÓN Y CIERRE DE LA v1
