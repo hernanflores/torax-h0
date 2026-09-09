@@ -56,18 +56,19 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
         `number <= activeCount`.
   - [x] Una celda fuera del rango activo no hace nada al pulsarla: el gesto
         descarta `number > activeCount` antes de invocar la vía.
-  - [ ] Comprobar en simulador que el contorno del Cycle en edición se mueve, que
-        es lo único que el simulador puede verificar de este track. **Pendiente:
-        lo hace el usuario, no hay forma de tocar la pantalla desde aquí.**
+  - [x] Comprobar que el contorno del Cycle en edición se mueve. **Se comprobó
+        directamente en el iPad y no en simulador**, que es mejor prueba: ver
+        `device-verification.md`.
 - [x] Task: Mantener cambia cuántos están activos (FR6, FR7) — `e8a47d8`, mismo commit que la anterior: partir un toque en dos gestos no se entrega a medias
   - [x] El mantenido llama a `setActiveCycleCount`, que es lo que la celda hacía
         hasta hoy.
   - [x] **Dispara al cumplirse el tiempo, no al soltar** (FR6).
   - [x] **Después de disparar, soltar no elige** (FR7): un toque, una cosa.
   - [ ] Probar los estados feos con el dedo: mantener y arrastrar fuera de la
-        celda, mantener y soltar sobre otra, dos dedos a la vez. Ninguno deja el
-        cursor ni el rango en un valor que nadie pidió. **Pendiente: con el
-        dedo.**
+        celda, mantener y soltar sobre otra, dos dedos a la vez. **No se
+        probaron.** El reparto principal —mantenido que dispara y soltada que no
+        elige— sí se verificó en iPad; estos son los bordes. Si alguno deja el
+        cursor donde nadie pidió, se abre defecto.
   - [x] Revisar que ninguna otra vista dependía de que la celda cambiara el
         rango al primer toque.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) — `e8a47d8`
