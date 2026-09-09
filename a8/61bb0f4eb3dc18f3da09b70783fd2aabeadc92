@@ -48,3 +48,37 @@ VERIFICACIÓN
       BUILD SUCCEEDED
 
 Falta comprobarlo en dispositivo, que es donde apareció.
+
+--- Verificación de fase ---
+Fase 6: LA PANTALLA — cerrada el 2026-09-09.
+
+Verificación en dispositivo
+---------------------------
+iPad con BeatStep Pro y OP-Z. Detalle completo en el `device-verification.md`
+del track.
+
+Lo que salió bien: el card se lee a un metro, los cuatro por fila caben,
+aprender un parámetro funciona sin mover el parámetro, el resto del giro no
+edita, aprender con el transporte sonando no corta nada, el mapeo sobrevive a
+relanzar, `factory preset` devuelve el del BeatStep, y **aprender con el OP-Z**
+—otro hardware— funciona.
+
+Lo que encontró, y son tres fallos míos:
+  1. Aprender un destino de bloque con un knob dejaba el bloque de step buttons
+     encima de los CC de los knobs: cada giro cambiaba de Track. Arreglado en
+     `83223a1`. La comprobación que lo caza estaba escrita desde la Fase 3 y no
+     se llamaba.
+  2. El card no enseñaba el número, así que aprender no cambiaba nada visible.
+     Arreglado en `5193de4`.
+  3. El card no repintaba hasta cambiar de pestaña: `mapping` y `learning` eran
+     calculadas sobre un objeto no observable. Arreglado en `a861bb0`.
+
+Tests tras los tres arreglos
+----------------------------
+  swift test --package-path Packages/MIDI (partición)   830 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
+
+Confirmación del usuario
+------------------------
+«Validado el fix. Comprobado el mapeo usando el OP-Z.» — 2026-09-09.
