@@ -224,3 +224,91 @@ final class EditingCycleTouchPathTests: XCTestCase {
         XCTAssertEqual(published.count, 0)
     }
 }
+
+/// Tests de que el knob y la pantalla entran por la misma puerta (FR10).
+///
+/// **Si no entraran por la misma, la pantalla mentiría** sobre lo que el
+/// hardware acaba de hacer: es el criterio que `TrackSelectorView` ya declara
+/// para los Tracks. El knob 13 se mueve por deltas y la celda fija un índice,
+/// pero los dos escriben el mismo cursor y publican igual.
+final class EditingCycleSameDoorTests: XCTestCase {
+
+    private let cycleKnob = ControlMapping.beatStepPro.editingCycleController!
+    private let clockwise: UInt8 = 0x01
+    private let counterClockwise: UInt8 = 0x7F
+
+    private func cycle() -> Cycle {
+        Cycle(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!),
+            pool: PitchPool().inserting(Pitch(48)!)
+        )
+    }
+
+    private func makeInput(activeCycles: Int = 4) -> ControlInput {
+        var pattern = Pattern()
+        for index in 0..<Pattern.trackCount {
+            pattern = pattern.replacing(
+                Track(cycle()).withActiveCount(activeCycles), at: index)
+        }
+        return ControlInput(pattern: pattern, publish: { _ in })
+    }
+
+    private func turn(_ input: ControlInput, by value: UInt8) {
+        input.receive(
+            .controlChange(channel: MIDIChannel(1)!, controller: cycleKnob, value: value))
+    }
+
+    /// Llegar al Cycle 3 con el knob y llegar con la vía nueva deja **el mismo
+    /// `Track`**, no solo el mismo índice.
+    func testBothPathsLeaveTheSameTrack() {
+        let byKnob = makeInput()
+        let byTouch = makeInput()
+
+        turn(byKnob, by: clockwise)
+        turn(byKnob, by: clockwise)
+        byTouch.setEditingCycle(2)
+
+        XCTAssertEqual(byKnob.pattern.track(at: 0), byTouch.pattern.track(at: 0))
+    }
+
+    /// Alternar los dos no descuadra nada: el knob sigue contando desde donde lo
+    /// dejó el dedo, y al revés.
+    func testAlternatingThemKeepsOneCursor() {
+        let input = makeInput()
+
+        input.setEditingCycle(3)
+        turn(input, by: counterClockwise)
+        XCTAssertEqual(input.pattern.track(at: 0)?.editing, 2, "el knob no contó desde el dedo")
+
+        input.setEditingCycle(0)
+        turn(input, by: clockwise)
+        XCTAssertEqual(input.pattern.track(at: 0)?.editing, 1)
+    }
+
+    /// El knob conserva su acotado al rango activo después de pasar por la vía
+    /// pública: no se frena en los dieciséis.
+    func testTheKnobStillStopsAtTheActiveRange() {
+        let input = makeInput(activeCycles: 3)
+
+        for _ in 0..<10 { turn(input, by: clockwise) }
+        XCTAssertEqual(input.pattern.track(at: 0)?.editing, 2, "pasó del último activo")
+
+        for _ in 0..<10 { turn(input, by: counterClockwise) }
+        XCTAssertEqual(input.pattern.track(at: 0)?.editing, 0, "pasó del primero")
+    }
+
+    /// Y sigue sin publicar contra un tope.
+    func testTheKnobStillDoesNotPublishAgainstAnEnd() {
+        let input = makeInput(activeCycles: 2)
+
+        XCTAssertTrue(
+            input.receive(
+                .controlChange(
+                    channel: MIDIChannel(1)!, controller: cycleKnob, value: clockwise)))
+        XCTAssertFalse(
+            input.receive(
+                .controlChange(
+                    channel: MIDIChannel(1)!, controller: cycleKnob, value: clockwise)),
+            "publicó sin cambiar nada")
+    }
+}

@@ -766,17 +766,17 @@ public final class ControlInput: @unchecked Sendable {
     ///
     /// Girar contra un extremo no publica, por la misma razón que Steps o
     /// Division: mandar un snapshot idéntico es trabajo y ruido para nada.
+    ///
+    /// **Es la traducción del knob a la vía táctil, y nada más** (FR10): el
+    /// delta se convierte en índice y `setEditingCycle(_:)` decide el resto. El
+    /// knob y la celda del `CycleStrip` llevan al mismo cursor, así que la
+    /// pantalla no puede mentir sobre lo que el hardware acaba de hacer.
     private func moveEditingCycle(by delta: Int) -> Bool {
         guard delta != 0, let current = pattern.track(at: selectedTrackIndex) else {
             return false
         }
 
-        let moved = current.withEditing(current.editing + delta)
-        guard moved != current else { return false }
-
-        pattern = pattern.replacing(moved, at: selectedTrackIndex)
-        publish(pattern)
-        return true
+        return setEditingCycle(current.editing + delta)
     }
 
     /// Fija el Cycle en edición del Track seleccionado (FR1).
