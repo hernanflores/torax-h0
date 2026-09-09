@@ -49,3 +49,40 @@ Ficheros modificados
 --------------------
   conductor/tracks/midi-learn_20260908/spec.md   FR17 resuelto + el hallazgo
   conductor/tracks/midi-learn_20260908/plan.md   Fase 5 concretada, tarea nueva
+
+--- Verificación de fase ---
+Fase 1: LAS DOS DECISIONES — cerrada el 2026-09-09.
+
+Tests ejecutados
+----------------
+  swift test --package-path Packages/Engine
+      878 tests, 0 fallos
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+      21 tests, 1 saltado, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+      747 tests, 0 fallos
+  swift test --package-path Packages/Persistence
+      62 tests, 0 fallos
+
+La fase no tocó código —solo ficheros .md—, así que la suite se corrió para
+dejar línea base verde antes de que la Fase 2 empiece a escribir.
+
+`Persistence` falló en la primera pasada por un `.build` local rancio: un
+`Cycle.init` con firma anterior al Note Repeater. En un worktree limpio de `main`
+pasaba, así que no era del cambio. Se borró `Packages/Persistence/.build` y pasa.
+No tiene relación con el flake `clientCreationFailed(-50)`.
+
+Verificación manual
+-------------------
+Sin dispositivo: la fase son dos decisiones escritas. Lo revisado:
+  1. workflow.md, «Medición de jitter: suspendida» — nota del 2026-09-09 con el
+     coste y la vuelta atrás.
+  2. workflow.md, paso 7 — la excepción «antes de cerrar v1, una medición final»
+     tachada y anulada. Las dos reglas ya no se contradicen.
+  3. spec.md FR19 — la resolución y su consecuencia sobre la Fase 7.
+  4. spec.md FR17 — campo opcional, schemaVersion 1, con el porqué.
+  5. spec.md, hallazgo — `migrated(_:)` documentado como enchufado sin estarlo.
+
+Confirmación del usuario
+------------------------
+«Si» — 2026-09-09.
