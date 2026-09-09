@@ -20,19 +20,19 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
 
 ## FASE 1: LA VÍA PÚBLICA EN `ControlInput`
 
-- [ ] Task: `ControlInput` fija el Cycle en edición (FR1, FR2, FR3, FR4)
-  - [ ] Tests (Red): fijar el Cycle 3 con cuatro activos mueve `editing` a 3 y
+- [x] Task: `ControlInput` fija el Cycle en edición (FR1, FR2, FR3, FR4) — `5da26f9`
+  - [x] Tests (Red): fijar el Cycle 3 con cuatro activos mueve `editing` a 3 y
         **publica** el snapshot.
-  - [ ] Tests (Red): el siguiente giro de knob edita **ese** Cycle y deja los
+  - [x] Tests (Red): el siguiente giro de knob edita **ese** Cycle y deja los
         otros quince intactos — que es el fallo reportado, escrito como test.
-  - [ ] Tests (Red): fijar un índice **fuera del rango activo** se acota, no
+  - [x] Tests (Red): fijar un índice **fuera del rango activo** se acota, no
         revienta y no inventa un Cycle (FR2).
-  - [ ] Tests (Red): fijar el índice que ya estaba **no publica** (FR4).
-  - [ ] Tests (Red): el cursor de **reproducción** no se mueve, y ni una nota de
+  - [x] Tests (Red): fijar el índice que ya estaba **no publica** (FR4).
+  - [x] Tests (Red): el cursor de **reproducción** no se mueve, y ni una nota de
         material cambia (FR3).
-  - [ ] Tests (Red): con el toque congelado —`isTouchFrozen`— no hace nada, como
+  - [x] Tests (Red): con el toque congelado —`isTouchFrozen`— no hace nada, como
         `setActiveCycleCount`.
-  - [ ] Implementación (Green): la vía pública junto a `setActiveCycleCount` y
+  - [x] Implementación (Green): la vía pública junto a `setActiveCycleCount` y
         `setChannel`, apoyada en `Track.withEditing(_:)` sin duplicar el acotado.
 - [ ] Task: El knob y la pantalla entran por la misma puerta (FR10, NFR1)
   - [ ] Tests (Red): mover el cursor con el knob 13 y con la vía nueva deja el
