@@ -42,30 +42,60 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
 
 ## FASE 1: DIAGNÓSTICO EN DISPOSITIVO — **requiere iPad y BeatStep Pro**
 
-- [ ] Task: Reproducir los dos síntomas con el controlador delante
-  - [ ] Start desde el BeatStep con reloj externo: la secuencia suena y el botón
-        sigue en *play*. Anotar qué enseña la barra en ese momento.
+- [~] Task: Reproducir los dos síntomas con el controlador delante
+  - [x] Start desde el BeatStep con reloj externo: la secuencia suena y el botón
+        sigue en *play*. Reproducido el 2026-09-09. Pulsarlo **no para**: llama a
+        `play()`, que muere en el `guard !isPlaying` de `Transport.play()`.
   - [x] ~~Mover el tempo del maestro: la barra no lo sigue.~~ **Desmentido el
         2026-09-09**: la barra sí lo sigue. Ver la enmienda de arriba.
-  - [ ] Confirmar que **`Transport` sí se enteró**: `ExternalStartTests` cubre la
-        transición, así que el fallo está en el aviso y no en el transporte.
-- [ ] Task: Instrumentar y **mirar los números**, no la pantalla (NFR6)
-  - [ ] Contar, en un minuto de reloj externo a 120 bpm: ticks recibidos y
-        transiciones de transporte. Los dos números van a la git note.
-  - [ ] Es lo que decide FR5 con datos: cuántas invalidaciones costaría avisar
-        por tick y cuántas por transición.
+  - [x] Confirmar que **`Transport` sí se enteró**: confirmado con números, no
+        solo por `ExternalStartTests`. En t=90 s el contador de transiciones sube
+        a 2 y `transport.isPlaying` pasa a `false` mientras `model.isPlaying`
+        sigue en `true`.
+
+  > **Hallazgo del 2026-09-09 — el defecto es simétrico, y el spec contaba la
+  > mitad.** La copia `TransportModel.isPlaying` no se entera de un Start **ni de
+  > un Stop**: en t=90 s el maestro paró, el transporte se enteró y la copia se
+  > quedó en `true`. Los dos sentidos, no uno.
+  >
+  > **Y hay un tercer síntoma que nadie había anotado: el anillo.** El playhead
+  > se dibuja con `TimelineView(.animation(paused: !model.isPlaying))`
+  > (`ContentView.swift:369`), colgado de la misma copia — así que con un Start
+  > del maestro **el playhead no se mueve aunque la secuencia suene**. Lo arregla
+  > el mismo cambio; queda escrito para poder verificarlo en la Fase 4.
+- [~] Task: Instrumentar y **mirar los números**, no la pantalla (NFR6)
+  - [x] Contar, en dispositivo con reloj externo: ticks recibidos y transiciones
+        de transporte. Medido el 2026-09-09, en 220 s a 124 bpm.
+  - [x] Es lo que decide FR5 con datos: **~11.000 invalidaciones** si se avisara
+        por tick, **4** si se avisa por transición. Tres órdenes de magnitud.
   - [x] ~~Comprobar con qué frecuencia cambia el tempo redondeado a un
         decimal.~~ **Se cae el 2026-09-09**: FR4 no se implementa, así que no
         hay comparación cuya cadencia haya que dimensionar.
-  - [ ] Quitar la instrumentación antes de cerrar la fase, o dejarla bajo
-        `#if DEBUG` como `handoffLoadCount`, que es el precedente.
-- [ ] Task: Confirmar o desmentir la carrera sobre `scheduler`
-  - [ ] Leer los dos sitios que la escriben desde el hilo de recepción
-        —`startPlaying(atHostTime:)` y `stop()`— y el que la lee al dibujar.
-  - [ ] Decidir si el flag de FR2 puede responder `isPlaying` y **quitar** la
-        lectura, o si se queda como límite conocido con su ruta escrita (NFR2).
-  - [ ] Si el diagnóstico dice que merece track propio, abrirlo aquí y no
-        arreglarlo de paso — que es exactamente lo que este defecto enseñó.
+  - [x] Instrumentación **bajo `#if DEBUG`**, como `handoffLoadCount`. Se
+        conserva hasta la Fase 4 —el criterio 6 exige contar otra vez con el
+        arreglo puesto— y se quita en la tarea de cierre.
+
+  > **Los números, para que no haya que releer la consola.** Tramo estable,
+  > t=100 s → t=210 s: 5544 ticks en 110 s → **50,4 ticks/s**. Corregido por la
+  > deriva del `Task.sleep(1 s)` —cada «segundo» del contador es algo más largo
+  > que uno real— quedan ~49,6/s, que es exactamente 124 bpm × 24 PPQN / 60. **El
+  > estimador de tempo dice la verdad**: la diferencia aparente no era del reloj
+  > sino del cronómetro, y no hay nada que perseguir ahí.
+  >
+  > Transiciones en los 220 s: **4** — dos arranques y dos paradas del maestro.
+- [~] Task: Confirmar o desmentir la carrera sobre `scheduler`
+  - [x] Leído. La escriben `startPlaying(atHostTime:)` y `stop()`, a las que
+        `receive` llama desde el hilo de recepción de CoreMIDI; la lee
+        `Transport.isPlaying`, y por ahí el hilo principal al dibujar. **La
+        carrera existe y es anterior a este track.**
+  - [x] **Decidido: se quita la lectura.** El flag de FR2 puede responder
+        `isPlaying`, así que `Transport.isPlaying` pasa a leer el atómico y el
+        hilo principal deja de tocar `scheduler` por ese camino (NFR2). No se
+        queda como límite conocido: desaparece.
+  - [x] **No hace falta track propio.** Lo que queda después es la escritura de
+        `scheduler` desde el hilo de recepción sin lector concurrente en el hilo
+        principal. Se anota en el `spec.md` al cerrar, con su ruta, y no se
+        arregla de paso — que es lo que este defecto enseñó.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: EL TRANSPORTE PUBLICA SU ESTADO

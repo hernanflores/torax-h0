@@ -330,7 +330,53 @@ final class TransportModel {
     /// Mira si toca escribir. La llama la pantalla, una vez por segundo.
     func tickAutosave() {
         try? autosave.tick()
+
+        #if DEBUG
+            reportDiagnosticCounts()
+        #endif
     }
+
+    #if DEBUG
+
+        /// Cuántos segundos lleva el diagnóstico de la Fase 1.
+        private static let diagnosticPeriodSeconds = 10
+
+        /// Escribe por consola los contadores de la Fase 1 de
+        /// `hardware-screen-sync_20260908`.
+        ///
+        /// **Temporal, y se quita al cerrar la fase.** Es lo que NFR6 pide: los
+        /// síntomas viven en el hilo de recepción de CoreMIDI y el simulador no
+        /// lo tiene, así que la comprobación de FR5 —que el camino del tick no
+        /// avisa a nadie— se hace contando en dispositivo.
+        ///
+        /// **Cuelga del `.task` de un segundo que ya existe**, y por eso no
+        /// añade ningún temporizador: es exactamente el error que el tercer
+        /// intento cometió (FR6). Imprime una vez cada diez segundos para que un
+        /// minuto quepa en seis líneas legibles.
+        private func reportDiagnosticCounts() {
+            diagnosticSeconds += 1
+            guard diagnosticSeconds % Self.diagnosticPeriodSeconds == 0 else { return }
+            guard let transport else { return }
+
+            // Se arma por trozos y no en una interpolación larga: el compilador
+            // no consigue tipar la expresión entera en un tiempo razonable.
+            let ticks: UInt64 = transport.diagnosticTickCount
+            let transitions: UInt64 = transport.diagnosticTransitionCount
+            let sounding: Bool = transport.isPlaying
+            let shown: Bool = isPlaying
+
+            var line = "[diagnóstico fase 1] t=\(diagnosticSeconds)s"
+            line += " · ticks=\(ticks)"
+            line += " · transiciones=\(transitions)"
+            line += " · transport.isPlaying=\(sounding)"
+            line += " · model.isPlaying=\(shown)"
+            line += " · tempo=\(tempoDescription)"
+            print(line)
+        }
+
+        private var diagnosticSeconds = 0
+
+    #endif
 
     func selectTrack(_ index: Int) {
         controlInput.selectTrack(index)

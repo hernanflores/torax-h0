@@ -134,6 +134,27 @@ comparación de enteros. Eso es lo que pasa en casi todos los cuadros.
 BeatStep, el botón enseña *stop* y pulsarlo **para**. Es el síntoma reportado,
 y es el criterio de aceptación que manda.
 
+> **Ampliación del 2026-09-09, con el diagnóstico en la mano — el defecto es
+> simétrico y arrastra el anillo.**
+>
+> Medido en dispositivo: en t=90 s el maestro paró, el contador de transiciones
+> subió y `transport.isPlaying` pasó a `false`, mientras `model.isPlaying` se
+> quedaba en `true`. **La copia no se entera de un Start ni de un Stop**, y este
+> requisito solo describía el Start.
+>
+> **FR8b — El anillo se mueve cuando la secuencia suena.** El playhead se dibuja
+> con `TimelineView(.animation(paused: !model.isPlaying))`
+> (`ContentView.swift:369`), colgado de la misma copia: con un Start del maestro
+> **el playhead no avanza aunque suene**. No estaba reportado —se descubrió al
+> instrumentar— y lo arregla el mismo cambio, así que entra aquí en vez de abrir
+> otro track. Se verifica en la Fase 4.
+>
+> **Por qué pulsar el botón no hacía nada** (la observación que lo destapó): con
+> la copia en `false` el botón llama a `play()`, que llega a `Transport.play()` y
+> muere en su `guard !isPlaying`. Ni para ni rearranca; solo sincroniza la copia
+> a `true` de rebote. Es coherente con todo lo anterior y no es un defecto
+> aparte.
+
 **FR9 — La barra enseña el tempo del maestro.**
 *(Ya satisfecho — ver la enmienda del 2026-09-09. Se verifica, no se implementa.)* Con reloj externo establecido, el
 número de la barra sigue al maestro sin que nadie navegue a otra pantalla y
@@ -164,6 +185,18 @@ nuevas llevan el marcador `/// Realtime:`.
 —porque el flag de FR2 sirva para responder `isPlaying`—, se anota y se prueba;
 si no, se deja escrito como límite conocido con su ruta de arreglo.
 
+> **Resuelto el 2026-09-09, en la Fase 1: se elimina.** El flag de FR2 puede
+> responder `isPlaying`, así que `Transport.isPlaying` pasa a leer el atómico y
+> el hilo principal deja de tocar `scheduler` por ese camino. La rama «se deja
+> como límite conocido» no se toma.
+>
+> **Lo que queda después**, escrito para que no se dé por resuelto de más: el
+> hilo de recepción sigue escribiendo `scheduler` en `startPlaying(atHostTime:)`
+> y en `stop()`. Lo que desaparece es el **lector** concurrente del hilo
+> principal. Si algún día se quiere cerrar del todo, la ruta es hacer que la
+> referencia viaje por un atómico o que el ciclo de vida del hilo deje de
+> reasignarla — y eso sí es un track propio, no un arreglo de paso.
+
 **NFR3 — Cobertura.** `MIDI` ≥80%. El contador, el flag y su relación con
 `receive` viven ahí.
 
@@ -174,6 +207,11 @@ directas: si aparece una decisión, baja a `MIDI`.
 **NFR5 — Sin medición de jitter.** La suspensión del 2026-09-02 manda, y este
 cambio no mueve ningún instante. Lo que **sí** se comprueba es el coste por tick
 —FR5, FR7—, que es otra cosa y se mide contando, no cronometrando.
+
+> **Contado el 2026-09-09**, 220 s con reloj externo a 124 bpm: **50,4 ticks/s**
+> medidos, ~49,6/s una vez corregida la deriva del cronómetro —que es 124 × 24 /
+> 60 exacto—, y **4 transiciones** en todo el tramo. Avisar por tick habrían sido
+> ~11.000 invalidaciones; por transición son 4. FR5 queda decidido con datos.
 
 **NFR6 — Se valida en dispositivo, con instrumentación y números.** Es la lección
 de los tres intentos: los síntomas viven en el hilo de recepción de CoreMIDI y en
