@@ -23,6 +23,45 @@ síntomas confirmados en dispositivo:
 El propio `TransportModel.followsExternalClock` lo tiene escrito como límite
 conocido desde el 2026-09-06.
 
+> **Enmienda del 2026-09-09, al empezar la Fase 1 — el segundo síntoma ya no
+> existe, y lo resolvió otra cosa.**
+>
+> Comprobado en dispositivo por el usuario: con reloj externo, mover el tempo
+> del maestro **sí** refresca el número de la barra. Y comprobado en el código
+> por qué: `AppChrome.swift:222` envuelve el número en un
+> `TimelineView(.periodic(by: 0.25))`, así que la vista repregunta cuatro veces
+> por segundo y `beatsPerMinute` va directo a `transport.currentTempo`, que el
+> hilo de recepción escribe por atómico. **Nadie necesita invalidar nada.** El
+> propio comentario de esa vista lo dice desde que se escribió.
+>
+> Lo mismo vale para FR10: `MidiScreen.swift:20` envuelve la pantalla entera en
+> otro `TimelineView` a 0,25 s, y ahí dentro están `clockStatus` y el segmentado
+> `internal`/`external`.
+>
+> **Qué queda, entonces.** Solo el primer síntoma: el botón de transporte. Y se
+> ve por qué el `TimelineView` no lo salvó — el botón está **fuera** de él
+> (`AppChrome.swift:313`) y además no pregunta al transporte: lee
+> `TransportModel.isPlaying`, la copia de la línea 487 que solo escriben `play()`
+> y `stop()` de la app. Repintar más deprisa no lo arreglaría.
+>
+> **Y el arreglo barato sigue siendo el peor**, por la razón del hallazgo del
+> 2026-09-08, ahora con un caso concreto: meter el botón en un `TimelineView`
+> haría que el hilo principal leyera `transport.isPlaying` —o sea
+> `scheduler?.isRunning`— cuatro veces por segundo, mientras el hilo de
+> recepción reescribe `scheduler` en cada Start y cada Stop. La carrera se
+> agrava justo donde duele.
+>
+> **Efecto sobre los requisitos.** FR4, FR9 y FR10 quedan **satisfechos por lo
+> que ya hay** y salen del alcance de implementación; se conservan escritos
+> porque siguen siendo criterios de aceptación y hay que verificarlos sin
+> regresión. FR1, FR2, FR3, FR8, FR11 y todos los NFR siguen en pie: son el
+> track.
+>
+> **Por qué no se implementa FR4 igualmente.** Incrementar `clockRevision` una
+> vez por negra invalidaría el modelo observable entero —dos veces por segundo a
+> 120 bpm— para refrescar un número que ya se refresca con un repintado local de
+> una etiqueta. Sería trabajo nuevo y peor localizado que el que hay.
+
 ## La forma del arreglo ya existe en el repositorio
 
 `control-input-adoption_20260908` resolvió el mismo problema para la adopción de
@@ -69,7 +108,8 @@ la app, y Start y Stop del maestro. Un contador que solo se mueva con el hardwar
 obligaría a mantener dos caminos de invalidación en vez de uno, y el que se
 olvidara sería el que falla.
 
-**FR4 — El tempo externo no lleva contador propio, y ese es el reparto.** El
+**FR4 — El tempo externo no lleva contador propio, y ese es el reparto.**
+*(Ya satisfecho — ver la enmienda del 2026-09-09. Se verifica, no se implementa.)* El
 tempo se publica una vez por negra —dos veces por segundo a 120 bpm— y una
 invalidación por negra sería trabajo del hilo de recepción para algo que la
 pantalla ya sabe calcular. **Lo compara la app en su tick**: si el tempo escrito
@@ -85,19 +125,22 @@ forma y por ningún camino.
 vista: es el error que el tercer intento cometió, y las vistas se recrean con
 cada invalidación.
 
-**FR7 — Leer sin cambios cuesta lo mismo que hoy.** Una lectura atómica, una
-comparación de enteros y una comparación de tempo. Eso es lo que pasa en casi
-todos los cuadros.
+**FR7 — Leer sin cambios cuesta lo mismo que hoy.** Una lectura atómica y una
+comparación de enteros. Eso es lo que pasa en casi todos los cuadros.
+*(La comparación de tempo que decía aquí se cae con FR4 — enmienda del
+2026-09-09.)*
 
 **FR8 — El botón de transporte enseña lo que suena.** Después de un Start del
 BeatStep, el botón enseña *stop* y pulsarlo **para**. Es el síntoma reportado,
 y es el criterio de aceptación que manda.
 
-**FR9 — La barra enseña el tempo del maestro.** Con reloj externo establecido, el
+**FR9 — La barra enseña el tempo del maestro.**
+*(Ya satisfecho — ver la enmienda del 2026-09-09. Se verifica, no se implementa.)* Con reloj externo establecido, el
 número de la barra sigue al maestro sin que nadie navegue a otra pantalla y
 vuelva.
 
-**FR10 — El estado del reloj también se refresca.** `clockStatus` y la marca
+**FR10 — El estado del reloj también se refresca.**
+*(Ya satisfecho — ver la enmienda del 2026-09-09. Se verifica, no se implementa.)* `clockStatus` y la marca
 `EXT`/`INT` salen del mismo `Transport` y ya leen `clockRevision`: al
 incrementarlo desde este camino, se refrescan sin tocar nada más. Incluye la
 recuperación de un corte de reloj.

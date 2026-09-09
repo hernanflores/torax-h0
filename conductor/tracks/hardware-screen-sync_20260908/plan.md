@@ -21,23 +21,42 @@ roto nada.
 **Sin medición de jitter** (NFR5): no mueve ningún instante. Lo que sí se
 comprueba es el coste por tick, contando eventos y no cronometrando.
 
+> **Enmienda del 2026-09-09, al empezar la Fase 1 — el segundo síntoma ya está
+> resuelto y el plan encoge.** El usuario lo comprobó en dispositivo: el tempo
+> del maestro sí llega a la barra. La causa está en `spec.md`, en la enmienda de
+> la misma fecha — los `TimelineView` a 0,25 s de `AppChrome` y `MidiScreen`
+> repreguntan por su cuenta y no necesitan que nadie invalide.
+>
+> **Queda un solo síntoma**: el botón de transporte, que está fuera de esos
+> `TimelineView` y además lee una copia (`TransportModel.isPlaying`) en vez de
+> preguntar al transporte.
+>
+> **Qué se cae del plan:** el trabajo de tempo de la Fase 1 (FR4 ya no se
+> decide, se verifica), y la segunda tarea entera de la Fase 3. Lo tachado se
+> deja escrito con su porqué, que es como este proyecto registra las
+> desviaciones.
+>
+> **Qué no se cae:** la Fase 2 entera. El contador y el flag siguen siendo el
+> arreglo, y siguen siendo la única forma de responder `isPlaying` sin agravar
+> la carrera sobre `scheduler`.
+
 ## FASE 1: DIAGNÓSTICO EN DISPOSITIVO — **requiere iPad y BeatStep Pro**
 
 - [ ] Task: Reproducir los dos síntomas con el controlador delante
   - [ ] Start desde el BeatStep con reloj externo: la secuencia suena y el botón
         sigue en *play*. Anotar qué enseña la barra en ese momento.
-  - [ ] Mover el tempo del maestro: la barra no lo sigue. Anotar el valor que
-        enseña y el que manda el maestro.
+  - [x] ~~Mover el tempo del maestro: la barra no lo sigue.~~ **Desmentido el
+        2026-09-09**: la barra sí lo sigue. Ver la enmienda de arriba.
   - [ ] Confirmar que **`Transport` sí se enteró**: `ExternalStartTests` cubre la
         transición, así que el fallo está en el aviso y no en el transporte.
 - [ ] Task: Instrumentar y **mirar los números**, no la pantalla (NFR6)
-  - [ ] Contar, en un minuto de reloj externo a 120 bpm: ticks recibidos,
-        transiciones de transporte y publicaciones de tempo. Los tres números
-        van a la git note.
-  - [ ] Es lo que decide FR4 y FR5 con datos: cuántas invalidaciones costaría
-        avisar por tick, por negra y por transición.
-  - [ ] Comprobar con qué frecuencia cambia el tempo **redondeado a un decimal**,
-        que es lo que la app compararía (FR4).
+  - [ ] Contar, en un minuto de reloj externo a 120 bpm: ticks recibidos y
+        transiciones de transporte. Los dos números van a la git note.
+  - [ ] Es lo que decide FR5 con datos: cuántas invalidaciones costaría avisar
+        por tick y cuántas por transición.
+  - [x] ~~Comprobar con qué frecuencia cambia el tempo redondeado a un
+        decimal.~~ **Se cae el 2026-09-09**: FR4 no se implementa, así que no
+        hay comparación cuya cadencia haya que dimensionar.
   - [ ] Quitar la instrumentación antes de cerrar la fase, o dejarla bajo
         `#if DEBUG` como `handoffLoadCount`, que es el precedente.
 - [ ] Task: Confirmar o desmentir la carrera sobre `scheduler`
@@ -71,7 +90,7 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
 
 ## FASE 3: LA APP LO LEE, EN EL `.task` QUE YA EXISTE
 
-- [ ] Task: El modelo invalida cuando el hardware cambió algo (FR6, FR7, FR10)
+- [ ] Task: El modelo invalida cuando el hardware cambió algo (FR6, FR7)
   - [ ] Tests (Red): con el contador movido, el modelo incrementa
         `clockRevision`; sin moverse, no lo toca (FR7).
   - [ ] Tests (Red): el estado que la pantalla lee sale del flag y no de
@@ -81,13 +100,12 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
   - [ ] **En el `.task` de 16 ms que ya existe**, junto a
         `applyPendingAdoption()`. Ni un `.task` nuevo, ni un temporizador colgado
         de una vista — es el error del tercer intento (FR6).
-- [ ] Task: El tempo externo, por comparación y sin contador (FR4, FR9)
-  - [ ] Tests (Red): con el tempo escrito igual al anterior **no** se invalida;
-        con uno distinto, sí.
-  - [ ] Tests (Red): el valor comparado es el **redondeado a un decimal**, que es
-        el que se ve.
-  - [ ] Implementación (Green): la comparación en el mismo tick, sin trabajo
-        nuevo en el hilo de recepción.
+- [x] ~~Task: El tempo externo, por comparación y sin contador (FR4, FR9)~~
+      **Cancelada el 2026-09-09.** El `TimelineView` de `AppChrome.swift:222` ya
+      refresca el número cuatro veces por segundo leyendo `currentTempo`, que es
+      atómico. Implementar la comparación añadiría una invalidación del modelo
+      entero dos veces por segundo para algo que ya funciona con un repintado
+      local de una etiqueta. FR4 y FR9 pasan a verificarse en la Fase 4.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: DISPOSITIVO Y CIERRE — **requiere iPad y BeatStep Pro**
