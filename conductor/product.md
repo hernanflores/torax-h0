@@ -186,9 +186,18 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > implicaba sin concretar: `track` se lee mientras suena y ahí **no se edita
 > ningún parámetro generativo con el dedo**; `scale`, `midi` y `banks` se
 > configuran antes de tocar y ahí el dedo opera. La regla está auditada en el
-> código, no solo escrita: la pantalla `track` tiene exactamente cuatro
-> escrituras táctiles —seleccionar Track, mute, solo y cuántos Cycles están
-> activos— y ninguna toca Steps, Pulses, Rotate, Division ni Groove.
+> código, no solo escrita: la pantalla `track` tiene exactamente cinco
+> escrituras táctiles —seleccionar Track, mute, solo, cuál es el Cycle en
+> edición y cuántos Cycles están activos— y ninguna toca Steps, Pulses, Rotate,
+> Division ni Groove.
+>
+> **Enmienda del 2026-09-09 — la quinta escritura, y por qué no rompe la
+> regla.** Eran cuatro hasta hoy. `cycle-edit-cursor_20260908` parte el toque
+> sobre la celda de Cycle en dos: pulsar elige **cuál** se edita y mantener
+> cambia **cuántos** se recorren. Elegir a quién apuntan los knobs no es editar
+> con el dedo, igual que la pastilla de Track no lo era: lo que se escribe es un
+> cursor, no material. Sin ella, el cursor solo se movía con el knob 13 y sin
+> controlador todo giro caía en el Cycle 1.
 >
 > **Enmienda del 2026-09-07 — `banks` deja de ser cáscara, y la frontera se
 > mueve un poco.** La rebanada 4 de la v2 le pone detrás lo que le faltaba: el
