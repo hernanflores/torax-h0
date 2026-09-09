@@ -133,6 +133,18 @@ este cambio no mueve ningún instante.
   justo lo que `cycles_20260901` entregó a propósito.
 - **Medición de jitter** (NFR5).
 
+> **Nota del 2026-09-09, al implementar — dos precisiones y ninguna corrección.**
+>
+> **El acotado de FR2 acepta índices negativos**, no solo los que pasan del
+> último activo. `Track.withEditing(_:)` ya hacía `min(max(index, 0), …)`, así
+> que la vía pública no añade nada; queda escrito porque la celda del
+> `CycleStrip` resta uno al número y un día alguien pasará el cero.
+>
+> **La guarda de `isTouchFrozen` que el knob hereda es inalcanzable por CC**
+> (FR10). Al hacer que `moveEditingCycle(by:)` pase por la vía pública, el knob
+> 13 gana esa guarda; no cambia nada observable porque `receive` ya lo callaba
+> antes con `isTakenOver` —Temp y Ctrl All—, que es una condición más ancha.
+
 ## Known Limitations
 
 - **Mantener pulsado no tiene affordance visible.** Un usuario que no lo sepa no
