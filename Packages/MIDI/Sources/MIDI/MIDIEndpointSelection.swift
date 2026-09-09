@@ -95,6 +95,24 @@ public enum MIDIEndpointRole: Equatable, Sendable {
     func isAutoSelectable(_ endpoint: MIDIEndpointInfo) -> Bool {
         isEligible(endpoint) && !endpoint.isNetworkSession
     }
+
+    /// El endpoint que se puede elegir sin intervención.
+    ///
+    /// Un destino conserva la regla de «el primero»: con dos sintetizadores la
+    /// app puede sonar y el usuario puede cambiarlo después. Dos fuentes, en
+    /// cambio, pueden ser dos puertos del mismo controlador y CoreMIDI no da un
+    /// discriminante estable para saber cuál lleva los controles. En ese caso
+    /// no se adivina por el orden ni por el nombre: se deja la elección a la
+    /// pantalla.
+    func automaticEndpoint(in endpoints: [MIDIEndpointInfo]) -> MIDIEndpointInfo? {
+        let candidates = endpoints.filter { isAutoSelectable($0) }
+        switch self {
+        case .destination:
+            return candidates.first
+        case .source:
+            return candidates.count == 1 ? candidates[0] : nil
+        }
+    }
 }
 
 /// Los endpoints elegibles del sistema para un papel, y cuál está elegido.
@@ -104,6 +122,12 @@ public enum MIDIEndpointRole: Equatable, Sendable {
 /// hardware conectado — que es lo único que hay en la máquina de CI. La
 /// enumeración real vive en `CoreMIDIOutput` y `CoreMIDIInput`.
 public struct MIDIEndpointSelection: Equatable, Sendable {
+
+    private enum SelectionOrigin: Equatable, Sendable {
+        case automatic
+        case remembered
+        case manual
+    }
 
     /// Para qué sirven los endpoints de esta selección.
     public let role: MIDIEndpointRole
@@ -118,6 +142,15 @@ public struct MIDIEndpointSelection: Equatable, Sendable {
     /// sesión es algo que pasa.
     public private(set) var selected: MIDIEndpointInfo?
 
+    /// Cómo se llegó a `selected`. Refrescar puede sustituir una caída
+    /// automática por lo recordado, pero nunca una elección manual.
+    private var selectionOrigin: SelectionOrigin?
+
+    /// Lo que vino del disco sigue pendiente mientras el endpoint no exista.
+    /// Se conserva también durante una caída automática, para recuperarlo si
+    /// aparece en una notificación posterior.
+    private var rememberedName: String?
+
     public var hasEndpoint: Bool { selected != nil }
 
     /// Nombre del endpoint elegido, o el estado vacío del papel.
@@ -130,6 +163,8 @@ public struct MIDIEndpointSelection: Equatable, Sendable {
         self.role = role
         available = []
         selected = nil
+        selectionOrigin = nil
+        rememberedName = nil
     }
 
     /// A partir de la lista enumerada del sistema, recordando —si se sabe— cuál
@@ -138,8 +173,8 @@ public struct MIDIEndpointSelection: Equatable, Sendable {
     /// **Lo recordado manda sobre la autoselección** (FR15 de
     /// `midi-learn_20260908`), **incluida la sesión de red**: haberla elegido a
     /// mano y guardado es una elección explícita, y la regla de no
-    /// autoseleccionarla no la contradice. Si lo recordado ya no está, se cae a
-    /// la autoselección normal.
+    /// autoseleccionarla no la contradice. Si lo recordado todavía no está, se
+    /// usa la caída automática normal sin olvidar la preferencia pendiente.
     ///
     /// Es lo que el plan de `network-session-source_20260828` dejó anotado:
     /// «cuando haya persistencia, recordar la última elección lo resuelve mejor
@@ -149,37 +184,59 @@ public struct MIDIEndpointSelection: Equatable, Sendable {
         discovering systemEndpoints: [MIDIEndpointInfo],
         remembering name: String? = nil
     ) {
-        var selection = MIDIEndpointSelection(role).refreshed(with: systemEndpoints)
-
-        if let name,
-            let remembered = selection.available.first(where: { $0.displayName == name })
-        {
-            selection = selection.selecting(remembered)
-        }
-
-        self = selection
+        var selection = MIDIEndpointSelection(role)
+        selection.rememberedName = name
+        self = selection.refreshed(with: systemEndpoints)
     }
 
     /// Vuelve a leer la lista del sistema conservando la elección del usuario.
     ///
     /// Si el endpoint elegido sigue presente se mantiene, aunque haya cambiado
     /// de posición: refrescar no puede mover la elección bajo los pies de quien
-    /// la hizo. Si desapareció, se cae al primero disponible, y a `nil` si no
-    /// queda ninguno.
+    /// la hizo. Si desapareció, se aplica otra vez la regla automática del
+    /// papel, y se cae a `nil` cuando no hay una elección inequívoca.
     public func refreshed(with systemEndpoints: [MIDIEndpointInfo]) -> Self {
         var refreshed = self
         refreshed.available = systemEndpoints.filter(role.isEligible)
 
+        // Una elección manual o recordada se conserva por identidad de endpoint,
+        // aunque cambie el orden de la enumeración o haya nombres repetidos.
+        if let selected, refreshed.available.contains(selected),
+            selectionOrigin != .automatic
+        {
+            refreshed.selected = selected
+            return refreshed
+        }
+
+        // Lo recordado puede llegar después del arranque. Solo sustituye una
+        // caída automática (o el estado vacío); `selecting(_:)` borra lo
+        // pendiente cuando el usuario elige otra cosa.
+        if selectionOrigin != .manual, let rememberedName,
+            let remembered = refreshed.available.first(where: {
+                $0.displayName == rememberedName
+            })
+        {
+            refreshed.selected = remembered
+            refreshed.selectionOrigin = .remembered
+            return refreshed
+        }
+
+        // Una fuente elegida automáticamente deja de ser inequívoca si aparece
+        // una segunda. No se conserva solo porque llegara primero; un destino
+        // automático sí puede seguir sonando mientras el usuario decide.
+        if selectionOrigin == .automatic, role == .source {
+            refreshed.selected = role.automaticEndpoint(in: refreshed.available)
+            refreshed.selectionOrigin = refreshed.selected == nil ? nil : .automatic
+            return refreshed
+        }
+
         if let selected, refreshed.available.contains(selected) {
             refreshed.selected = selected
-        } else {
-            // Elegir solo el primero es deliberado: con algo conectado, la app
-            // tiene que funcionar sin pasar antes por un selector. **El primero
-            // que se pueda elegir solo**, que no es lo mismo que el primero de
-            // la lista: la sesión de red va siempre delante y nunca se elige
-            // sola.
-            refreshed.selected = refreshed.available.first(where: role.isAutoSelectable)
+            return refreshed
         }
+
+        refreshed.selected = role.automaticEndpoint(in: refreshed.available)
+        refreshed.selectionOrigin = refreshed.selected == nil ? nil : .automatic
         return refreshed
     }
 
@@ -191,6 +248,8 @@ public struct MIDIEndpointSelection: Equatable, Sendable {
         guard available.contains(endpoint) else { return self }
         var updated = self
         updated.selected = endpoint
+        updated.selectionOrigin = .manual
+        updated.rememberedName = nil
         return updated
     }
 }

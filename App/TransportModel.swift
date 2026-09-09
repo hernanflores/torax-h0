@@ -1001,11 +1001,16 @@ final class TransportModel {
     }
 
     private func connectToSelectedSource() {
-        guard let endpoint = sourceSelection.selected?.endpoint else { return }
         // **Reconectar suelta los modificadores** (FR8). Si el cable se fue con
         // un step button hundido, la soltada que lo levantaría ya no va a llegar
         // por ningún sitio y el modificador se quedaría pegado para siempre.
         controlInput.releaseModifiers()
+        guard let endpoint = sourceSelection.selected?.endpoint else {
+            // La ambigüedad se comporta como «sin fuente»: conservar la conexión
+            // automática anterior sería elegirla a escondidas.
+            input?.disconnect()
+            return
+        }
         input?.connect(to: endpoint)
     }
 
@@ -1059,9 +1064,16 @@ final class TransportModel {
 
     /// Elige otra fuente de entrada.
     func selectSource(_ endpoint: MIDIEndpointInfo) {
-        sourceSelection = sourceSelection.selecting(endpoint)
+        sourceSelection =
+            sourceWatcher?.selecting(endpoint) ?? sourceSelection.selecting(endpoint)
         connectToSelectedSource()
-        rememberHardware()
+        // Cambiar la entrada no convierte el destino automático vigente en una
+        // preferencia: el otro extremo queda exactamente como estaba en disco.
+        project = project.remembering(
+            destinationNamed: project.destinationName,
+            sourceNamed: sourceSelection.selected?.displayName
+        )
+        autosave.changedHeader(project)
     }
 
     func play() {
@@ -1111,27 +1123,12 @@ extension TransportModel {
     /// Elige otro destino. Es lo único que la pantalla puede cambiar, junto con
     /// el transporte: los parámetros generativos no se tocan en esta rebanada.
     func select(_ destination: MIDIEndpointInfo) {
-        selection = selection.selecting(destination)
+        selection = watcher?.selecting(destination) ?? selection.selecting(destination)
         activeDestination.value = UInt64(selection.selected?.endpoint ?? 0)
-        rememberHardware()
-    }
-
-    /// Guarda a qué hardware se estaba hablando.
-    ///
-    /// **Los campos existían y nadie los escribía.** `persistence_20260907` los
-    /// puso en `Project` y en `ProjectRecord` —con su documentación de por qué
-    /// se guarda el nombre y no el `MIDIEndpointRef`— pero ningún camino de la
-    /// app los rellenaba, así que se escribía `null` en cada guardado. Encontrado
-    /// el 2026-09-09 al cablear FR15, que sin esto no habría recordado nunca
-    /// nada.
-    ///
-    /// **Solo se recuerda lo que se elige a mano.** Guardar también la
-    /// autoselección convertiría un accidente —lo que hubiera enchufado el día
-    /// que se abrió la app— en una preferencia que luego manda sobre ella.
-    private func rememberHardware() {
+        // Igual que en la entrada: solo persiste el extremo tocado a mano.
         project = project.remembering(
             destinationNamed: selection.selected?.displayName,
-            sourceNamed: sourceSelection.selected?.displayName
+            sourceNamed: project.sourceName
         )
         autosave.changedHeader(project)
     }

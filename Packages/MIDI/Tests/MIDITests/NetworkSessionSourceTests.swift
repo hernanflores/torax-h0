@@ -133,6 +133,7 @@ final class NetworkSessionSourceTests: XCTestCase {
             .source, discovering: [network, opz, twin], remembering: "OP-Z")
 
         XCTAssertEqual(selection.selected, opz)
+        XCTAssertEqual(selection.refreshed(with: [network, twin, opz]).selected, opz)
     }
 
     // MARK: - El destino, desde el 2026-09-09

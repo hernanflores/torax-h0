@@ -283,13 +283,14 @@ public struct ControlMapping: Equatable, Sendable {
     /// bloque fuera de rango cae en el de fábrica, porque un mapeo sin pads no
     /// lo es.
     public init(_ numbers: ControlNumbers) {
-        self.init(
+        let restored = ControlMapping(
             assignments: numbers.assignments.filter { MIDIController($0.value) != nil },
             padBlock: MIDINote(numbers.padBlock) ?? Self.defaultPadBlock,
             knobBlock: MIDIController(numbers.knobBlock) ?? Self.defaultKnobBlock,
             stepButtonBlock: MIDIController(numbers.stepButtonBlock)
                 ?? Self.defaultStepButtonBlock
         )
+        self = restored.hasConflict ? .beatStepPro : restored
     }
 
     /// Si algún control significaría dos cosas.
@@ -315,6 +316,10 @@ public struct ControlMapping: Equatable, Sendable {
     public var hasConflict: Bool {
         let numbers = declaredNumbers
         if !Set(numbers.knobs).isDisjoint(with: Set(numbers.stepButtons)) { return true }
-        return assignments.values.contains { numbers.stepButtons.contains($0) }
+        if assignments.values.contains(where: { numbers.stepButtons.contains($0) }) {
+            return true
+        }
+        guard let editingCycleController else { return false }
+        return assignments.values.contains(editingCycleController.number)
     }
 }

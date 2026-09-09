@@ -74,6 +74,31 @@ final class MIDILearnTests: XCTestCase {
         XCTAssertEqual(input.learning, .parameter(.pulses))
     }
 
+    func testBeginningLearningReleasesEveryModifier() {
+        for modifier in [ControlInput.muteModifierIndex, ControlInput.soloModifierIndex] {
+            let input = makeInput()
+            input.receive(stepButton(modifier))
+
+            input.beginLearning(.parameter(.steps))
+            input.cancelLearning()
+
+            XCTAssertTrue(input.receive(stepButton(1)))
+            XCTAssertEqual(input.selectedTrackIndex, 1)
+        }
+
+        let temp = makeInput()
+        temp.receive(stepButton(ControlInput.tempModifierIndex))
+        XCTAssertTrue(temp.isTempActive)
+        temp.beginLearning(.parameter(.steps))
+        XCTAssertFalse(temp.isTempActive)
+
+        let ctrlAll = makeInput()
+        ctrlAll.receive(stepButton(ControlInput.ctrlAllModifierIndex))
+        XCTAssertTrue(ctrlAll.isCtrlAllActive)
+        ctrlAll.beginLearning(.parameter(.steps))
+        XCTAssertFalse(ctrlAll.isCtrlAllActive)
+    }
+
     // MARK: - Aprender un knob (FR7)
 
     func testTurningAKnobWhileLearningAssignsIt() {
@@ -345,6 +370,15 @@ final class MIDILearnTests: XCTestCase {
 
     private func pad(_ note: MIDINote) -> MIDIMessage {
         .noteOn(channel: MIDIChannel(1)!, note: note, velocity: MIDIVelocity(100)!)
+    }
+
+    private func stepButton(_ index: Int, value: UInt8 = 127) -> MIDIMessage {
+        .controlChange(
+            channel: MIDIChannel(1)!,
+            controller: MIDIController(
+                ControlMapping.beatStepPro.stepButtonBlock.number + index)!,
+            value: value
+        )
     }
 
     private func makeInput(

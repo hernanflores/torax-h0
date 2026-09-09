@@ -921,6 +921,10 @@ public final class ControlInput: @unchecked Sendable {
     /// Elegir otro destino sin haber aprendido nada **es cambiar de idea**, no
     /// un error: manda el último.
     public func beginLearning(_ target: LearnTarget) {
+        // Aprender es un modo nuevo, no la continuación de un hold. Reutilizar
+        // la salida de reconexión suelta Mute, Solo, Temp y Ctrl All y restaura
+        // cualquier superposición antes de que llegue el mensaje que aprende.
+        releaseModifiers()
         learning = target
     }
 

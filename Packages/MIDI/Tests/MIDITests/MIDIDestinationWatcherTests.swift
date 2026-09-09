@@ -103,6 +103,44 @@ final class MIDIEndpointWatcherTests: XCTestCase {
         XCTAssertEqual(watcher.selection.selected, synth)
     }
 
+    /// Lo recordado no se pierde porque faltara durante el descubrimiento
+    /// inicial: cuando aparece sustituye únicamente la caída automática.
+    func testARememberedEndpointThatAppearsLaterReplacesTheAutomaticFallback() {
+        let system = FakeSystem()
+        system.destinations = [synth]
+        let watcher = MIDIEndpointWatcher(
+            .destination,
+            enumerating: system.enumerate,
+            remembering: drums.displayName,
+            delivering: { work in work() }
+        )
+        XCTAssertEqual(watcher.selection.selected, synth)
+
+        system.destinations = [synth, drums]
+        watcher.setupChanged()
+
+        XCTAssertEqual(watcher.selection.selected, drums)
+    }
+
+    /// El mismo endpoint automático se puede confirmar a mano. A partir de ese
+    /// gesto, la preferencia vieja que aparezca después ya no manda.
+    func testARememberedEndpointNeverOverridesAManualSelection() {
+        let system = FakeSystem()
+        system.destinations = [synth]
+        let watcher = MIDIEndpointWatcher(
+            .destination,
+            enumerating: system.enumerate,
+            remembering: drums.displayName,
+            delivering: { work in work() }
+        )
+
+        watcher.selecting(synth)
+        system.destinations = [synth, drums]
+        watcher.setupChanged()
+
+        XCTAssertEqual(watcher.selection.selected, synth)
+    }
+
     // MARK: - Aviso de cambio
 
     func testObserverIsNotifiedOnChange() {
@@ -196,5 +234,24 @@ final class MIDIEndpointWatcherTests: XCTestCase {
         XCTAssertEqual(
             watcher.selection.selected, synth,
             "el dispositivo volvió y el watcher se quedó sin él")
+    }
+
+    func testAPendingDeliveryDoesNotOverrideANewerManualSelection() {
+        let system = FakeSystem()
+        system.destinations = [synth]
+
+        var pending: [() -> Void] = []
+        let watcher = MIDIEndpointWatcher(
+            .destination,
+            enumerating: system.enumerate,
+            delivering: { work in pending.append(work) }
+        )
+
+        system.destinations = [synth, drums]
+        watcher.setupChanged()
+        watcher.selecting(drums)
+        for work in pending { work() }
+
+        XCTAssertEqual(watcher.selection.selected, drums)
     }
 }

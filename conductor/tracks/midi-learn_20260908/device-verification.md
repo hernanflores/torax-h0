@@ -112,8 +112,10 @@ que alguien depende de ellos.
 - **Los dos puertos del BeatStep Pro.** Publica `Arturia BeatStep Pro` y
   `BeatStepPro OutEditor`, y **ninguna propiedad los distingue** — mismo `model`,
   `manufacturer`, `driverOwner` y dispositivo padre. Solo el nombre, que NFR4
-  prohíbe usar. Hoy no muerde porque el puerto de interpretación va antes en la
-  lista, pero es suerte de orden. Queda como limitación conocida.
+  prohíbe usar. La selección ya no depende de la suerte del orden: con dos
+  fuentes USB ambiguas no elige ninguna automáticamente y deja el selector
+  manual disponible. Las dos ordenaciones están cubiertas sin discriminar por
+  nombre, y `selectSource` conserva la elegida.
 
 ## Segunda vuelta, el mismo día
 

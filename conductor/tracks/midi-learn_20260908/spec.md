@@ -303,11 +303,10 @@ rama o deja de describir la app.
   `model`, `manufacturer`, `driverOwner` y dispositivo padre; **solo el nombre
   las separa**, y NFR4 prohíbe identificar por nombre visible.
 
-  Hoy no muerde porque la autoselección coge el primero que no sea la red y el
-  puerto de interpretación va antes. **Es suerte de orden, no una garantía.** Si
-  algún día muerde, la salida buena no es mirar el nombre: es que la elección
-  hecha a mano se recuerde —que ya ocurre, FR15— y que el usuario la haga una
-  vez.
+  La app no intenta resolver esa ambigüedad: si aparecen dos fuentes que no son
+  la sesión de red, no autoselecciona por orden ni por nombre. El usuario elige
+  una en el selector existente y esa elección se recuerda (FR15). Las dos
+  ordenaciones observadas del BeatStep Pro están cubiertas.
 
 - **`No MIDI input` sigue sin ser visible en un iPad con otro controlador
   enchufado.** *(2026-09-09.)* La regla de FR13 es correcta y sus tests la fijan,

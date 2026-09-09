@@ -49,6 +49,24 @@ final class MappingNumbersTests: XCTestCase {
         XCTAssertEqual(mapping.stepButtonBlock, ControlMapping.defaultStepButtonBlock)
     }
 
+    func testAConflictingRestoredMappingFallsBackToTheFactoryPreset() {
+        let numbers = ControlNumbers(
+            assignments: [.steps: 102], padBlock: 36, knobBlock: 70, stepButtonBlock: 102)
+
+        XCTAssertEqual(ControlMapping(numbers), .beatStepPro)
+    }
+
+    func testAnAssignmentCannotReuseTheEditingCycleController() {
+        let mapping = ControlMapping(
+            assignments: [.steps: 82],
+            padBlock: ControlMapping.defaultPadBlock,
+            knobBlock: ControlMapping.defaultKnobBlock,
+            stepButtonBlock: ControlMapping.defaultStepButtonBlock
+        )
+
+        XCTAssertTrue(mapping.hasConflict)
+    }
+
     /// Lo que se aprende es lo que se guarda: el caso entero, de aprender a
     /// números.
     func testWhatIsLearnedIsWhatGetsWritten() {
