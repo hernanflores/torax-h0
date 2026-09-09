@@ -101,7 +101,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
   - [ ] Con lo verificado en dispositivo, y enlazando a este track.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: EL MAPEO DEJA DE SER FIJO
+## FASE 3: EL MAPEO DEJA DE SER FIJO [checkpoint: 5a711f5]
 
 - [x] Task: `ControlInput` adopta un mapeo (FR2, FR3, NFR1) `9a8de64`
   - [x] Tests (Red): adoptar un mapeo cambia a qué controlador responde cada
@@ -132,7 +132,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
   - [x] Implementación (Green): la regla vive en `ControlMapping`, con tests.
   - [x] `parametersWithoutController`, en el orden del dominio: es lo que la
         Fase 6 necesita para nombrar lo que acaba de quedarse mudo.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: APRENDER
 
