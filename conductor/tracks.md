@@ -952,10 +952,10 @@ en cualquier momento.
   > `CycleStrip` reparte el toque —pulsar elige, mantener medio segundo cambia
   > cuántos hay activos y dispara sin esperar a que se levante el dedo—.
   >
-  > Verificado en iPad en dos pasadas: elegir con la pantalla, el mantenido sobre
-  > la celda 9, el knob 13, los dos valores conviviendo, el transporte corriendo
-  > y los bordes del gesto. **Dos comprobaciones del plan no se ejecutaron** y
-  > están listadas en `device-verification.md`; las cubren tests de `MIDI`. `Engine` no
+  > **Verificado en iPad entero**, en tres pasadas: elegir con la pantalla, el
+  > mantenido sobre la celda 9, el knob 13, los dos valores conviviendo, el
+  > transporte corriendo, los bordes del gesto, bajar el rango y el cambio de
+  > Track. No queda ninguna comprobación del plan sin ejecutar. `Engine` no
   > se tocó (NFR1) y no hay medición de jitter (NFR5).
   >
   > `MIDI`: 874 tests, cobertura 91,51% de líneas, `ControlInput.swift` al 100%.

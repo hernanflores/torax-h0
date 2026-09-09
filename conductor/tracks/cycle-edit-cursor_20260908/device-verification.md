@@ -1,6 +1,6 @@
 # Verificación en dispositivo — En pantalla no se puede elegir qué Cycle se edita
 
-**Estado: verificado el 2026-09-09**, en dos pasadas. Comprobado por el usuario con
+**Estado: verificado el 2026-09-09**, entero, en tres pasadas. Comprobado por el usuario con
 el iPad delante. **El defecto está cerrado**: la pantalla elige el Cycle en
 edición y el gesto mantenido cambia el rango.
 
@@ -46,15 +46,16 @@ verificado a mano y no solo por test.
       en un valor que nadie pidió — que era el riesgo que el plan anunciaba para
       la Fase 2.
 
-## Lo que sigue sin probarse
+## Tercera pasada, el 2026-09-09 — las dos que quedaban
 
-Se anota en vez de darse por bueno. No bloquea nada: los dos tienen tests en
-`MIDI` que cubren la lógica.
+Reportadas OK por el usuario. Con ellas **el plan queda verificado entero**: no
+queda ninguna comprobación de dispositivo sin ejecutar.
 
-- [ ] **Bajar el rango** con el mantenido acota el cursor de edición.
-- [ ] **Cambiar de Track y volver** conserva el Cycle en edición de cada uno
-      (FR9). Cubierto por `testEachTrackKeepsItsOwnEditingCycleAcrossSelection`,
-      que ya existía antes de este track.
+- [x] **Bajar el rango** con el mantenido acota el cursor de edición.
+- [x] **Cambiar de Track y volver** conserva el Cycle en edición de cada uno
+      (FR9). Cubierto además por
+      `testEachTrackKeepsItsOwnEditingCycleAcrossSelection`, que ya existía antes
+      de este track.
 
 ## Limitaciones que siguen en pie
 

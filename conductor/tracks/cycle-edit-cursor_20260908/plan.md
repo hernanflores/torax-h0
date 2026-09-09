@@ -82,18 +82,19 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
 
 ## FASE 3: DISPOSITIVO Y CIERRE
 
-- [x] Task: Verificación en iPad con BeatStep Pro — verificado el 2026-09-09 en
-      dos pasadas; quedan dos comprobaciones no ejecutadas y anotadas
+- [x] Task: Verificación en iPad con BeatStep Pro — verificado entero el
+      2026-09-09, en tres pasadas
   - [x] **El fallo reportado, primero**: cuatro Cycles activos, pulsar el 3,
         girar Steps, volver al 1 y comprobar que **los dos valores conviven**.
         Probado en la segunda pasada del 2026-09-09.
   - [x] Con el transporte corriendo: el relleno del que suena avanza solo y el
         contorno del que se edita se queda donde lo dejó el dedo. Probado en la
         segunda pasada del 2026-09-09.
-  - [x] Mantener una celda sube el rango al cumplirse el tiempo y soltar después
-        no elige ese Cycle. **Bajar el rango no se probó.**
-  - [x] El knob 13 mueve el mismo contorno. **Cambiar de Track y volver no se
-        probó**; lo cubre `testEachTrackKeepsItsOwnEditingCycleAcrossSelection`.
+  - [x] Mantener una celda sube y baja el rango; el cursor de edición se acota
+        solo al bajar. Bajar, probado en la tercera pasada del 2026-09-09.
+  - [x] El knob 13 mueve el mismo contorno; cambiar de Track y volver conserva el
+        Cycle en edición de cada uno. Lo segundo, probado en la tercera pasada
+        del 2026-09-09.
   - [x] Escribir `device-verification.md` con lo que se probó y lo que no.
 - [x] Task: Cobertura y suite completa
   - [x] `MIDI` ≥80% medida en un proceso e ignorando `Engine/Sources`, como dice
@@ -111,6 +112,5 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
   - `MIDI` al 91,51% de líneas; `ControlInput.swift` al 100%.
   - `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`:
     BUILD SUCCEEDED.
-  - Verificación manual: hecha en iPad, con lo no probado anotado en
-    `device-verification.md`.
+  - Verificación manual: hecha en iPad, entera. Ver `device-verification.md`.
   - PR #50 abierto; los checks de CI corren ahí.
