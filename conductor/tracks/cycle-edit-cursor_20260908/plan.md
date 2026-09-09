@@ -41,7 +41,13 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
         en vez de escribir el Pattern por su cuenta.
   - [x] Comprobar que `Engine` no se toca (NFR1). Si hiciera falta tocarlo,
         **parar** y anotar por qué antes de seguir.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) — `1560f9a`
+  - Suite de `MIDI`: 874 tests, 1 skipped, 0 fallos.
+  - Cobertura de `MIDI` ignorando `Engine/Sources`: **91,51%** de líneas (≥80%).
+  - `Engine` sin tocar (NFR1); sin medición de jitter (NFR5).
+  - Sin verificación manual en esta fase: la vía todavía no tiene gesto detrás.
+    El knob 13 sigue moviendo el mismo cursor, que es la no regresión que cubre
+    `EditingCycleSameDoorTests`.
 
 ## FASE 2: EL GESTO EN EL `CycleStrip`
 
