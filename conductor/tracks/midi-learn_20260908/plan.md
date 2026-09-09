@@ -39,7 +39,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
   - [x] **Resuelto: la v1 cierra sin medir.** La excepción de la nota del
         2026-08-28 queda anulada en `workflow.md`, con su coste y su vuelta
         atrás escritos.
-- [x] Task: Decidir cómo entra el mapeo en el fichero de disco (FR17) `PENDING`
+- [x] Task: Decidir cómo entra el mapeo en el fichero de disco (FR17) `4562ea1`
   - [x] Las dos salidas: campo opcional sin subir `schemaVersion`, o subir a 2 y
         estrenar el migrador que `persistence_20260907` dejó preparado y vacío.
   - [x] Lo que decide: `ProjectRecord.validated()` exige igualdad exacta, así que
