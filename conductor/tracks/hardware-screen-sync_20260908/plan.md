@@ -40,7 +40,7 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
 > arreglo, y siguen siendo la única forma de responder `isPlaying` sin agravar
 > la carrera sobre `scheduler`.
 
-## FASE 1: DIAGNÓSTICO EN DISPOSITIVO — **requiere iPad y BeatStep Pro**
+## FASE 1: DIAGNÓSTICO EN DISPOSITIVO — **requiere iPad y BeatStep Pro** [checkpoint: 521e52b]
 
 - [x] Task: Reproducir los dos síntomas con el controlador delante `521e52b`
   - [x] Start desde el BeatStep con reloj externo: la secuencia suena y el botón
