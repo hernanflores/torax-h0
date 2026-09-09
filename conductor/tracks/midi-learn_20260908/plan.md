@@ -103,16 +103,21 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
 
 ## FASE 3: EL MAPEO DEJA DE SER FIJO
 
-- [ ] Task: `ControlInput` adopta un mapeo (FR2, FR3, NFR1)
-  - [ ] Tests (Red): adoptar un mapeo cambia a qué controlador responde cada
+- [x] Task: `ControlInput` adopta un mapeo (FR2, FR3, NFR1) `9a8de64`
+  - [x] Tests (Red): adoptar un mapeo cambia a qué controlador responde cada
         destino, **sin tocar el material**: ni una nota, ni un Cycle, ni el Track
         seleccionado.
-  - [ ] Tests (Red): adoptar **no publica** material, por la misma razón que
+  - [x] Tests (Red): adoptar **no publica** material, por la misma razón que
         `adopt(_:)` para el Pattern.
-  - [ ] Tests (Red): un control que el mapeo nuevo no asigna deja de hacer nada,
+  - [x] Tests (Red): un control que el mapeo nuevo no asigna deja de hacer nada,
         y eso no es un error (FR5).
-  - [ ] Implementación (Green): `mapping` deja de ser un `let` privado; la vía
+  - [x] Tests (Red): los bloques de pads y de step buttons y el knob del Cycle
+        se mueven con el mapeo, porque salen de él.
+  - [x] Implementación (Green): `mapping` deja de ser un `let` privado; la vía
         pública va junto a `adopt(_:)`.
+  - [x] Documentar que **no cancela los modificadores**, al revés que
+        `adopt(_:)`: aquí el material no cambia, así que descartarlos sería el
+        remedio de otro problema.
 - [ ] Task: Un destino, un control (FR4, FR5)
   - [ ] Tests (Red): asignar un controlador ya ocupado **desasigna** al destino
         anterior, que se queda sin control.
