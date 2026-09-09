@@ -52,3 +52,43 @@ Verificación
       779 tests, 0 fallos
   swift test --package-path Packages/Engine
       878 tests, 0 fallos
+
+--- Verificación de fase ---
+Fase 3: EL MAPEO DEJA DE SER FIJO — cerrada el 2026-09-09.
+
+Tests ejecutados
+----------------
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+      779 tests, 0 fallos
+  swift test --package-path Packages/Engine
+      878 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
+
+Cobertura de `MIDI`: 91,02% de líneas (umbral ≥80%)
+---------------------------------------------------
+Medida como manda `workflow.md`: en un solo proceso, fusionando el `.profdata` a
+mano porque la pasada falla, e ignorando `Engine/Sources`.
+
+Esa pasada en un proceso dio 7 fallos, TODOS en `VirtualLoopbackTests`
+—testFutureEventIsNotDeliveredEarly, testLoopbackPublishesAnEndpoint,
+testMessageSentToTheVirtualEndpointIsReceived,
+testReceivedTimestampMatchesTheScheduledOne—. Es la firma exacta del flake
+`clientCreationFailed(-50)` que la ampliación del 2026-08-30 de `workflow.md`
+describe: ningún otro test. Con la partición de CI, 0 fallos.
+
+Verificación manual
+-------------------
+Sin dispositivo: la fase es la costura del modelo y no cambia nada visible — la
+pantalla de aprendizaje es la Fase 6. Lo revisado:
+  1. `adopt(mapping:)` y la lista de lo que NO hace, con el contraste explícito
+     contra `adopt(_:)` en lo de los modificadores.
+  2. `assigning(_:to:)` con las dos mitades de la regla.
+  3. `parametersWithoutController` en el orden del dominio.
+  4. `hasFamilyOverlap`, que knobs y step buttons pueden solaparse.
+  5. Volver al preset de fábrica es adoptar el de fábrica (FR18 sin camino
+     propio).
+
+Confirmación del usuario
+------------------------
+«Si» — 2026-09-09.
