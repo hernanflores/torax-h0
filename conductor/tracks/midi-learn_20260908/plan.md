@@ -28,14 +28,17 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
 
 ## FASE 1: LAS DOS DECISIONES
 
-- [ ] Task: Decidir qué pasa con la medición final de la v1 (FR19) — **decisión
-      del usuario**
-  - [ ] Presentar las dos salidas con su coste: medir esta pasada levantando la
+- [x] Task: Decidir qué pasa con la medición final de la v1 (FR19) — **decisión
+      del usuario** `9d00512`
+  - [x] Presentar las dos salidas con su coste: medir esta pasada levantando la
         suspensión solo para ella, o cerrar la v1 sin su medición.
-  - [ ] Dejar delante la última referencia válida: rebanada 2 de la v2,
+  - [x] Dejar delante la última referencia válida: rebanada 2 de la v2,
         2026-09-02 — máx 0,158 ms, σ 0,013–0,014 ms, 1000 eventos por tempo.
-  - [ ] Escribir la decisión en `workflow.md`, con fecha, gane la que gane. Una
+  - [x] Escribir la decisión en `workflow.md`, con fecha, gane la que gane. Una
         excepción que se deja sin resolver es peor que cualquiera de las dos.
+  - [x] **Resuelto: la v1 cierra sin medir.** La excepción de la nota del
+        2026-08-28 queda anulada en `workflow.md`, con su coste y su vuelta
+        atrás escritos.
 - [ ] Task: Decidir cómo entra el mapeo en el fichero de disco (FR17)
   - [ ] Las dos salidas: campo opcional sin subir `schemaVersion`, o subir a 2 y
         estrenar el migrador que `persistence_20260907` dejó preparado y vacío.
