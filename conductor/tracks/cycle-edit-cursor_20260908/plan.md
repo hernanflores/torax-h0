@@ -102,8 +102,8 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
   - [x] Suites verdes: `Engine` 888, `MIDI` 874 (1 skipped), `Persistence` 64.
 - [ ] Task: Pull Request
   - [ ] Rama `fix/cycle-edit-cursor`, PR contra `main`. Cuerpo corto.
-- [ ] Task: Cerrar el defecto en el registro
-  - [ ] Marcarlo en `tracks.md` con lo que se verificó en dispositivo.
-  - [ ] Anotar en el `spec.md` lo que se haya corregido al implementar, con
-        fecha.
+- [x] Task: Cerrar el defecto en el registro
+  - [x] Marcarlo en `tracks.md` con lo que se verificó en dispositivo.
+  - [x] Anotar en el `spec.md` lo que se haya corregido al implementar, con
+        fecha — dos precisiones del 2026-09-09, ninguna corrección.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
