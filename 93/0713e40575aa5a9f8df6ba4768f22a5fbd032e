@@ -1,0 +1,54 @@
+Task: Identificar el endpoint de red por propiedad, no por nombre (parcial: la instrumentación)
+Track: midi-learn_20260908 · Fase 2 · FR12, NFR4
+
+Qué entra
+---------
+La herramienta del diagnóstico, no el diagnóstico. La tarea sigue abierta: le
+falta la mitad que exige un iPad, que es correr esto y leer los valores.
+
+Ficheros
+--------
+  Packages/MIDI/Sources/MIDI/EndpointDiagnostics.swift   nuevo
+  Packages/MIDI/Tests/MIDITests/EndpointDiagnosticsTests.swift   nuevo, 9 tests
+  App/ToraxH0App.swift   una llamada bajo `#if DEBUG`, al arrancar
+
+Por qué así
+-----------
+`EndpointProperties` son los valores ya leídos, sin CoreMIDI dentro, así que el
+informe que los formatea se testea sin hardware. La lectura queda en su costura
+y sin tests, como el resto de costuras de CoreMIDI de este paquete: hace falta
+un endpoint para ejercitarla, y el que importa solo existe en un iPad.
+
+Candidatas que se leen: name, model, manufacturer, driverOwner, uniqueID,
+offline, si cuelga de una entidad, y el nombre y el driver del dispositivo
+padre. Más el volcado entero de `MIDIObjectGetProperties(deep: true)`, que es la
+red bajo el trapecio: si ninguna candidata distingue, la respuesta está en una
+propiedad que nadie pensó en pedir, y sin volcado habría que volver al iPad.
+
+Una propiedad ausente se escribe `(ausente)` en vez de omitirse. «Esta fuente no
+declara driverOwner» puede ser EL dato; omitirla lo haría indistinguible de «no
+me acordé de leerlo».
+
+Dos correcciones sobre la marcha
+--------------------------------
+1. La etiqueta del driver del padre era `device driverOwner`, que contiene
+   `driverOwner` como subcadena: el informe listaba la candidata dos veces y el
+   test de «una etiqueta por línea» lo cazó. Pasó a `deviceDriver`.
+2. Un test afirmaba que el informe no contenía `(ausente)` en ninguna parte
+   cuando una propiedad sí estaba. Era falso por construcción — el stub deja el
+   resto de campos vacíos a propósito. Ahora se mira la línea, no el informe.
+
+Verificación
+------------
+  swift test --package-path Packages/MIDI --filter EndpointDiagnosticsTests
+      9 tests, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+      756 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
+
+Lo que falta, y es de dispositivo
+---------------------------------
+Correr la app en Debug sobre el iPad dos veces —con el BeatStep Pro conectado y
+sin él— y pegar aquí las dos salidas. De ahí sale la propiedad elegida y su
+porqué, que es lo que la tarea pide registrar.
