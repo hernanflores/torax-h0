@@ -614,7 +614,7 @@ escalón es el que se nota.
 
 ---
 
-- [ ] **Track: En pantalla no se puede elegir qué Cycle se edita**
+- [x] **Track: En pantalla no se puede elegir qué Cycle se edita** — pulsar elige y mantener cambia el rango; verificado en iPad el 2026-09-09
   *Link: [conductor/tracks/cycle-edit-cursor_20260908/index.md](./tracks/cycle-edit-cursor_20260908/index.md)*
 
   **Planificado el 2026-09-08**, en tres fases. Encontrado el 2026-09-03 verificando el reloj externo en iPad. **El cursor de
@@ -945,6 +945,20 @@ en cualquier momento.
 
   **No bloquea a nadie más**, y el resto de la rebanada 4 está entregado y
   verificado.
+
+  > **Cerrado el 2026-09-09.** La vía pública `setEditingCycle(_:)` vive en
+  > `ControlInput`, junto a `setActiveCycleCount` y `setChannel`, y el knob 13
+  > pasa por ella: una sola puerta para el dedo y para el hardware. La celda del
+  > `CycleStrip` reparte el toque —pulsar elige, mantener medio segundo cambia
+  > cuántos hay activos y dispara sin esperar a que se levante el dedo—.
+  >
+  > **Verificado en iPad entero**, en tres pasadas: elegir con la pantalla, el
+  > mantenido sobre la celda 9, el knob 13, los dos valores conviviendo, el
+  > transporte corriendo, los bordes del gesto, bajar el rango y el cambio de
+  > Track. No queda ninguna comprobación del plan sin ejecutar. `Engine` no
+  > se tocó (NFR1) y no hay medición de jitter (NFR5).
+  >
+  > `MIDI`: 874 tests, cobertura 91,51% de líneas, `ControlInput.swift` al 100%.
 
 ---
 

@@ -118,6 +118,10 @@ struct CycleStrip: View {
     /// El acento de la familia que se esté mirando.
     let accent: Color
 
+    /// Pulsar: elige el Cycle en edición (FR5).
+    let onEditingChange: (Int) -> Void
+
+    /// Mantener pulsado: cambia cuántos están activos (FR6).
     let onActiveCountChange: (Int) -> Void
 
     var body: some View {
@@ -196,13 +200,64 @@ struct CycleStrip: View {
     private func cell(_ number: Int, sounding: Int?) -> some View {
         let index = number - 1
         let isActive = number <= activeCount
-        let isSounding = index == sounding && isActive
-        let isEditing = index == editing && isActive
 
-        return Button(number.paddedForDisplay) { onActiveCountChange(number) }
+        return CycleCell(
+            number: number,
+            isActive: isActive,
+            isSounding: index == sounding && isActive,
+            isEditing: index == editing && isActive,
+            accent: accent,
+            // **El guard de FR5 vive aquí y no en la celda**: no se edita un
+            // Cycle que no se recorre, y subir el rango es el otro gesto.
+            onTap: { if isActive { onEditingChange(number) } },
+            onHold: { onActiveCountChange(number) }
+        )
+    }
+}
+
+/// Una celda de la fila de Cycles, con sus dos gestos.
+///
+/// **Pulsar elige el Cycle en edición y mantener cambia cuántos hay activos**
+/// (FR5, FR6). El gesto frecuente es el simple y el raro pide mantener, que es
+/// el mismo criterio con el que los step buttons 15 y 16 hacen de modificadores
+/// de solo y mute.
+///
+/// **Es una vista y no un método porque el reparto necesita estado**: hay que
+/// recordar si el mantenido ya disparó para que soltar el dedo después no elija
+/// además ese Cycle (FR7). Un toque, una cosa.
+///
+/// **Lleva poca lógica a propósito** (NFR4): `App` no se mide, así que el
+/// acotado al rango activo se queda en `Track.withEditing(_:)` y el guard de
+/// FR5 en quien la construye. Aquí solo se distingue un gesto de otro.
+private struct CycleCell: View {
+
+    let number: Int
+    let isActive: Bool
+    let isSounding: Bool
+    let isEditing: Bool
+    let accent: Color
+    let onTap: () -> Void
+    let onHold: () -> Void
+
+    /// Si el mantenido ya disparó en la pulsación en curso.
+    ///
+    /// Se limpia al empezar a pulsar y no al soltar: soltar fuera de la celda no
+    /// emite nada, así que dejarlo puesto colgaría el estado hasta la pulsación
+    /// siguiente.
+    @State private var didHold = false
+
+    /// Lo que tarda el mantenido en disparar.
+    ///
+    /// El valor por defecto de SwiftUI es 0,5 s. Se escribe porque es una
+    /// decisión de gesto: más corto convierte una pulsación normal en un cambio
+    /// de rango, y más largo hace que el gesto parezca roto.
+    private let holdDuration: Double = 0.5
+
+    var body: some View {
+        Text(display: number.paddedForDisplay)
             .font(isSounding || isEditing ? Typography.captionBold : Typography.caption)
             .monospacedDigit()
-            .foregroundStyle(foreground(isActive: isActive, isSounding: isSounding))
+            .foregroundStyle(foreground)
             .frame(minHeight: 28)
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
@@ -216,9 +271,28 @@ struct CycleStrip: View {
                 }
             }
             .opacity(isActive ? 1 : 0.35)
+            // **Dispara al cumplirse el tiempo, no al soltar** (FR6), que es lo
+            // que hace que el gesto responda como un botón del hardware.
+            .onLongPressGesture(minimumDuration: holdDuration) {
+                didHold = true
+                onHold()
+            } onPressingChanged: { isPressing in
+                if isPressing { didHold = false }
+            }
+            // Simultáneo y no encadenado: el mantenido se lleva la pulsación
+            // larga y ésta solo ve la corta. El guard es de FR7 — después de
+            // disparar, soltar no elige.
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    guard !didHold else { return }
+                    onTap()
+                }
+            )
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel(Text(display: "cycle \(number)"))
     }
 
-    private func foreground(isActive: Bool, isSounding: Bool) -> Color {
+    private var foreground: Color {
         guard isActive else { return Palette.muted }
         return isSounding ? Palette.onAccent : Palette.mutedBright
     }
