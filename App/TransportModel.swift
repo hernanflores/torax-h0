@@ -352,6 +352,55 @@ final class TransportModel {
     ///
     /// Es un solo sitio a propósito: cada camino que edita —knob, pad, pantalla—
     /// termina aquí, y así no hay ninguno que se olvide de refrescar la mitad.
+    // MARK: - MIDI Learn
+
+    /// Qué destino está esperando a que alguien mueva un control.
+    ///
+    /// **Se lee al dibujar, como el resto de esta pantalla.** `ControlInput` no
+    /// es observable y la pantalla `midi` ya repregunta con su `TimelineView`,
+    /// por el mismo motivo: el estado que este cableado enseña lo escribe el
+    /// hilo de recepción de CoreMIDI.
+    var learning: LearnTarget? { controlInput.learning }
+
+    /// El mapeo vigente.
+    var mapping: ControlMapping { controlInput.mapping }
+
+    /// Los destinos que se han quedado sin control.
+    ///
+    /// **La pantalla tiene que poder nombrarlos.** Aprender un control ocupado
+    /// deja mudo al que lo tenía; es un estado válido, pero un destino mudo que
+    /// no se anuncia parece un fallo.
+    var parametersWithoutController: [TrackParameter] {
+        controlInput.mapping.parametersWithoutController
+    }
+
+    func beginLearning(_ target: LearnTarget) {
+        controlInput.beginLearning(target)
+    }
+
+    func cancelLearning() {
+        controlInput.cancelLearning()
+    }
+
+    /// Vuelve al preset del BeatStep Pro (FR18).
+    ///
+    /// Volver al de fábrica es adoptar el de fábrica: no hay un camino aparte
+    /// para deshacer lo aprendido.
+    func restoreFactoryMapping() {
+        controlInput.cancelLearning()
+        controlInput.adopt(mapping: .beatStepPro)
+        rememberMapping()
+    }
+
+    /// Guarda el mapeo vigente con los ajustes de sesión.
+    ///
+    /// **Va al Project y no a un fichero propio**: el mapeo es de sesión, como
+    /// el reloj y el hardware recordado, y ahí ya está el camino del Autosave.
+    private func rememberMapping() {
+        project = project.remembering(controlNumbers: controlInput.mapping.numbers)
+        autosave.changedHeader(project)
+    }
+
     private func syncFromControlInput() {
         pattern = controlInput.pattern
         selectedTrackIndex = controlInput.selectedTrackIndex
@@ -832,6 +881,7 @@ final class TransportModel {
             // qué el Bank decía «no patterns» con una pieza sonando.
             pattern: restoredPattern,
             publish: { [relay] updated in relay.publish(updated) },
+            mapping: loaded.controlNumbers.map(ControlMapping.init) ?? .beatStepPro,
             mix: { [relay] gesture in relay.apply(gesture) }
         )
 
@@ -935,7 +985,18 @@ final class TransportModel {
         // comparar Shapes dejaría a Velocity, Sustain y Probability sin poder
         // anunciarse.
         let previous = track
+        let previousMapping = controlInput.mapping
         guard controlInput.receive(message) else { return }
+
+        // **Un mensaje que aprendió no es una edición.** Cambió el mapeo, no el
+        // material: sincronizar aquí marcaría el Pattern como editado sin que
+        // nadie lo tocara, y anunciar un giro enseñaría un valor que no se
+        // movió.
+        guard controlInput.mapping == previousMapping else {
+            rememberMapping()
+            return
+        }
+
         syncFromControlInput()
         // El gesto de mezcla ya llegó al transporte por el relevo; lo que falta
         // es traerse la foto nueva para que la pantalla la dibuje.
