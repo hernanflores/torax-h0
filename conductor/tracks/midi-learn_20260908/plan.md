@@ -26,7 +26,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
 
 **La medición de jitter, según FR19**, que se decide en la Fase 1.
 
-## FASE 1: LAS DOS DECISIONES
+## FASE 1: LAS DOS DECISIONES [checkpoint: 4562ea1]
 
 - [x] Task: Decidir qué pasa con la medición final de la v1 (FR19) — **decisión
       del usuario** `9d00512`
@@ -50,7 +50,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
         aquí — el mismo criterio de `destinationName` y `sourceName`.
   - [x] **Hallazgo**: `migrated(_:)` se documenta como enchufado y no lo está.
         Se arregla en la Fase 5.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: LA FUENTE CORRECTA — `network-session-source` DENTRO
 
