@@ -34,12 +34,12 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
         `setActiveCycleCount`.
   - [x] Implementación (Green): la vía pública junto a `setActiveCycleCount` y
         `setChannel`, apoyada en `Track.withEditing(_:)` sin duplicar el acotado.
-- [ ] Task: El knob y la pantalla entran por la misma puerta (FR10, NFR1)
-  - [ ] Tests (Red): mover el cursor con el knob 13 y con la vía nueva deja el
+- [x] Task: El knob y la pantalla entran por la misma puerta (FR10, NFR1) — `1560f9a`
+  - [x] Tests (Red): mover el cursor con el knob 13 y con la vía nueva deja el
         mismo `Track`; alternarlos no descuadra nada.
-  - [ ] Implementación (Green): `moveEditingCycle(by:)` pasa por la vía pública
+  - [x] Implementación (Green): `moveEditingCycle(by:)` pasa por la vía pública
         en vez de escribir el Pattern por su cuenta.
-  - [ ] Comprobar que `Engine` no se toca (NFR1). Si hiciera falta tocarlo,
+  - [x] Comprobar que `Engine` no se toca (NFR1). Si hiciera falta tocarlo,
         **parar** y anotar por qué antes de seguir.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
