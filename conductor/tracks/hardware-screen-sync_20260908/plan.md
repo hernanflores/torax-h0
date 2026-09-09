@@ -42,7 +42,7 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
 
 ## FASE 1: DIAGNÓSTICO EN DISPOSITIVO — **requiere iPad y BeatStep Pro**
 
-- [~] Task: Reproducir los dos síntomas con el controlador delante
+- [x] Task: Reproducir los dos síntomas con el controlador delante `521e52b`
   - [x] Start desde el BeatStep con reloj externo: la secuencia suena y el botón
         sigue en *play*. Reproducido el 2026-09-09. Pulsarlo **no para**: llama a
         `play()`, que muere en el `guard !isPlaying` de `Transport.play()`.
@@ -63,7 +63,7 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
   > (`ContentView.swift:369`), colgado de la misma copia — así que con un Start
   > del maestro **el playhead no se mueve aunque la secuencia suene**. Lo arregla
   > el mismo cambio; queda escrito para poder verificarlo en la Fase 4.
-- [~] Task: Instrumentar y **mirar los números**, no la pantalla (NFR6)
+- [x] Task: Instrumentar y **mirar los números**, no la pantalla (NFR6) `521e52b`
   - [x] Contar, en dispositivo con reloj externo: ticks recibidos y transiciones
         de transporte. Medido el 2026-09-09, en 220 s a 124 bpm.
   - [x] Es lo que decide FR5 con datos: **~11.000 invalidaciones** si se avisara
@@ -83,7 +83,7 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
   > sino del cronómetro, y no hay nada que perseguir ahí.
   >
   > Transiciones en los 220 s: **4** — dos arranques y dos paradas del maestro.
-- [~] Task: Confirmar o desmentir la carrera sobre `scheduler`
+- [x] Task: Confirmar o desmentir la carrera sobre `scheduler` `521e52b`
   - [x] Leído. La escriben `startPlaying(atHostTime:)` y `stop()`, a las que
         `receive` llama desde el hilo de recepción de CoreMIDI; la lee
         `Transport.isPlaying`, y por ahí el hilo principal al dibujar. **La
