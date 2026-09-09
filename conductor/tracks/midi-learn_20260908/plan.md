@@ -96,14 +96,22 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
         campos existían desde `persistence_20260907` y se guardaba `null` en cada
         guardado, así que FR15 habría sido letra muerta. Cableado en
         `rememberHardware()`, y **solo para lo elegido a mano**.
-- [ ] Task: Verificación en iPad — **requiere iPad y controlador**
-  - [ ] Sin controlador: se lee `No MIDI input` y el indicador `read-only`.
-  - [ ] Conectar el BeatStep Pro: responde a los knobs sin tocar el selector.
-  - [ ] Desconectarlo vuelve al estado vacío, sin error ni caída.
-  - [ ] La sesión de red se elige a mano, funciona y **sobrevive a reiniciar la
-        app**.
-- [ ] Task: Cerrar la [issue #43](https://github.com/hernanflores/torax-h0/issues/43)
-  - [ ] Con lo verificado en dispositivo, y enlazando a este track.
+- [x] Task: Verificación en iPad — **requiere iPad y controlador** `dae873c`
+  - [x] La sesión de red **ya no se autoselecciona**, ni como entrada ni como
+        salida. Verificado el 2026-09-09.
+  - [x] Con el BeatStep Pro conectado responde a los knobs sin tocar el selector.
+  - [x] La elección hecha a mano se recuerda entre arranques.
+  - [ ] **`No MIDI input` no se pudo ver**: hay un OP-Z permanentemente
+        conectado. La regla es correcta y sus tests la fijan; para verlo hay que
+        desenchufarlo todo. Anotado en `device-verification.md`.
+  - [x] Escrito `device-verification.md` con lo que se probó, los tres fallos que
+        encontró y lo que no se pudo ver.
+- [~] Task: Cerrar la [issue #43](https://github.com/hernanflores/torax-h0/issues/43)
+  - [x] Comentada con el diagnóstico, los valores observados y las dos
+        limitaciones que destapó.
+  - [ ] **Se cierra cuando el PR entre en `main`**, no antes: el arreglo vive en
+        `feat/midi-learn` y cerrar una issue cuyo arreglo no está integrado deja
+        el registro mintiendo.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: EL MAPEO DEJA DE SER FIJO [checkpoint: 5a711f5]
