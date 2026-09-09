@@ -118,13 +118,20 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
   - [x] Documentar que **no cancela los modificadores**, al revés que
         `adopt(_:)`: aquí el material no cambia, así que descartarlos sería el
         remedio de otro problema.
-- [ ] Task: Un destino, un control (FR4, FR5)
-  - [ ] Tests (Red): asignar un controlador ya ocupado **desasigna** al destino
+- [x] Task: Un destino, un control (FR4, FR5) `5a711f5`
+  - [x] Tests (Red): asignar un controlador ya ocupado **desasigna** al destino
         anterior, que se queda sin control.
-  - [ ] Tests (Red): un destino sin control no se puede mover y no revienta.
-  - [ ] Tests (Red): las tres familias conviven sin pisarse — es lo que
-        `declaredNumbers` ya comprueba para el preset, extendido al aprendido.
-  - [ ] Implementación (Green): la regla vive en `ControlMapping`, con tests.
+  - [x] Tests (Red): y al revés — reasignar un destino suelta el controlador que
+        tenía. Las dos mitades, porque una sola deja el mapeo mintiendo.
+  - [x] Tests (Red): un destino sin control no se puede mover y no revienta.
+  - [x] Tests (Red): asignar **no mueve los tres bloques**, que no son de
+        `assignments`.
+  - [x] Tests (Red): las tres familias conviven sin pisarse — `hasFamilyOverlap`
+        extiende al mapeo aprendido lo que `declaredNumbers` comprobaba solo del
+        preset.
+  - [x] Implementación (Green): la regla vive en `ControlMapping`, con tests.
+  - [x] `parametersWithoutController`, en el orden del dominio: es lo que la
+        Fase 6 necesita para nombrar lo que acaba de quedarse mudo.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: APRENDER
