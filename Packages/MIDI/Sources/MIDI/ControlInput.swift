@@ -79,7 +79,16 @@ public final class ControlInput: @unchecked Sendable {
     private let trackCount: Int
 
     private let publish: @Sendable (Pattern) -> Void
-    private let mapping: ControlMapping
+    /// Qué significa cada control físico.
+    ///
+    /// **Deja de ser fija con MIDI Learn** (`midi-learn_20260908`, FR2). Hasta
+    /// entonces llegaba en el `init` y se quedaba ahí, así que reasignar un
+    /// control exigía construir otro `ControlInput` — y con él perder el Pattern
+    /// que se estaba editando. Es el mismo error de forma que la adopción de
+    /// Patterns arregló para el material.
+    ///
+    /// Se lee, no se escribe: fuera se llega por `adopt(mapping:)`.
+    public private(set) var mapping: ControlMapping
     private let encoding: RelativeEncoding
 
     /// Dónde van los gestos de mezcla, si alguien los recoge.
@@ -836,6 +845,32 @@ public final class ControlInput: @unchecked Sendable {
         self.pattern = pattern
         overlay = ParameterOverlay()
         ctrlAll = CtrlAllOffset()
+    }
+
+    /// Adopta otro mapeo: los mismos destinos, otros controles.
+    ///
+    /// **Es la costura que MIDI Learn necesita** (`midi-learn_20260908`, FR2).
+    /// Cambia a qué controlador responde cada destino, y con el mapeo se mueven
+    /// también los bloques de pads y de step buttons y el knob del Cycle, que
+    /// salen de él.
+    ///
+    /// **Un mapeo no es material** (FR3), y de ahí lo que este método *no* hace:
+    ///
+    /// - **No toca el Pattern.** Cambiar cómo se llega a las notas no cambia las
+    ///   notas. Ni un Cycle, ni el pool, ni el marco tonal.
+    /// - **No mueve el Track seleccionado.** Qué Track editas es del dedo.
+    /// - **No publica** (FR4 de la adopción de Patterns, por la misma razón): no
+    ///   ha cambiado nada de lo que el scheduler lee, así que un snapshot sería
+    ///   trabajo y ruido para nada.
+    /// - **No cancela los modificadores.** Temp y Ctrl All capturaron valores de
+    ///   *este* material, que sigue siendo el mismo; descartarlos sería el
+    ///   remedio de otro problema. Es la diferencia con `adopt(_:)`, y está aquí
+    ///   escrita para que no se copie por parecido.
+    ///
+    /// **Volver al preset de fábrica es adoptar el de fábrica**, y por eso no
+    /// hace falta un camino aparte para deshacer lo aprendido.
+    public func adopt(mapping: ControlMapping) {
+        self.mapping = mapping
     }
 
     /// Cambia la modulación del Cycle **en edición** del Track seleccionado.
