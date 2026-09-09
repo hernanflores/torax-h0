@@ -1,0 +1,44 @@
+Tareas 1, 2 y 3 de la Fase 1 del track hardware-screen-sync_20260908.
+
+QUÉ SE HIZO
+Contadores AtomicCounter bajo #if DEBUG en Transport: diagnosticTickCount (cada
+.timingClock atendido) y diagnosticTransitionCount (cada arranque y parada
+efectivos, vengan de la app o del maestro). En TransportModel, una línea por
+consola cada diez segundos desde tickAutosave, que ya corría a 1 Hz.
+
+LOS NÚMEROS, medidos en iPad con BeatStep Pro el 2026-09-09, 220 s a 124 bpm
+- Tramo estable t=100 s → t=210 s: 5544 ticks en 110 s = 50,4 ticks/s.
+  Corregido por la deriva del Task.sleep(1 s) quedan ~49,6/s, que es
+  124 × 24 PPQN / 60 exacto. El estimador de tempo dice la verdad.
+- Transiciones en los 220 s: 4 (dos arranques y dos paradas del maestro).
+- Coste de FR5: ~11.000 invalidaciones avisando por tick contra 4 avisando por
+  transición. Tres órdenes de magnitud, decidido con datos y no por argumento.
+
+LOS TRES HALLAZGOS
+1. El defecto es simétrico. En t=90 s el maestro paró, transport.isPlaying pasó
+   a false y model.isPlaying se quedó en true. El spec solo describía el Start.
+2. Tercer síntoma no reportado: el anillo. El playhead se dibuja con
+   TimelineView(.animation(paused: !model.isPlaying)) en ContentView.swift:369,
+   así que con un Start del maestro no avanza aunque la secuencia suene. Lo
+   arregla el mismo cambio; entra como FR8b en vez de abrir otro track.
+3. Pulsar el botón mientras suena por orden del maestro no para ni rearranca:
+   con la copia en false llama a play(), que muere en el guard !isPlaying de
+   Transport.play(). Solo sincroniza la copia a true de rebote.
+
+DECISIÓN DE NFR2
+Se elimina la lectura de scheduler desde el hilo principal: el flag de FR2 puede
+responder isPlaying. No se queda como límite conocido. Lo que sobrevive es la
+escritura de scheduler desde el hilo de recepción sin lector concurrente en el
+principal, anotado en spec.md con su ruta. No merece track propio hoy.
+
+FICHEROS
+Packages/MIDI/Sources/MIDI/Transport.swift, App/TransportModel.swift,
+conductor/tracks/hardware-screen-sync_20260908/{spec,plan}.md
+
+POR QUÉ ASÍ
+La lección de los tres intentos revertidos es que en esta zona no se valida con
+una captura ni con un porcentaje de CPU. Se instrumentó, se miró el número, y el
+número cambió el spec en tres sitios.
+
+La instrumentación se conserva hasta la Fase 4 —el criterio 6 exige contar otra
+vez con el arreglo puesto— y se quita en la tarea de cierre.
