@@ -779,6 +779,38 @@ public final class ControlInput: @unchecked Sendable {
         return true
     }
 
+    /// Fija el Cycle en edición del Track seleccionado (FR1).
+    ///
+    /// **Se elige en pantalla y no con un knob**: pulsar la celda del
+    /// `CycleStrip` es el gesto frecuente, y el knob 13 sigue siendo la vía del
+    /// hardware. Las dos llevan al mismo cursor, que es lo que impide que la
+    /// pantalla mienta sobre lo que el controlador acaba de hacer (FR10).
+    ///
+    /// **Se acota al rango activo, no a los dieciséis** (FR2): no se edita un
+    /// Cycle que no se recorre. Lo decide `Track.withEditing(_:)`, que ya lo
+    /// hace y tiene tests; aquí no se vuelve a decidir.
+    ///
+    /// **Mueve el cursor de edición y nada más** (FR3): ni el de reproducción,
+    /// que es del scheduler y del límite de vuelta, ni una sola nota de
+    /// material.
+    ///
+    /// Publica porque el Track entero cruza al scheduler en el snapshot. Fijar
+    /// el índice que ya estaba **no publica** (FR4), por la misma razón que
+    /// girar contra un tope: mandar un snapshot idéntico es trabajo y ruido para
+    /// nada.
+    @discardableResult
+    public func setEditingCycle(_ index: Int) -> Bool {
+        guard !isTouchFrozen else { return false }
+        guard let current = pattern.track(at: selectedTrackIndex) else { return false }
+
+        let moved = current.withEditing(index)
+        guard moved != current else { return false }
+
+        pattern = pattern.replacing(moved, at: selectedTrackIndex)
+        publish(pattern)
+        return true
+    }
+
     /// Cambia el canal por el que emite el Track seleccionado.
     ///
     /// **Se edita en pantalla y no con un knob**: es configuración, no material
