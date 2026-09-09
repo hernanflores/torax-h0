@@ -1,0 +1,56 @@
+Task: Aprender desde la pantalla `midi` (FR6, FR11)
+Track: midi-learn_20260908 · Fase 6
+
+Qué cambia
+----------
+  App/MidiScreen.swift      `MidiLearnCard`, cuarto card de la columna izquierda
+  App/TransportModel.swift  `learning`, `mapping`, `parametersWithoutController`,
+      `beginLearning(_:)`, `cancelLearning()`, `restoreFactoryMapping()`,
+      `rememberMapping()`; el corte en `apply(_:)`; y el mapeo restaurado en el
+      `init`
+
+Decisiones, con su porqué
+-------------------------
+1. SIN MODAL (FR11). `product-guidelines.md` prohíbe modales que bloqueen con el
+   transporte corriendo, y este es el caso para el que se escribió: entrar en
+   aprendizaje enciende un destino y no tapa nada. La secuencia sigue sonando.
+
+2. LOS TRES BLOQUES VAN ENTRE LOS PARÁMETROS, no en otra sección. El primer pad,
+   el primer knob y el primer step button son destinos como los demás: los
+   dieciséis de cada familia van seguidos desde ellos.
+
+3. LO QUE SE HA QUEDADO MUDO SE DICE ANTES QUE NADA (FR4, FR5). Un destino sin
+   control es válido pero silencioso; sin esa línea, aprender un knob ocupado
+   deja algo que ya no responde y nada que lo explique. El listado sale de
+   `ControlMapping`, en el orden del dominio.
+
+4. VOLVER A PULSAR EL DESTINO QUE ESPERA CANCELA. Es la vía corta de FR9, sin ir
+   a buscar el botón. Y «cancel» solo existe mientras se aprende: un botón que
+   no hace nada la mayor parte del tiempo enseña a ignorarlo.
+
+5. UN MENSAJE QUE APRENDIÓ NO ES UNA EDICIÓN. En `apply(_:)` se compara el mapeo
+   antes y después: si cambió, se guarda y se vuelve. Sin ese corte,
+   `syncFromControlInput()` marcaría el Pattern como editado sin que nadie lo
+   tocara, y `announce` enseñaría un giro de un valor que no se movió.
+
+6. `learning` SE LEE AL DIBUJAR. `ControlInput` no es observable, y esta pantalla
+   ya repregunta con su `TimelineView` por la misma razón: lo que enseña lo
+   escribe el hilo de recepción de CoreMIDI. No se añade un mecanismo nuevo.
+
+7. EL MAPEO SE GUARDA CON LOS AJUSTES DE SESIÓN, por el camino del Autosave que
+   ya existe, y se restaura en el `init` desde `loaded.controlNumbers`. Ausente
+   es el preset de fábrica, que es la decisión de la Fase 1.
+
+Verificación
+------------
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
+  Compilado, instalado y lanzado en el simulador iPad Pro 11-inch: arranca y se
+  mantiene vivo.
+
+Lo que el simulador NO puede verificar, y queda para la Fase 7
+--------------------------------------------------------------
+No tiene fuentes ni destinos MIDI, así que `canPlay` es falso y no llega ningún
+CC: no se puede comprobar que pulsar un destino y girar un knob lo asigne. Y
+llegar al card exige tocar la pestaña `midi`, que desde aquí no se puede pulsar.
+La comprobación visual y funcional es de dispositivo.
