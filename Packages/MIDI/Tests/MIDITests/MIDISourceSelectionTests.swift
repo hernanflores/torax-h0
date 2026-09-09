@@ -14,7 +14,8 @@ final class MIDISourceSelectionTests: XCTestCase {
     }
 
     private var beatStep: MIDIEndpointInfo { endpoint(1, "Arturia BeatStep Pro") }
-    private var keyboard: MIDIEndpointInfo { endpoint(2, "Keystep") }
+    private var beatStepEditor: MIDIEndpointInfo { endpoint(2, "BeatStepPro OutEditor") }
+    private var keyboard: MIDIEndpointInfo { endpoint(3, "Keystep") }
     private var loopback: MIDIEndpointInfo { endpoint(9, VirtualLoopback.defaultName) }
 
     // MARK: - Sin controlador es un estado válido
@@ -48,11 +49,32 @@ final class MIDISourceSelectionTests: XCTestCase {
 
     // MARK: - Selección
 
-    func testFirstSourceIsSelectedAutomatically() {
-        XCTAssertEqual(
-            MIDIEndpointSelection(.source, discovering: [beatStep, keyboard]).selected,
-            beatStep
-        )
+    /// Los dos puertos del BeatStep Pro no ofrecen un discriminante estable.
+    /// Ninguno se elige por posición ni por el texto que enseñe CoreMIDI.
+    func testTheTwoBeatStepSourcesRequireManualSelectionInEitherOrdering() {
+        XCTAssertNil(
+            MIDIEndpointSelection(.source, discovering: [beatStep, beatStepEditor]).selected)
+        XCTAssertNil(
+            MIDIEndpointSelection(.source, discovering: [beatStepEditor, beatStep]).selected)
+    }
+
+    func testEitherBeatStepOrderingStillAllowsManualSelection() {
+        let firstOrdering = MIDIEndpointSelection(
+            .source, discovering: [beatStep, beatStepEditor]
+        ).selecting(beatStep)
+        let secondOrdering = MIDIEndpointSelection(
+            .source, discovering: [beatStepEditor, beatStep]
+        ).selecting(beatStep)
+
+        XCTAssertEqual(firstOrdering.selected, beatStep)
+        XCTAssertEqual(secondOrdering.selected, beatStep)
+    }
+
+    func testASecondSourceClearsAnEarlierAutomaticChoice() {
+        let selection = MIDIEndpointSelection(.source, discovering: [beatStep])
+            .refreshed(with: [beatStep, beatStepEditor])
+
+        XCTAssertNil(selection.selected)
     }
 
     func testRefreshingKeepsTheCurrentSelection() {
@@ -62,7 +84,7 @@ final class MIDISourceSelectionTests: XCTestCase {
         XCTAssertEqual(selection.selected, keyboard)
     }
 
-    func testLosingTheSelectedSourceFallsBackToTheRemainingOne() {
+    func testAnAmbiguousPairBecomesAutomaticWhenOnlyOneSourceRemains() {
         let selection = MIDIEndpointSelection(.source, discovering: [beatStep, keyboard])
             .refreshed(with: [keyboard])
         XCTAssertEqual(selection.selected, keyboard)

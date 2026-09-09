@@ -89,6 +89,15 @@ public struct ControlMapping: Equatable, Sendable {
 
     private let assignments: [TrackParameter: Int]
 
+    /// La tabla entera, para quien tenga que reconstruir el mapeo cambiando otra
+    /// cosa.
+    ///
+    /// **Existe porque los bloques y las asignaciones se editan por separado**:
+    /// aprender el primer pad mueve un bloque y tiene que dejar la tabla igual.
+    /// Sin esto, quien mueve un bloque tendría que elegir entre exponer el
+    /// diccionario o perder las asignaciones.
+    var allAssignments: [TrackParameter: Int] { assignments }
+
     /// Nota del primer pad; los dieciséis son consecutivos desde ella.
     ///
     /// **Es un dato del mapeo y no una constante repartida por el código.** Si
@@ -205,5 +214,112 @@ public struct ControlMapping: Equatable, Sendable {
     /// - Returns: The assigned track parameter, or `nil` if the controller is unassigned.
     public func parameter(for controller: MIDIController) -> TrackParameter? {
         assignments.first { $0.value == controller.number }?.key
+    }
+
+    /// El mismo mapeo con ese controlador moviendo ese parámetro.
+    ///
+    /// **Es la operación de MIDI Learn** (`midi-learn_20260908`, FR4), y su
+    /// regla es que un destino tiene un control y un control mueve un destino.
+    /// Las dos mitades, porque solo una deja el mapeo mintiendo:
+    ///
+    /// - El parámetro **suelta el controlador que tuviera**. Reasignar Steps del
+    ///   70 al 20 deja el 70 sin dueño, no a Steps con dos knobs.
+    /// - El controlador **desasigna al parámetro que lo tuviera**. Aprender el
+    ///   knob de Steps para Pulses deja a Steps sin control, no a los dos
+    ///   escuchando el mismo giro.
+    ///
+    /// **Un destino sin control es un estado válido** (FR5), no un error. Se
+    ///  puede preguntar por `parametersWithoutController`, que es lo que la
+    ///  pantalla necesita para decir en voz alta lo que acaba de quedarse mudo.
+    ///
+    /// Los tres bloques no se tocan: no son de `assignments`, y aprender un knob
+    /// no puede mover los pads de sitio.
+    public func assigning(
+        _ controller: MIDIController, to parameter: TrackParameter
+    ) -> ControlMapping {
+        var updated = assignments
+        updated = updated.filter { $0.value != controller.number }
+        updated[parameter] = controller.number
+
+        return ControlMapping(
+            assignments: updated,
+            padBlock: padBlock,
+            knobBlock: knobBlock,
+            stepButtonBlock: stepButtonBlock
+        )
+    }
+
+    /// Los parámetros que no tienen control, **en el orden del dominio**.
+    ///
+    /// El orden lo da `TrackParameter.allCases` y no el diccionario: un listado
+    /// que baila entre ejecuciones haría que la pantalla se reordenara sola.
+    ///
+    /// Con el preset de fábrica está vacío, y esa es la condición que lo hace
+    /// útil como respuesta: si aparece algo, es que alguien aprendió encima.
+    public var parametersWithoutController: [TrackParameter] {
+        TrackParameter.allCases.filter { controller(for: $0) == nil }
+    }
+
+    /// El mapeo en números, para que el `Project` lo guarde.
+    ///
+    /// **`Engine` no puede ver CoreMIDI**, así que lo que cruza la frontera son
+    /// enteros. Es el mismo reparto por el que el destino se recuerda por su
+    /// nombre y no por su `MIDIEndpointRef`.
+    public var numbers: ControlNumbers {
+        ControlNumbers(
+            assignments: assignments,
+            padBlock: Int(padBlock.value),
+            knobBlock: knobBlock.number,
+            stepButtonBlock: stepButtonBlock.number
+        )
+    }
+
+    /// El mapeo que describen esos números.
+    ///
+    /// **Lo imposible se descarta en vez de impedir la apertura**, con el mismo
+    /// criterio que una escala desconocida cayendo en `minor`: un `Int` del
+    /// disco no promete ser un controlador válido. Una asignación fuera de rango
+    /// se pierde —el destino se queda sin control, que es un estado válido— y un
+    /// bloque fuera de rango cae en el de fábrica, porque un mapeo sin pads no
+    /// lo es.
+    public init(_ numbers: ControlNumbers) {
+        let restored = ControlMapping(
+            assignments: numbers.assignments.filter { MIDIController($0.value) != nil },
+            padBlock: MIDINote(numbers.padBlock) ?? Self.defaultPadBlock,
+            knobBlock: MIDIController(numbers.knobBlock) ?? Self.defaultKnobBlock,
+            stepButtonBlock: MIDIController(numbers.stepButtonBlock)
+                ?? Self.defaultStepButtonBlock
+        )
+        self = restored.hasConflict ? .beatStepPro : restored
+    }
+
+    /// Si algún control significaría dos cosas.
+    ///
+    /// **Un mapeo aprendido sí puede provocarlo.** Knobs y step buttons son los
+    /// dos CC, y el preset de fábrica solo evita el choque porque alguien lo
+    /// escribió mirando la tabla; construyendo el mapeo control a control esa
+    /// garantía desaparece. Los pads son notas y viven en otro espacio de
+    /// numeración, así que no entran en la comparación.
+    ///
+    /// > **Lo que un conflicto provoca está medido en dispositivo, no supuesto**
+    /// > (2026-09-09). Se aprendió un bloque con un knob, el de step buttons
+    /// > aterrizó encima de los CC de los knobs, y desde entonces **cada giro
+    /// > cambiaba de Track**: `receive` despacha los step buttons antes que los
+    /// > knobs. Y se guardaba con la sesión, así que sobrevivía a relanzar la
+    /// > app; la única salida era el botón de fábrica.
+    ///
+    /// Son dos formas del mismo choque, y las dos tienen el mismo síntoma:
+    ///
+    /// - **Dos bloques encima**, que hace step buttons de una fila de knobs.
+    /// - **Un parámetro dentro del bloque de step buttons**, que deja a ese
+    ///   parámetro sin poder moverse nunca — el despacho no llega a él.
+    public var hasConflict: Bool {
+        let numbers = declaredNumbers
+        if !Set(numbers.knobs).isDisjoint(with: Set(numbers.stepButtons)) { return true }
+        if assignments.values.contains(where: { numbers.stepButtons.contains($0) }) {
+            return true
+        }
+        guard let editingCycleController else { return false }
+        return assignments.values.contains(editingCycleController.number)
     }
 }

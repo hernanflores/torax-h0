@@ -116,7 +116,11 @@ public final class CoreMIDIOutput: @unchecked Sendable {
     public func availableDestinations() -> [MIDIEndpointInfo] {
         (0..<MIDIGetNumberOfDestinations()).map { index in
             let endpoint = MIDIGetDestination(index)
-            return MIDIEndpointInfo(endpoint: endpoint, displayName: Self.displayName(of: endpoint))
+            return MIDIEndpointInfo(
+                endpoint: endpoint,
+                displayName: Self.displayName(of: endpoint),
+                isNetworkSession: EndpointDiagnostics.isNetworkSession(endpoint)
+            )
         }
     }
 

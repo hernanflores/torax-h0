@@ -23,6 +23,7 @@ struct MidiScreen: View {
                     ClockSourceCard(model: model)
                     MidiInputCard(model: model)
                     MidiOutputCard(model: model)
+                    MidiLearnCard(model: model)
                     Spacer(minLength: 0)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -327,6 +328,149 @@ struct TrackChannels: View {
                         lineWidth: isEmphasised ? Brutalist.strokeEmphasis : Brutalist.stroke
                     )
             }
+    }
+}
+
+/// Qué control físico mueve qué destino.
+///
+/// **Se aprende destino a destino** (`midi-learn_20260908`, FR6): se pulsa el
+/// destino, se mueve el control, y ese control queda asignado. No hay recorrido
+/// guiado de los cuarenta y ocho — aprender uno es el gesto, y repetirlo es el
+/// recorrido.
+///
+/// **Sin modal, y por eso se puede aprender tocando** (FR11).
+/// `product-guidelines.md` prohíbe modales que bloqueen con el transporte
+/// corriendo, y aquí manda igual: entrar en aprendizaje enciende un destino y no
+/// tapa nada. La secuencia sigue sonando.
+///
+/// **Los tres bloques van con los parámetros y no en otra sección.** El primer
+/// pad, el primer knob y el primer step button son destinos como los demás: los
+/// dieciséis de cada familia van seguidos desde ellos, así que aprender el
+/// primero mueve la fila entera.
+struct MidiLearnCard: View {
+
+    let model: TransportModel
+
+    var body: some View {
+        Card(title: "midi learn") {
+            // **Lo que se ha quedado mudo se dice antes que nada** (FR4, FR5).
+            // Un destino sin control es un estado válido, pero silencioso: sin
+            // esta línea, aprender un knob ocupado deja algo que ya no responde
+            // y nada que lo explique.
+            if !model.parametersWithoutController.isEmpty {
+                Text(
+                    display: "sin control: "
+                        + model.parametersWithoutController.map(\.description)
+                        .joined(separator: " · ").lowercased()
+                )
+                .font(Typography.caption)
+                .foregroundStyle(Palette.groove)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6
+            ) {
+                ForEach(TrackParameter.allCases, id: \.self) { parameter in
+                    target(
+                        .parameter(parameter),
+                        label: parameter.description.lowercased(),
+                        number: model.mapping.controller(for: parameter)?.number,
+                        accent: Palette.accent(for: parameter.family)
+                    )
+                }
+
+                target(
+                    .knobBlock, label: "knob 1", number: model.mapping.knobBlock.number,
+                    accent: Palette.muted)
+                target(
+                    .padBlock, label: "pad 1", number: Int(model.mapping.padBlock.value),
+                    accent: Palette.muted)
+                target(
+                    .stepButtonBlock, label: "step 1",
+                    number: model.mapping.stepButtonBlock.number, accent: Palette.muted)
+            }
+
+            // **Mientras se espera se dice qué se espera, y qué no vale.** Un
+            // destino encendido y nada más no explica por qué mover un control
+            // a veces no lo asigna: la app rechaza en silencio lo que dejaría a
+            // un control significando dos cosas, y sin esta línea eso parece que
+            // no funciona.
+            if model.learning != nil {
+                Text(display: "mueve un control · no vale uno que ya signifique otra cosa")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.muted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            HStack(spacing: 6) {
+                // **Cancelar solo existe mientras se aprende.** Un botón que no
+                // hace nada la mayor parte del tiempo enseña a ignorarlo.
+                if model.learning != nil {
+                    action("cancel") { model.cancelLearning() }
+                }
+                action("factory preset") { model.restoreFactoryMapping() }
+            }
+        }
+    }
+
+    /// Un destino: su número debajo, y se pulsa para reasignarlo.
+    ///
+    /// **El número es lo que hace visible el aprendizaje.** Sin él, reasignar un
+    /// knob no cambiaba nada en pantalla —el borde de «tiene control» ya estaba
+    /// encendido— y la única forma de saber si había funcionado era girar el
+    /// knob. Encontrado en dispositivo el 2026-09-09.
+    ///
+    /// **El que espera va relleno**, con el mismo lenguaje que el resto de la
+    /// app usa para lo elegido. Un destino sin control lleva el borde en reposo y
+    /// una raya donde iría el número: no hace falta texto para distinguirlo.
+    private func target(
+        _ destination: LearnTarget, label: String, number: Int?, accent: Color
+    ) -> some View {
+        let isLearning = model.learning == destination
+
+        return Button {
+            // Volver a pulsar el que ya espera sale del aprendizaje: es la vía
+            // corta de FR9, sin ir a buscar el botón de cancelar.
+            if isLearning {
+                model.cancelLearning()
+            } else {
+                model.beginLearning(destination)
+            }
+        } label: {
+            VStack(spacing: 2) {
+                Text(display: label)
+                    .font(isLearning ? Typography.captionBold : Typography.caption)
+                    .foregroundStyle(isLearning ? Palette.onAccent : Palette.text)
+
+                // **Monoespaciado**, como el resto de los números de la app: sin
+                // él, la rejilla da un salto de medio carácter entre un 70 y un
+                // 102 y la fila deja de leerse de un vistazo.
+                Text(display: number.map(String.init) ?? "—")
+                    .font(Typography.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(isLearning ? Palette.onAccent : Palette.muted)
+            }
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .brutalistControl(
+            accent: accent, isSelected: isLearning, isPopulated: number != nil,
+            radius: Brutalist.radiusSmall)
+    }
+
+    private func action(_ label: String, perform: @escaping () -> Void) -> some View {
+        Button(action: perform) {
+            Text(display: label)
+                .font(Typography.caption)
+                .foregroundStyle(Palette.text)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .brutalistControl(
+            accent: Palette.muted, isSelected: false, radius: Brutalist.radiusSmall)
     }
 }
 

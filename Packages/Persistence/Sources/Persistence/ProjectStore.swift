@@ -184,7 +184,13 @@ public final class ProjectStore: @unchecked Sendable {
     private func loadHeader(rescuing rescued: inout [String]) -> ProjectRecord? {
         do {
             guard let data = try fileSystem.read(projectURL) else { return nil }
-            return try decoder.decode(ProjectRecord.self, from: data).validated()
+            // **Por el migrador, no por `validated()` a secas.** Hoy hacen lo
+            // mismo —`migrated(_:)` solo valida— pero su documentación promete
+            // que «la llamada está puesta», y no lo estaba: quien escriba la
+            // primera migración de verdad confiando en eso vería el fichero
+            // apartarse por la ruta que no migra. Hallazgo del 2026-09-08, al
+            // planificar `midi-learn_20260908`.
+            return try ProjectRecord.migrated(decoder.decode(ProjectRecord.self, from: data))
         } catch {
             setAside(projectURL, into: &rescued)
             return nil

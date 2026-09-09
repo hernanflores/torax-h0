@@ -122,14 +122,17 @@ public final class CoreMIDIInput: @unchecked Sendable {
     /// Fuentes MIDI presentes en el sistema.
     ///
     /// No es código de tiempo real: consultar nombres asigna memoria y se hace
-    /// al poblar la interfaz.
+    /// al poblar la interfaz. El orden es el que entrega CoreMIDI y no expresa
+    /// preferencia: `MIDIEndpointSelection` exige elección manual cuando hay
+    /// más de una fuente no de red.
     public func availableSources() -> [MIDIEndpointInfo] {
         guard !closed.value else { return [] }
         return (0..<MIDIGetNumberOfSources()).map { index in
             let endpoint = MIDIGetSource(index)
             return MIDIEndpointInfo(
                 endpoint: endpoint,
-                displayName: CoreMIDIOutput.displayName(of: endpoint)
+                displayName: CoreMIDIOutput.displayName(of: endpoint),
+                isNetworkSession: EndpointDiagnostics.isNetworkSession(endpoint)
             )
         }
     }

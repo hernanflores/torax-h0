@@ -1,3 +1,4 @@
+import MIDI
 import SwiftUI
 
 @main
@@ -19,6 +20,21 @@ struct ToraxH0App: App {
         if !Typography.isAvailable {
             print("[tipografía] Figtree no está registrada: iOS usará la fuente del sistema.")
         }
+
+        // **El diagnóstico de la Fase 2 de `midi-learn_20260908`.** iPadOS
+        // publica siempre la sesión de red como fuente y la app la
+        // autoselecciona; identificarla por el nombre visible está descartado,
+        // así que hace falta saber qué propiedad la distingue de verdad.
+        //
+        // **Se imprime una vez, al arrancar, y solo en Debug.** Las fuentes
+        // aparecen y desaparecen al conectar hardware, así que una pasada
+        // retrata el momento del arranque: para ver los dos casos se lanza dos
+        // veces, con el controlador conectado y sin él. Un aviso por cada cambio
+        // de la lista sería ruido en la consola durante el resto del desarrollo.
+        #if DEBUG
+            print("[midi] --- diagnóstico de fuentes ---")
+            print(EndpointDiagnostics.reportForSystemSources())
+        #endif
     }
 
     var body: some Scene {

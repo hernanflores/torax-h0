@@ -352,6 +352,75 @@ final class TransportModel {
     ///
     /// Es un solo sitio a propósito: cada camino que edita —knob, pad, pantalla—
     /// termina aquí, y así no hay ninguno que se olvide de refrescar la mitad.
+    // MARK: - MIDI Learn
+
+    /// Qué destino está esperando a que alguien mueva un control.
+    ///
+    /// > **Era una propiedad calculada sobre `ControlInput`, y la pantalla no se
+    /// > enteraba** (2026-09-09, en dispositivo). `ControlInput` no es
+    /// > observable, así que leerlo desde el cuerpo de una vista no registra
+    /// > ninguna dependencia: el card enseñaba la asignación vieja hasta que se
+    /// > navegaba a otra pestaña y se volvía. El `TimelineView` de la pantalla no
+    /// > lo salva —vuelve a evaluar su cuerpo, pero SwiftUI no vuelve a entrar en
+    /// > un hijo cuyos parámetros no cambiaron, y el hijo solo lleva el modelo—.
+    /// >
+    /// > Se refleja aquí, con el mismo criterio que `pattern` y
+    /// > `selectedTrackIndex`, que salieron de `ControlInput` por esta misma
+    /// > razón. Es la vía que el repositorio ya tenía.
+    private(set) var learning: LearnTarget?
+
+    /// El mapeo vigente. Reflejado, no calculado, por lo mismo que `learning`.
+    private(set) var mapping: ControlMapping = .beatStepPro
+
+    /// Los destinos que se han quedado sin control.
+    ///
+    /// **La pantalla tiene que poder nombrarlos.** Aprender un control ocupado
+    /// deja mudo al que lo tenía; es un estado válido, pero un destino mudo que
+    /// no se anuncia parece un fallo.
+    var parametersWithoutController: [TrackParameter] {
+        mapping.parametersWithoutController
+    }
+
+    func beginLearning(_ target: LearnTarget) {
+        controlInput.beginLearning(target)
+        syncLearning()
+    }
+
+    func cancelLearning() {
+        controlInput.cancelLearning()
+        syncLearning()
+    }
+
+    /// Trae del `ControlInput` lo que la pantalla dibuja.
+    ///
+    /// **Un solo sitio**, como `syncFromControlInput`: dos caminos que reflejen
+    /// lo mismo acaban divergiendo, y el que se olvide es el que enseña un dato
+    /// viejo.
+    private func syncLearning() {
+        learning = controlInput.learning
+        mapping = controlInput.mapping
+    }
+
+    /// Vuelve al preset del BeatStep Pro (FR18).
+    ///
+    /// Volver al de fábrica es adoptar el de fábrica: no hay un camino aparte
+    /// para deshacer lo aprendido.
+    func restoreFactoryMapping() {
+        controlInput.cancelLearning()
+        controlInput.adopt(mapping: .beatStepPro)
+        rememberMapping()
+    }
+
+    /// Guarda el mapeo vigente con los ajustes de sesión.
+    ///
+    /// **Va al Project y no a un fichero propio**: el mapeo es de sesión, como
+    /// el reloj y el hardware recordado, y ahí ya está el camino del Autosave.
+    private func rememberMapping() {
+        syncLearning()
+        project = project.remembering(controlNumbers: controlInput.mapping.numbers)
+        autosave.changedHeader(project)
+    }
+
     private func syncFromControlInput() {
         pattern = controlInput.pattern
         selectedTrackIndex = controlInput.selectedTrackIndex
@@ -832,15 +901,21 @@ final class TransportModel {
             // qué el Bank decía «no patterns» con una pieza sonando.
             pattern: restoredPattern,
             publish: { [relay] updated in relay.publish(updated) },
+            mapping: loaded.controlNumbers.map(ControlMapping.init) ?? .beatStepPro,
             mix: { [relay] gesture in relay.apply(gesture) }
         )
+        // El espejo del mapeo arranca con lo que se haya restaurado del disco,
+        // no con el de fábrica: si no, el card enseñaría el preset hasta el
+        // primer gesto.
+        mapping = controlInput.mapping
 
         do {
             let output = try CoreMIDIOutput()
             self.output = output
 
             let watcher = MIDIEndpointWatcher(
-                .destination, enumerating: output.availableDestinations)
+                .destination, enumerating: output.availableDestinations,
+                remembering: project.destinationName)
             self.watcher = watcher
             selection = watcher.selection
 
@@ -893,7 +968,12 @@ final class TransportModel {
             }
             self.input = input
 
-            let sourceWatcher = MIDIEndpointWatcher(.source, enumerating: input.availableSources)
+            // **Con la fuente recordada** (FR15). El `Project` la guarda desde
+            // `persistence_20260907`, y usarla es lo que el plan de
+            // `network-session-source_20260828` dejó anotado: recordar la última
+            // elección resuelve mejor que cualquier heurística.
+            let sourceWatcher = MIDIEndpointWatcher(
+                .source, enumerating: input.availableSources, remembering: project.sourceName)
             self.sourceWatcher = sourceWatcher
             sourceSelection = sourceWatcher.selection
             connectToSelectedSource()
@@ -921,11 +1001,16 @@ final class TransportModel {
     }
 
     private func connectToSelectedSource() {
-        guard let endpoint = sourceSelection.selected?.endpoint else { return }
         // **Reconectar suelta los modificadores** (FR8). Si el cable se fue con
         // un step button hundido, la soltada que lo levantaría ya no va a llegar
         // por ningún sitio y el modificador se quedaría pegado para siempre.
         controlInput.releaseModifiers()
+        guard let endpoint = sourceSelection.selected?.endpoint else {
+            // La ambigüedad se comporta como «sin fuente»: conservar la conexión
+            // automática anterior sería elegirla a escondidas.
+            input?.disconnect()
+            return
+        }
         input?.connect(to: endpoint)
     }
 
@@ -935,7 +1020,18 @@ final class TransportModel {
         // comparar Shapes dejaría a Velocity, Sustain y Probability sin poder
         // anunciarse.
         let previous = track
+        let previousMapping = controlInput.mapping
         guard controlInput.receive(message) else { return }
+
+        // **Un mensaje que aprendió no es una edición.** Cambió el mapeo, no el
+        // material: sincronizar aquí marcaría el Pattern como editado sin que
+        // nadie lo tocara, y anunciar un giro enseñaría un valor que no se
+        // movió.
+        guard controlInput.mapping == previousMapping else {
+            rememberMapping()
+            return
+        }
+
         syncFromControlInput()
         // El gesto de mezcla ya llegó al transporte por el relevo; lo que falta
         // es traerse la foto nueva para que la pantalla la dibuje.
@@ -968,8 +1064,16 @@ final class TransportModel {
 
     /// Elige otra fuente de entrada.
     func selectSource(_ endpoint: MIDIEndpointInfo) {
-        sourceSelection = sourceSelection.selecting(endpoint)
+        sourceSelection =
+            sourceWatcher?.selecting(endpoint) ?? sourceSelection.selecting(endpoint)
         connectToSelectedSource()
+        // Cambiar la entrada no convierte el destino automático vigente en una
+        // preferencia: el otro extremo queda exactamente como estaba en disco.
+        project = project.remembering(
+            destinationNamed: project.destinationName,
+            sourceNamed: sourceSelection.selected?.displayName
+        )
+        autosave.changedHeader(project)
     }
 
     func play() {
@@ -1019,7 +1123,13 @@ extension TransportModel {
     /// Elige otro destino. Es lo único que la pantalla puede cambiar, junto con
     /// el transporte: los parámetros generativos no se tocan en esta rebanada.
     func select(_ destination: MIDIEndpointInfo) {
-        selection = selection.selecting(destination)
+        selection = watcher?.selecting(destination) ?? selection.selecting(destination)
         activeDestination.value = UInt64(selection.selected?.endpoint ?? 0)
+        // Igual que en la entrada: solo persiste el extremo tocado a mano.
+        project = project.remembering(
+            destinationNamed: selection.selected?.displayName,
+            sourceNamed: project.sourceName
+        )
+        autosave.changedHeader(project)
     }
 }

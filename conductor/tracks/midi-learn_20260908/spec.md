@@ -84,6 +84,17 @@ y aquí manda igual: se aprende con la secuencia sonando.
 
 ### La fuente correcta — `network-session-source` dentro
 
+> **Ampliación del 2026-09-09 — FR12 vale también para la salida.** Estaba
+> escrito como regla de la entrada, con el destino fuera de alcance porque «como
+> salida es una elección legítima y no estorba a ningún estado especificado». El
+> iPad lo desmintió: la sesión de red se autoseleccionaba como destino, así que
+> **la app arrancaba mandando las notas a la red en vez de a un sintetizador**.
+> Sonar a ninguna parte por defecto sí estorba.
+>
+> Lo que **no** cambia: sigue siendo elegible a mano en los dos papeles, y lo
+> recordado sigue mandando. MIDI por red a otro equipo es una vía legítima de
+> salida; lo único que se le quita es elegirse sola.
+
 **FR12 — La sesión de red nunca se autoselecciona.** Sigue en `available` y
 `selecting(_:)` la acepta: lo que cambia es que no se elige sola. Es FR3 del
 track absorbido, y su NFR4 manda — **no se identifica por el nombre visible**,
@@ -115,9 +126,44 @@ que es donde ya está lo que no es material.
 fábrica.** `ProjectRecord.validated()` exige igualdad exacta de
 `schemaVersion`, así que **añadir el mapeo obliga a decidir**: o el campo es
 opcional y la versión no sube, o sube y entra el primer migrador —el punto que
-`persistence_20260907` dejó preparado y deliberadamente vacío—. **La decisión se
-toma en la Fase 1 y se escribe con su porqué**; lo que no es negociable es que un
-fichero existente no se pierda.
+`persistence_20260907` dejó preparado y deliberadamente vacío—. Lo que no es
+negociable es que un fichero existente no se pierda.
+
+> **Resuelto el 2026-09-09, en la Fase 1 — campo opcional, `schemaVersion` se
+> queda en 1.**
+>
+> **Por qué, y no solo qué.** La migración que haría falta es «si no está, usa el
+> preset de fábrica», y eso es exactamente lo que un campo opcional ya significa
+> en este record: `destinationName` y `sourceName` son opcionales y su
+> documentación dice que **no haber elegido es un estado válido, no un campo que
+> falte**. Un mapeo ausente es un usuario que nunca aprendió nada. Subir la
+> versión para expresar eso obligaría a escribir un migrador cuyo cuerpo sería
+> «rellena el valor por defecto», que es lo que el decodificador sintetizado hace
+> solo.
+>
+> **Y el coste de equivocarse no es simétrico.** Subir a 2 sin migrador hace que
+> `validated()` lance con **todos** los ficheros existentes, y `ProjectStore.load()`
+> los aparta con marca de tiempo: la app abre, pero vacía. Con campo opcional no
+> hay camino por el que un fichero bueno se aparte.
+>
+> **Lo que esta decisión aplaza, y a quién.** La primera subida de versión de
+> verdad sigue pendiente, y sigue fechada donde la dejó `persistence_20260907`.
+> Esta rebanada no la estrena.
+
+> **Hallazgo del 2026-09-09, al decidir FR17 — el migrador no está enchufado.**
+>
+> `ProjectRecord.migrated(_:)` documenta que «lo que hace falta ahora es que el
+> sitio esté decidido y que **la llamada esté puesta**». La llamada **no** está
+> puesta: `ProjectStore.load()` invoca `validated()` directamente
+> (`ProjectStore.swift:187`), y el único sitio que llama a `migrated(_:)` es
+> `SchemaVersionTests`.
+>
+> Hoy da igual —`migrated(_:)` solo llama a `validated()`, así que las dos rutas
+> hacen lo mismo—, pero el día que alguien escriba la primera migración
+> **confiando en ese comentario**, el fichero pasará por la ruta que no migra y
+> se apartará. Se arregla aquí, en la Fase 5, porque cuesta una línea y porque
+> esta rebanada es la primera que se planteó subir la versión y se encontró con
+> el comentario diciendo que ya estaba resuelto.
 
 **FR18 — Restaurar un mapeo no puede dejar la app muda.** Un mapeo guardado que
 no case con nada de lo conectado es un estado legítimo; lo que no puede pasar es
@@ -136,6 +182,16 @@ final con la rama abierta. Las dos salidas son válidas y las dos se escriben:
 - **No se mide**: se anota en `workflow.md` que la v1 cerró sin su medición
   final, con lo que eso cuesta —la última referencia válida es la de la rebanada
   2 de la v2, del 2026-09-02: máx 0,158 ms, σ 0,013–0,014 ms—.
+
+> **Resuelto el 2026-09-09 — la v1 cierra sin su medición final.** Decisión del
+> usuario, en la Fase 1. Manda la suspensión del 2026-09-02, y la excepción
+> «antes de cerrar v1, una medición final» queda **anulada** en `workflow.md`,
+> con su coste escrito y con cómo revertirla si algún día se quiere.
+>
+> **Consecuencia para este track:** la tarea de medición de la Fase 7 se reduce a
+> comprobar que la nota está escrita. No hay número que recoger, y **no hace
+> falta el arnés en dispositivo** para cerrar la v1 — lo que sí hace falta sigue
+> siendo el iPad, para la Fase 2 y para la verificación de la 7.
 
 ## Non-Functional Requirements
 
@@ -200,15 +256,63 @@ rama o deja de describir la app.
   identificar un endpoint más allá de su nombre guardado.
 - **Los knobs 15 y 16** (CC 84 y 85), que siguen libres a propósito para Accent,
   Voicing y Range en v2.
-- **El lado del destino de la sesión de red**: como salida es una elección
-  legítima y no estorba a ningún estado especificado.
+- ~~**El lado del destino de la sesión de red**: como salida es una elección
+  legítima y no estorba a ningún estado especificado.~~ **Entra el 2026-09-09**,
+  ver FR12.
+
+## Correcciones al implementar
+
+> **Nota del 2026-09-09.** Lo que cambió respecto a lo escrito arriba, al
+> implementarlo:
+>
+> - **FR12 se amplió a la salida.** Ver la nota fechada en FR12: el destino
+>   estaba fuera de alcance y el iPad lo desmintió.
+> - **FR7 no cubre el knob del Cycle por separado.** No es un `TrackParameter` y
+>   sale del bloque de knobs más un desplazamiento, así que se aprende con el
+>   bloque. Aprenderlo suelto exigiría que `ControlMapping` lo guardara aparte,
+>   que es un cambio de modelo que esta rebanada no necesita.
+> - **FR8 hizo falta una regla que la spec no nombraba:** el resto del giro que
+>   acaba de aprender **no edita**. Asignar termina el aprendizaje, así que los
+>   clics que sobran caerían sobre el parámetro recién asignado — el mismo salto
+>   de valor que FR10 evita durante el aprendizaje, un instante después. El
+>   silencio se levanta con el control siguiente, no con un plazo.
+> - **Aprender rechaza los mapeos en conflicto**, y esto no estaba escrito en
+>   ningún FR. Lo destapó el dispositivo: aprender un bloque con un knob dejaba
+>   los knobs actuando de step buttons y cada giro cambiaba de Track. Ver el
+>   `device-verification.md`.
+> - **El mapeo cruza a `Engine` como `ControlNumbers`**, en enteros, porque
+>   `Engine` no puede ver CoreMIDI. La spec decía «vive con los ajustes de sesión
+>   del `Project`» sin nombrar el problema de la frontera.
+> - **Tres huecos ajenos, arreglados de paso**: `ProjectRecord.migrated(_:)` se
+>   documentaba como enchufado y no lo estaba; nadie escribía `sourceName` ni
+>   `destinationName`; y `mapping`/`learning` no invalidaban la pantalla por
+>   colgar de un objeto no observable.
+> - Nada más. FR1–FR6, FR9–FR11 y FR13–FR19 quedaron como estaban escritos.
 
 ## Known Limitations
 
 - **La propiedad que identifica la sesión de red puede no ser estable entre
-  versiones de iPadOS** (limitación 1 del track absorbido). Por eso el
-  diagnóstico se registra con los valores observados: si cambia, se sabrá contra
-  qué comparar.
+  versiones de iPadOS** (limitación 1 del track absorbido). Es
+  `kMIDIPropertyDriverOwner`, y el valor observado el 2026-09-09 en iPad está en
+  la git note de la Fase 2 junto con las dos pasadas enteras: si cambia, se sabrá
+  contra qué comparar.
+
+- **Un controlador puede publicar más de una fuente, y no hay propiedad que las
+  distinga.** *(Encontrado el 2026-09-09, en el diagnóstico.)* El BeatStep Pro
+  publica dos: el puerto de interpretación y `BeatStepPro OutEditor`. Comparten
+  `model`, `manufacturer`, `driverOwner` y dispositivo padre; **solo el nombre
+  las separa**, y NFR4 prohíbe identificar por nombre visible.
+
+  La app no intenta resolver esa ambigüedad: si aparecen dos fuentes que no son
+  la sesión de red, no autoselecciona por orden ni por nombre. El usuario elige
+  una en el selector existente y esa elección se recuerda (FR15). Las dos
+  ordenaciones observadas del BeatStep Pro están cubiertas.
+
+- **`No MIDI input` sigue sin ser visible en un iPad con otro controlador
+  enchufado.** *(2026-09-09.)* La regla de FR13 es correcta y sus tests la fijan,
+  pero en el dispositivo de verificación hay un OP-Z permanentemente conectado,
+  así que el estado vacío solo se ve desenchufándolo todo. No es un defecto: es
+  lo que hace falta para verlo.
 - **Un mapeo aprendido con un controlador y usado con otro no avisa.** Los
   números casan o no casan; la app no sabe qué hardware hay al otro lado.
 - **Aprender es destino a destino** (FR6). Reasignar los cuarenta y ocho

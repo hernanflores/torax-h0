@@ -64,15 +64,35 @@ public final class MIDIEndpointWatcher: @unchecked Sendable {
     public init(
         _ role: MIDIEndpointRole,
         enumerating: @escaping () -> [MIDIEndpointInfo],
+        remembering name: String? = nil,
         delivering: @escaping (@escaping () -> Void) -> Void = { work in
             DispatchQueue.main.async(execute: work)
         }
     ) {
         self.enumerate = enumerating
         self.deliver = delivering
-        let discovered = MIDIEndpointSelection(role, discovering: enumerating())
+        // Lo recordado sigue pendiente si todavía no está disponible y puede
+        // sustituir una caída automática cuando aparezca. Una elección manual
+        // posterior lo cancela, así que ningún refresco puede devolver la
+        // selección a lo que había en disco debajo del dedo del usuario.
+        let discovered = MIDIEndpointSelection(
+            role, discovering: enumerating(), remembering: name)
         self.selection = discovered
         self.latest = discovered
+    }
+
+    /// Registra una elección manual tanto en el estado visible como en el que
+    /// usará la próxima notificación. Sin esta segunda escritura, el siguiente
+    /// `setupChanged()` volvería a calcular desde la autoselección inicial y
+    /// podría deshacer lo que el usuario acaba de elegir.
+    public func selecting(_ endpoint: MIDIEndpointInfo) -> MIDIEndpointSelection {
+        let updated = lock.withLock {
+            let updated = latest.selecting(endpoint)
+            latest = updated
+            return updated
+        }
+        selection = updated
+        return updated
     }
 
     /// Reacciona a un cambio en el conjunto de dispositivos MIDI.
@@ -98,6 +118,10 @@ public final class MIDIEndpointWatcher: @unchecked Sendable {
 
         deliver { [weak self] in
             guard let self else { return }
+            // Una elección manual puede ocurrir mientras esta entrega esperaba
+            // al hilo principal. En ese caso este cálculo ya es viejo y no debe
+            // imponerse sobre el dedo del usuario.
+            guard lock.withLock({ latest == refreshed }) else { return }
             selection = refreshed
             onChange?(refreshed)
         }
