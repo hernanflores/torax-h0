@@ -1,0 +1,63 @@
+Fix: aprender no puede producir un mapeo donde un control signifique dos cosas
+Track: midi-learn_20260908 · Fase 6, corrección
+
+EL FALLO, REPORTADO EN DISPOSITIVO EL 2026-09-09
+================================================
+«Mover los knobs cambia el track.» Reproducido y explicado: se aprendió uno de
+los tres destinos de bloque con un knob, el bloque de step buttons aterrizó
+encima de los CC de los knobs, y desde entonces cada giro se leía como pulsar un
+step button — `ControlInput.receive` despacha los step buttons ANTES que los
+knobs, y un step button selecciona Track.
+
+Peor de lo que parecía: el mapeo se guarda con los ajustes de sesión, así que
+sobrevivía a relanzar la app. La única salida era el botón `factory preset`, que
+por suerte existía.
+
+ES UN HUECO MÍO, Y DE LOS QUE ESCUECEN
+--------------------------------------
+`hasFamilyOverlap` se construyó en la Fase 3 EXACTAMENTE para detectar esto, con
+sus cuatro tests, y luego no se usó en el único sitio capaz de provocarlo. Tener
+la comprobación escrita y no llamarla es peor que no tenerla: da la impresión de
+que el caso está cubierto.
+
+EL ARREGLO
+==========
+  Packages/MIDI/Sources/MIDI/ControlMapping.swift
+      `hasFamilyOverlap` -> `hasConflict`, y ahora cubre las DOS formas del mismo
+      choque:
+        - dos bloques encima, que hace step buttons de una fila de knobs;
+        - un parámetro dentro del bloque de step buttons, que deja a ese
+          parámetro sin poder moverse nunca porque el despacho no llega a él.
+  Packages/MIDI/Sources/MIDI/ControlInput.swift
+      `learn` construye un candidato y lo rechaza si tiene conflicto.
+  App/MidiScreen.swift
+      la línea que dice qué se espera y qué no vale.
+
+RECHAZAR NO ES CANCELAR
+-----------------------
+El destino sigue armado, esperando al control correcto. Obligar a volver a
+elegirlo castigaría al usuario por un gesto que la app ya sabía que no podía
+aceptar. Y el control rechazado sigue haciendo lo suyo: no se queda mudo por
+haber sido candidato. Los tres casos tienen test.
+
+POR QUÉ HACÍA FALTA LA LÍNEA EN LA PANTALLA
+-------------------------------------------
+Un destino encendido y nada más no explica por qué mover un control a veces no
+lo asigna. Con el rechazo en silencio, la app parecería rota justo cuando está
+protegiendo al usuario.
+
+SEGUNDA REPARACIÓN, DE PASO
+---------------------------
+Al insertar `numbers` en la Fase 5 quedó ENTRE el comentario de documentación de
+`hasFamilyOverlap` y la propiedad, así que el comentario describía a `numbers` y
+la propiedad se quedó sin ninguno. Reparado.
+
+VERIFICACIÓN
+============
+  swift test --package-path Packages/MIDI --filter 'MIDILearnTests|LearnedMappingTests'
+      40 tests, 0 fallos
+  swift test --package-path Packages/MIDI (partición)   826 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
+
+Falta comprobarlo en dispositivo, que es donde apareció.
