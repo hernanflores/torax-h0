@@ -1,0 +1,43 @@
+Task: Decidir qué pasa con la medición final de la v1 (FR19)
+Track: midi-learn_20260908 · Fase 1
+
+Qué se decidió
+--------------
+La v1 cierra SIN su medición final de jitter. Decisión del usuario, tomada en la
+Fase 1 y no al final, porque puede cambiar el resto del plan.
+
+Por qué existía la pregunta
+---------------------------
+`workflow.md` llevaba dos reglas contradictorias desde el 2026-09-02:
+  - «Medición de jitter: suspendida» — no se hacen más mediciones.
+  - La nota del 2026-08-28, lista de «lo que sí exige medición», que termina en
+    «antes de cerrar v1, una medición final».
+La suspensión es posterior, pero nadie había anulado la excepción. La rebanada 8
+es la que cierra la v1, así que el conflicto vencía aquí.
+
+Ficheros modificados
+--------------------
+  conductor/workflow.md
+    - Nota fechada 2026-09-09 en «Medición de jitter: suspendida»: manda la
+      suspensión, qué se pierde, y cómo revertirlo.
+    - La excepción de la lista del 2026-08-28 queda tachada y marcada como
+      anulada, para que las dos reglas no vuelvan a contradecirse.
+  conductor/tracks/midi-learn_20260908/spec.md
+    - FR19 recoge la resolución y su consecuencia.
+
+El porqué
+---------
+El coste está escrito con el número delante para que la decisión se pueda
+revisar: la v1 existió para acotar el riesgo de jitter y cierra sin comprobar
+que lo acotó. Lo que la sostiene es un argumento de arquitectura, no una
+medición — ni la rebanada 7 ni la 8 mueven ningún instante, y la nota del
+2026-08-28 ya dice que añadir trabajo acotado al camino de emisión sin desplazar
+eventos no cambia el jitter.
+
+El arnés, su rejilla `12-tracks-cycles` y el procedimiento se quedan. La
+referencia contra la que comparar, si algún día se mide: v2 rebanada 2,
+2026-09-02 — máx 0,158 ms, σ 0,013–0,014 ms, 1000 eventos por tempo.
+
+Consecuencia práctica: la tarea de medición de la Fase 7 se reduce a comprobar
+que la nota está escrita. Sigue haciendo falta iPad para la Fase 2 y para la
+verificación de la Fase 7, pero ya no para el arnés.
