@@ -1,0 +1,116 @@
+Tasks: Identificar el endpoint de red por propiedad · `MIDIEndpointInfo` lleva el
+       dato · Elegible pero nunca por defecto · Lo recordado manda
+Track: midi-learn_20260908 · Fase 2 · FR12, FR13, FR14, FR15, NFR4
+
+EL DIAGNÓSTICO EN DISPOSITIVO — 2026-09-09, iPad
+=================================================
+Dos pasadas. Con el BeatStep Pro conectado, cuatro fuentes; sin él, dos.
+
+  [1] Red Session 1
+        name          Session 1
+        model         (vacío)
+        manufacturer  (vacío)
+        driverOwner   com.apple.AppleMIDINetworkDriver
+        uniqueID      -2084605874
+        entity        sí        device  Red
+        deviceDriver  com.apple.AppleMIDINetworkDriver
+
+  [2] OP-Z
+        name/model    OP-Z
+        manufacturer  teenage engineering ab
+        driverOwner   com.apple.AppleMIDIUSBDriver
+        uniqueID      -1340970926
+
+  [3] Arturia BeatStep Pro Arturia BeatStepPro     (solo en la pasada 1)
+        name          Arturia BeatStepPro
+        model         Arturia BeatStep Pro
+        manufacturer  Arturia
+        driverOwner   com.apple.AppleMIDIUSBDriver
+        uniqueID      93586436
+
+  [4] Arturia BeatStep Pro BeatStepPro OutEditor   (solo en la pasada 1)
+        name          BeatStepPro OutEditor
+        model         Arturia BeatStep Pro
+        manufacturer  Arturia
+        driverOwner   com.apple.AppleMIDIUSBDriver
+        uniqueID      -553692388
+
+LA PROPIEDAD ELEGIDA: `kMIDIPropertyDriverOwner`
+------------------------------------------------
+Separa limpio: la red declara `com.apple.AppleMIDINetworkDriver` y los tres
+controladores `com.apple.AppleMIDIUSBDriver`. `deviceDriver` dice lo mismo y no
+añade nada; `model` y `manufacturer` vienen VACÍOS en la red, así que «vacío»
+distinguiría hoy pero es una ausencia y no una afirmación — un controlador
+barato que tampoco los declarara rompería la regla.
+
+Y el volcado entero de `MIDIObjectGetProperties(deep: true)` NO SIRVE en
+iPadOS: devuelve solo `uniqueID` (y `name` en un caso). Se conserva en
+`EndpointDiagnostics` porque no costó nada y porque el día que iPadOS cambie
+habrá que volver a mirar, pero la apuesta buena fueron las candidatas con
+nombre.
+
+DOS HALLAZGOS QUE EL PLAN NO PREVEÍA
+====================================
+1. EL BEATSTEP PUBLICA DOS FUENTES: el puerto de interpretación y
+   `BeatStepPro OutEditor`. NINGUNA PROPIEDAD LAS DISTINGUE — mismo model, mismo
+   manufacturer, mismo driverOwner, mismo dispositivo padre. Solo el nombre.
+   Choca con NFR4, que prohíbe identificar por nombre visible.
+
+   Hoy no muerde: la autoselección coge el primero que no sea la red, y el
+   puerto de interpretación va antes que el de editor. Pero es suerte de orden,
+   no una garantía. Queda como limitación conocida en el `spec.md`.
+
+2. EL OP-Z SIGUE CONECTADO EN LA PASADA 2. Así que en este iPad el estado
+   `No MIDI input` de FR13 sigue sin ser alcanzable — no por la sesión de red,
+   que ya no se autoselecciona, sino porque hay otro controlador enchufado.
+   FR13 se cumple —la regla es correcta— pero no se puede VER en este
+   dispositivo sin desenchufar el OP-Z.
+
+EL FALLO QUE EL USUARIO REPORTÓ, EXPLICADO
+==========================================
+«Pulsar un destino y girar un knob no funcionó.» No era del aprendizaje: la
+fuente seleccionada era `Red Session 1`, así que NINGÚN CC llegaba a la app.
+Confirmado preguntando qué enseñaba el card `midi input`. Es exactamente el
+defecto que esta fase arregla.
+
+QUÉ CAMBIA
+==========
+  Packages/MIDI/Sources/MIDI/EndpointDiagnostics.swift   `networkDriverOwner`,
+      `isNetworkSession(_:)`
+  Packages/MIDI/Sources/MIDI/MIDIEndpointSelection.swift `isNetworkSession` en
+      `MIDIEndpointInfo`; `isAutoSelectable(_:)` en el papel; el `init` con
+      `remembering:`; la autoselección por el primero AUTOSELECCIONABLE
+  Packages/MIDI/Sources/MIDI/CoreMIDIInput.swift         rellena el dato
+  Packages/MIDI/Sources/MIDI/MIDIEndpointWatcher.swift   pasa lo recordado
+  App/TransportModel.swift                               `rememberHardware()`
+  Packages/MIDI/Tests/MIDITests/NetworkSessionSourceTests.swift  nuevo, 14 tests
+
+Elegible y autoseleccionable dejan de ser lo mismo, y esa distinción ES el
+arreglo. La red sigue en la lista y se puede elegir a mano; lo que cambia es que
+no se elige sola, y solo como fuente — como destino es una vía legítima.
+
+Lo recordado manda sobre la autoselección, incluida la red, y SOLO en el
+descubrimiento inicial: un refresco no puede devolver la selección a lo que
+había en disco bajo el dedo de quien acaba de cambiarla.
+
+TERCER HALLAZGO, ENCONTRADO AL CABLEAR FR15
+===========================================
+`Project` tiene `destinationName` y `sourceName` desde `persistence_20260907`,
+con su documentación de por qué se guarda el nombre y no el `MIDIEndpointRef`, y
+NINGÚN CAMINO DE LA APP LOS ESCRIBÍA: se guardaba `null` en cada guardado y no
+se recordaba nada nunca. Sin esto, FR15 habría sido letra muerta y el test lo
+habría dado por bueno.
+
+Solo se recuerda lo que se elige A MANO. Guardar también la autoselección
+convertiría un accidente —lo que hubiera enchufado el día que se abrió la app—
+en una preferencia que luego manda sobre ella.
+
+VERIFICACIÓN
+============
+  swift test --package-path Packages/MIDI --filter NetworkSessionSourceTests
+      14 tests, 0 fallos
+  swift test --package-path Packages/MIDI (partición)   818 + 21 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
+
+Falta la verificación en dispositivo, que es la tarea siguiente.
