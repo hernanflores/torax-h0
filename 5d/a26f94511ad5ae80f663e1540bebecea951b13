@@ -1,0 +1,27 @@
+Task: `ControlInput` fija el Cycle en edición (FR1, FR2, FR3, FR4)
+
+Vía pública táctil para mover el cursor de edición, que hasta ahora solo se
+movía con el knob 13 (CC 82). Sin controlador, todo giro caía en el Cycle 1 y
+los otros quince quedaban como copias sin editar nunca — el defecto reportado.
+
+Cambios:
+- `Packages/MIDI/Sources/MIDI/ControlInput.swift`: `setEditingCycle(_:)`
+  público y `@discardableResult`, junto a `setActiveCycleCount` y
+  `setChannel`. Guarda de `isTouchFrozen`, acotado delegado en
+  `Track.withEditing(_:)` (FR2, NFR1), publica solo si el Track cambió (FR4).
+- `Packages/MIDI/Tests/MIDITests/EditingCycleTouchPathTests.swift`: nuevo, 11
+  tests — fija y publica, el fallo reportado escrito como test, dos Cycles con
+  valores distintos, solo el Track seleccionado, acotado por arriba y por
+  abajo, acotado sin tocar `activeCount`, mismo índice y acotado sobre el
+  actual no publican, cursor de reproducción intacto, material intacto,
+  ignorado con Ctrl All hundido.
+
+Por qué: la causa del defecto es un gesto que falta, no el modelo. `Track` ya
+lleva sus dos cursores separados y `withEditing(_:)` ya acota; lo que no
+existía era la puerta desde el dedo. `Engine` no se toca (NFR1).
+
+Verificación: `swift test --package-path Packages/MIDI` — 870 tests, 1
+skipped, 0 fallos. Rojo confirmado antes: el fichero no compilaba por
+`ControlInput` sin `setEditingCycle`.
+
+Sin medición de jitter (NFR5): no mueve ningún instante.
