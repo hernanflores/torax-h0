@@ -65,3 +65,28 @@ Verificación
       798 tests, 0 fallos
   xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
       BUILD SUCCEEDED
+
+--- Verificación de fase ---
+Fase 4: APRENDER — cerrada el 2026-09-09.
+
+Tests ejecutados
+----------------
+  swift test --package-path Packages/MIDI --filter MIDILearnTests
+      19 tests, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+      798 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
+
+Verificación manual
+-------------------
+Sin dispositivo: no hay pantalla de aprendizaje hasta la Fase 6. Lo revisado:
+  1. `LearnTarget`, los cuatro casos y por qué tres son bloques.
+  2. El corte del aprendizaje al principio de `receive`.
+  3. `justLearned` y que el silencio se levante con el control siguiente.
+  4. `beginLearning` / `cancelLearning`: cancelar deja el mapeo intacto, y
+     elegir otro destino manda el último.
+
+Confirmación del usuario
+------------------------
+«si» — 2026-09-09.
