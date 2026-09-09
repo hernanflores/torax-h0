@@ -16,7 +16,7 @@ una deuda que la siguiente necesita.
 | 5 | Groove estático: Velocity, Sustain, Probability | cerrada |
 | 6 | Groove temporal: Timing y Delay | cerrada |
 | 7 | Preset del BeatStep Pro: knobs, pads y step buttons | **abierta** |
-| 8 | MIDI Learn, con `network-session-source` dentro | por planificar |
+| 8 | MIDI Learn, con `network-session-source` dentro | planificada |
 
 **Por qué ese orden.** La 3 no toca el motor y salda la última carga de jitter
 sin medir que `product.md` dejó anotada —la visual—; además evita desarrollar
@@ -81,8 +81,9 @@ veces sin que afectara a nada.
 ---
 
 - [ ] **Track: MVP rebanada 8 — MIDI Learn, con `network-session-source` dentro**
+  *Link: [conductor/tracks/midi-learn_20260908/index.md](./tracks/midi-learn_20260908/index.md)*
 
-  Por planificar. **Cierra la v1.** Entrega la reasignación del mapeo a otro
+  **Planificado el 2026-09-08**, en siete fases. **Cierra la v1.** Entrega la reasignación del mapeo a otro
   hardware —`ControlMapping` es fija hasta entonces, y `product.md` promete MIDI
   Learn desde el principio— y se lleva dentro
   [`network-session-source`](./tracks/network-session-source_20260828/index.md),
@@ -91,6 +92,22 @@ veces sin que afectara a nada.
 
   Lleva también la **medición final de jitter de la v1**, que la 7 no hizo por no
   mover ningún instante.
+
+  > **Dos cosas cambiaron al planificarlo, el 2026-09-08.**
+  >
+  > **La persistencia ya existe, y con ella la respuesta a la sesión de red es
+  > otra.** El plan de `network-session-source` dejó escrito que «cuando haya
+  > persistencia, recordar la última elección lo resuelve mejor que cualquier
+  > heurística»; el `Project` guarda `sourceName` desde el 2026-09-07. Así que lo
+  > recordado manda, y la regla de no autoseleccionar la red queda solo para el
+  > primer arranque (FR15 del track).
+  >
+  > **La medición final choca con la suspensión del 2026-09-02, y eso se decide
+  > antes de empezar.** El `workflow.md` la nombra como una de las dos
+  > excepciones y la suspensión es posterior. Es la Fase 1 del track, y es una
+  > decisión del usuario: se mide y el número entra en `product.md`, o se anota
+  > que la v1 cerró sin ella. Lo que no vale es llegar al final con la rama
+  > abierta y decidirlo ahí.
 
 ---
 
@@ -588,8 +605,9 @@ escalón es el que se nota.
 ---
 
 - [ ] **Track: En pantalla no se puede elegir qué Cycle se edita**
+  *Link: [conductor/tracks/cycle-edit-cursor_20260908/index.md](./tracks/cycle-edit-cursor_20260908/index.md)*
 
-  Encontrado el 2026-09-03 verificando el reloj externo en iPad. **El cursor de
+  **Planificado el 2026-09-08**, en tres fases. Encontrado el 2026-09-03 verificando el reloj externo en iPad. **El cursor de
   edición se queda siempre en el Cycle 1**, así que todo giro de knob cae ahí y
   los otros quince parecen copias que no guardan nada — que es exactamente lo que
   son: nacen iguales y nunca reciben una edición.
@@ -608,6 +626,14 @@ escalón es el que se nota.
 
   Es de `cycles_20260901`, no del track del reloj externo: se separa por el mismo
   criterio que partió la rebanada 7 del MVP.
+
+  > **Corrección del 2026-09-08, al planificarlo — dos datos del párrafo de
+  > arriba caducaron.** La fila de Cycles ya no vive en
+  > `App/TrackSelectorView.swift`: `screens-redesign_20260906` la movió al
+  > `CycleStrip` de `App/TrackReadout.swift`, y el cierre se llama
+  > `onActiveCountChange`. Y el knob del Cycle ya no es el 10 con CC 79:
+  > `ctrl-all_20260905` lo movió al **13, CC 82**, y el 79 se lo quedó Repeats.
+  > El defecto es el mismo; lo que cambia es dónde se toca.
 
 ---
 
@@ -913,8 +939,9 @@ en cualquier momento.
 ---
 
 - [ ] **Track: La pantalla no ve lo que cambia el hardware**
+  *Link: [conductor/tracks/hardware-screen-sync_20260908/index.md](./tracks/hardware-screen-sync_20260908/index.md)*
 
-  Descubierto el 2026-09-06, durante la Fase 4 de `screens-redesign_20260906`.
+  **Planificado el 2026-09-08**, en cuatro fases. Descubierto el 2026-09-06, durante la Fase 4 de `screens-redesign_20260906`.
 
   El estado del transporte y del reloj vive en `Transport`, que no es observable,
   y **nadie incrementa `clockRevision` desde el hilo de recepción de CoreMIDI**.
@@ -948,12 +975,26 @@ en cualquier momento.
   ocho saltos por segundo al hilo principal—, y dejar el tempo externo con su
   propia cadencia. Nada de temporizadores colgados de vistas.
 
+  > **Al planificarlo, el 2026-09-08 — la forma ya no es probable, es la que hay
+  > en el repositorio.** `control-input-adoption_20260908` resolvió el mismo
+  > problema para la adopción: contador atómico escrito en el hilo de tiempo
+  > real, leído desde el `.task` de 16 ms de `ToraxH0App`. Este track usa ese
+  > mecanismo y ese mismo `.task`, sin inventar uno nuevo.
+  >
+  > **Y apareció una carrera de datos debajo, anterior a este defecto.**
+  > `Transport.isPlaying` es `scheduler?.isRunning`: `isRunning` es atómica, pero
+  > **`scheduler` es una propiedad almacenada normal** que `startPlaying` y
+  > `stop()` escriben desde el hilo de recepción de CoreMIDI mientras la pantalla
+  > la lee al dibujar. Condiciona la solución: preguntar `isPlaying` más a menudo
+  > —que era lo barato— no arregla nada y hace la carrera más probable. El estado
+  > tiene que publicarse por un atómico. Ver el `spec.md` del track.
+
 ---
 
 - [x] **Track: La sesión MIDI de red monopoliza la entrada** — **cerrado en conductor el 2026-09-08, trasladado a [issue #43](https://github.com/hernanflores/torax-h0/issues/43)**
   *Link: [conductor/tracks/network-session-source_20260828/index.md](./tracks/network-session-source_20260828/index.md)*
 
-  Encontrado el 2026-08-28 verificando la rebanada 2 en iPad. iPadOS publica siempre `Red Session 1` como fuente, así que la lista nunca está vacía: la app la autoselecciona, el estado `No MIDI input` de `product-guidelines.md` es **inalcanzable en el dispositivo de destino**, y el controlador real no se elige solo al conectarlo. No bloquea a nadie ni depende de la cadena de CoreMIDI. Sigue bloqueando a `MVP rebanada 8 — MIDI Learn`; el seguimiento continúa en la issue.
+  Encontrado el 2026-08-28 verificando la rebanada 2 en iPad. iPadOS publica siempre `Red Session 1` como fuente, así que la lista nunca está vacía: la app la autoselecciona, el estado `No MIDI input` de `product-guidelines.md` es **inalcanzable en el dispositivo de destino**, y el controlador real no se elige solo al conectarlo. No bloquea a nadie ni depende de la cadena de CoreMIDI. Sigue bloqueando a `MVP rebanada 8 — MIDI Learn`; el seguimiento continúa en la issue. **El arreglo entra en la Fase 2 de [`midi-learn_20260908`](./tracks/midi-learn_20260908/index.md)**, planificada el 2026-09-08, que también cierra la issue.
 
 ---
 

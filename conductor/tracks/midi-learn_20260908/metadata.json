@@ -1,0 +1,24 @@
+{
+  "id": "midi-learn_20260908",
+  "title": "MVP rebanada 8 — MIDI Learn, con network-session-source dentro",
+  "type": "Feature",
+  "status": "new",
+  "created": "2026-09-08",
+  "updated": "2026-09-08",
+  "phases": 7,
+  "closes": "v1",
+  "absorbs": [
+    "network-session-source_20260828"
+  ],
+  "related_issues": [
+    "https://github.com/hernanflores/torax-h0/issues/43"
+  ],
+  "depends_on": [
+    "mvp-beatstep-mapping_20260830",
+    "persistence_20260907"
+  ],
+  "requires_device": true,
+  "requires_second_controller": true,
+  "jitter_measurement": "pendiente de decisión en la Fase 1 (FR19): la medición final de la v1 contra la suspensión del 2026-09-02",
+  "branch": "feat/midi-learn"
+}
