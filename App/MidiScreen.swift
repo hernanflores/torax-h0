@@ -375,17 +375,20 @@ struct MidiLearnCard: View {
                     target(
                         .parameter(parameter),
                         label: parameter.description.lowercased(),
-                        accent: Palette.accent(for: parameter.family),
-                        isAssigned: model.mapping.controller(for: parameter) != nil
+                        number: model.mapping.controller(for: parameter)?.number,
+                        accent: Palette.accent(for: parameter.family)
                     )
                 }
 
                 target(
-                    .knobBlock, label: "knob 1", accent: Palette.muted, isAssigned: true)
+                    .knobBlock, label: "knob 1", number: model.mapping.knobBlock.number,
+                    accent: Palette.muted)
                 target(
-                    .padBlock, label: "pad 1", accent: Palette.muted, isAssigned: true)
+                    .padBlock, label: "pad 1", number: Int(model.mapping.padBlock.value),
+                    accent: Palette.muted)
                 target(
-                    .stepButtonBlock, label: "step 1", accent: Palette.muted, isAssigned: true)
+                    .stepButtonBlock, label: "step 1",
+                    number: model.mapping.stepButtonBlock.number, accent: Palette.muted)
             }
 
             // **Mientras se espera se dice qué se espera, y qué no vale.** Un
@@ -411,13 +414,18 @@ struct MidiLearnCard: View {
         }
     }
 
-    /// Un destino: se pulsa, y queda esperando a que se mueva un control.
+    /// Un destino: su número debajo, y se pulsa para reasignarlo.
+    ///
+    /// **El número es lo que hace visible el aprendizaje.** Sin él, reasignar un
+    /// knob no cambiaba nada en pantalla —el borde de «tiene control» ya estaba
+    /// encendido— y la única forma de saber si había funcionado era girar el
+    /// knob. Encontrado en dispositivo el 2026-09-09.
     ///
     /// **El que espera va relleno**, con el mismo lenguaje que el resto de la
-    /// app usa para lo elegido. Un destino sin control lleva el borde en reposo:
-    /// se distingue del que sí lo tiene sin necesidad de texto.
+    /// app usa para lo elegido. Un destino sin control lleva el borde en reposo y
+    /// una raya donde iría el número: no hace falta texto para distinguirlo.
     private func target(
-        _ destination: LearnTarget, label: String, accent: Color, isAssigned: Bool
+        _ destination: LearnTarget, label: String, number: Int?, accent: Color
     ) -> some View {
         let isLearning = model.learning == destination
 
@@ -430,15 +438,25 @@ struct MidiLearnCard: View {
                 model.beginLearning(destination)
             }
         } label: {
-            Text(display: label)
-                .font(isLearning ? Typography.captionBold : Typography.caption)
-                .foregroundStyle(isLearning ? Palette.onAccent : Palette.text)
-                .frame(maxWidth: .infinity, minHeight: 44)
-                .contentShape(Rectangle())
+            VStack(spacing: 2) {
+                Text(display: label)
+                    .font(isLearning ? Typography.captionBold : Typography.caption)
+                    .foregroundStyle(isLearning ? Palette.onAccent : Palette.text)
+
+                // **Monoespaciado**, como el resto de los números de la app: sin
+                // él, la rejilla da un salto de medio carácter entre un 70 y un
+                // 102 y la fila deja de leerse de un vistazo.
+                Text(display: number.map(String.init) ?? "—")
+                    .font(Typography.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(isLearning ? Palette.onAccent : Palette.muted)
+            }
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .brutalistControl(
-            accent: accent, isSelected: isLearning, isPopulated: isAssigned,
+            accent: accent, isSelected: isLearning, isPopulated: number != nil,
             radius: Brutalist.radiusSmall)
     }
 
