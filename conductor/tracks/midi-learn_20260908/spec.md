@@ -115,9 +115,44 @@ que es donde ya está lo que no es material.
 fábrica.** `ProjectRecord.validated()` exige igualdad exacta de
 `schemaVersion`, así que **añadir el mapeo obliga a decidir**: o el campo es
 opcional y la versión no sube, o sube y entra el primer migrador —el punto que
-`persistence_20260907` dejó preparado y deliberadamente vacío—. **La decisión se
-toma en la Fase 1 y se escribe con su porqué**; lo que no es negociable es que un
-fichero existente no se pierda.
+`persistence_20260907` dejó preparado y deliberadamente vacío—. Lo que no es
+negociable es que un fichero existente no se pierda.
+
+> **Resuelto el 2026-09-09, en la Fase 1 — campo opcional, `schemaVersion` se
+> queda en 1.**
+>
+> **Por qué, y no solo qué.** La migración que haría falta es «si no está, usa el
+> preset de fábrica», y eso es exactamente lo que un campo opcional ya significa
+> en este record: `destinationName` y `sourceName` son opcionales y su
+> documentación dice que **no haber elegido es un estado válido, no un campo que
+> falte**. Un mapeo ausente es un usuario que nunca aprendió nada. Subir la
+> versión para expresar eso obligaría a escribir un migrador cuyo cuerpo sería
+> «rellena el valor por defecto», que es lo que el decodificador sintetizado hace
+> solo.
+>
+> **Y el coste de equivocarse no es simétrico.** Subir a 2 sin migrador hace que
+> `validated()` lance con **todos** los ficheros existentes, y `ProjectStore.load()`
+> los aparta con marca de tiempo: la app abre, pero vacía. Con campo opcional no
+> hay camino por el que un fichero bueno se aparte.
+>
+> **Lo que esta decisión aplaza, y a quién.** La primera subida de versión de
+> verdad sigue pendiente, y sigue fechada donde la dejó `persistence_20260907`.
+> Esta rebanada no la estrena.
+
+> **Hallazgo del 2026-09-09, al decidir FR17 — el migrador no está enchufado.**
+>
+> `ProjectRecord.migrated(_:)` documenta que «lo que hace falta ahora es que el
+> sitio esté decidido y que **la llamada esté puesta**». La llamada **no** está
+> puesta: `ProjectStore.load()` invoca `validated()` directamente
+> (`ProjectStore.swift:187`), y el único sitio que llama a `migrated(_:)` es
+> `SchemaVersionTests`.
+>
+> Hoy da igual —`migrated(_:)` solo llama a `validated()`, así que las dos rutas
+> hacen lo mismo—, pero el día que alguien escriba la primera migración
+> **confiando en ese comentario**, el fichero pasará por la ruta que no migra y
+> se apartará. Se arregla aquí, en la Fase 5, porque cuesta una línea y porque
+> esta rebanada es la primera que se planteó subir la versión y se encontró con
+> el comentario diciendo que ya estaba resuelto.
 
 **FR18 — Restaurar un mapeo no puede dejar la app muda.** Un mapeo guardado que
 no case con nada de lo conectado es un estado legítimo; lo que no puede pasar es

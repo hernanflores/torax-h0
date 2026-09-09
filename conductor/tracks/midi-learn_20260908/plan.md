@@ -39,12 +39,17 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
   - [x] **Resuelto: la v1 cierra sin medir.** La excepción de la nota del
         2026-08-28 queda anulada en `workflow.md`, con su coste y su vuelta
         atrás escritos.
-- [ ] Task: Decidir cómo entra el mapeo en el fichero de disco (FR17)
-  - [ ] Las dos salidas: campo opcional sin subir `schemaVersion`, o subir a 2 y
+- [x] Task: Decidir cómo entra el mapeo en el fichero de disco (FR17) `PENDING`
+  - [x] Las dos salidas: campo opcional sin subir `schemaVersion`, o subir a 2 y
         estrenar el migrador que `persistence_20260907` dejó preparado y vacío.
-  - [ ] Lo que decide: `ProjectRecord.validated()` exige igualdad exacta, así que
+  - [x] Lo que decide: `ProjectRecord.validated()` exige igualdad exacta, así que
         subir la versión sin migrador **aparta todos los ficheros existentes**.
-  - [ ] Escribir el porqué en el `spec.md`, no solo el qué.
+  - [x] Escribir el porqué en el `spec.md`, no solo el qué.
+  - [x] **Resuelto: campo opcional, `schemaVersion` se queda en 1.** Un mapeo
+        ausente es «nunca aprendió nada», que es lo que un opcional ya significa
+        aquí — el mismo criterio de `destinationName` y `sourceName`.
+  - [x] **Hallazgo**: `migrated(_:)` se documenta como enchufado y no lo está.
+        Se arregla en la Fase 5.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: LA FUENTE CORRECTA — `network-session-source` DENTRO
@@ -141,11 +146,21 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
   - [ ] Implementación (Green): junto a `clockSource`, `destinationName` y
         `sourceName`, que es donde ya vive lo que no es material.
 - [ ] Task: Los ficheros existentes abren (FR17)
-  - [ ] Tests (Red): un fichero escrito **antes** de este track abre, y abre con
-        el preset de fábrica.
-  - [ ] Tests (Red): el camino que la decisión de la Fase 1 haya elegido —campo
-        opcional o migrador de 1 a 2— cubierto con su caso.
-  - [ ] Implementación (Green), según esa decisión.
+  - [ ] Tests (Red): un fichero escrito **antes** de este track —sin la clave del
+        mapeo— abre, y abre con el preset de fábrica.
+  - [ ] Tests (Red): `schemaVersion` **sigue siendo 1**, y un fichero que declare
+        2 se sigue apartando. La decisión de la Fase 1 es que esta rebanada no
+        estrena la subida de versión.
+  - [ ] Implementación (Green): campo opcional en `ProjectRecord`, con el mismo
+        criterio que `destinationName` y `sourceName`.
+- [ ] Task: Enchufar el migrador que se documenta como enchufado
+  - [ ] Tests (Red): el camino de carga pasa por `ProjectRecord.migrated(_:)` y
+        no por `validated()` a secas.
+  - [ ] Implementación (Green): una línea en `ProjectStore.load()`
+        (`ProjectStore.swift:187`).
+  - [ ] Hoy no cambia ningún comportamiento —`migrated(_:)` solo valida—, y ese
+        es el momento de hacerlo: quien escriba la primera migración de verdad
+        confiará en el comentario que ya dice que la llamada está puesta.
 - [ ] Task: Vía de vuelta al preset de fábrica (FR18)
   - [ ] Tests (Red): restaurar el preset deja `ControlMapping.beatStepPro` y no
         toca el material.
