@@ -92,9 +92,10 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
   - [ ] El knob 13 mueve el mismo contorno; cambiar de Track y volver conserva el
         Cycle en edición de cada uno.
   - [ ] Escribir `device-verification.md` con lo que se probó y lo que falló.
-- [ ] Task: Cobertura y suite completa
-  - [ ] `MIDI` ≥80% medida en un proceso e ignorando `Engine/Sources`, como dice
-        `workflow.md`.
+- [x] Task: Cobertura y suite completa
+  - [x] `MIDI` ≥80% medida en un proceso e ignorando `Engine/Sources`, como dice
+        `workflow.md` — **91,51%** de líneas, y `ControlInput.swift` al 100%.
+  - [x] Suites verdes: `Engine` 888, `MIDI` 874 (1 skipped), `Persistence` 64.
 - [ ] Task: Pull Request
   - [ ] Rama `fix/cycle-edit-cursor`, PR contra `main`. Cuerpo corto.
 - [ ] Task: Cerrar el defecto en el registro
