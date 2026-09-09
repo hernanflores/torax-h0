@@ -1,0 +1,50 @@
+Fix: el card del mapeo no repintaba hasta cambiar de pestaña
+Track: midi-learn_20260908 · Fase 6, corrección
+
+EL SÍNTOMA, EN DISPOSITIVO EL 2026-09-09
+========================================
+Aprender funcionaba y se guardaba, pero el número nuevo solo aparecía al navegar
+a otra pestaña y volver. Igual con `factory preset`.
+
+LA CAUSA
+========
+`mapping` y `learning` eran propiedades CALCULADAS que leían `ControlInput`, y
+`ControlInput` NO ES OBSERVABLE. Leerlo desde el cuerpo de una vista no registra
+ninguna dependencia de observación, así que nada invalidaba el card.
+
+El `TimelineView` de la pantalla `midi` tampoco lo salva, y esto es lo que hay
+que llevarse: vuelve a evaluar SU cuerpo, pero SwiftUI no vuelve a entrar en un
+hijo cuyos parámetros no han cambiado — y `MidiLearnCard` solo lleva dentro la
+referencia al modelo, que es la misma en cada tick.
+
+Por qué los otros cards sí funcionaban: `selection` y `sourceSelection` son
+propiedades ALMACENADAS y observables del modelo. Por eso el lado de la salida se
+veía bien y el del mapeo no.
+
+EL ARREGLO
+==========
+Reflejar `mapping` y `learning` en propiedades almacenadas del modelo, que es
+exactamente lo que `syncFromControlInput` ya hace con `pattern` y
+`selectedTrackIndex`, y por esta misma razón. La vía ya estaba en el repositorio;
+solo había que usarla.
+
+`syncLearning()` es el sitio único. Dos caminos que reflejen lo mismo acaban
+divergiendo, y el que se olvide es el que enseña un dato viejo.
+
+El espejo arranca con lo restaurado del disco, no con el preset de fábrica: si
+no, el card enseñaría el preset hasta el primer gesto.
+
+RELACIÓN CON OTRO TRACK
+=======================
+Es la MISMA CLASE de fallo que `hardware-screen-sync_20260908`: estado que vive
+detrás de un objeto no observable y que por tanto no invalida la pantalla. Allí
+es `Transport` y el hilo de recepción de CoreMIDI; aquí era `ControlInput` y el
+hilo principal. Vale como evidencia de que ese track no es un caso aislado.
+
+VERIFICACIÓN
+============
+  swift test --package-path Packages/MIDI (partición)   830 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
+
+Falta comprobarlo en dispositivo, que es donde apareció.
