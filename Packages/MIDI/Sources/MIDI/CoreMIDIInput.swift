@@ -129,7 +129,8 @@ public final class CoreMIDIInput: @unchecked Sendable {
             let endpoint = MIDIGetSource(index)
             return MIDIEndpointInfo(
                 endpoint: endpoint,
-                displayName: CoreMIDIOutput.displayName(of: endpoint)
+                displayName: CoreMIDIOutput.displayName(of: endpoint),
+                isNetworkSession: EndpointDiagnostics.isNetworkSession(endpoint)
             )
         }
     }

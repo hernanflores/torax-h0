@@ -943,7 +943,12 @@ final class TransportModel {
             }
             self.input = input
 
-            let sourceWatcher = MIDIEndpointWatcher(.source, enumerating: input.availableSources)
+            // **Con la fuente recordada** (FR15). El `Project` la guarda desde
+            // `persistence_20260907`, y usarla es lo que el plan de
+            // `network-session-source_20260828` dejó anotado: recordar la última
+            // elección resuelve mejor que cualquier heurística.
+            let sourceWatcher = MIDIEndpointWatcher(
+                .source, enumerating: input.availableSources, remembering: project.sourceName)
             self.sourceWatcher = sourceWatcher
             sourceSelection = sourceWatcher.selection
             connectToSelectedSource()
@@ -1031,6 +1036,7 @@ final class TransportModel {
     func selectSource(_ endpoint: MIDIEndpointInfo) {
         sourceSelection = sourceSelection.selecting(endpoint)
         connectToSelectedSource()
+        rememberHardware()
     }
 
     func play() {
@@ -1082,5 +1088,26 @@ extension TransportModel {
     func select(_ destination: MIDIEndpointInfo) {
         selection = selection.selecting(destination)
         activeDestination.value = UInt64(selection.selected?.endpoint ?? 0)
+        rememberHardware()
+    }
+
+    /// Guarda a qué hardware se estaba hablando.
+    ///
+    /// **Los campos existían y nadie los escribía.** `persistence_20260907` los
+    /// puso en `Project` y en `ProjectRecord` —con su documentación de por qué
+    /// se guarda el nombre y no el `MIDIEndpointRef`— pero ningún camino de la
+    /// app los rellenaba, así que se escribía `null` en cada guardado. Encontrado
+    /// el 2026-09-09 al cablear FR15, que sin esto no habría recordado nunca
+    /// nada.
+    ///
+    /// **Solo se recuerda lo que se elige a mano.** Guardar también la
+    /// autoselección convertiría un accidente —lo que hubiera enchufado el día
+    /// que se abrió la app— en una preferencia que luego manda sobre ella.
+    private func rememberHardware() {
+        project = project.remembering(
+            destinationNamed: selection.selected?.displayName,
+            sourceNamed: sourceSelection.selected?.displayName
+        )
+        autosave.changedHeader(project)
     }
 }

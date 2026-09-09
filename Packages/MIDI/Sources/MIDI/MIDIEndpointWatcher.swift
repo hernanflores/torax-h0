@@ -64,13 +64,19 @@ public final class MIDIEndpointWatcher: @unchecked Sendable {
     public init(
         _ role: MIDIEndpointRole,
         enumerating: @escaping () -> [MIDIEndpointInfo],
+        remembering name: String? = nil,
         delivering: @escaping (@escaping () -> Void) -> Void = { work in
             DispatchQueue.main.async(execute: work)
         }
     ) {
         self.enumerate = enumerating
         self.deliver = delivering
-        let discovered = MIDIEndpointSelection(role, discovering: enumerating())
+        // **Lo recordado solo manda en el descubrimiento inicial.** A partir de
+        // ahí manda la elección vigente, que `refreshed(with:)` conserva: un
+        // refresco no puede devolver la selección a lo que había en disco
+        // debajo del dedo de quien acaba de cambiarla.
+        let discovered = MIDIEndpointSelection(
+            role, discovering: enumerating(), remembering: name)
         self.selection = discovered
         self.latest = discovered
     }

@@ -176,6 +176,27 @@ extension EndpointDiagnostics {
         )
     }
 
+    /// El driver que publica la sesión MIDI de red de iPadOS.
+    ///
+    /// **Observado en dispositivo el 2026-09-09**, con cuatro fuentes delante:
+    /// `Red Session 1` declara esto, y el BeatStep Pro —sus dos puertos— y el
+    /// OP-Z declaran `com.apple.AppleMIDIUSBDriver`. La comparación es por
+    /// driver y no por nombre visible, que depende del idioma del sistema y de
+    /// lo que el usuario le haya puesto (NFR4).
+    ///
+    /// **Si iPadOS lo cambia, esto deja de distinguir y todo vuelve a
+    /// autoseleccionar la red.** El diagnóstico que encontró el valor sigue en
+    /// este fichero para poder mirarlo otra vez, y los valores observados están
+    /// en la git note de la Fase 2 del track.
+    static let networkDriverOwner = "com.apple.AppleMIDINetworkDriver"
+
+    /// Si ese endpoint lo publica la sesión de red.
+    ///
+    /// No es código de tiempo real: se consulta al enumerar.
+    public static func isNetworkSession(_ endpoint: MIDIEndpointRef) -> Bool {
+        string(kMIDIPropertyDriverOwner, of: endpoint) == networkDriverOwner
+    }
+
     private static func string(_ property: CFString, of object: MIDIObjectRef) -> String? {
         var value: Unmanaged<CFString>?
         guard MIDIObjectGetStringProperty(object, property, &value) == noErr, let value else {
