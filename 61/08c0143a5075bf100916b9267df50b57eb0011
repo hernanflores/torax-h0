@@ -73,3 +73,31 @@ Lo que falta de la fase
 -----------------------
 Nada de código: el mapeo aprendido todavía no llega al `Project` desde la app —
 ese cableado es de la Fase 6, junto con la pantalla que lo dispara.
+
+--- Verificación de fase ---
+Fase 5: QUE SOBREVIVA — cerrada el 2026-09-09.
+
+Tests y cobertura
+-----------------
+  swift test --package-path Packages/Engine          888 tests, 0 fallos
+      cobertura de líneas 98,67% (umbral ≥90%)
+  swift test --package-path Packages/Persistence      64 tests, 0 fallos
+      cobertura de líneas 97,60% (umbral ≥90%)
+  swift test --package-path Packages/MIDI (partición) 804 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
+
+Verificación manual
+-------------------
+Sin dispositivo: el mapeo aprendido todavía no llega al `Project` desde la app —
+ese cableado es de la Fase 6. Lo revisado:
+  1. `ControlNumbers` se lee como «el mapeo en números», no como un sinónimo.
+  2. `ControlNumbersRecord.key(for:)` exhaustivo y sin `default`.
+  3. `ControlMapping.init(_:)` descarta lo imposible que venga del disco.
+  4. `ProjectRecord.controlNumbers` opcional, `schemaVersion` en 1, con un test
+     de JSON escrito a mano sin la clave.
+  5. `ProjectStore.loadHeader` pasando por el migrador, con su porqué.
+
+Confirmación del usuario
+------------------------
+«Si» — 2026-09-09.
