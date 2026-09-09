@@ -1,0 +1,44 @@
+--- Verificación de fase ---
+Fase 7: DISPOSITIVO, MEDICIÓN Y CIERRE DE LA v1 — cerrada el 2026-09-09.
+Y con ella la Fase 2, cuyo checkpoint es `183c1be`.
+
+Verificación en dispositivo
+---------------------------
+Segunda vuelta, con los tres arreglos puestos: aprender un pad y un step button
+con el OP-Z, y el repaso de los cuarenta y ocho controles del preset restaurado
+contra `preset/README.md`. Las tres familias vistas funcionando con hardware.
+Detalle completo en el `device-verification.md` del track.
+
+Cobertura
+---------
+  Engine        98,67%   (≥90%)   888 tests
+  MIDI          91,30%   (≥80%)   851 tests
+  Persistence   97,60%   (≥90%)    64 tests
+Cero fallos. `MIDI` medida en un proceso e ignorando `Engine/Sources`; esta vez
+la pasada única no disparó el flake `-50`, que es la naturaleza del flake y no
+una mejora.
+
+FR19
+----
+La v1 cierra SIN medición final de jitter, según la decisión de la Fase 1. La
+nota fechada está en `workflow.md` con el coste y la vuelta atrás.
+
+Documentación
+-------------
+  product.md   la promesa pendiente tachada, y escrito qué se entregó.
+  tracks.md    rebanada 8 cerrada y la v1 entera. De paso, la tabla decía
+               «abierta» de la rebanada 7 desde que cerró el 2026-08-31.
+  spec.md      «Correcciones al implementar», con los siete puntos.
+
+Lo que queda abierto a propósito
+--------------------------------
+  - El PR lo abre el usuario (2026-09-09).
+  - La issue #43 se cierra al mergear, no antes: el arreglo vive en la rama, y
+    cerrar una issue cuyo arreglo no está integrado deja el registro mintiendo.
+  - `No MIDI input` no se pudo ver en este iPad, por el OP-Z permanentemente
+    conectado. La regla es correcta y tiene tests.
+
+Confirmación del usuario
+------------------------
+«Validado el fix. Comprobado el mapeo usando el OP-Z.» y «Comprobaciones OK.»
+— 2026-09-09.
