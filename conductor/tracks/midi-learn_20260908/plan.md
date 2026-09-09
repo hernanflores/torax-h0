@@ -215,7 +215,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
         fábrica, que es lo que la Fase 3 ya entregó.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 6: LA PANTALLA
+## FASE 6: LA PANTALLA [checkpoint: a861bb0]
 
 - [x] Task: Aprender desde la pantalla `midi` (FR6, FR11) `cbe8336`
   - [x] Elegir el destino, entrar en aprendizaje, ver qué se está esperando y
@@ -235,10 +235,11 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
         anunciar un giro que no ocurrió.
   - [x] El mapeo se restaura en el `init` desde el `Project` y se guarda con los
         ajustes de sesión.
-  - [ ] **Comprobación visual y funcional: de dispositivo.** El simulador no
-        tiene fuentes MIDI —no llega ningún CC— y desde aquí no se puede tocar la
-        pestaña `midi`. Va en la Fase 7.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] **Comprobado en dispositivo el 2026-09-09**, y encontró tres fallos:
+        aprender un bloque convertía los knobs en step buttons `83223a1`, el card
+        no enseñaba el número `5193de4`, y no repintaba hasta cambiar de pestaña
+        `a861bb0`.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 7: DISPOSITIVO, MEDICIÓN Y CIERRE DE LA v1
 
