@@ -134,7 +134,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
         Fase 6 necesita para nombrar lo que acaba de quedarse mudo.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 4: APRENDER
+## FASE 4: APRENDER [checkpoint: a404c5f]
 
 - [x] Task: El estado de aprendizaje (FR6, FR9, FR10, FR11) `a404c5f`
   - [x] Tests (Red): en aprendizaje, un CC **asigna y no mueve el parámetro**.
@@ -163,7 +163,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
   - [x] **Las dos tareas entran en un commit**, y está anotado en su git note: el
         estado no se prueba sin decidir qué familias acepta, y las familias no
         existen sin el estado.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: QUE SOBREVIVA
 
