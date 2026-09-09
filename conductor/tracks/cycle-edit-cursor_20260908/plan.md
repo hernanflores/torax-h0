@@ -51,22 +51,24 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
 
 ## FASE 2: EL GESTO EN EL `CycleStrip`
 
-- [ ] Task: Pulsar elige el Cycle en edición (FR5, NFR4)
-  - [ ] La celda llama a la vía de la Fase 1 a través del modelo solo si
+- [x] Task: Pulsar elige el Cycle en edición (FR5, NFR4) — `e8a47d8`
+  - [x] La celda llama a la vía de la Fase 1 a través del modelo solo si
         `number <= activeCount`.
-  - [ ] Una celda fuera del rango activo no hace nada al pulsarla: el gesto
+  - [x] Una celda fuera del rango activo no hace nada al pulsarla: el gesto
         descarta `number > activeCount` antes de invocar la vía.
   - [ ] Comprobar en simulador que el contorno del Cycle en edición se mueve, que
-        es lo único que el simulador puede verificar de este track.
-- [ ] Task: Mantener cambia cuántos están activos (FR6, FR7)
-  - [ ] El mantenido llama a `setActiveCycleCount`, que es lo que la celda hacía
+        es lo único que el simulador puede verificar de este track. **Pendiente:
+        lo hace el usuario, no hay forma de tocar la pantalla desde aquí.**
+- [x] Task: Mantener cambia cuántos están activos (FR6, FR7) — `e8a47d8`, mismo commit que la anterior: partir un toque en dos gestos no se entrega a medias
+  - [x] El mantenido llama a `setActiveCycleCount`, que es lo que la celda hacía
         hasta hoy.
-  - [ ] **Dispara al cumplirse el tiempo, no al soltar** (FR6).
-  - [ ] **Después de disparar, soltar no elige** (FR7): un toque, una cosa.
+  - [x] **Dispara al cumplirse el tiempo, no al soltar** (FR6).
+  - [x] **Después de disparar, soltar no elige** (FR7): un toque, una cosa.
   - [ ] Probar los estados feos con el dedo: mantener y arrastrar fuera de la
         celda, mantener y soltar sobre otra, dos dedos a la vez. Ninguno deja el
-        cursor ni el rango en un valor que nadie pidió.
-  - [ ] Revisar que ninguna otra vista dependía de que la celda cambiara el
+        cursor ni el rango en un valor que nadie pidió. **Pendiente: con el
+        dedo.**
+  - [x] Revisar que ninguna otra vista dependía de que la celda cambiara el
         rango al primer toque.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
