@@ -42,3 +42,36 @@ número cambió el spec en tres sitios.
 
 La instrumentación se conserva hasta la Fase 4 —el criterio 6 exige contar otra
 vez con el arreglo puesto— y se quita en la tarea de cierre.
+
+=== INFORME DE VERIFICACIÓN DE FASE — FASE 1 ===
+
+COMANDOS AUTOMÁTICOS
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    → 21 tests, 1 omitido, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    → 853 tests, 0 fallos
+  swift test --package-path Packages/Engine
+    → 888 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+
+COBERTURA DE LOS CAMBIOS DE LA FASE
+Los dos ficheros tocados —Transport.swift y TransportModel.swift— solo ganaron
+instrumentación bajo #if DEBUG, temporal y a retirar en la tarea de cierre. No
+se escriben tests para ella a propósito: los contadores de verdad, con sus
+tests, son la Fase 2 (FR1, FR2), y unos tests sobre código que se va a borrar
+serían trabajo que hay que borrar también. La corrección de la instrumentación
+quedó comprobada por comprobación cruzada de sus propios números: 50,4 ticks/s
+medidos contra 124 bpm × 24 PPQN / 60 esperados.
+
+VERIFICACIÓN MANUAL — iPad con BeatStep Pro, 2026-09-09
+1. Reloj externo, Start desde el BeatStep: la secuencia suena y el botón sigue
+   en play. Síntoma reproducido.
+2. Pulsar el botón: ni para ni rearranca, y arranca el anillo. Explicado —
+   play() muere en el guard !isPlaying de Transport.play().
+3. Stop del maestro en t=90 s: transport.isPlaying=false con model.isPlaying en
+   true. El defecto es simétrico, y el spec solo contaba el Start.
+4. 220 s contados: 50,4 ticks/s y 4 transiciones. FR5 decidido con datos.
+
+CONFIRMACIÓN DEL USUARIO
+Confirmado explícitamente el 2026-09-09: «Sí, cerrar la Fase 1».
