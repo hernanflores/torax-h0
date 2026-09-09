@@ -1,0 +1,75 @@
+Tasks: El mapeo entra en el `Project` (FR16, NFR3) · Los ficheros existentes
+       abren (FR17) · Enchufar el migrador · Vía de vuelta al preset (FR18)
+Track: midi-learn_20260908 · Fase 5
+
+Las cuatro tareas del plan entran en un commit
+----------------------------------------------
+El campo, su formato en disco, la compatibilidad hacia atrás y el migrador son
+la misma costura mirada por cuatro lados; partirlos habría dado mitades que no
+compilan. Se anota aquí en vez de fingir cuatro pasos.
+
+Qué cambia
+----------
+  Packages/Engine/Sources/Engine/ControlNumbers.swift      nuevo
+  Packages/Engine/Sources/Engine/Project.swift             `controlNumbers` y su
+      `remembering(controlNumbers:)`
+  Packages/Engine/Sources/Engine/ProjectRecord.swift       `ControlNumbersRecord`
+  Packages/MIDI/Sources/MIDI/ControlMapping.swift          `numbers` e `init(_:)`
+  Packages/Persistence/Sources/Persistence/ProjectStore.swift  el migrador
+  + tests: ControlNumbersRecordTests (10), MappingNumbersTests (5),
+    MigrationHookTests (2), y uno más en MappingAdoptionTests
+
+La decisión de diseño, con su porqué
+------------------------------------
+`Engine` no puede importar CoreMIDI —`DependencyBoundaryTests` lo vigila— y el
+`Project` vive en `Engine`. Así que lo que cruza la frontera es `ControlNumbers`:
+el mapeo escrito en enteros. Es exactamente el reparto que el propio `Project` ya
+usa para el destino, cuya documentación dice que un `MIDIEndpointRef` «es de
+CoreMIDI, que este paquete no puede ver». `MIDI` convierte en las dos
+direcciones.
+
+No es un sinónimo de «mapeo»: es el mapeo en la única forma que `Engine` puede
+sostener. El nombre lo dice — números.
+
+Lo que viene del disco no promete nada
+--------------------------------------
+Un `Int` puede no ser un controlador válido. Una asignación fuera de rango se
+descarta y ese destino se queda sin control, que es un estado válido; un bloque
+fuera de rango cae en el de fábrica, porque un mapeo sin pads no lo es. Mismo
+criterio que una escala desconocida cayendo en `minor` en vez de impedir la
+apertura.
+
+Las claves son del disco, no de la pantalla
+-------------------------------------------
+Cada parámetro se guarda por una cadena estable en minúsculas, con un `switch`
+exhaustivo y sin `default`: añadir un parámetro al motor no compilará hasta que
+alguien decida cómo se guarda. Sin eso, un mapeo aprendido perdería justo el
+parámetro nuevo, en silencio. Es el criterio de `scale` y `waveform`, y por eso
+tampoco se reutiliza `TrackParameter.description`.
+
+El hallazgo de la Fase 1, cerrado
+---------------------------------
+`ProjectStore.loadHeader` llamaba a `validated()` directamente; ahora pasa por
+`ProjectRecord.migrated(_:)`. Las dos rutas hacen lo mismo hoy, y ESA es la
+razón de arreglarlo ahora: el día que alguien escriba la primera migración
+confiando en el comentario que promete que la llamada está puesta, el fichero se
+apartaría por la ruta que no migra. `MigrationHookTests` es lo único que puede
+notar la diferencia antes de ese día.
+
+FR18
+----
+Volver al preset de fábrica es adoptar el de fábrica, y el test nuevo fija la
+mitad que importa: deshacer lo aprendido no deshace lo tocado.
+
+Verificación
+------------
+  swift test --package-path Packages/Engine          888 tests, 0 fallos
+  swift test --package-path Packages/Persistence      64 tests, 0 fallos
+  swift test --package-path Packages/MIDI (partición) 804 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
+
+Lo que falta de la fase
+-----------------------
+Nada de código: el mapeo aprendido todavía no llega al `Project` desde la app —
+ese cableado es de la Fase 6, junto con la pantalla que lo dispara.
