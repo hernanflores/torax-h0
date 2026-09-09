@@ -136,20 +136,33 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
 
 ## FASE 4: APRENDER
 
-- [ ] Task: El estado de aprendizaje (FR6, FR9, FR10, FR11)
-  - [ ] Tests (Red): en aprendizaje, un CC **asigna y no mueve el parámetro**.
-  - [ ] Tests (Red): salir sin asignar deja el mapeo como estaba.
-  - [ ] Tests (Red): fuera de aprendizaje, todo se comporta como hoy — la suite
+- [x] Task: El estado de aprendizaje (FR6, FR9, FR10, FR11) `a404c5f`
+  - [x] Tests (Red): en aprendizaje, un CC **asigna y no mueve el parámetro**.
+  - [x] Tests (Red): salir sin asignar deja el mapeo como estaba.
+  - [x] Tests (Red): elegir otro destino sin haber aprendido es cambiar de idea,
+        no un error: manda el último.
+  - [x] Tests (Red): fuera de aprendizaje, todo se comporta como hoy — la suite
         entera de `ControlInput` es el test de no regresión.
-  - [ ] Implementación (Green): el estado vive en `MIDI`, donde se testea sin
-        dedo de por medio.
-- [ ] Task: Las tres familias, y un giro es una asignación (FR7, FR8)
-  - [ ] Tests (Red): un knob se aprende con el primer CC; los siguientes del
-        mismo control **no** reabren la pregunta.
-  - [ ] Tests (Red): un pad se aprende con su nota; un step button con su CC de
-        conmutación.
-  - [ ] Tests (Red): los mensajes que no son del control esperado no asignan.
-  - [ ] Implementación (Green).
+  - [x] Implementación (Green): el estado vive en `MIDI`, donde se testea sin
+        dedo de por medio, y se corta **al principio** de `receive`.
+  - [x] **FR11 no entra aquí**: `ControlInput` no conoce al transporte. Que
+        aprender no lo interrumpa es una propiedad de la pantalla, y su sitio es
+        la Fase 6.
+- [x] Task: Las tres familias, y un giro es una asignación (FR7, FR8) `a404c5f`
+  - [x] Tests (Red): un knob se aprende con el primer CC; los siguientes del
+        mismo control **no** reabren la pregunta **ni editan** el parámetro que
+        acaban de asignar.
+  - [x] Tests (Red): el silencio del control recién aprendido **se levanta con
+        el control siguiente**, no con un plazo.
+  - [x] Tests (Red): un pad se aprende con su nota; un step button y el bloque de
+        knobs con su CC, y con este último se mueve el knob del Cycle.
+  - [x] Tests (Red): los mensajes que no son del control esperado no asignan
+        **y no cancelan**: el destino sigue esperando.
+  - [x] Implementación (Green): `LearnTarget`, con los cuatro casos y por qué
+        tres de ellos son bloques y no controles sueltos.
+  - [x] **Las dos tareas entran en un commit**, y está anotado en su git note: el
+        estado no se prueba sin decidir qué familias acepta, y las familias no
+        existen sin el estado.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: QUE SOBREVIVA
