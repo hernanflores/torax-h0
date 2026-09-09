@@ -1,0 +1,24 @@
+Task: El knob y la pantalla entran por la misma puerta (FR10, NFR1)
+
+`moveEditingCycle(by:)` dejaba de escribir el Pattern por su cuenta: traduce el
+delta a índice y delega en `setEditingCycle(_:)`, que acota, compara y publica.
+Una sola puerta para el knob 13 y para la celda del `CycleStrip`.
+
+Cambios:
+- `Packages/MIDI/Sources/MIDI/ControlInput.swift`: cuerpo de
+  `moveEditingCycle(by:)` reducido a la traducción del delta; nota de FR10 en su
+  documentación.
+- `Packages/MIDI/Tests/MIDITests/EditingCycleTouchPathTests.swift`:
+  `EditingCycleSameDoorTests`, 4 tests — llegar por knob y por dedo deja el
+  mismo `Track`; alternarlos conserva un solo cursor; el knob sigue acotado al
+  rango activo; el knob sigue sin publicar contra un tope.
+
+Sobre la guarda de `isTouchFrozen` que el knob hereda: es inalcanzable por CC.
+El knob del Cycle ya callaba antes con `isTakenOver` —Temp y Ctrl All— en
+`receive`, así que no cambia comportamiento observable. Los ocho tests de
+`EditingCycleInputTests` lo confirman sin tocarlos.
+
+`Engine` no se toca (NFR1): `Track.withEditing(_:)` se usa tal cual.
+
+Verificación: `swift test --package-path Packages/MIDI` — 874 tests, 1 skipped,
+0 fallos.
