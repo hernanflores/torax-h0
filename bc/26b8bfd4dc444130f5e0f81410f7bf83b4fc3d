@@ -1,0 +1,23 @@
+Enmienda de spec y plan del track hardware-screen-sync_20260908.
+
+Qué se descubrió: el segundo síntoma reportado (el tempo de un maestro externo
+no refresca la barra) ya no se reproduce. Confirmado por el usuario en
+dispositivo y explicado en el código.
+
+Por qué: AppChrome.swift:222 envuelve el número del tempo en un
+TimelineView(.periodic(by: 0.25)); beatsPerMinute lee transport.currentTempo,
+que el hilo de recepción escribe por atómico. MidiScreen.swift:20 hace lo mismo
+con la pantalla entera, y ahí dentro están clockStatus y el segmentado
+internal/external — que es FR10.
+
+Qué sigue roto: solo el botón de transporte. Está fuera de esos TimelineView
+(AppChrome.swift:313) y lee TransportModel.isPlaying, la copia de la línea 487
+que solo escriben play() y stop() de la app. Repintar más deprisa no lo
+arreglaría, y meterlo en un TimelineView agravaría la carrera sobre 'scheduler'.
+
+Ficheros: conductor/tracks/hardware-screen-sync_20260908/spec.md, plan.md.
+
+El porqué de fondo: el paso 8 del Task Workflow pide parar y fechar la
+desviación antes de seguir. Implementar FR4 igualmente habría añadido una
+invalidación del modelo observable dos veces por segundo para refrescar un
+número que ya se refresca con un repintado local.
