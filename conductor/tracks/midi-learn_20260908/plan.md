@@ -165,7 +165,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
         existen sin el estado.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 5: QUE SOBREVIVA
+## FASE 5: QUE SOBREVIVA [checkpoint: 6108c01]
 
 - [x] Task: El mapeo entra en el `Project` (FR16, NFR3) `6108c01`
   - [x] Tests (Red): round-trip del mapeo por `ProjectRecord`, con el resto de
@@ -200,7 +200,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
         toca el material** — deshacer lo aprendido no deshace lo tocado.
   - [x] Implementación (Green): ninguna. Volver al de fábrica es adoptar el de
         fábrica, que es lo que la Fase 3 ya entregó.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: LA PANTALLA
 
