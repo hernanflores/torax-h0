@@ -251,9 +251,28 @@ rama o deja de describir la app.
 ## Known Limitations
 
 - **La propiedad que identifica la sesión de red puede no ser estable entre
-  versiones de iPadOS** (limitación 1 del track absorbido). Por eso el
-  diagnóstico se registra con los valores observados: si cambia, se sabrá contra
-  qué comparar.
+  versiones de iPadOS** (limitación 1 del track absorbido). Es
+  `kMIDIPropertyDriverOwner`, y el valor observado el 2026-09-09 en iPad está en
+  la git note de la Fase 2 junto con las dos pasadas enteras: si cambia, se sabrá
+  contra qué comparar.
+
+- **Un controlador puede publicar más de una fuente, y no hay propiedad que las
+  distinga.** *(Encontrado el 2026-09-09, en el diagnóstico.)* El BeatStep Pro
+  publica dos: el puerto de interpretación y `BeatStepPro OutEditor`. Comparten
+  `model`, `manufacturer`, `driverOwner` y dispositivo padre; **solo el nombre
+  las separa**, y NFR4 prohíbe identificar por nombre visible.
+
+  Hoy no muerde porque la autoselección coge el primero que no sea la red y el
+  puerto de interpretación va antes. **Es suerte de orden, no una garantía.** Si
+  algún día muerde, la salida buena no es mirar el nombre: es que la elección
+  hecha a mano se recuerde —que ya ocurre, FR15— y que el usuario la haga una
+  vez.
+
+- **`No MIDI input` sigue sin ser visible en un iPad con otro controlador
+  enchufado.** *(2026-09-09.)* La regla de FR13 es correcta y sus tests la fijan,
+  pero en el dispositivo de verificación hay un OP-Z permanentemente conectado,
+  así que el estado vacío solo se ve desenchufándolo todo. No es un defecto: es
+  lo que hace falta para verlo.
 - **Un mapeo aprendido con un controlador y usado con otro no avisa.** Los
   números casan o no casan; la app no sabe qué hardware hay al otro lado.
 - **Aprender es destino a destino** (FR6). Reasignar los cuarenta y ocho

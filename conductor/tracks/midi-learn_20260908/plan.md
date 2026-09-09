@@ -54,43 +54,48 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
 
 ## FASE 2: LA FUENTE CORRECTA — `network-session-source` DENTRO
 
-- [~] Task: Identificar el endpoint de red por propiedad, no por nombre (FR12,
-      NFR4) — **requiere iPad** `930713e`
-  - [x] La instrumentación: `EndpointDiagnostics` lee las candidatas
-        —`kMIDIPropertyDriverOwner`, `kMIDIPropertyModel`, `manufacturer`,
-        `uniqueID`, entidad y dispositivo padre— más el volcado entero, y las
-        imprime al arrancar bajo `#if DEBUG`. 9 tests sobre el formato.
-  - [ ] **Correrlo en el iPad, dos veces**: con el BeatStep Pro conectado y sin
-        él. Es la mitad que no se puede hacer sin dispositivo.
-  - [ ] Registrar en la git note **lo que devuelve cada candidata**, con el valor
-        observado. Es lo que permitirá saber contra qué comparar si iPadOS lo
-        cambia.
-  - [ ] Decidir la propiedad y documentar **por qué**, no solo cuál.
-- [ ] Task: `MIDIEndpointInfo` lleva el dato de la decisión (NFR2)
-  - [ ] Tests (Red): construir la información desde valores conocidos, sin
+- [x] Task: Identificar el endpoint de red por propiedad, no por nombre (FR12,
+      NFR4) — **requiere iPad** `930713e` `dae873c`
+  - [x] La instrumentación: `EndpointDiagnostics` lee las candidatas más el
+        volcado entero y las imprime al arrancar bajo `#if DEBUG`.
+  - [x] **Corrido en el iPad, dos veces**, con el BeatStep Pro y sin él.
+  - [x] Registrado en la git note: las dos pasadas enteras, con lo que devuelve
+        cada candidata.
+  - [x] **Decidido: `kMIDIPropertyDriverOwner`.** La red declara
+        `com.apple.AppleMIDINetworkDriver`; los tres controladores,
+        `com.apple.AppleMIDIUSBDriver`. `model` y `manufacturer` vienen vacíos en
+        la red y distinguirían hoy, pero eso es una ausencia y no una afirmación.
+  - [x] **El volcado entero no sirve en iPadOS**: devuelve solo `uniqueID`. Las
+        candidatas con nombre eran el camino.
+  - [x] **Hallazgo**: el BeatStep publica dos fuentes y ninguna propiedad las
+        distingue. Anotado como limitación.
+- [x] Task: `MIDIEndpointInfo` lleva el dato de la decisión (NFR2) `dae873c`
+  - [x] Tests (Red): construir la información desde valores conocidos, sin
         CoreMIDI de por medio.
-  - [ ] Implementación (Green): el campo entra por el enumerador, que es quien
-        habla con CoreMIDI. La estructura sigue siendo un valor testeable sin
-        hardware.
-- [ ] Task: Elegible pero nunca por defecto (FR12, FR13, FR14)
-  - [ ] Tests (Red): con **solo** la sesión de red, `hasEndpoint` es `false` y el
+  - [x] Implementación (Green): el campo entra por el enumerador, que es quien
+        habla con CoreMIDI. Por defecto `false`, que es la respuesta segura.
+- [x] Task: Elegible pero nunca por defecto (FR12, FR13, FR14) `dae873c`
+  - [x] Tests (Red): con **solo** la sesión de red, `hasEndpoint` es `false` y el
         estado es `No MIDI input`.
-  - [ ] Tests (Red): con red + controlador, queda elegido el controlador.
-  - [ ] Tests (Red): añadir un controlador al refrescar lo selecciona; quitarlo
+  - [x] Tests (Red): con red + controlador, queda elegido el controlador — en
+        cualquiera de los dos órdenes.
+  - [x] Tests (Red): añadir un controlador al refrescar lo selecciona; quitarlo
         vuelve al estado vacío.
-  - [ ] Tests (Red): la red sigue en `available` y `selecting(_:)` la acepta.
-  - [ ] Tests (Red): una elección manual de la red sobrevive al refresco.
-  - [ ] Tests (Red): el **destino** no cambia de comportamiento — sus tests
-        siguen en verde.
-  - [ ] Implementación (Green): la autoselección salta la sesión de red; la
-        elegibilidad no cambia.
-- [ ] Task: Lo recordado manda (FR15)
-  - [ ] Tests (Red): con una fuente recordada y presente, se elige — **incluida
-        la de red**, que elegida a mano es una elección explícita.
-  - [ ] Tests (Red): con lo recordado ausente, se cae a la regla de FR12 y no a
+  - [x] Tests (Red): la red sigue en `available` y `selecting(_:)` la acepta.
+  - [x] Tests (Red): una elección manual de la red sobrevive al refresco.
+  - [x] Tests (Red): el **destino** no cambia de comportamiento.
+  - [x] Implementación (Green): `isAutoSelectable`, separado de `isEligible`.
+- [x] Task: Lo recordado manda (FR15) `dae873c`
+  - [x] Tests (Red): con una fuente recordada y presente, se elige — **incluida
+        la de red**.
+  - [x] Tests (Red): con lo recordado ausente, se cae a la regla de FR12 y no a
         la red.
-  - [ ] Implementación (Green): apoyada en el `sourceName` que el `Project` ya
-        guarda desde `persistence_20260907`.
+  - [x] Implementación (Green): apoyada en el `sourceName` del `Project`, y solo
+        en el descubrimiento inicial.
+  - [x] **Hallazgo**: nadie escribía `sourceName` ni `destinationName`. Los
+        campos existían desde `persistence_20260907` y se guardaba `null` en cada
+        guardado, así que FR15 habría sido letra muerta. Cableado en
+        `rememberHardware()`, y **solo para lo elegido a mano**.
 - [ ] Task: Verificación en iPad — **requiere iPad y controlador**
   - [ ] Sin controlador: se lee `No MIDI input` y el indicador `read-only`.
   - [ ] Conectar el BeatStep Pro: responde a los knobs sin tocar el selector.
