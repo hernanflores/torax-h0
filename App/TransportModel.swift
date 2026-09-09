@@ -890,7 +890,8 @@ final class TransportModel {
             self.output = output
 
             let watcher = MIDIEndpointWatcher(
-                .destination, enumerating: output.availableDestinations)
+                .destination, enumerating: output.availableDestinations,
+                remembering: project.destinationName)
             self.watcher = watcher
             selection = watcher.selection
 

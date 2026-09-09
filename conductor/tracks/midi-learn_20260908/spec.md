@@ -84,6 +84,17 @@ y aquí manda igual: se aprende con la secuencia sonando.
 
 ### La fuente correcta — `network-session-source` dentro
 
+> **Ampliación del 2026-09-09 — FR12 vale también para la salida.** Estaba
+> escrito como regla de la entrada, con el destino fuera de alcance porque «como
+> salida es una elección legítima y no estorba a ningún estado especificado». El
+> iPad lo desmintió: la sesión de red se autoseleccionaba como destino, así que
+> **la app arrancaba mandando las notas a la red en vez de a un sintetizador**.
+> Sonar a ninguna parte por defecto sí estorba.
+>
+> Lo que **no** cambia: sigue siendo elegible a mano en los dos papeles, y lo
+> recordado sigue mandando. MIDI por red a otro equipo es una vía legítima de
+> salida; lo único que se le quita es elegirse sola.
+
 **FR12 — La sesión de red nunca se autoselecciona.** Sigue en `available` y
 `selecting(_:)` la acepta: lo que cambia es que no se elige sola. Es FR3 del
 track absorbido, y su NFR4 manda — **no se identifica por el nombre visible**,
@@ -245,8 +256,9 @@ rama o deja de describir la app.
   identificar un endpoint más allá de su nombre guardado.
 - **Los knobs 15 y 16** (CC 84 y 85), que siguen libres a propósito para Accent,
   Voicing y Range en v2.
-- **El lado del destino de la sesión de red**: como salida es una elección
-  legítima y no estorba a ningún estado especificado.
+- ~~**El lado del destino de la sesión de red**: como salida es una elección
+  legítima y no estorba a ningún estado especificado.~~ **Entra el 2026-09-09**,
+  ver FR12.
 
 ## Known Limitations
 

@@ -82,13 +82,18 @@ public enum MIDIEndpointRole: Equatable, Sendable {
     /// la elegía sola, el estado `No MIDI input` era inalcanzable en el
     /// dispositivo de destino, y el controlador real no se elegía al conectarlo.
     ///
-    /// **La regla es de la entrada.** Como salida, la sesión de red es una vía
-    /// legítima y no estorba a ningún estado especificado.
+    /// > **La regla valía solo para la entrada, y desde el 2026-09-09 vale para
+    /// > los dos.** El `spec.md` de `midi-learn_20260908` decía que como salida
+    /// > la sesión de red «no estorba a ningún estado especificado», y el iPad lo
+    /// > desmintió: se autoseleccionaba como destino, así que **la app arrancaba
+    /// > mandando las notas a la red en vez de a un sintetizador**. Sonar a
+    /// > ninguna parte por defecto sí estorba.
+    ///
+    /// **Sigue siendo elegible a mano en los dos papeles**, y lo recordado sigue
+    /// mandando: MIDI por red a otro equipo es una vía legítima de salida. Lo
+    /// único que se le quita es elegirse sola.
     func isAutoSelectable(_ endpoint: MIDIEndpointInfo) -> Bool {
-        switch self {
-        case .destination: isEligible(endpoint)
-        case .source: isEligible(endpoint) && !endpoint.isNetworkSession
-        }
+        isEligible(endpoint) && !endpoint.isNetworkSession
     }
 }
 

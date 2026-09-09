@@ -135,13 +135,50 @@ final class NetworkSessionSourceTests: XCTestCase {
         XCTAssertEqual(selection.selected, opz)
     }
 
-    // MARK: - El destino no cambia
+    // MARK: - El destino, desde el 2026-09-09
 
-    /// La regla es de la entrada. Como salida, la sesión de red es una elección
-    /// legítima y no estorba a ningún estado especificado.
-    func testTheNetworkSessionIsStillAutoSelectedAsADestination() {
+    /// **La regla pasó a valer también para la salida.** El `spec.md` decía que
+    /// como destino la sesión de red «no estorba a ningún estado especificado»,
+    /// y el iPad lo desmintió: se autoseleccionaba, así que la app arrancaba
+    /// mandando las notas a la red en vez de a un sintetizador.
+    func testTheNetworkSessionIsNotAutoSelectedAsADestinationEither() {
         let selection = MIDIEndpointSelection(.destination, discovering: [network])
 
+        XCTAssertFalse(selection.hasEndpoint)
+        XCTAssertEqual(selection.statusDescription, "No MIDI device")
+    }
+
+    func testASynthIsChosenOverTheNetworkSessionAsADestination() {
+        let synth = MIDIEndpointInfo(endpoint: 4, displayName: "Sinte", isNetworkSession: false)
+        let selection = MIDIEndpointSelection(.destination, discovering: [network, synth])
+
+        XCTAssertEqual(selection.selected, synth)
+    }
+
+    /// **Sigue siendo elegible**, que es la mitad que no cambia: MIDI por red a
+    /// otro equipo es una vía legítima de salida.
+    func testTheNetworkSessionCanStillBeChosenAsADestinationByHand() {
+        let selection = MIDIEndpointSelection(.destination, discovering: [network])
+            .selecting(network)
+
         XCTAssertEqual(selection.selected, network)
+    }
+
+    func testARememberedNetworkDestinationIsChosen() {
+        let synth = MIDIEndpointInfo(endpoint: 4, displayName: "Sinte", isNetworkSession: false)
+        let selection = MIDIEndpointSelection(
+            .destination, discovering: [network, synth], remembering: "Red Session 1")
+
+        XCTAssertEqual(selection.selected, network)
+    }
+
+    /// Los endpoints de la propia app siguen fuera del destino, que era la otra
+    /// regla que vive en esta comprobación.
+    func testTheAppsOwnEndpointIsStillNotADestination() {
+        let own = MIDIEndpointInfo(
+            endpoint: 5, displayName: VirtualLoopback.defaultName, isNetworkSession: false)
+        let selection = MIDIEndpointSelection(.destination, discovering: [own])
+
+        XCTAssertFalse(selection.hasEndpoint)
     }
 }
