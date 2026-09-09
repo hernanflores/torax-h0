@@ -137,6 +137,16 @@ final con la rama abierta. Las dos salidas son válidas y las dos se escriben:
   final, con lo que eso cuesta —la última referencia válida es la de la rebanada
   2 de la v2, del 2026-09-02: máx 0,158 ms, σ 0,013–0,014 ms—.
 
+> **Resuelto el 2026-09-09 — la v1 cierra sin su medición final.** Decisión del
+> usuario, en la Fase 1. Manda la suspensión del 2026-09-02, y la excepción
+> «antes de cerrar v1, una medición final» queda **anulada** en `workflow.md`,
+> con su coste escrito y con cómo revertirla si algún día se quiere.
+>
+> **Consecuencia para este track:** la tarea de medición de la Fase 7 se reduce a
+> comprobar que la nota está escrita. No hay número que recoger, y **no hace
+> falta el arnés en dispositivo** para cerrar la v1 — lo que sí hace falta sigue
+> siendo el iPad, para la Fase 2 y para la verificación de la 7.
+
 ## Non-Functional Requirements
 
 **NFR1 — Nada nuevo en el camino de tiempo real.** El mapeo se consulta donde ya

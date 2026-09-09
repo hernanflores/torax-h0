@@ -44,6 +44,35 @@
 > v2 rebanada 2, 2026-09-02 — máx 0,158 ms, σ 0,013–0,014 ms, 1000 eventos por
 > tempo.
 >
+> **Decisión del 2026-09-09 — la v1 cierra sin su medición final, y la
+> suspensión se lleva por delante la excepción que la exigía.**
+>
+> La lista de *lo que sí exige medición* de la nota del 2026-08-28 termina en
+> «antes de cerrar v1, una medición final», y esta suspensión es posterior. Las
+> dos reglas se contradicen desde el 2026-09-02 y nadie lo había resuelto: se
+> resuelve aquí, al planificar la rebanada 8, que es la que cierra la v1.
+>
+> **Manda la suspensión.** La v1 cierra sin medir, y **esa excepción queda
+> anulada**: no hay medición final. La otra excepción de aquella lista —cambios
+> en `MusicalTimeline`, `LookAheadScheduler`, `SchedulerThread`, swing, Delay y
+> carga visual nueva al ritmo del reloj— también está suspendida y sigue
+> suspendida; lo que cambia hoy es solo que deja de haber una fecha en el
+> calendario esperando a que alguien mida.
+>
+> **Qué se pierde, con el coste delante.** La v1 existió para acotar el riesgo de
+> jitter y cierra sin comprobar que lo acotó. Las seis mediciones anteriores son
+> toda la evidencia que habrá, y ninguna incluye la rebanada 7 ni la 8: la 7 no
+> movió ningún instante y la 8 tampoco lo hará, así que el argumento por el que
+> se acepta es el mismo que el de la nota del 2026-08-28 —añadir trabajo acotado
+> al camino de emisión sin desplazar eventos no cambia el jitter—. Es un
+> argumento de arquitectura, no una medición.
+>
+> **Cómo se revierte, si algún día se quiere.** El arnés sigue en el repositorio
+> con su rejilla `12-tracks-cycles` y sus tests, el procedimiento está escrito en
+> los `device-verification.md` de las rebanadas 2 y 3 de la v2, y la referencia
+> contra la que comparar es la de arriba. Medir tarde sigue siendo posible;
+> atribuir una regresión a la rebanada que la introdujo, no.
+>
 > **Nota del 2026-09-02 — la rejilla cambió de nombre.** Al bajar a doce Tracks
 > (`ui-declutter_20260902`), `16 Tracks` y `16 Tracks · 4 Cycles` pasaron a
 > `12 Tracks` y `12 Tracks · 4 Cycles`, con sufijos `12-tracks` y
@@ -124,7 +153,8 @@ All tasks follow a strict lifecycle:
     > - Swing (Timing), Delay y cualquier parámetro que desplace eventos respecto
     >   a la rejilla.
     > - Carga visual nueva que redibuje al ritmo del reloj.
-    > - Antes de cerrar v1, una medición final.
+    > - ~~Antes de cerrar v1, una medición final.~~ **Anulada el 2026-09-09**:
+    >   la v1 cierra sin ella. Ver *Medición de jitter: suspendida*.
     >
     > **Lo que no:** añadir trabajo acotado al camino de emisión sin mover ningún
     > instante — elegir una altura del pool, aplicar una velocity, decidir una
