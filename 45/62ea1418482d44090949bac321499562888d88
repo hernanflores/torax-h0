@@ -1,0 +1,51 @@
+Task: Decidir cómo entra el mapeo en el fichero de disco (FR17)
+Track: midi-learn_20260908 · Fase 1
+
+Qué se decidió
+--------------
+El mapeo aprendido entra en `ProjectRecord` como CAMPO OPCIONAL.
+`schemaVersion` se queda en 1. Esta rebanada no estrena la subida de versión.
+
+Las dos salidas que había
+-------------------------
+  a) Campo opcional, versión 1.            <- elegida
+  b) Subir a 2 y escribir el primer migrador.
+
+Por qué (a)
+-----------
+1. La migración que (b) tendría que escribir es «si el mapeo no está, usa el
+   preset de fábrica». Eso es exactamente lo que un opcional ya significa en
+   este record: `destinationName` y `sourceName` son opcionales y su propia
+   documentación dice que «no haber elegido es un estado válido, no un campo que
+   falte». Un mapeo ausente es un usuario que nunca aprendió nada.
+2. El coste de equivocarse no es simétrico. Subir a 2 sin migrador hace que
+   `validated()` lance para TODOS los ficheros existentes, y
+   `ProjectStore.load()` los aparta con marca de tiempo: la app abre, pero
+   vacía. Con campo opcional no hay camino por el que un fichero bueno se
+   aparte.
+3. `persistence_20260907` dejó escrito por qué el migrador está vacío: «escribir
+   un migrador de v1 a v2 antes de que exista v2 es probar una migración
+   inventada». Estrenarlo con un cuerpo que rellena un valor por defecto sería
+   justo eso.
+
+Hallazgo, y por qué se arregla en esta rama
+-------------------------------------------
+`ProjectRecord.migrated(_:)` documenta que «lo que hace falta ahora es que el
+sitio esté decidido y que LA LLAMADA ESTÉ PUESTA». La llamada no está puesta:
+
+  Packages/Persistence/Sources/Persistence/ProjectStore.swift:187
+      return try decoder.decode(ProjectRecord.self, from: data).validated()
+
+y el único sitio que llama a `migrated(_:)` en todo el repositorio es
+`SchemaVersionTests.swift:70`.
+
+Hoy es inofensivo —`migrated(_:)` solo llama a `validated()`, así que las dos
+rutas hacen lo mismo—. Deja de serlo el día que alguien escriba la primera
+migración de verdad confiando en ese comentario: el fichero pasaría por la ruta
+que no migra y se apartaría, que es la pérdida de trabajo que `Persistence`
+existe para impedir. Cuesta una línea y entra en la Fase 5 de este track.
+
+Ficheros modificados
+--------------------
+  conductor/tracks/midi-learn_20260908/spec.md   FR17 resuelto + el hallazgo
+  conductor/tracks/midi-learn_20260908/plan.md   Fase 5 concretada, tarea nueva
