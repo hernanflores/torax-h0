@@ -100,10 +100,18 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
   - [x] `MIDI` ≥80% medida en un proceso e ignorando `Engine/Sources`, como dice
         `workflow.md` — **91,51%** de líneas, y `ControlInput.swift` al 100%.
   - [x] Suites verdes: `Engine` 888, `MIDI` 874 (1 skipped), `Persistence` 64.
-- [ ] Task: Pull Request
-  - [ ] Rama `fix/cycle-edit-cursor`, PR contra `main`. Cuerpo corto.
+- [x] Task: Pull Request
+  - [x] Rama `fix/cycle-edit-cursor`, PR contra `main`. Cuerpo corto —
+        [PR #50](https://github.com/hernanflores/torax-h0/pull/50).
 - [x] Task: Cerrar el defecto en el registro
   - [x] Marcarlo en `tracks.md` con lo que se verificó en dispositivo.
   - [x] Anotar en el `spec.md` lo que se haya corregido al implementar, con
         fecha — dos precisiones del 2026-09-09, ninguna corrección.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - Suites verdes: `Engine` 888, `MIDI` 874 (1 skipped), `Persistence` 64.
+  - `MIDI` al 91,51% de líneas; `ControlInput.swift` al 100%.
+  - `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`:
+    BUILD SUCCEEDED.
+  - Verificación manual: hecha en iPad, con lo no probado anotado en
+    `device-verification.md`.
+  - PR #50 abierto; los checks de CI corren ahí.
