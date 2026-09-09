@@ -64,11 +64,10 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
         hasta hoy.
   - [x] **Dispara al cumplirse el tiempo, no al soltar** (FR6).
   - [x] **Después de disparar, soltar no elige** (FR7): un toque, una cosa.
-  - [ ] Probar los estados feos con el dedo: mantener y arrastrar fuera de la
-        celda, mantener y soltar sobre otra, dos dedos a la vez. **No se
-        probaron.** El reparto principal —mantenido que dispara y soltada que no
-        elige— sí se verificó en iPad; estos son los bordes. Si alguno deja el
-        cursor donde nadie pidió, se abre defecto.
+  - [x] Probar los estados feos con el dedo: mantener y arrastrar fuera de la
+        celda, mantener y soltar sobre otra, dos dedos a la vez. **Probados en
+        iPad el 2026-09-09**, segunda pasada: ninguno deja el cursor ni el rango
+        en un valor que nadie pidió.
   - [x] Revisar que ninguna otra vista dependía de que la celda cambiara el
         rango al primer toque.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) — `e8a47d8`
@@ -83,14 +82,14 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
 
 ## FASE 3: DISPOSITIVO Y CIERRE
 
-- [x] Task: Verificación en iPad con BeatStep Pro — verificado el 2026-09-09, con
-      cuatro comprobaciones no ejecutadas y anotadas
-  - [ ] **El fallo reportado, primero**: cuatro Cycles activos, pulsar el 3,
+- [x] Task: Verificación en iPad con BeatStep Pro — verificado el 2026-09-09 en
+      dos pasadas; quedan dos comprobaciones no ejecutadas y anotadas
+  - [x] **El fallo reportado, primero**: cuatro Cycles activos, pulsar el 3,
         girar Steps, volver al 1 y comprobar que **los dos valores conviven**.
-        **No se probó**; lo cubre `testTwoCyclesCanHoldDifferentValues`.
-  - [ ] Con el transporte corriendo: el relleno del que suena avanza solo y el
-        contorno del que se edita se queda donde lo dejó el dedo. **No se
-        probó.**
+        Probado en la segunda pasada del 2026-09-09.
+  - [x] Con el transporte corriendo: el relleno del que suena avanza solo y el
+        contorno del que se edita se queda donde lo dejó el dedo. Probado en la
+        segunda pasada del 2026-09-09.
   - [x] Mantener una celda sube el rango al cumplirse el tiempo y soltar después
         no elige ese Cycle. **Bajar el rango no se probó.**
   - [x] El knob 13 mueve el mismo contorno. **Cambiar de Track y volver no se
