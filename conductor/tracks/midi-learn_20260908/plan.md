@@ -52,7 +52,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
         Se arregla en la Fase 5.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: LA FUENTE CORRECTA — `network-session-source` DENTRO
+## FASE 2: LA FUENTE CORRECTA — `network-session-source` DENTRO [checkpoint: 183c1be]
 
 - [x] Task: Identificar el endpoint de red por propiedad, no por nombre (FR12,
       NFR4) — **requiere iPad** `930713e` `dae873c`
@@ -112,7 +112,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
   - [ ] **Se cierra cuando el PR entre en `main`**, no antes: el arreglo vive en
         `feat/midi-learn` y cerrar una issue cuyo arreglo no está integrado deja
         el registro mintiendo.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: EL MAPEO DEJA DE SER FIJO [checkpoint: 5a711f5]
 
@@ -241,7 +241,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
         `a861bb0`.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 7: DISPOSITIVO, MEDICIÓN Y CIERRE DE LA v1
+## FASE 7: DISPOSITIVO, MEDICIÓN Y CIERRE DE LA v1 [checkpoint: f92c3c0]
 
 - [x] Task: Verificación en iPad — **requiere iPad, BeatStep Pro y un segundo
       controlador** `8612d01`
@@ -276,4 +276,4 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
   - [x] `tracks.md`: cerrada la rebanada 8 y **la v1 entera**. De paso, la tabla
         decía «abierta» de la rebanada 7 desde que cerró el 2026-08-31.
   - [x] Anotado en el `spec.md` lo corregido al implementar, con fecha.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
