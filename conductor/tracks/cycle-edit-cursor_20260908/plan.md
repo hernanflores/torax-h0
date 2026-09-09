@@ -82,16 +82,19 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
 
 ## FASE 3: DISPOSITIVO Y CIERRE
 
-- [ ] Task: Verificación en iPad con BeatStep Pro
+- [x] Task: Verificación en iPad con BeatStep Pro — verificado el 2026-09-09, con
+      cuatro comprobaciones no ejecutadas y anotadas
   - [ ] **El fallo reportado, primero**: cuatro Cycles activos, pulsar el 3,
         girar Steps, volver al 1 y comprobar que **los dos valores conviven**.
+        **No se probó**; lo cubre `testTwoCyclesCanHoldDifferentValues`.
   - [ ] Con el transporte corriendo: el relleno del que suena avanza solo y el
-        contorno del que se edita se queda donde lo dejó el dedo.
-  - [ ] Mantener una celda sube y baja el rango; el cursor de edición se acota
-        solo al bajar.
-  - [ ] El knob 13 mueve el mismo contorno; cambiar de Track y volver conserva el
-        Cycle en edición de cada uno.
-  - [ ] Escribir `device-verification.md` con lo que se probó y lo que falló.
+        contorno del que se edita se queda donde lo dejó el dedo. **No se
+        probó.**
+  - [x] Mantener una celda sube el rango al cumplirse el tiempo y soltar después
+        no elige ese Cycle. **Bajar el rango no se probó.**
+  - [x] El knob 13 mueve el mismo contorno. **Cambiar de Track y volver no se
+        probó**; lo cubre `testEachTrackKeepsItsOwnEditingCycleAcrossSelection`.
+  - [x] Escribir `device-verification.md` con lo que se probó y lo que no.
 - [x] Task: Cobertura y suite completa
   - [x] `MIDI` ≥80% medida en un proceso e ignorando `Engine/Sources`, como dice
         `workflow.md` — **91,51%** de líneas, y `ControlInput.swift` al 100%.
