@@ -1,0 +1,67 @@
+Tasks: El estado de aprendizaje (FR6, FR9, FR10, FR11) · Las tres familias, y un
+       giro es una asignación (FR7, FR8)
+Track: midi-learn_20260908 · Fase 4
+
+Las dos tareas del plan entran en un commit
+-------------------------------------------
+El plan las separaba y son una sola pieza: el estado de aprendizaje no se puede
+probar sin decidir qué familias acepta, y las familias no existen sin el estado.
+Partir el commit habría dado una mitad que no compila. Se anota aquí en vez de
+fingir dos pasos.
+
+Qué cambia
+----------
+  Packages/MIDI/Sources/MIDI/LearnTarget.swift        nuevo
+  Packages/MIDI/Sources/MIDI/ControlInput.swift       `learning`, `justLearned`,
+      `beginLearning(_:)`, `cancelLearning()`, `learn(controller:note:)`, y el
+      corte al principio de `receive`
+  Packages/MIDI/Sources/MIDI/ControlMapping.swift     `allAssignments`
+  Packages/MIDI/Tests/MIDITests/MIDILearnTests.swift  nuevo, 19 tests
+
+Decisiones, con su porqué
+-------------------------
+1. CUATRO CASOS, Y NO CUATRO FAMILIAS. Un parámetro se asigna uno a uno porque
+   cada knob mueve una cosa distinta. Los otros tres son BLOQUES: el hardware
+   los presenta en fila y los dieciséis van seguidos desde el primero, así que
+   aprender «el primer pad» mueve los dieciséis. Es lo que uno quiere al cambiar
+   de controlador, y lo que el preset ya declaraba.
+
+2. EL KNOB DEL CYCLE VIAJA CON EL BLOQUE DE KNOBS. No está en `assignments` —no
+   es un `TrackParameter`— y sale del bloque más un desplazamiento. Aprender el
+   primer knob lo mueve con él; no se aprende por separado.
+
+3. EL APRENDIZAJE SE CORTA AL PRINCIPIO DE `receive`. Despacharlo después
+   habría movido ya el parámetro que el mensaje venía a reasignar (FR10).
+
+4. UN MENSAJE DE LA FAMILIA EQUIVOCADA NO ASIGNA Y NO CANCELA. Un CC sobre un
+   destino que espera una nota deja el aprendizaje abierto: haber rozado un pad
+   no debería costar el destino que ya se había elegido.
+
+5. `justLearned` — EL RESTO DEL GIRO NO EDITA. Asignar termina el aprendizaje,
+   así que sin esto los clics que sobran del giro caerían sobre el parámetro
+   recién asignado y lo moverían: el mismo salto de valor que FR10 evita durante
+   el aprendizaje, un instante después. Se levanta CON EL CONTROL SIGUIENTE y no
+   con un temporizador — un knob aprendido y mudo para siempre sería peor que el
+   salto que se evitaba, y un plazo obligaría a elegir cuántos milisegundos, que
+   es una constante que nadie sabe justificar.
+
+6. `allAssignments` es interno y existe porque bloques y asignaciones se editan
+   por separado: aprender el primer pad mueve un bloque y tiene que dejar la
+   tabla igual. Sin esto habría que elegir entre exponer el diccionario o perder
+   las asignaciones.
+
+Lo que NO entra aquí
+--------------------
+FR11 —el transporte sigue sonando mientras se aprende— no se puede comprobar
+desde `ControlInput`: no conoce al transporte. Es una propiedad de la pantalla,
+y su sitio es la Fase 6, donde manda la prohibición de modales bloqueantes de
+`product-guidelines.md`.
+
+Verificación
+------------
+  swift test --package-path Packages/MIDI --filter MIDILearnTests
+      19 tests, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+      798 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
