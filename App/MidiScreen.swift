@@ -388,6 +388,18 @@ struct MidiLearnCard: View {
                     .stepButtonBlock, label: "step 1", accent: Palette.muted, isAssigned: true)
             }
 
+            // **Mientras se espera se dice qué se espera, y qué no vale.** Un
+            // destino encendido y nada más no explica por qué mover un control
+            // a veces no lo asigna: la app rechaza en silencio lo que dejaría a
+            // un control significando dos cosas, y sin esta línea eso parece que
+            // no funciona.
+            if model.learning != nil {
+                Text(display: "mueve un control · no vale uno que ya signifique otra cosa")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.muted)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
             HStack(spacing: 6) {
                 // **Cancelar solo existe mientras se aprende.** Un botón que no
                 // hace nada la mayor parte del tiempo enseña a ignorarlo.

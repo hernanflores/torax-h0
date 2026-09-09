@@ -941,40 +941,50 @@ public final class ControlInput: @unchecked Sendable {
     private func learn(controller: MIDIController?, note: MIDINote?) -> Bool {
         guard let target = learning else { return false }
 
+        let candidate: ControlMapping
         switch (target, controller, note) {
         case (.parameter(let parameter), .some(let controller), _):
-            mapping = mapping.assigning(controller, to: parameter)
-            justLearned = controller
+            candidate = mapping.assigning(controller, to: parameter)
 
         case (.knobBlock, .some(let controller), _):
-            mapping = ControlMapping(
+            candidate = ControlMapping(
                 assignments: mapping.allAssignments,
                 padBlock: mapping.padBlock,
                 knobBlock: controller,
                 stepButtonBlock: mapping.stepButtonBlock)
-            justLearned = controller
 
         case (.stepButtonBlock, .some(let controller), _):
-            mapping = ControlMapping(
+            candidate = ControlMapping(
                 assignments: mapping.allAssignments,
                 padBlock: mapping.padBlock,
                 knobBlock: mapping.knobBlock,
                 stepButtonBlock: controller)
-            justLearned = controller
 
         case (.padBlock, _, .some(let note)):
-            mapping = ControlMapping(
+            candidate = ControlMapping(
                 assignments: mapping.allAssignments,
                 padBlock: note,
                 knobBlock: mapping.knobBlock,
                 stepButtonBlock: mapping.stepButtonBlock)
-            justLearned = nil
 
         default:
             // De la familia equivocada: no asigna y el destino sigue esperando.
             return false
         }
 
+        // **Un control no puede significar dos cosas** (2026-09-09, encontrado
+        // en dispositivo). Aprender un bloque con un knob dejaba el de step
+        // buttons encima de los CC de los knobs, y desde entonces cada giro
+        // cambiaba de Track — y se guardaba, así que sobrevivía a relanzar.
+        //
+        // **Rechazar no es cancelar**: el destino sigue esperando al control
+        // correcto. Obligar a volver a elegirlo castigaría al usuario por un
+        // gesto que la app ya sabía que no podía aceptar.
+        guard !candidate.hasConflict else { return false }
+
+        mapping = candidate
+        // El pad no necesita silencio: no hay giro del que sobren mensajes.
+        justLearned = target == .padBlock ? nil : controller
         learning = nil
         return true
     }

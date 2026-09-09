@@ -110,16 +110,20 @@ final class LearnedMappingTests: XCTestCase {
     /// Knobs y step buttons son los dos CC, así que **un mapeo aprendido sí
     /// puede solaparlos** — el de fábrica no lo hace porque alguien lo escribió
     /// mirando la tabla. Los pads son notas y no entran en la comparación.
+    ///
+    /// **Lo que un solape provoca está medido en dispositivo, no supuesto**
+    /// (2026-09-09): con el bloque de step buttons encima de los knobs, cada
+    /// giro se lee como pulsar un step button y **cambia de Track**.
     func testAKnobFallingInTheStepButtonBlockIsReportedAsOverlap() {
         let mapping = ControlMapping(
             assignments: [:], knobBlock: MIDIController(102)!,
             stepButtonBlock: MIDIController(102)!)
 
-        XCTAssertTrue(mapping.hasFamilyOverlap)
+        XCTAssertTrue(mapping.hasConflict)
     }
 
     func testTheFactoryPresetHasNoOverlap() {
-        XCTAssertFalse(ControlMapping.beatStepPro.hasFamilyOverlap)
+        XCTAssertFalse(ControlMapping.beatStepPro.hasConflict)
     }
 
     /// Solaparse a medias sigue siendo solaparse: basta un número compartido.
@@ -128,7 +132,7 @@ final class LearnedMappingTests: XCTestCase {
             assignments: [:], knobBlock: MIDIController(100)!,
             stepButtonBlock: MIDIController(102)!)
 
-        XCTAssertTrue(mapping.hasFamilyOverlap)
+        XCTAssertTrue(mapping.hasConflict)
     }
 
     func testBlocksThatDoNotTouchAreNotAnOverlap() {
@@ -136,6 +140,26 @@ final class LearnedMappingTests: XCTestCase {
             assignments: [:], knobBlock: MIDIController(20)!,
             stepButtonBlock: MIDIController(102)!)
 
-        XCTAssertFalse(mapping.hasFamilyOverlap)
+        XCTAssertFalse(mapping.hasConflict)
+    }
+
+    /// **Y un parámetro dentro del bloque de step buttons también es un
+    /// conflicto.** El despacho mira los step buttons primero, así que ese
+    /// parámetro no se movería nunca y el giro cambiaría de Track — el mismo
+    /// síntoma que el solape de bloques, por otro camino.
+    func testAParameterInsideTheStepButtonBlockIsAConflict() {
+        let mapping = ControlMapping(
+            assignments: [.steps: 102], knobBlock: MIDIController(20)!,
+            stepButtonBlock: MIDIController(102)!)
+
+        XCTAssertTrue(mapping.hasConflict)
+    }
+
+    func testAParameterOutsideEveryBlockIsNotAConflict() {
+        let mapping = ControlMapping(
+            assignments: [.steps: 50], knobBlock: MIDIController(20)!,
+            stepButtonBlock: MIDIController(102)!)
+
+        XCTAssertFalse(mapping.hasConflict)
     }
 }

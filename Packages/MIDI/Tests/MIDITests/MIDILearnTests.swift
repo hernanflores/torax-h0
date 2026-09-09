@@ -219,6 +219,88 @@ final class MIDILearnTests: XCTestCase {
         XCTAssertEqual(input.mapping.editingCycleController, MIDIController(32)!)
     }
 
+    // MARK: - Un control no puede significar dos cosas
+
+    /// **El fallo encontrado en dispositivo el 2026-09-09.** Se aprendió uno de
+    /// los tres bloques con un knob, el bloque de step buttons aterrizó encima de
+    /// los CC de los knobs, y desde entonces **cada giro cambiaba de Track**: el
+    /// despacho mira los step buttons antes que los knobs.
+    ///
+    /// Se guardaba con la sesión, así que sobrevivía a relanzar la app. La única
+    /// salida era el botón de fábrica.
+    func testLearningAnOverlappingStepButtonBlockIsRefused() {
+        let input = makeInput()
+        let before = input.mapping
+
+        input.beginLearning(.stepButtonBlock)
+        let consumed = input.receive(
+            knob(ControlMapping.beatStepPro.controller(for: .steps)!, by: 1))
+
+        XCTAssertFalse(consumed)
+        XCTAssertEqual(input.mapping, before)
+    }
+
+    /// **Rechazar no es cancelar**: el destino sigue esperando al control
+    /// correcto. Obligar a volver a elegirlo castigaría al usuario por un gesto
+    /// que la app ya sabía que no podía aceptar.
+    func testARefusedLearningStaysOpen() {
+        let input = makeInput()
+
+        input.beginLearning(.stepButtonBlock)
+        input.receive(knob(ControlMapping.beatStepPro.controller(for: .steps)!, by: 1))
+
+        XCTAssertEqual(input.learning, .stepButtonBlock)
+    }
+
+    /// Y el control que se rechazó **sigue haciendo lo suyo**: no se queda mudo
+    /// por haber sido candidato.
+    func testTheRefusedControlKeepsWorking() {
+        let input = makeInput()
+
+        input.beginLearning(.stepButtonBlock)
+        input.receive(knob(ControlMapping.beatStepPro.controller(for: .steps)!, by: 1))
+        input.cancelLearning()
+        input.receive(knob(ControlMapping.beatStepPro.controller(for: .steps)!, by: 1))
+
+        XCTAssertEqual(input.track.shape.steps.count, 9)
+    }
+
+    /// El bloque de knobs encima del de step buttons, por el otro lado.
+    func testLearningAnOverlappingKnobBlockIsRefused() {
+        let input = makeInput()
+        let before = input.mapping
+
+        input.beginLearning(.knobBlock)
+        input.receive(knob(MIDIController(102)!, by: 1))
+
+        XCTAssertEqual(input.mapping, before)
+    }
+
+    /// **Un parámetro sobre un CC de step button, también.** No hay bloque que
+    /// se mueva, y el síntoma es el mismo: ese knob cambiaría de Track en vez de
+    /// mover el parámetro.
+    func testLearningAParameterOnAStepButtonControllerIsRefused() {
+        let input = makeInput()
+        let before = input.mapping
+
+        input.beginLearning(.parameter(.steps))
+        input.receive(knob(MIDIController(102)!, by: 1))
+
+        XCTAssertEqual(input.mapping, before)
+        XCTAssertEqual(input.learning, .parameter(.steps))
+    }
+
+    /// Un bloque que no choca sí se acepta: el arreglo no puede impedir aprender.
+    func testANonOverlappingBlockIsStillLearned() {
+        let input = makeInput()
+
+        input.beginLearning(.stepButtonBlock)
+        input.receive(knob(MIDIController(20)!, by: 127))
+
+        XCTAssertEqual(input.mapping.stepButtonBlock, MIDIController(20)!)
+        XCTAssertNil(input.learning)
+    }
+
     // MARK: - Lo que no vale para aprender
 
     /// Un pad no puede aprender un knob: son familias distintas y el número no

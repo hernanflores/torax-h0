@@ -260,17 +260,6 @@ public struct ControlMapping: Equatable, Sendable {
         TrackParameter.allCases.filter { controller(for: $0) == nil }
     }
 
-    /// Si dos familias comparten un número.
-    ///
-    /// **Un mapeo aprendido sí puede solaparlas.** Knobs y step buttons son los
-    /// dos CC, y el preset de fábrica solo evita el choque porque alguien lo
-    /// escribió mirando la tabla; construyendo el mapeo control a control esa
-    /// garantía desaparece. Los pads son notas y viven en otro espacio de
-    /// numeración, así que no entran en la comparación.
-    ///
-    /// Un solape haría que un control moviera dos cosas, y ningún test de una
-    /// familia suelta lo detectaría — es lo que `PresetMappingTests` ya dice del
-    /// preset, aquí como pregunta que se le puede hacer a cualquier mapeo.
     /// El mapeo en números, para que el `Project` lo guarde.
     ///
     /// **`Engine` no puede ver CoreMIDI**, así que lo que cruza la frontera son
@@ -303,8 +292,29 @@ public struct ControlMapping: Equatable, Sendable {
         )
     }
 
-    public var hasFamilyOverlap: Bool {
+    /// Si algún control significaría dos cosas.
+    ///
+    /// **Un mapeo aprendido sí puede provocarlo.** Knobs y step buttons son los
+    /// dos CC, y el preset de fábrica solo evita el choque porque alguien lo
+    /// escribió mirando la tabla; construyendo el mapeo control a control esa
+    /// garantía desaparece. Los pads son notas y viven en otro espacio de
+    /// numeración, así que no entran en la comparación.
+    ///
+    /// > **Lo que un conflicto provoca está medido en dispositivo, no supuesto**
+    /// > (2026-09-09). Se aprendió un bloque con un knob, el de step buttons
+    /// > aterrizó encima de los CC de los knobs, y desde entonces **cada giro
+    /// > cambiaba de Track**: `receive` despacha los step buttons antes que los
+    /// > knobs. Y se guardaba con la sesión, así que sobrevivía a relanzar la
+    /// > app; la única salida era el botón de fábrica.
+    ///
+    /// Son dos formas del mismo choque, y las dos tienen el mismo síntoma:
+    ///
+    /// - **Dos bloques encima**, que hace step buttons de una fila de knobs.
+    /// - **Un parámetro dentro del bloque de step buttons**, que deja a ese
+    ///   parámetro sin poder moverse nunca — el despacho no llega a él.
+    public var hasConflict: Bool {
         let numbers = declaredNumbers
-        return !Set(numbers.knobs).isDisjoint(with: Set(numbers.stepButtons))
+        if !Set(numbers.knobs).isDisjoint(with: Set(numbers.stepButtons)) { return true }
+        return assignments.values.contains { numbers.stepButtons.contains($0) }
     }
 }
