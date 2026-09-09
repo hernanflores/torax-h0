@@ -1,0 +1,29 @@
+Tasks: Pulsar elige el Cycle en edición (FR5, NFR4) y Mantener cambia cuántos están activos (FR6, FR7)
+
+Las dos tareas del plan viajan en un commit: partir un toque en dos gestos no
+se puede entregar a medias — un commit con solo la pulsación dejaría el rango
+de Cycles sin ninguna vía táctil.
+
+Cambios:
+- `App/TrackReadout.swift`: `CycleStrip` gana `onEditingChange`; la celda deja
+  de ser un método con `Button` y pasa a ser `CycleCell`, una vista privada con
+  `@State didHold`. `onLongPressGesture(minimumDuration: 0.5)` dispara al
+  cumplirse el tiempo (FR6) y `simultaneousGesture(TapGesture())` con guard de
+  `didHold` implementa FR7. `didHold` se limpia al empezar a pulsar, no al
+  soltar: soltar fuera de la celda no emite nada y dejarlo puesto colgaría el
+  estado. Se conservan traits y label de accesibilidad, que el `Button` daba.
+- `App/TransportModel.swift`: `setEditingCycle(_:)` delega en `ControlInput` y
+  sincroniza, como `setActiveCycleCount`.
+- `App/ContentView.swift`: cablea `onEditingChange` con `$0 - 1` —la celda es
+  1..16 y el cursor 0..15— y actualiza la tabla de escrituras táctiles de la
+  pantalla `track`, que ahora son cinco y no cuatro.
+
+El guard de FR5 —`number <= activeCount`— vive en `CycleStrip.cell`, donde está
+`activeCount`; `CycleCell` solo distingue un gesto de otro (NFR4).
+
+Ninguna otra vista dependía de que la celda cambiara el rango: `CycleStrip` solo
+se construye en `ContentView`.
+
+Verificación: `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`
+— BUILD SUCCEEDED. `App` no se mide (`workflow.md`); el gesto se prueba con el
+dedo, que es la fase siguiente.
