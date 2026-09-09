@@ -356,14 +356,21 @@ final class TransportModel {
 
     /// Qué destino está esperando a que alguien mueva un control.
     ///
-    /// **Se lee al dibujar, como el resto de esta pantalla.** `ControlInput` no
-    /// es observable y la pantalla `midi` ya repregunta con su `TimelineView`,
-    /// por el mismo motivo: el estado que este cableado enseña lo escribe el
-    /// hilo de recepción de CoreMIDI.
-    var learning: LearnTarget? { controlInput.learning }
+    /// > **Era una propiedad calculada sobre `ControlInput`, y la pantalla no se
+    /// > enteraba** (2026-09-09, en dispositivo). `ControlInput` no es
+    /// > observable, así que leerlo desde el cuerpo de una vista no registra
+    /// > ninguna dependencia: el card enseñaba la asignación vieja hasta que se
+    /// > navegaba a otra pestaña y se volvía. El `TimelineView` de la pantalla no
+    /// > lo salva —vuelve a evaluar su cuerpo, pero SwiftUI no vuelve a entrar en
+    /// > un hijo cuyos parámetros no cambiaron, y el hijo solo lleva el modelo—.
+    /// >
+    /// > Se refleja aquí, con el mismo criterio que `pattern` y
+    /// > `selectedTrackIndex`, que salieron de `ControlInput` por esta misma
+    /// > razón. Es la vía que el repositorio ya tenía.
+    private(set) var learning: LearnTarget?
 
-    /// El mapeo vigente.
-    var mapping: ControlMapping { controlInput.mapping }
+    /// El mapeo vigente. Reflejado, no calculado, por lo mismo que `learning`.
+    private(set) var mapping: ControlMapping = .beatStepPro
 
     /// Los destinos que se han quedado sin control.
     ///
@@ -371,15 +378,27 @@ final class TransportModel {
     /// deja mudo al que lo tenía; es un estado válido, pero un destino mudo que
     /// no se anuncia parece un fallo.
     var parametersWithoutController: [TrackParameter] {
-        controlInput.mapping.parametersWithoutController
+        mapping.parametersWithoutController
     }
 
     func beginLearning(_ target: LearnTarget) {
         controlInput.beginLearning(target)
+        syncLearning()
     }
 
     func cancelLearning() {
         controlInput.cancelLearning()
+        syncLearning()
+    }
+
+    /// Trae del `ControlInput` lo que la pantalla dibuja.
+    ///
+    /// **Un solo sitio**, como `syncFromControlInput`: dos caminos que reflejen
+    /// lo mismo acaban divergiendo, y el que se olvide es el que enseña un dato
+    /// viejo.
+    private func syncLearning() {
+        learning = controlInput.learning
+        mapping = controlInput.mapping
     }
 
     /// Vuelve al preset del BeatStep Pro (FR18).
@@ -397,6 +416,7 @@ final class TransportModel {
     /// **Va al Project y no a un fichero propio**: el mapeo es de sesión, como
     /// el reloj y el hardware recordado, y ahí ya está el camino del Autosave.
     private func rememberMapping() {
+        syncLearning()
         project = project.remembering(controlNumbers: controlInput.mapping.numbers)
         autosave.changedHeader(project)
     }
@@ -884,6 +904,10 @@ final class TransportModel {
             mapping: loaded.controlNumbers.map(ControlMapping.init) ?? .beatStepPro,
             mix: { [relay] gesture in relay.apply(gesture) }
         )
+        // El espejo del mapeo arranca con lo que se haya restaurado del disco,
+        // no con el de fábrica: si no, el card enseñaría el preset hasta el
+        // primer gesto.
+        mapping = controlInput.mapping
 
         do {
             let output = try CoreMIDIOutput()
