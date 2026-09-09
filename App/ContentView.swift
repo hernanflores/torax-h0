@@ -156,7 +156,8 @@ struct ContentView: View {
     /// | Pastilla de Track | `selectTrack` | Elegir qué se mira, no qué suena |
     /// | `m` | `toggleMute` | Mezcla, no material (FR13) |
     /// | `s` | `toggleSolo` | Mezcla, no material (FR13) |
-    /// | Celda de Cycle | `setActiveCycleCount` | Estructura, y su única vía |
+    /// | Celda de Cycle, pulsada | `setEditingCycle` | Elegir qué se edita, no qué suena |
+    /// | Celda de Cycle, mantenida | `setActiveCycleCount` | Estructura, y su única vía |
     ///
     /// `RingStackView`, `TrackReadout`, `ParameterFamilyCard` y `TonalCard` no
     /// tienen **ni un solo** `Button`, `gesture` ni `onTapGesture`: son texto y
@@ -419,6 +420,7 @@ struct ContentView: View {
                 editing: model.editingCycle,
                 inCourse: { model.cycleInCourse },
                 accent: Palette.accent(for: family),
+                onEditingChange: { model.setEditingCycle($0 - 1) },
                 onActiveCountChange: { model.setActiveCycleCount($0) }
             )
 
