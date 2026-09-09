@@ -54,11 +54,14 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
 
 ## FASE 2: LA FUENTE CORRECTA — `network-session-source` DENTRO
 
-- [ ] Task: Identificar el endpoint de red por propiedad, no por nombre (FR12,
-      NFR4) — **requiere iPad**
-  - [ ] Diagnóstico en dispositivo: qué devuelven `kMIDIPropertyDriverOwner`,
-        `kMIDIPropertyModel`, y la entidad y el dispositivo padre, para la sesión
-        de red y para el BeatStep Pro.
+- [~] Task: Identificar el endpoint de red por propiedad, no por nombre (FR12,
+      NFR4) — **requiere iPad** `930713e`
+  - [x] La instrumentación: `EndpointDiagnostics` lee las candidatas
+        —`kMIDIPropertyDriverOwner`, `kMIDIPropertyModel`, `manufacturer`,
+        `uniqueID`, entidad y dispositivo padre— más el volcado entero, y las
+        imprime al arrancar bajo `#if DEBUG`. 9 tests sobre el formato.
+  - [ ] **Correrlo en el iPad, dos veces**: con el BeatStep Pro conectado y sin
+        él. Es la mitad que no se puede hacer sin dispositivo.
   - [ ] Registrar en la git note **lo que devuelve cada candidata**, con el valor
         observado. Es lo que permitirá saber contra qué comparar si iPadOS lo
         cambia.
