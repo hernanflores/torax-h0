@@ -962,7 +962,7 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: La pantalla no ve lo que cambia el hardware**
+- [~] **Track: La pantalla no ve lo que cambia el hardware**
   *Link: [conductor/tracks/hardware-screen-sync_20260908/index.md](./tracks/hardware-screen-sync_20260908/index.md)*
 
   **Planificado el 2026-09-08**, en cuatro fases. Descubierto el 2026-09-06, durante la Fase 4 de `screens-redesign_20260906`.
