@@ -254,8 +254,23 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > separado. La 7 cerró el 2026-08-31: el preset vive en
 > [`preset/`](../preset/README.md) —tabla de los cuarenta y ocho controles y el
 > proyecto exportado desde MIDI Control Center—, verificado con el controlador en
-> la mano. Hasta que cierre la 8, esta página promete un MIDI Learn que la app
-> todavía no hace.
+> la mano. ~~Hasta que cierre la 8, esta página promete un MIDI Learn que la app
+> todavía no hace.~~
+>
+> **La 8 cerró el 2026-09-09, y con ella la v1.** MIDI Learn se entrega en la
+> pantalla `midi`: se elige un destino, se mueve un control y ese control queda
+> asignado; el mapeo se guarda con la sesión y hay vuelta al preset de fábrica.
+> Verificado en iPad con un segundo controlador —un OP-Z—, que es lo único que
+> demuestra algo: con solo el BeatStep Pro, aprender es reaprender el preset.
+> Track `midi-learn_20260908`.
+>
+> **Se llevó dentro el defecto de la sesión MIDI de red**, tal como estaba
+> previsto: la red ya no se autoselecciona —ni de entrada ni de salida—, sigue
+> elegible a mano, y la elección hecha a mano se recuerda.
+>
+> **La v1 cierra sin su medición final de jitter.** La suspensión del 2026-09-02
+> manda sobre la excepción que la exigía; el coste y la vuelta atrás están
+> escritos en `workflow.md`.
 
 **Fuera de v1:**
 

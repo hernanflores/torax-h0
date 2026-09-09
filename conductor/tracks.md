@@ -15,8 +15,18 @@ una deuda que la siguiente necesita.
 | 4 | Tonal: pool, Scale y Root | cerrada |
 | 5 | Groove estático: Velocity, Sustain, Probability | cerrada |
 | 6 | Groove temporal: Timing y Delay | cerrada |
-| 7 | Preset del BeatStep Pro: knobs, pads y step buttons | **abierta** |
-| 8 | MIDI Learn, con `network-session-source` dentro | **abierta** |
+| 7 | Preset del BeatStep Pro: knobs, pads y step buttons | cerrada |
+| 8 | MIDI Learn, con `network-session-source` dentro | cerrada |
+
+> **La v1 está cerrada, el 2026-09-09.** Las cinco rebanadas que quedaban están
+> entregadas y verificadas en dispositivo. La 7 llevaba marcada «abierta» en esta
+> tabla desde que cerró el 2026-08-31, con su entrada de abajo diciendo lo
+> contrario; se corrige aquí.
+>
+> Cierra **sin su medición final de jitter**: la suspensión del 2026-09-02 manda
+> sobre la excepción que la exigía, y `workflow.md` lleva el coste y la vuelta
+> atrás escritos. La última referencia válida sigue siendo la de la rebanada 2 de
+> la v2 — máx 0,158 ms, σ 0,013–0,014 ms.
 
 **Por qué ese orden.** La 3 no toca el motor y salda la última carga de jitter
 sin medir que `product.md` dejó anotada —la visual—; además evita desarrollar
@@ -80,7 +90,7 @@ veces sin que afectara a nada.
 
 ---
 
-- [~] **Track: MVP rebanada 8 — MIDI Learn, con `network-session-source` dentro**
+- [x] **Track: MVP rebanada 8 — MIDI Learn, con `network-session-source` dentro** — MIDI Learn entregado y verificado en iPad con un segundo controlador; **cierra la v1**, sin medición final de jitter por la suspensión del 2026-09-02
   *Link: [conductor/tracks/midi-learn_20260908/index.md](./tracks/midi-learn_20260908/index.md)*
 
   **Planificado el 2026-09-08**, en siete fases. **Cierra la v1.** Entrega la reasignación del mapeo a otro

@@ -260,6 +260,35 @@ rama o deja de describir la app.
   legítima y no estorba a ningún estado especificado.~~ **Entra el 2026-09-09**,
   ver FR12.
 
+## Correcciones al implementar
+
+> **Nota del 2026-09-09.** Lo que cambió respecto a lo escrito arriba, al
+> implementarlo:
+>
+> - **FR12 se amplió a la salida.** Ver la nota fechada en FR12: el destino
+>   estaba fuera de alcance y el iPad lo desmintió.
+> - **FR7 no cubre el knob del Cycle por separado.** No es un `TrackParameter` y
+>   sale del bloque de knobs más un desplazamiento, así que se aprende con el
+>   bloque. Aprenderlo suelto exigiría que `ControlMapping` lo guardara aparte,
+>   que es un cambio de modelo que esta rebanada no necesita.
+> - **FR8 hizo falta una regla que la spec no nombraba:** el resto del giro que
+>   acaba de aprender **no edita**. Asignar termina el aprendizaje, así que los
+>   clics que sobran caerían sobre el parámetro recién asignado — el mismo salto
+>   de valor que FR10 evita durante el aprendizaje, un instante después. El
+>   silencio se levanta con el control siguiente, no con un plazo.
+> - **Aprender rechaza los mapeos en conflicto**, y esto no estaba escrito en
+>   ningún FR. Lo destapó el dispositivo: aprender un bloque con un knob dejaba
+>   los knobs actuando de step buttons y cada giro cambiaba de Track. Ver el
+>   `device-verification.md`.
+> - **El mapeo cruza a `Engine` como `ControlNumbers`**, en enteros, porque
+>   `Engine` no puede ver CoreMIDI. La spec decía «vive con los ajustes de sesión
+>   del `Project`» sin nombrar el problema de la frontera.
+> - **Tres huecos ajenos, arreglados de paso**: `ProjectRecord.migrated(_:)` se
+>   documentaba como enchufado y no lo estaba; nadie escribía `sourceName` ni
+>   `destinationName`; y `mapping`/`learning` no invalidaban la pantalla por
+>   colgar de un objeto no observable.
+> - Nada más. FR1–FR6, FR9–FR11 y FR13–FR19 quedaron como estaban escritos.
+
 ## Known Limitations
 
 - **La propiedad que identifica la sesión de red puede no ser estable entre

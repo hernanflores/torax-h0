@@ -115,10 +115,30 @@ que alguien depende de ellos.
   prohíbe usar. Hoy no muerde porque el puerto de interpretación va antes en la
   lista, pero es suerte de orden. Queda como limitación conocida.
 
-## Lo que queda pendiente de dispositivo
+## Segunda vuelta, el mismo día
 
-- **Aprender un pad y un step button.** Se comprobó la familia de los knobs, con
-  dos controladores distintos. Las otras dos familias tienen tests y no se han
-  movido con el dedo.
-- **El repaso de los cuarenta y ocho controles** del preset restaurado contra la
-  tabla de `preset/README.md`, como hizo la rebanada 7.
+Con los tres arreglos puestos:
+
+| | Resultado |
+|---|---|
+| Aprender un **pad** y un **step button** | ✅ |
+| Los cuarenta y ocho controles del preset restaurado contra `preset/README.md` | ✅ |
+
+Con esto las **tres familias** se han visto funcionar con hardware, no solo con
+tests, y el preset de fábrica sigue siendo el que la tabla del repositorio
+declara: MIDI Learn no lo ha roto por el camino.
+
+## Cobertura, tras la verificación
+
+| Módulo | Líneas | Umbral |
+|---|---|---|
+| `Engine` | 98,67% | ≥90% |
+| `MIDI` | 91,30% | ≥80% |
+| `Persistence` | 97,60% | ≥90% |
+
+`Engine` 888 tests, `MIDI` 851, `Persistence` 64. Cero fallos.
+
+> La pasada de `MIDI` en un solo proceso —la que exige la medida de cobertura—
+> pasó entera esta vez, sin el flake `clientCreationFailed(-50)`. No es una
+> mejora: es la naturaleza del flake, que la ampliación del 2026-08-30 de
+> `workflow.md` mide en pasadas y no en certezas.

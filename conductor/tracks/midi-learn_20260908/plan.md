@@ -101,7 +101,7 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
         salida. Verificado el 2026-09-09.
   - [x] Con el BeatStep Pro conectado responde a los knobs sin tocar el selector.
   - [x] La elección hecha a mano se recuerda entre arranques.
-  - [ ] **`No MIDI input` no se pudo ver**: hay un OP-Z permanentemente
+  - [~] **`No MIDI input` no se pudo ver**: hay un OP-Z permanentemente
         conectado. La regla es correcta y sus tests la fijan; para verlo hay que
         desenchufarlo todo. Anotado en `device-verification.md`.
   - [x] Escrito `device-verification.md` con lo que se probó, los tres fallos que
@@ -243,34 +243,37 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
 
 ## FASE 7: DISPOSITIVO, MEDICIÓN Y CIERRE DE LA v1
 
-- [ ] Task: Verificación en iPad — **requiere iPad, BeatStep Pro y un segundo
-      controlador**
-  - [ ] Aprender un knob, un pad y un step button del **segundo** controlador.
-        Sin él no se prueba nada de esta rebanada: con el BeatStep Pro solo se
-        reaprendería el preset.
-  - [ ] Girar durante el aprendizaje asigna una vez y no mueve el parámetro.
-  - [ ] Aprender con la secuencia sonando, sin cortes.
-  - [ ] Cerrar y abrir la app: el mapeo sigue puesto. Volver al preset de fábrica
-        y comprobar que el BeatStep Pro vuelve a mandar.
-  - [ ] Repasar los cuarenta y ocho controles del preset restaurado contra la
-        tabla de `preset/README.md`, como hizo la rebanada 7 (NFR6).
-  - [ ] Escribir `device-verification.md` con lo que se probó y lo que falló.
-- [ ] Task: La medición final de la v1, según la decisión de la Fase 1 (FR19)
-  - [ ] **Si se mide**: rejilla `12-tracks-cycles`, en dispositivo, y el número
-        entra en `product.md`, en el registro y en la git note.
-  - [ ] **Si no**: la nota fechada en `workflow.md` que la Fase 1 escribió, y una
-        línea en el registro diciendo que la v1 cerró sin ella.
-- [ ] Task: Cobertura y suite completa
-  - [ ] `Engine` ≥90%, `MIDI` ≥80% medida en un proceso e ignorando
-        `Engine/Sources`, `Persistence` ≥90% si el mapeo bajó ahí.
+- [x] Task: Verificación en iPad — **requiere iPad, BeatStep Pro y un segundo
+      controlador** `8612d01`
+  - [x] Aprender un knob, un pad y un step button del **segundo** controlador —
+        el OP-Z. Las tres familias vistas funcionando con hardware.
+  - [x] Girar durante el aprendizaje asigna una vez y no mueve el parámetro.
+  - [x] Aprender con la secuencia sonando, sin cortes.
+  - [x] Cerrar y abrir la app: el mapeo sigue puesto. `factory preset` devuelve
+        el del BeatStep Pro.
+  - [x] Repasados los cuarenta y ocho controles del preset restaurado contra la
+        tabla de `preset/README.md` (NFR6).
+  - [x] `device-verification.md` con lo que se probó, **los tres fallos que la
+        verificación encontró** y lo que no se pudo ver.
+- [x] Task: La medición final de la v1, según la decisión de la Fase 1 (FR19)
+  - [x] **No se mide.** La nota fechada del 2026-09-09 está en `workflow.md`, con
+        el coste escrito y la vuelta atrás, y la excepción de la lista del
+        2026-08-28 queda tachada y anulada.
+- [x] Task: Cobertura y suite completa
+  - [x] `Engine` 98,67% · `MIDI` 91,30% · `Persistence` 97,60%. Los tres sobre su
+        umbral. `MIDI` medida en un proceso e ignorando `Engine/Sources`, como
+        dice `workflow.md`.
 - [ ] Task: Pull Request
-  - [ ] Rama `feat/midi-learn`, PR contra `main`. Cuerpo corto.
-- [ ] Task: Cerrar la v1 en la documentación
-  - [ ] `product.md`: quitar la promesa pendiente de la nota del 2026-08-31 —«esta
-        página promete un MIDI Learn que la app todavía no hace»— y decir qué se
-        entregó.
-  - [ ] `tracks.md`: cerrar la rebanada 8 y **la v1 entera**, con lo verificado en
-        dispositivo.
-  - [ ] Anotar en el `spec.md` lo que se haya corregido al implementar, con
-        fecha.
+  - [ ] Rama `feat/midi-learn`, PR contra `main`. Cuerpo corto. **Lo abre el
+        usuario** (2026-09-09).
+  - [ ] Al mergear, cerrar la
+        [issue #43](https://github.com/hernanflores/torax-h0/issues/43), que ya
+        está comentada con el diagnóstico.
+- [x] Task: Cerrar la v1 en la documentación
+  - [x] `product.md`: tachada la promesa pendiente de la nota del 2026-08-31 y
+        escrito qué se entregó, con el defecto de la red dentro y la medición
+        final que no se hizo.
+  - [x] `tracks.md`: cerrada la rebanada 8 y **la v1 entera**. De paso, la tabla
+        decía «abierta» de la rebanada 7 desde que cerró el 2026-08-31.
+  - [x] Anotado en el `spec.md` lo corregido al implementar, con fecha.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
