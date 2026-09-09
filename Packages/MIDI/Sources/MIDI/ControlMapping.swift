@@ -89,6 +89,15 @@ public struct ControlMapping: Equatable, Sendable {
 
     private let assignments: [TrackParameter: Int]
 
+    /// La tabla entera, para quien tenga que reconstruir el mapeo cambiando otra
+    /// cosa.
+    ///
+    /// **Existe porque los bloques y las asignaciones se editan por separado**:
+    /// aprender el primer pad mueve un bloque y tiene que dejar la tabla igual.
+    /// Sin esto, quien mueve un bloque tendría que elegir entre exponer el
+    /// diccionario o perder las asignaciones.
+    var allAssignments: [TrackParameter: Int] { assignments }
+
     /// Nota del primer pad; los dieciséis son consecutivos desde ella.
     ///
     /// **Es un dato del mapeo y no una constante repartida por el código.** Si

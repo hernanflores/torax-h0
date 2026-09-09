@@ -89,6 +89,27 @@ public final class ControlInput: @unchecked Sendable {
     ///
     /// Se lee, no se escribe: fuera se llega por `adopt(mapping:)`.
     public private(set) var mapping: ControlMapping
+
+    /// Qué destino está esperando a que alguien mueva un control, o `nil` si no
+    /// se está aprendiendo nada.
+    ///
+    /// **Mientras hay algo aquí no se edita** (`midi-learn_20260908`, FR10): el
+    /// mensaje que llega asigna y ahí se acaba. Aprender el knob de Steps
+    /// girándolo no puede además mover Steps.
+    public private(set) var learning: LearnTarget?
+
+    /// El control que se acaba de aprender, mientras siga mandando.
+    ///
+    /// **Girar es más de un mensaje** (FR8). Asignar termina el aprendizaje, así
+    /// que sin esto el resto del giro caería sobre el parámetro recién asignado
+    /// y lo movería — el mismo salto de valor que FR10 evita durante el
+    /// aprendizaje, un instante después.
+    ///
+    /// **Se levanta con el control siguiente**, no con un temporizador: un knob
+    /// aprendido y mudo para siempre sería peor que el salto que se evitaba, y
+    /// un plazo obligaría a elegir cuánto, que es una constante que nadie sabe
+    /// justificar.
+    private var justLearned: MIDIController?
     private let encoding: RelativeEncoding
 
     /// Dónde van los gestos de mezcla, si alguien los recoge.
@@ -296,8 +317,29 @@ public final class ControlInput: @unchecked Sendable {
     /// - Returns: `true` if the message changes and publishes the track, `false` otherwise.
     @discardableResult
     public func receive(_ message: MIDIMessage) -> Bool {
+        // **El aprendizaje se corta antes que nada** (FR10). Si se despachara
+        // después, el mensaje habría movido ya el parámetro que venía a
+        // reasignar.
+        if learning != nil {
+            switch message {
+            case .controlChange(_, let controller, _):
+                return learn(controller: controller, note: nil)
+            case .noteOn(_, let note, let velocity):
+                guard velocity.value > 0 else { return false }
+                return learn(controller: nil, note: note)
+            case .noteOff, .timingClock, .start, .stop:
+                return false
+            }
+        }
+
         switch message {
         case .controlChange(_, let controller, let value):
+            // **El resto del giro que acaba de aprender no edita** (FR8), y el
+            // silencio se levanta en cuanto manda otro control.
+            if let recent = justLearned {
+                guard controller != recent else { return false }
+                justLearned = nil
+            }
             // Un step button no es un knob: se despacha antes, y su soltada
             // —valor cero— no hace nada, igual que el note-off de un pad.
             if let index = mapping.stepButtonIndex(for: controller) {
@@ -871,6 +913,70 @@ public final class ControlInput: @unchecked Sendable {
     /// hace falta un camino aparte para deshacer lo aprendido.
     public func adopt(mapping: ControlMapping) {
         self.mapping = mapping
+    }
+
+    /// Empieza a aprender ese destino: el próximo control que se mueva será el
+    /// suyo.
+    ///
+    /// Elegir otro destino sin haber aprendido nada **es cambiar de idea**, no
+    /// un error: manda el último.
+    public func beginLearning(_ target: LearnTarget) {
+        learning = target
+    }
+
+    /// Sale del aprendizaje sin asignar nada (FR9).
+    ///
+    /// Es lo que permite equivocarse de destino sin consecuencias, y por eso el
+    /// mapeo queda exactamente como estaba.
+    public func cancelLearning() {
+        learning = nil
+    }
+
+    /// Asigna el control que acaba de llegar al destino que estaba esperando.
+    ///
+    /// Devuelve si el mensaje era del tipo que el destino espera. Un CC sobre un
+    /// destino que espera una nota **no asigna y deja el aprendizaje abierto**
+    /// (ver `LearnTarget.expectsNote`): haber rozado un pad no debería obligar a
+    /// volver a elegir el destino.
+    private func learn(controller: MIDIController?, note: MIDINote?) -> Bool {
+        guard let target = learning else { return false }
+
+        switch (target, controller, note) {
+        case (.parameter(let parameter), .some(let controller), _):
+            mapping = mapping.assigning(controller, to: parameter)
+            justLearned = controller
+
+        case (.knobBlock, .some(let controller), _):
+            mapping = ControlMapping(
+                assignments: mapping.allAssignments,
+                padBlock: mapping.padBlock,
+                knobBlock: controller,
+                stepButtonBlock: mapping.stepButtonBlock)
+            justLearned = controller
+
+        case (.stepButtonBlock, .some(let controller), _):
+            mapping = ControlMapping(
+                assignments: mapping.allAssignments,
+                padBlock: mapping.padBlock,
+                knobBlock: mapping.knobBlock,
+                stepButtonBlock: controller)
+            justLearned = controller
+
+        case (.padBlock, _, .some(let note)):
+            mapping = ControlMapping(
+                assignments: mapping.allAssignments,
+                padBlock: note,
+                knobBlock: mapping.knobBlock,
+                stepButtonBlock: mapping.stepButtonBlock)
+            justLearned = nil
+
+        default:
+            // De la familia equivocada: no asigna y el destino sigue esperando.
+            return false
+        }
+
+        learning = nil
+        return true
     }
 
     /// Cambia la modulación del Cycle **en edición** del Track seleccionado.
