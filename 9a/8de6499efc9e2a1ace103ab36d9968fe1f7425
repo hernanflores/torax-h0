@@ -1,0 +1,49 @@
+Task: `ControlInput` adopta un mapeo (FR2, FR3, NFR1)
+Track: midi-learn_20260908 · Fase 3
+
+Qué cambia
+----------
+  Packages/MIDI/Sources/MIDI/ControlInput.swift
+    `private let mapping` -> `public private(set) var mapping`
+    `adopt(mapping:)`, junto a `adopt(_:)`
+  Packages/MIDI/Tests/MIDITests/MappingAdoptionTests.swift   nuevo, 10 tests
+
+El porqué
+---------
+El mapeo llegaba en el `init` y se quedaba ahí. Reasignar un control exigía
+construir otro `ControlInput`, y con él se perdía el Pattern que se estaba
+editando: es el mismo error de forma que `control-input-adoption_20260908`
+arregló para el material, y MIDI Learn no existe sin esta costura.
+
+Con el mapeo se mueven también el bloque de pads, el de step buttons y el knob
+del Cycle, porque los tres salen de él. Hay un test por cada uno: sin ellos,
+aprender un knob dejaría las otras dos familias apuntando al preset viejo.
+
+Lo que `adopt(mapping:)` NO hace, y está escrito en el método
+-------------------------------------------------------------
+Un mapeo no es material (FR3):
+  - No toca el Pattern.
+  - No mueve el Track seleccionado.
+  - No publica: no ha cambiado nada de lo que el scheduler lee.
+  - NO cancela Temp ni Ctrl All. Es la diferencia con `adopt(_:)`, y está
+    documentada para que no se copie por parecido: aquel los descarta porque el
+    material cambió bajo los pies del modificador; aquí el material es el mismo,
+    así que descartarlos sería el remedio de otro problema.
+
+Consecuencia para FR18: volver al preset de fábrica es adoptar el de fábrica.
+No hace falta un camino aparte, y hay un test que lo fija.
+
+Corrección sobre la marcha
+--------------------------
+Los tests esperaban que Steps subiera de 16 a 17. `Steps.validRange` es 1...16 y
+el acceso es `.count`, no `.value`: el material de prueba baja a 8 Steps y la
+expectativa es 9. El tope no era el asunto de estos tests.
+
+Verificación
+------------
+  swift test --package-path Packages/MIDI --filter MappingAdoptionTests
+      10 tests, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+      766 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
