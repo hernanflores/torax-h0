@@ -206,4 +206,64 @@ public struct ControlMapping: Equatable, Sendable {
     public func parameter(for controller: MIDIController) -> TrackParameter? {
         assignments.first { $0.value == controller.number }?.key
     }
+
+    /// El mismo mapeo con ese controlador moviendo ese parámetro.
+    ///
+    /// **Es la operación de MIDI Learn** (`midi-learn_20260908`, FR4), y su
+    /// regla es que un destino tiene un control y un control mueve un destino.
+    /// Las dos mitades, porque solo una deja el mapeo mintiendo:
+    ///
+    /// - El parámetro **suelta el controlador que tuviera**. Reasignar Steps del
+    ///   70 al 20 deja el 70 sin dueño, no a Steps con dos knobs.
+    /// - El controlador **desasigna al parámetro que lo tuviera**. Aprender el
+    ///   knob de Steps para Pulses deja a Steps sin control, no a los dos
+    ///   escuchando el mismo giro.
+    ///
+    /// **Un destino sin control es un estado válido** (FR5), no un error. Se
+    ///  puede preguntar por `parametersWithoutController`, que es lo que la
+    ///  pantalla necesita para decir en voz alta lo que acaba de quedarse mudo.
+    ///
+    /// Los tres bloques no se tocan: no son de `assignments`, y aprender un knob
+    /// no puede mover los pads de sitio.
+    public func assigning(
+        _ controller: MIDIController, to parameter: TrackParameter
+    ) -> ControlMapping {
+        var updated = assignments
+        updated = updated.filter { $0.value != controller.number }
+        updated[parameter] = controller.number
+
+        return ControlMapping(
+            assignments: updated,
+            padBlock: padBlock,
+            knobBlock: knobBlock,
+            stepButtonBlock: stepButtonBlock
+        )
+    }
+
+    /// Los parámetros que no tienen control, **en el orden del dominio**.
+    ///
+    /// El orden lo da `TrackParameter.allCases` y no el diccionario: un listado
+    /// que baila entre ejecuciones haría que la pantalla se reordenara sola.
+    ///
+    /// Con el preset de fábrica está vacío, y esa es la condición que lo hace
+    /// útil como respuesta: si aparece algo, es que alguien aprendió encima.
+    public var parametersWithoutController: [TrackParameter] {
+        TrackParameter.allCases.filter { controller(for: $0) == nil }
+    }
+
+    /// Si dos familias comparten un número.
+    ///
+    /// **Un mapeo aprendido sí puede solaparlas.** Knobs y step buttons son los
+    /// dos CC, y el preset de fábrica solo evita el choque porque alguien lo
+    /// escribió mirando la tabla; construyendo el mapeo control a control esa
+    /// garantía desaparece. Los pads son notas y viven en otro espacio de
+    /// numeración, así que no entran en la comparación.
+    ///
+    /// Un solape haría que un control moviera dos cosas, y ningún test de una
+    /// familia suelta lo detectaría — es lo que `PresetMappingTests` ya dice del
+    /// preset, aquí como pregunta que se le puede hacer a cualquier mapeo.
+    public var hasFamilyOverlap: Bool {
+        let numbers = declaredNumbers
+        return !Set(numbers.knobs).isDisjoint(with: Set(numbers.stepButtons))
+    }
 }
