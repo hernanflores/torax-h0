@@ -382,6 +382,16 @@ public struct ProjectRecord: Codable, Equatable, Sendable {
     public let destinationName: String?
     public let sourceName: String?
 
+    /// El mapeo aprendido, o **ausente si nunca se aprendió nada**.
+    ///
+    /// **Es opcional a propósito, y por eso `schemaVersion` no sube**
+    /// (`midi-learn_20260908`, FR17). La migración que haría falta es «si no
+    /// está, usa el preset de fábrica», y eso es justo lo que un opcional ya
+    /// significa aquí — el mismo criterio que `destinationName`. Subir a 2 sin
+    /// migrador haría que `validated()` lanzara para todos los ficheros
+    /// existentes, y `ProjectStore.load()` los apartaría: la app abriría vacía.
+    public let controlNumbers: ControlNumbersRecord?
+
     /// **El segundo parámetro existe para poder construir un record con una
     /// versión que no es la vigente**, que es lo único que permite probar el
     /// camino de la versión no soportada sin fabricar JSON a mano.
@@ -393,6 +403,7 @@ public struct ProjectRecord: Codable, Equatable, Sendable {
         clockSource = project.clockSource == .external ? "external" : "internal"
         destinationName = project.destinationName
         sourceName = project.sourceName
+        controlNumbers = project.controlNumbers.map(ControlNumbersRecord.init)
     }
 
     /// El Project que describe, **con los Banks que le den**.
@@ -415,6 +426,90 @@ public struct ProjectRecord: Codable, Equatable, Sendable {
             .selectingTrack(selectedTrack)
             .withClockSource(clockSource == "external" ? .external : .internal)
             .remembering(destinationNamed: destinationName, sourceNamed: sourceName)
+            .remembering(controlNumbers: controlNumbers?.numbers)
+    }
+}
+
+/// El mapeo del controlador, tal como se escribe en disco.
+///
+/// **Las claves son del disco y no de la pantalla.** Cada parámetro se guarda
+/// por una cadena estable en minúsculas y no por su posición en el `enum`: el
+/// orden de `TrackParameter.allCases` es el del flujo del motor, y atar el
+/// fichero a él haría que reordenarlo cambiara el mapeo de un usuario. Es el
+/// mismo criterio que `scale` y `waveform`, y por eso tampoco se reutiliza
+/// `TrackParameter.description`, que es lo que se lee en la interfaz.
+public struct ControlNumbersRecord: Codable, Equatable, Sendable {
+
+    /// Número de controlador por parámetro, con el parámetro escrito por su
+    /// clave.
+    public let assignments: [String: Int]
+
+    public let padBlock: Int
+    public let knobBlock: Int
+    public let stepButtonBlock: Int
+
+    public init(assignments: [String: Int], padBlock: Int, knobBlock: Int, stepButtonBlock: Int) {
+        self.assignments = assignments
+        self.padBlock = padBlock
+        self.knobBlock = knobBlock
+        self.stepButtonBlock = stepButtonBlock
+    }
+
+    public init(_ numbers: ControlNumbers) {
+        assignments = Dictionary(
+            uniqueKeysWithValues: numbers.assignments.map { (Self.key(for: $0.key), $0.value) })
+        padBlock = numbers.padBlock
+        knobBlock = numbers.knobBlock
+        stepButtonBlock = numbers.stepButtonBlock
+    }
+
+    /// Los números que describe.
+    ///
+    /// **Una clave desconocida se descarta y el resto entra.** Un fichero
+    /// escrito por una app más nueva no puede dejar sin mapeo a ésta; con el
+    /// mismo criterio que una escala desconocida cae en `minor` en vez de
+    /// impedir la apertura.
+    public var numbers: ControlNumbers {
+        var table: [TrackParameter: Int] = [:]
+        for (key, number) in assignments {
+            guard let parameter = Self.parameter(for: key) else { continue }
+            table[parameter] = number
+        }
+        return ControlNumbers(
+            assignments: table,
+            padBlock: padBlock,
+            knobBlock: knobBlock,
+            stepButtonBlock: stepButtonBlock
+        )
+    }
+
+    /// La clave con la que cada parámetro se escribe en disco.
+    ///
+    /// **Exhaustivo a propósito**, como los de `Scale` y `Waveform`: sin
+    /// `default`, añadir un parámetro al motor no compila hasta que alguien
+    /// decida cómo se guarda. Sin eso, un mapeo aprendido perdería justo el
+    /// parámetro nuevo, en silencio.
+    static func key(for parameter: TrackParameter) -> String {
+        switch parameter {
+        case .steps: "steps"
+        case .pulses: "pulses"
+        case .rotate: "rotate"
+        case .division: "division"
+        case .repeats: "repeats"
+        case .repeatTime: "repeattime"
+        case .ramp: "ramp"
+        case .pace: "pace"
+        case .velocity: "velocity"
+        case .sustain: "sustain"
+        case .probability: "probability"
+        case .timing: "timing"
+        case .delay: "delay"
+        }
+    }
+
+    /// Y de vuelta. `nil` para lo que esta app no conoce.
+    static func parameter(for key: String) -> TrackParameter? {
+        TrackParameter.allCases.first { Self.key(for: $0) == key }
     }
 }
 

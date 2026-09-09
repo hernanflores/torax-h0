@@ -271,6 +271,38 @@ public struct ControlMapping: Equatable, Sendable {
     /// Un solape haría que un control moviera dos cosas, y ningún test de una
     /// familia suelta lo detectaría — es lo que `PresetMappingTests` ya dice del
     /// preset, aquí como pregunta que se le puede hacer a cualquier mapeo.
+    /// El mapeo en números, para que el `Project` lo guarde.
+    ///
+    /// **`Engine` no puede ver CoreMIDI**, así que lo que cruza la frontera son
+    /// enteros. Es el mismo reparto por el que el destino se recuerda por su
+    /// nombre y no por su `MIDIEndpointRef`.
+    public var numbers: ControlNumbers {
+        ControlNumbers(
+            assignments: assignments,
+            padBlock: Int(padBlock.value),
+            knobBlock: knobBlock.number,
+            stepButtonBlock: stepButtonBlock.number
+        )
+    }
+
+    /// El mapeo que describen esos números.
+    ///
+    /// **Lo imposible se descarta en vez de impedir la apertura**, con el mismo
+    /// criterio que una escala desconocida cayendo en `minor`: un `Int` del
+    /// disco no promete ser un controlador válido. Una asignación fuera de rango
+    /// se pierde —el destino se queda sin control, que es un estado válido— y un
+    /// bloque fuera de rango cae en el de fábrica, porque un mapeo sin pads no
+    /// lo es.
+    public init(_ numbers: ControlNumbers) {
+        self.init(
+            assignments: numbers.assignments.filter { MIDIController($0.value) != nil },
+            padBlock: MIDINote(numbers.padBlock) ?? Self.defaultPadBlock,
+            knobBlock: MIDIController(numbers.knobBlock) ?? Self.defaultKnobBlock,
+            stepButtonBlock: MIDIController(numbers.stepButtonBlock)
+                ?? Self.defaultStepButtonBlock
+        )
+    }
+
     public var hasFamilyOverlap: Bool {
         let numbers = declaredNumbers
         return !Set(numbers.knobs).isDisjoint(with: Set(numbers.stepButtons))

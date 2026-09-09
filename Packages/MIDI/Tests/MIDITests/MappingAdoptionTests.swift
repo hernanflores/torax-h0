@@ -141,6 +141,21 @@ final class MappingAdoptionTests: XCTestCase {
         XCTAssertEqual(input.track.shape.steps.count, 9)
     }
 
+    /// **Y volver al de fábrica tampoco toca el material** (FR18). Es la mitad
+    /// que importa de la vuelta atrás: deshacer lo aprendido no puede deshacer
+    /// lo tocado.
+    func testRestoringTheFactoryPresetDoesNotTouchTheMaterial() {
+        let input = makeInput()
+        input.receive(knob(MIDIController(70)!, by: 3))
+        input.adopt(mapping: .init(assignments: [.steps: 20]))
+        let before = input.pattern
+
+        input.adopt(mapping: .beatStepPro)
+
+        XCTAssertEqual(input.pattern, before)
+        XCTAssertEqual(input.mapping, ControlMapping.beatStepPro)
+    }
+
     // MARK: - El knob del Cycle sigue el bloque (FR2)
 
     /// El knob del Cycle no está en `assignments` —no es un `TrackParameter`—,

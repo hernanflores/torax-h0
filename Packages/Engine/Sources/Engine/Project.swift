@@ -55,6 +55,19 @@ public struct Project: Equatable, Sendable {
     /// El nombre de la fuente MIDI elegida, o `nil`.
     public let sourceName: String?
 
+    /// El mapeo del controlador, en números, o `nil` si nunca se aprendió nada.
+    ///
+    /// **Ausente significa el preset de fábrica** (`midi-learn_20260908`, FR16 y
+    /// FR17): no haber aprendido es un estado válido, no un campo que falte —
+    /// el mismo criterio que `destinationName`. Y es lo que permite que un
+    /// fichero escrito antes de MIDI Learn abra sin migrador y sin subir
+    /// `schemaVersion`.
+    ///
+    /// **En números y no en tipos de CoreMIDI**, por lo mismo que el destino se
+    /// guarda por su nombre: este paquete no puede ver CoreMIDI. `MIDI` lo
+    /// convierte en las dos direcciones.
+    public let controlNumbers: ControlNumbers?
+
     /// Un Project entero vacío, mirando al primer hueco, con reloj interno y sin
     /// hardware recordado.
     public init() {
@@ -65,6 +78,7 @@ public struct Project: Equatable, Sendable {
         clockSource = .internal
         destinationName = nil
         sourceName = nil
+        controlNumbers = nil
     }
 
     /// El constructor completo, interno: fuera se llega por los métodos de
@@ -76,7 +90,8 @@ public struct Project: Equatable, Sendable {
         selectedTrack: Int,
         clockSource: ClockSource,
         destinationName: String?,
-        sourceName: String?
+        sourceName: String?,
+        controlNumbers: ControlNumbers? = nil
     ) {
         precondition(banks.count == Self.bankCount)
         self.banks = banks
@@ -86,6 +101,7 @@ public struct Project: Equatable, Sendable {
         self.clockSource = clockSource
         self.destinationName = destinationName
         self.sourceName = sourceName
+        self.controlNumbers = controlNumbers
     }
 
     /// El Project con el que arranca la app: el material de siempre en el
@@ -148,6 +164,14 @@ public struct Project: Equatable, Sendable {
         copy(destinationName: .some(destination), sourceName: .some(source))
     }
 
+    /// El mismo Project recordando —o dejando de recordar— el mapeo aprendido.
+    ///
+    /// `nil` es un estado válido y significa el preset de fábrica: es la vuelta
+    /// atrás de FR18, y también lo que un Project que nunca aprendió nada tiene.
+    public func remembering(controlNumbers numbers: ControlNumbers?) -> Project {
+        copy(controlNumbers: .some(numbers))
+    }
+
     /// El Project con el **Pattern vigente** copiado en otro hueco del **Bank
     /// vigente** (FR13).
     ///
@@ -188,7 +212,8 @@ public struct Project: Equatable, Sendable {
         selectedTrack: Int? = nil,
         clockSource: ClockSource? = nil,
         destinationName: String?? = nil,
-        sourceName: String?? = nil
+        sourceName: String?? = nil,
+        controlNumbers: ControlNumbers?? = nil
     ) -> Project {
         Project(
             banks: banks ?? self.banks,
@@ -197,7 +222,8 @@ public struct Project: Equatable, Sendable {
             selectedTrack: selectedTrack ?? self.selectedTrack,
             clockSource: clockSource ?? self.clockSource,
             destinationName: destinationName ?? self.destinationName,
-            sourceName: sourceName ?? self.sourceName
+            sourceName: sourceName ?? self.sourceName,
+            controlNumbers: controlNumbers ?? self.controlNumbers
         )
     }
 }
