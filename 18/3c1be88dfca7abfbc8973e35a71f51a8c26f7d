@@ -1,0 +1,44 @@
+Fix: la sesión de red tampoco se autoselecciona como destino
+Track: midi-learn_20260908 · Fase 2, ampliación · FR12
+
+POR QUÉ CAMBIA EL ALCANCE ESCRITO
+=================================
+El `spec.md` dejaba el destino fuera: «como salida es una elección legítima y no
+estorba a ningún estado especificado». El iPad lo desmintió el 2026-09-09: con
+la entrada ya arreglada, la salida seguía autoseleccionando `Red Session 1`, así
+que la app arrancaba mandando las notas a la red en vez de a un sintetizador.
+
+Sonar a ninguna parte por defecto sí estorba. Decisión del usuario, tomada con
+las tres salidas delante.
+
+QUÉ NO CAMBIA
+-------------
+Sigue siendo elegible a mano en los dos papeles y lo recordado sigue mandando.
+MIDI por red a otro equipo es una vía legítima de salida; lo único que se le
+quita es elegirse sola. Hay test para las dos mitades.
+
+QUÉ CAMBIA
+==========
+  Packages/MIDI/Sources/MIDI/MIDIEndpointSelection.swift
+      `isAutoSelectable` deja de distinguir por papel.
+  Packages/MIDI/Sources/MIDI/CoreMIDIOutput.swift
+      `availableDestinations` rellena `isNetworkSession`, como ya hacía la
+      entrada.
+  App/TransportModel.swift
+      el watcher del destino recibe `project.destinationName`, que nunca había
+      recibido.
+  conductor/tracks/midi-learn_20260908/spec.md
+      FR12 ampliado con fecha, y la línea de Out of Scope tachada en vez de
+      borrada.
+
+Cuatro tests nuevos, incluido uno que fija que los endpoints de la propia app
+siguen fuera del destino — la otra regla que vive en esa comprobación y que no
+debía perderse al tocarla.
+
+VERIFICACIÓN
+============
+  swift test --package-path Packages/MIDI --filter NetworkSessionSourceTests
+      18 tests, 0 fallos
+  swift test --package-path Packages/MIDI (partición)   830 + 21 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+      BUILD SUCCEEDED
