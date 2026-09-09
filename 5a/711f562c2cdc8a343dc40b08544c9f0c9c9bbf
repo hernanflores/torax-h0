@@ -1,0 +1,54 @@
+Task: Un destino, un control (FR4, FR5)
+Track: midi-learn_20260908 · Fase 3
+
+Qué cambia
+----------
+  Packages/MIDI/Sources/MIDI/ControlMapping.swift
+    `assigning(_:to:)`
+    `parametersWithoutController`
+    `hasFamilyOverlap`
+  Packages/MIDI/Tests/MIDITests/LearnedMappingTests.swift   nuevo, 13 tests
+
+El porqué
+---------
+El preset de fábrica cumple la regla por construcción: lo escribió alguien
+mirando la tabla, y `PresetMappingTests` la comprueba sobre él. Un mapeo
+aprendido se construye control a control y con el dedo, así que la regla tiene
+que estar en el tipo.
+
+`assigning` hace las DOS mitades, porque una sola deja el mapeo mintiendo:
+  - el parámetro suelta el controlador que tuviera (Steps del 70 al 20 deja el
+    70 sin dueño, no a Steps con dos knobs);
+  - el controlador desasigna al parámetro que lo tuviera (aprender el knob de
+    Steps para Pulses deja a Steps mudo, no a los dos oyendo el mismo giro).
+
+Los tres bloques no se tocan: no son de `assignments`, y hay un test que lo fija
+—un `assigning` escrito con prisa devolvería los bloques por defecto y los pads
+se irían de sitio—.
+
+`parametersWithoutController` va en el orden de `TrackParameter.allCases` y no
+en el del diccionario: un listado que baila entre ejecuciones haría que la
+pantalla se reordenara sola. Es lo que la Fase 6 necesita para decir en voz alta
+qué acaba de quedarse mudo — un destino sin control es válido (FR5) pero
+silencioso, y un silencio que no se anuncia parece un fallo.
+
+`hasFamilyOverlap` convierte en pregunta lo que `PresetMappingTests` solo
+afirmaba del preset. Knobs y step buttons son los dos CC y un mapeo aprendido sí
+puede solaparlos; los pads son notas, viven en otro espacio de numeración y no
+entran en la comparación.
+
+Corrección sobre la marcha
+--------------------------
+`testTheDisplacedParameterIsListed` comparaba la lista entera contra `[.steps]`.
+Falso por construcción: un mapeo de prueba con dos asignaciones deja mudos a los
+otros diez de todas formas, así que eso probaba el material de prueba y no la
+regla. Ahora pregunta por los dos parámetros que le importan.
+
+Verificación
+------------
+  swift test --package-path Packages/MIDI --filter LearnedMappingTests
+      13 tests, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+      779 tests, 0 fallos
+  swift test --package-path Packages/Engine
+      878 tests, 0 fallos
