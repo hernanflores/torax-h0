@@ -167,32 +167,39 @@ MIDI Learn no llegue a existir. Al cerrar la 5, el mapeo sobrevive a un reinicio
 
 ## FASE 5: QUE SOBREVIVA
 
-- [ ] Task: El mapeo entra en el `Project` (FR16, NFR3)
-  - [ ] Tests (Red): round-trip del mapeo por `ProjectRecord`, con el resto de
+- [x] Task: El mapeo entra en el `Project` (FR16, NFR3) `6108c01`
+  - [x] Tests (Red): round-trip del mapeo por `ProjectRecord`, con el resto de
         ajustes de sesión intactos.
-  - [ ] Tests (Red): el mapeo de fábrica y uno aprendido se distinguen en disco.
-  - [ ] Implementación (Green): junto a `clockSource`, `destinationName` y
+  - [x] Tests (Red): el mapeo de fábrica y uno aprendido se distinguen en disco.
+  - [x] Tests (Red): **los trece parámetros** tienen clave estable; una clave
+        desconocida se descarta y el resto entra.
+  - [x] Implementación (Green): junto a `clockSource`, `destinationName` y
         `sourceName`, que es donde ya vive lo que no es material.
-- [ ] Task: Los ficheros existentes abren (FR17)
-  - [ ] Tests (Red): un fichero escrito **antes** de este track —sin la clave del
+  - [x] **`ControlNumbers`**, porque `Engine` no puede ver CoreMIDI: lo que cruza
+        la frontera son enteros, y `MIDI` convierte en las dos direcciones. Es el
+        mismo reparto que el destino guardado por su nombre.
+  - [x] Lo imposible que venga del disco se descarta en vez de impedir la
+        apertura: asignación fuera de rango, destino sin control; bloque fuera de
+        rango, el de fábrica.
+- [x] Task: Los ficheros existentes abren (FR17) `6108c01`
+  - [x] Tests (Red): un fichero escrito **antes** de este track —sin la clave del
         mapeo— abre, y abre con el preset de fábrica.
-  - [ ] Tests (Red): `schemaVersion` **sigue siendo 1**, y un fichero que declare
-        2 se sigue apartando. La decisión de la Fase 1 es que esta rebanada no
-        estrena la subida de versión.
-  - [ ] Implementación (Green): campo opcional en `ProjectRecord`, con el mismo
+  - [x] Tests (Red): `schemaVersion` **sigue siendo 1**, y un fichero que declare
+        2 se sigue apartando.
+  - [x] Implementación (Green): campo opcional en `ProjectRecord`, con el mismo
         criterio que `destinationName` y `sourceName`.
-- [ ] Task: Enchufar el migrador que se documenta como enchufado
-  - [ ] Tests (Red): el camino de carga pasa por `ProjectRecord.migrated(_:)` y
+- [x] Task: Enchufar el migrador que se documenta como enchufado `6108c01`
+  - [x] Tests (Red): el camino de carga pasa por `ProjectRecord.migrated(_:)` y
         no por `validated()` a secas.
-  - [ ] Implementación (Green): una línea en `ProjectStore.load()`
-        (`ProjectStore.swift:187`).
-  - [ ] Hoy no cambia ningún comportamiento —`migrated(_:)` solo valida—, y ese
-        es el momento de hacerlo: quien escriba la primera migración de verdad
-        confiará en el comentario que ya dice que la llamada está puesta.
-- [ ] Task: Vía de vuelta al preset de fábrica (FR18)
-  - [ ] Tests (Red): restaurar el preset deja `ControlMapping.beatStepPro` y no
-        toca el material.
-  - [ ] Implementación (Green).
+  - [x] Implementación (Green): `ProjectStore.loadHeader`.
+  - [x] Hoy no cambia ningún comportamiento, y ese es el momento de hacerlo:
+        quien escriba la primera migración de verdad confiará en el comentario
+        que ya dice que la llamada está puesta.
+- [x] Task: Vía de vuelta al preset de fábrica (FR18) `6108c01`
+  - [x] Tests (Red): restaurar el preset deja `ControlMapping.beatStepPro` y **no
+        toca el material** — deshacer lo aprendido no deshace lo tocado.
+  - [x] Implementación (Green): ninguna. Volver al de fábrica es adoptar el de
+        fábrica, que es lo que la Fase 3 ya entregó.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: LA PANTALLA
