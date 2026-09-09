@@ -46,10 +46,10 @@ cursor ya se puede mover desde código y desde el knob por la misma puerta; si l
 ## FASE 2: EL GESTO EN EL `CycleStrip`
 
 - [ ] Task: Pulsar elige el Cycle en edición (FR5, NFR4)
-  - [ ] La celda llama a la vía de la Fase 1 a través del modelo, **una línea y
-        sin lógica**.
-  - [ ] Una celda fuera del rango activo no hace nada al pulsarla — sin caso
-        especial en la vista si la vía ya lo acota.
+  - [ ] La celda llama a la vía de la Fase 1 a través del modelo solo si
+        `number <= activeCount`.
+  - [ ] Una celda fuera del rango activo no hace nada al pulsarla: el gesto
+        descarta `number > activeCount` antes de invocar la vía.
   - [ ] Comprobar en simulador que el contorno del Cycle en edición se mueve, que
         es lo único que el simulador puede verificar de este track.
 - [ ] Task: Mantener cambia cuántos están activos (FR6, FR7)

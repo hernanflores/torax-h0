@@ -55,9 +55,10 @@ reproducción se mueve: eso es del scheduler y del límite de vuelta.
 un tope no publica: mandar un snapshot idéntico es trabajo y ruido para nada.
 
 **FR5 — Pulsar una celda del `CycleStrip` elige el Cycle en edición.** Es el
-gesto frecuente y por eso es el simple. Pulsar una celda **fuera del rango
-activo** no hace nada: no se edita lo que no se recorre, y subir el rango es el
-otro gesto.
+gesto frecuente y por eso es el simple. El gesto de pulsación comprueba
+`number <= activeCount` antes de llamar a la vía pública; si `number` excede
+`activeCount`, no hace nada. No se edita lo que no se recorre, y subir el rango
+es el otro gesto.
 
 **FR6 — Mantener pulsada una celda cambia cuántos Cycles están activos.** Es lo
 que la celda hacía hasta hoy, movido al gesto raro. Al cumplirse el tiempo de
@@ -97,8 +98,9 @@ cualquier edición táctil ya hace.
 sin controlador de por medio. `Engine` no debería moverse (NFR1).
 
 **NFR4 — El gesto en `App` no lleva tests, y por eso lleva poca lógica.** `App`
-no se mide (`workflow.md`). La decisión de qué está en rango es de FR2 y vive en
-`Engine`; la vista solo distingue un gesto de otro y llama.
+no se mide (`workflow.md`). La vía pública conserva el acotado de FR2 en
+`Engine`; la vista solo distingue un gesto de otro, aplica el guard de FR5 y
+llama.
 
 **NFR5 — Sin medición de jitter.** La suspensión del 2026-09-02 manda, y además
 este cambio no mueve ningún instante.

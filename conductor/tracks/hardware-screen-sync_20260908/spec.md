@@ -108,9 +108,13 @@ se lee, no instantáneo**. Nadie lo oye.
 
 ## Non-Functional Requirements
 
-**NFR1 — En el hilo de recepción no entra nada más que escrituras atómicas.** Ni
-una asignación, ni un lock, ni un `await`, ni una llamada hacia el modelo. Las
-funciones nuevas llevan el marcador `/// Realtime:`.
+**NFR1 — La publicación nueva solo escribe atómicos.** En la lógica de
+publicación nueva que corre en el hilo de recepción no entra una asignación no
+atómica, ni un lock, ni un `await`, ni una llamada hacia el modelo. Este alcance
+excluye las llamadas que `Transport.receive` ya hace, como
+`startPlaying(atHostTime:)`, `stop()` y `follow(tickAtHostTime:)`: se conserva su
+comportamiento y este track no rediseña `Transport.receive`. Las funciones
+nuevas llevan el marcador `/// Realtime:`.
 
 **NFR2 — La carrera sobre `scheduler` no crece.** Este track no añade lecturas de
 `scheduler` desde el hilo principal. Si el arreglo termina eliminando la que hay
