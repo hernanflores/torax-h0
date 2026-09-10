@@ -1,0 +1,34 @@
+Tasks: Marca de la celda de origen (FR12) and Destello de la celda de destino
+(FR13, FR14) (Fase 5, pattern-copy_20260910)
+
+Both signals in one commit: they share the cell body and the same new constants,
+and neither compiles usefully without the other's plumbing.
+
+- **The origin mark is a filled block in the top-trailing corner**, off-white,
+  `Brutalist.copyMark`. Not a border: `playing`, `queued` and the selected cell
+  already share the three borders, and a fourth would not be distinguishable at
+  a metre. It is drawn only while looking at its own Bank — `copiedSlotIndex`
+  asks `PatternClipboard.markedSlot(inBank:)` — so in another Bank there is no
+  cell to mark and the signal is simply that `paste` is enabled.
+- **The destination cell flashes** on paste and on a chord copy, whether or not
+  it held material (FR13, FR14). One ease-out fade, nothing hung off the clock:
+  no per-frame work and no dependence on the transport running. Setting the flash
+  and animating it away are separated by a hop to the next turn of the loop —
+  in the same pass SwiftUI collapses them and nothing shows.
+- `pasteDestinationIndex` on the model tells the view which cell will receive,
+  because running it is not the selected one. The destination is read *before*
+  pasting: what flashes is the cell that received, not the one that would
+  receive next.
+- The mark is hidden from VoiceOver as a shape but the cell's label says
+  "copied", so the state is not visual-only.
+
+Files: App/BanksScreen.swift, App/TransportModel.swift, App/Brutalist.swift
+
+Verification: `xcodebuild build -scheme ToraxH0 -destination
+'generic/platform=iOS'` — BUILD SUCCEEDED. `swift test --package-path
+Packages/Engine` — 915 tests, 0 failures.
+
+Why: FR9 lets a paste land on a slot that already had material, where the state
+label does not change. Without a flash that gesture reads as the dead button
+this track exists to fix — and in live use, with the chord, nobody is looking at
+the screen straight on.
