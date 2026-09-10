@@ -1074,32 +1074,43 @@ en cualquier momento.
 
 ---
 
-- [~] **Track: `copy here` de la rejilla de Patterns no hace nada**
+- [x] **Track: `copy here` de la rejilla de Patterns no hace nada** — *cerrado el 2026-09-10, verificado en iPad*
   *Link: [conductor/tracks/pattern-copy_20260910/index.md](./tracks/pattern-copy_20260910/index.md)*
 
-  **Planificado el 2026-09-10**, en seis fases. `BanksScreen.swift:179` llama
-  `onCopy(selected)` y eso acaba en `Project.copyingSelectedPattern(to:)`, que
-  copia el Pattern seleccionado al índice recibido: **origen y destino son el
-  mismo hueco**. El motor está bien y `PatternCopyTests` lo prueba con origen
-  distinto del destino; nadie probó el caso que la vista dispara.
+  **El defecto.** `BanksScreen.swift:179` llamaba `onCopy(selected)` y eso acababa
+  en `Project.copyingSelectedPattern(to:)`, que copiaba el Pattern seleccionado al
+  índice recibido: **origen y destino eran el mismo hueco**. El motor estaba bien
+  y `PatternCopyTests` lo probaba con origen distinto del destino; nadie probó el
+  caso que la vista disparaba. Era de cableado, no de reglas.
 
-  **Entrega dos interacciones, separadas por el transporte.** Corriendo, un
+  **Qué entregó.** Cuatro gestos, separados por el transporte. Corriendo, un
   **acorde de dos dedos** —mantener el origen, tocar el destino— copia en el acto
-  y sigue sonando lo que sonaba: el equivalente por Pattern de lo que `reload`
-  hace por Banco. Parado, `copy` y `paste` con un portapapeles que guarda el
-  Pattern entero, así que **se puede pegar en otro Bank**; `paste` también
-  funciona corriendo, porque el acorde no cruza Banks.
+  y sigue sonando lo que sonaba. Parado, `copy` y `paste` con un portapapeles que
+  guarda el Pattern entero, así que **se puede pegar en otro Bank**; `paste`
+  también funciona corriendo. La celda de origen lleva su marca y la de destino
+  destella. `copyingSelectedPattern(to:)` se retiró.
 
-  **Se permite pegar encima del que suena**, decidido con el usuario: el audio no
-  se corta porque el transporte no relee su snapshot hasta la próxima adopción.
+  **El riesgo salió bien a la primera.** Dos `Button` hermanos de SwiftUI no ven
+  toques simultáneos, así que la rejilla pasó a resolver los toques con
+  `UIViewRepresentable`. Verificado en iPad sin sorpresas.
 
-  **La Fase 3 cierra el defecto reportado**; las fases 4 y 5 añaden el acorde y
-  sus señales. **El riesgo está en la Fase 4**: dos `Button` hermanos de SwiftUI
-  no ven toques simultáneos, así que la rejilla resuelve los toques con
-  `UIViewRepresentable`, y eso solo se verifica en iPad.
+  **Lo que costó una fase de más, y es lo que hay que recordar.** La verificación
+  en dispositivo **encontró un fallo** que ninguna pasada de tests habría dicho:
+  pegar escribía en el `Project` y no refrescaba las dos copias que el `Project`
+  no gobierna —la copia viva que la pantalla `track` edita, y el snapshot ya
+  armado en el transporte—. El síntoma visible era que **lo pegado no sonaba**; el
+  invisible, que **el primer giro de knob lo borraba**. Alcanzaba también al caso
+  parado, que se había dado por bueno mirando solo la rejilla. Se arreglaron las
+  dos mitades en la Fase 7, con la regla bajada a `PatternPasteRefresh` en
+  `Engine` para que a partir de ahora sí se pruebe, y el `spec.md` ganó FR11b.
+  Detalle en `device-verification.md`.
+
+  **Verificación:** `Engine` 921 tests · 98,70%. `MIDI` 91,77%, sin moverse.
+  Los trece criterios de aceptación con el iPad delante.
 
   **Fuera de alcance:** `clear`, deshacer un pegado —la vuelta atrás ya es el
-  punto de retorno del Banco—, persistir el portapapeles y copiar Banks enteros.
+  punto de retorno del Banco—, persistir el portapapeles, copiar Banks enteros y
+  el acorde entre Banks.
 
   **Sin medición de jitter**: no mueve ningún instante ni toca el hilo del
   scheduler.
