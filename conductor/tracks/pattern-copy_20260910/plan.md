@@ -126,7 +126,7 @@ con la verificación en dispositivo detrás.
   - [x] Un toque sencillo sigue armando, con su cuenta atrás. **Verificado**, y
         también que el acorde no arma nada.
 
-## FASE 5: LO QUE SE VE
+## FASE 5: LO QUE SE VE [checkpoint: 7e01bd3]
 
 - [x] Task: Marca de la celda de origen (FR12) — `7e01bd3`
   - [x] Visible desde `copy` hasta que el portapapeles se sustituye.
@@ -140,12 +140,13 @@ con la verificación en dispositivo detrás.
 
   **Las dos van en un commit**: comparten el cuerpo de la celda y las constantes
   nuevas, y ninguna compila sin el cableado de la otra.
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
-  - [ ] Las dos señales se leen a un metro, que es la distancia de la pantalla.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Las dos señales se leen a un metro, que es la distancia de la pantalla.
+        **Verificado.**
 
 ## FASE 6: DISPOSITIVO Y CIERRE
 
-- [ ] Task: Verificación en dispositivo (NFR6)
+- [~] Task: Verificación en dispositivo (NFR6)
   - [ ] Los trece criterios de aceptación del `spec.md`, con el iPad delante.
   - [ ] Incluye pegar encima del que suena sin que el audio se corte.
   - [ ] Escribir `device-verification.md` con lo observado, no con lo esperado.
