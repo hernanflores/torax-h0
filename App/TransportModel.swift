@@ -317,6 +317,25 @@ final class TransportModel {
         autosave.changedHeader(project)
     }
 
+    // MARK: - El portapapeles de Patterns
+
+    /// El Pattern copiado, o `nil` si no se ha copiado nada todavía (FR1–FR4).
+    ///
+    /// **Empieza vacío y vive en memoria.** No se persiste: no toca
+    /// `Persistence`, ni el formato de disco, ni `schemaVersion` (FR3, NFR5).
+    /// Se pierde al cerrar la app, que es lo que un portapapeles hace.
+    ///
+    /// Es un `Observable` más, así que `paste` se habilita solo en cuanto hay
+    /// algo que pegar.
+    private(set) var clipboard: PatternClipboard?
+
+    /// Si `paste` se puede pulsar. Con el portapapeles vacío, no (FR4).
+    var canPaste: Bool { clipboard != nil }
+
+    /// Qué hueco lleva la marca de origen en el Bank que se está mirando, o
+    /// `nil` si no hay marca que dibujar aquí (FR12).
+    var copiedSlotIndex: Int? { clipboard?.markedSlot(inBank: project.selectedBank) }
+
     /// Copia el Pattern vigente en otro hueco (FR13).
     func copyPattern(to index: Int) {
         project = project.copyingSelectedPattern(to: index)
