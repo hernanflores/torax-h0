@@ -19,3 +19,29 @@ Verification: `xcodebuild build -scheme ToraxH0 -destination
 Packages/Engine` — 915 tests, 0 failures. Built and installed on the simulator,
 which **cannot verify this**: multitouch does not exist there (NFR6). The chord
 is checked on the iPad.
+
+---
+
+Phase Verification & Checkpoint — FASE 4: LA CAPA DE TOQUES
+
+Automated: xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+→ BUILD SUCCEEDED. swift test --package-path Packages/Engine → 915 tests, 0
+failures. Nothing further can be automated here: multitouch does not exist on
+the simulator (NFR6), and this phase is exactly that.
+
+Manual verification on the iPad with the BeatStep Pro, all eight steps confirmed:
+  1. Stopped, a touch selects and the cell dims under the finger — the pressed
+     highlight now drawn by hand.
+  2. A touch lifted outside its cell selects nothing (FR21).
+  3. copy, paste and clear still behave as in Fase 3.
+  4. Running, a single tap still arms for the next bar, countdown and `queued`.
+  5. **Holding 01 and touching 03 copies at once, and 01 keeps sounding.**
+  6. Both release orders give the same result (FR17).
+  7. The chord arms nothing: no countdown, no `queued` cell (FR18).
+  8. After a chord, the next single tap arms normally — the machine starts fresh.
+
+User confirmation: "1, 2 y 3 OK. 4, 5, 6, 7 y 8 ok".
+
+This was the phase the plan called the risk of the track: sibling SwiftUI
+Buttons never see simultaneous touches, so the grid had to resolve its own. It
+holds on the hardware.
