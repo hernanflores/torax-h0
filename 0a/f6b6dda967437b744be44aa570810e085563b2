@@ -51,3 +51,43 @@ por qué es defendible después de tres intentos revertidos.
 PENDIENTE
 Verificación en dispositivo (Fase 4), que es donde FR8, FR8b, FR9 y FR10 se
 comprueban de verdad. NFR6: en esta zona una captura no vale como prueba.
+
+=== INFORME DE VERIFICACIÓN DE FASE — FASE 3 ===
+
+COBERTURA DE LOS CAMBIOS DE LA FASE
+Diff contra el checkpoint de la Fase 2 (6317238): TransportWatch.swift, con
+TransportWatchTests.swift y 10 tests dedicados. TransportModel.swift y
+ToraxH0App.swift están en App, que no se mide (workflow.md), y lo que quedó ahí
+es una llamada y una asignación — que es lo que NFR4 exige.
+
+COMANDOS AUTOMÁTICOS
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    → 21 tests, 1 omitido, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    → 875 tests, 0 fallos
+  swift test --package-path Packages/Engine
+    → 888 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+  grep -c '.task {' App/ToraxH0App.swift → 2, el mismo número de antes
+    (criterio 7 del spec)
+
+VERIFICACIÓN MANUAL — iPad con BeatStep Pro, 2026-09-09
+Los ocho pasos propuestos, todos correctos según el usuario:
+  1. Reloj externo elegido en la pantalla midi.
+  2. Start en el BeatStep: suena, el botón pasa a stop solo, y el anillo se
+     mueve. FR8 y FR8b.
+  3. Pulsar el botón de la app: para. Es el síntoma reportado, resuelto.
+  4. Stop en el BeatStep: el botón vuelve a play solo y el anillo se detiene.
+     Es la mitad simétrica que el spec no contaba, encontrada en la Fase 1.
+  5. Tempo del maestro: la barra lo sigue. FR9, sin regresión.
+  6. Corte de cable y recuperación: clockStatus refleja las dos transiciones.
+     FR10.
+  7. Regresión con reloj interno: play y stop de la app, mute y desmute
+     sonando, Pattern elegido sonando (queued, entra en el compás) y parado
+     (entra al momento). Sin regresión.
+  8. Consola: transport.isPlaying y model.isPlaying coinciden siempre. Es la
+     discrepancia que definía el defecto, y ya no aparece.
+
+CONFIRMACIÓN DEL USUARIO
+Confirmado explícitamente el 2026-09-09, punto por punto: los ocho pasos OK.
