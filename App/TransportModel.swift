@@ -336,9 +336,66 @@ final class TransportModel {
     /// `nil` si no hay marca que dibujar aquí (FR12).
     var copiedSlotIndex: Int? { clipboard?.markedSlot(inBank: project.selectedBank) }
 
-    /// Copia el Pattern vigente en otro hueco (FR13).
-    func copyPattern(to index: Int) {
-        project = project.copyingSelectedPattern(to: index)
+    /// Carga el hueco vigente en el portapapeles (FR5, FR6).
+    ///
+    /// **Disponible siempre**, con el transporte parado y corriendo: copiar no
+    /// destruye nada.
+    ///
+    /// **Toma el material guardado en el Bank, no `pattern`**, que es la copia
+    /// viva y lleva encima la superposición de un gesto en curso (FR6). Temp y
+    /// Ctrl All superponen valores que vuelven solos al soltar y que
+    /// `recordEdit()` no escribe en el Bank; copiar sigue la misma regla y por
+    /// el mismo motivo: congelar en un hueco un fill que el usuario espera que
+    /// se deshaga sería material que nadie pidió conservar.
+    func copyPattern() {
+        guard let material = bank.pattern(at: project.selectedPattern) else { return }
+
+        clipboard = PatternClipboard(
+            pattern: material,
+            bankIndex: project.selectedBank,
+            slotIndex: project.selectedPattern
+        )
+    }
+
+    /// Escribe el portapapeles en su hueco de destino (FR7–FR11).
+    ///
+    /// **Escribe en el Bank vigente, venga el material del Bank que venga**
+    /// (FR7): se pega donde se está mirando, y el Banco de origen no interviene.
+    ///
+    /// **No mueve la selección, no arma nada, no toca el transporte y no cancela
+    /// una adopción pendiente** (FR10). Escribe material y nada más.
+    ///
+    /// **Se permite pegar encima del Pattern que suena** (FR9). El audio no se
+    /// corta: el transporte tiene su propio snapshot publicado y no lo relee
+    /// hasta la próxima adopción, así que el material sustituido entra al
+    /// siguiente cambio de Pattern.
+    func pastePattern() {
+        guard let clipboard else { return }
+
+        let index = PatternClipboard.destination(
+            selected: project.selectedPattern,
+            armed: armedPatternIndex,
+            isRunning: isPlaying
+        )
+        project = project.replacing(clipboard.pattern, at: index)
+        autosave.changed(bank, at: project.selectedBank)
+    }
+
+    /// Copia un Pattern en otro hueco del Bank vigente, con las dos puntas
+    /// dichas, y **carga el portapapeles con el origen** (FR19).
+    ///
+    /// Es lo que produce el acorde de dos dedos: un solo portapapeles para los
+    /// dos gestos, así que el backup hecho con dos dedos se puede llevar luego a
+    /// otro Bank con `paste` sin repetir nada.
+    func copyPattern(from origin: Int, to destination: Int) {
+        guard let material = bank.pattern(at: origin) else { return }
+
+        project = project.copyingPattern(from: origin, to: destination)
+        clipboard = PatternClipboard(
+            pattern: material,
+            bankIndex: project.selectedBank,
+            slotIndex: origin
+        )
         autosave.changed(bank, at: project.selectedBank)
     }
 

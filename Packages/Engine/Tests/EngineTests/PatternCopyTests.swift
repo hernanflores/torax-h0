@@ -128,32 +128,12 @@ final class PatternCopyTests: XCTestCase {
 
     // MARK: - Sobre el Project, que es como lo llama la pantalla
 
-    // `copyingSelectedPattern(to:)` está en retirada (FR23 de
-    // `pattern-copy_20260910`): su origen implícito es el defecto que ese track
-    // arregla, y hoy ya es un envoltorio de `copyingPattern(from:to:)`. Estos
-    // tests se conservan mientras siga teniendo llamadores; lo que prueban vive
-    // también en `PatternCopyWithOriginTests`.
-
-    /// «Copiar el Pattern vigente a un hueco» (FR13): el origen es el Pattern
-    /// seleccionado y el Bank es el seleccionado.
-    func testTheProjectCopiesTheSelectedPatternIntoASlot() {
-        let project = Project.initial.copyingSelectedPattern(to: 7)
-
-        XCTAssertEqual(project.bank(at: 0)?.pattern(at: 7), Pattern.initial)
-        XCTAssertEqual(project.bank(at: 0)?.pattern(at: 0), Pattern.initial)
-    }
-
-    /// Y opera sobre el Bank seleccionado, no sobre el primero.
-    func testTheProjectCopiesInsideTheSelectedBank() {
-        let project = Project()
-            .replacing(Bank().replacing(Pattern.initial, at: 2), at: 5)
-            .selectingBank(5)
-            .selectingPattern(2)
-            .copyingSelectedPattern(to: 3)
-
-        XCTAssertEqual(project.bank(at: 5)?.pattern(at: 3), Pattern.initial)
-        XCTAssertEqual(project.bank(at: 0), Bank(), "el Bank 1 no se toca")
-    }
+    // **`copyingSelectedPattern(to:)` se retiró** el 2026-09-10 (FR23 de
+    // `pattern-copy_20260910`): su origen implícito era el defecto, porque la
+    // pantalla conoce un índice y acababa pasándolo por las dos puntas. Lo que
+    // probaba sobre el Project vive ahora en `PatternCopyWithOriginTests`, con
+    // el origen dicho; aquí se conserva lo que era suyo y de nadie más — borrar,
+    // y que ninguna de las dos operaciones mueva la selección.
 
     func testTheProjectClearsASlotInTheSelectedBank() {
         let project = Project.initial.clearingPattern(at: 0)
@@ -164,7 +144,7 @@ final class PatternCopyTests: XCTestCase {
     func testProjectLevelOperationsOutsideTheRangeReturnItUnchanged() {
         let project = Project.initial
         for index in [-1, Bank.patternCount, Int.max] {
-            XCTAssertEqual(project.copyingSelectedPattern(to: index), project, "copiar \(index)")
+            XCTAssertEqual(project.copyingPattern(from: 0, to: index), project, "copiar \(index)")
             XCTAssertEqual(project.clearingPattern(at: index), project, "borrar \(index)")
         }
     }
@@ -172,7 +152,7 @@ final class PatternCopyTests: XCTestCase {
     /// Ninguna de las dos mueve la selección ni los ajustes de sesión.
     func testNeitherOperationMovesTheSelection() {
         let project = Project.initial.selectingPattern(0).withClockSource(.external)
-        let after = project.copyingSelectedPattern(to: 4).clearingPattern(at: 9)
+        let after = project.copyingPattern(from: 0, to: 4).clearingPattern(at: 9)
 
         XCTAssertEqual(after.selectedBank, project.selectedBank)
         XCTAssertEqual(after.selectedPattern, project.selectedPattern)

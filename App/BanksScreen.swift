@@ -42,7 +42,9 @@ struct BanksScreen: View {
                 states: model.patternSlotStates,
                 beatsUntilChange: model.beatsUntilPatternChange,
                 onSelect: model.selectPattern,
+                canPaste: model.canPaste,
                 onCopy: model.copyPattern,
+                onPaste: model.pastePattern,
                 onClear: model.clearPattern
             )
 
@@ -140,7 +142,12 @@ struct PatternGrid: View {
     let beatsUntilChange: Int?
 
     let onSelect: (Int) -> Void
-    let onCopy: (Int) -> Void
+
+    /// Si hay algo en el portapapeles. Vacío, `paste` no se puede pulsar (FR4).
+    let canPaste: Bool
+
+    let onCopy: () -> Void
+    let onPaste: () -> Void
     let onClear: (Int) -> Void
 
     var body: some View {
@@ -172,12 +179,21 @@ struct PatternGrid: View {
                 }
             }
 
-            // **Copiar y borrar operan sobre el hueco elegido**, y por eso están
-            // debajo de la rejilla y no dentro de cada celda: dieciséis pares de
+            // **Los tres operan sobre el hueco elegido**, y por eso están
+            // debajo de la rejilla y no dentro de cada celda: dieciséis tríos de
             // botones diminutos serían imposibles de acertar con el dedo.
+            //
+            // **`copy here` era un gesto de un solo paso que nunca existió**: la
+            // pantalla conoce un índice y se lo pasaba a las dos puntas de la
+            // copia, así que la celda se copiaba sobre sí misma. Dos gestos y un
+            // portapapeles sí se pueden expresar — y el portapapeles guarda el
+            // Pattern entero, así que se puede pegar en otro Bank.
             HStack(spacing: 8) {
-                Button("copy here") { onCopy(selected) }
+                Button("copy") { onCopy() }
                     .brutalistControl(accent: Palette.offWhite, isSelected: false)
+                Button("paste") { onPaste() }
+                    .brutalistControl(accent: Palette.offWhite, isSelected: false)
+                    .disabled(!canPaste)
                 Button("clear") { onClear(selected) }
                     .brutalistControl(accent: Palette.offWhite, isSelected: false)
             }
