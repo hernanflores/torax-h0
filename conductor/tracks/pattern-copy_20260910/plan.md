@@ -39,11 +39,13 @@ con la verificación en dispositivo detrás.
   - [x] Es lo que el pegado entre Banks necesita y `copyingSelectedPattern(to:)`
         no puede expresar (FR22).
 - [x] Task: Implementar la escritura de un Pattern suelto — `68218df`
-- [~] Task: Retirar `copyingSelectedPattern(to:)` (FR23)
-  - [ ] Sin llamadores en `App` al terminar la Fase 3; aquí se decide si se retira
-        o se reescribe sobre `copyingPattern(from:to:)`.
-  - [ ] Adaptar `PatternCopyTests`, conservando lo que prueban.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Retirar `copyingSelectedPattern(to:)` (FR23) — `3512343`
+  - [x] Sin llamadores en `App` al terminar la Fase 3; aquí se decide si se retira
+        o se reescribe sobre `copyingPattern(from:to:)`. **Decidido: se reescribe
+        aquí como envoltorio y se retira en la Fase 3**, cuando `copy` y `paste`
+        sustituyan al llamador de `TransportModel`.
+  - [x] Adaptar `PatternCopyTests`, conservando lo que prueban.
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [ ] Suite de `Engine` en verde y cobertura ≥90%.
 
 ## FASE 2: LA REGLA DEL ACORDE, EN `Engine`
