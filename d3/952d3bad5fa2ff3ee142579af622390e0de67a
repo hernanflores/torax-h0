@@ -1,0 +1,21 @@
+Task: Enchufar la regla de la Fase 2 (Fase 4, pattern-copy_20260910)
+
+`PatternGrid` holds a `PatternChord` and feeds it `pressing`, `releasing` and
+`cancelling`, but **only while the transport runs** (FR15). Stopped, a touch
+still selects on the way up exactly as before: there the single tap loads the
+Pattern immediately, so the first finger's `down` would have changed the material
+before anyone could know the touch was a chord.
+
+`.select` calls `selectPattern(_:)`; `.copy` calls the model's
+`copyPattern(from:to:)`, which copies and loads the clipboard with the origin
+(FR19). Copying writes material and nothing else — it does not arm, does not move
+the selection, and touches neither the transport nor `pendingAdoption` (FR18), so
+what sounds does not notice.
+
+Files: App/BanksScreen.swift
+
+Verification: `xcodebuild build -scheme ToraxH0 -destination
+'generic/platform=iOS'` — BUILD SUCCEEDED. `swift test --package-path
+Packages/Engine` — 915 tests, 0 failures. Built and installed on the simulator,
+which **cannot verify this**: multitouch does not exist there (NFR6). The chord
+is checked on the iPad.
