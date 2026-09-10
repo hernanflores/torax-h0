@@ -165,6 +165,15 @@ final class TransportModel {
     /// Lo armado esperando a que el scheduler diga que lo adoptó (FR8).
     private let pendingAdoption = PendingAdoption()
 
+    /// Lo que el transporte publicó al arrancar o parar, esperando a que la
+    /// pantalla se entere.
+    ///
+    /// Vive en `MIDI` por lo mismo que `PendingAdoption`: decidir si hay algo
+    /// que aplicar tiene casos límite —dos transiciones en un cuadro, el
+    /// arranque en frío— y `App` no se mide (NFR4 del track
+    /// `hardware-screen-sync_20260908`).
+    private let transportWatch = TransportWatch()
+
     /// Cuántas negras faltan para que entre el Pattern armado, o `nil` si no hay
     /// ninguno esperando.
     var beatsUntilPatternChange: Int? {
@@ -243,6 +252,43 @@ final class TransportModel {
         pattern = adoption.pattern
         controlInput.adopt(adoption.pattern)
         autosave.changedHeader(project)
+    }
+
+    /// Refleja el arranque o la parada que el transporte publicó, si la hay
+    /// (FR6, FR7, FR8).
+    ///
+    /// **Es el arreglo del defecto.** `isPlaying` era una copia que solo
+    /// escribían `play()` y `stop()` de la app, así que un Start o un Stop del
+    /// maestro no la movía: la secuencia sonaba por orden del hardware y el
+    /// botón seguía enseñando *play*. Medido en dispositivo el 2026-09-09, y en
+    /// los dos sentidos — un Stop del maestro dejaba la copia en `true`.
+    ///
+    /// **Es un poll y no un callback** (NFR1), como la adopción: el hilo de
+    /// recepción de CoreMIDI solo publica una palabra atómica, y llamar hacia el
+    /// modelo desde ahí sería trabajo en el camino de tiempo real. La decisión
+    /// vive en `TransportWatch`, en `MIDI`, donde hay tests; aquí queda una
+    /// llamada y una asignación.
+    ///
+    /// **Se invalida además el reloj.** `clockStatus` y la marca `EXT`/`INT`
+    /// leen `clockRevision`, y una transición del maestro cambia lo que dicen.
+    /// Son cuatro incrementos en una sesión de tres minutos —contados el
+    /// 2026-09-09—, no una cadencia.
+    ///
+    /// **Lo que suena es exacto; esto puede llegar hasta un cuadro después**
+    /// (FR11), y nadie lo oye.
+    ///
+    /// Sin nada que aplicar cuesta dos lecturas atómicas y una comparación de
+    /// enteros, que es lo que pasa en casi todos los cuadros (FR7).
+    func applyTransportState() {
+        guard let transport else { return }
+        guard
+            let sounding = transportWatch.changed(
+                generation: transport.transportGeneration,
+                isSounding: transport.isSounding)
+        else { return }
+
+        isPlaying = sounding
+        clockRevision &+= 1
     }
 
     /// Elige otro Bank: su Pattern seleccionado y su tempo (FR11).
