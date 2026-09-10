@@ -148,23 +148,31 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
 
 ## FASE 4: DISPOSITIVO Y CIERRE — **requiere iPad y BeatStep Pro**
 
-- [ ] Task: Verificación en iPad con BeatStep Pro (NFR6)
-  - [ ] **Los dos síntomas reportados, primero**: Start del BeatStep deja el
+- [x] Task: Verificación en iPad con BeatStep Pro (NFR6) `eb993ff`
+  - [x] **Los dos síntomas reportados, primero**: Start del BeatStep deja el
         botón en *stop* y pulsarlo **para** (FR8); el tempo del maestro llega a
-        la barra (FR9).
-  - [ ] Stop del BeatStep, corte de reloj y recuperación: `clockStatus` y la
+        la barra (FR9). Los dos, correctos.
+  - [x] Stop del BeatStep, corte de reloj y recuperación: `clockStatus` y la
         marca `EXT`/`INT` los siguen (FR10).
-  - [ ] Play y Stop desde la app, con reloj interno y con externo: sin regresión.
-  - [ ] **Contar otra vez, con el arreglo puesto** (criterio 6): en un minuto a
-        120 bpm el contador se mueve tantas veces como transiciones hubo. El
-        número va a la git note.
-  - [ ] Comprobar que el hilo principal no se satura: es el fallo del tercer
-        intento y se mira con instrumentación, no de oído.
-  - [ ] Escribir `device-verification.md` con lo que se probó, los números y lo
-        que falló.
-- [ ] Task: Cobertura y suite completa
-  - [ ] `MIDI` ≥80% medida en un proceso e ignorando `Engine/Sources`, como dice
-        `workflow.md`.
+  - [x] **Y el anillo** (FR8b, no estaba reportado): con un Start del maestro el
+        playhead vuelve a moverse.
+  - [x] Play y Stop desde la app, con reloj interno y con externo: sin regresión.
+        También mute/desmute sonando y la selección de Pattern sonando y parada.
+  - [x] **Contado otra vez, con el arreglo puesto** (criterio 6): **4520 ticks en
+        90 s a 125 bpm movieron el contador cero veces**; 1 transición en toda la
+        ventana. El número está en la git note y en `device-verification.md`.
+  - [x] Comprobado que el hilo principal no se satura: `ToraxH0App` sigue con
+        **2** `.task` (criterio 7), y los knobs del BeatStep responden igual de
+        fluido con la secuencia sonando.
+  - [x] Escrito `device-verification.md` con lo que se probó, los números y los
+        límites que quedan.
+  - [x] **Instrumentación retirada.** El diff neto del track vuelve a ser solo el
+        arreglo.
+- [x] Task: Cobertura y suite completa `eb993ff`
+  - [x] `MIDI` **91,74%** de líneas, medida en un proceso e ignorando
+        `Engine/Sources` como dice `workflow.md` (umbral ≥80%).
+        `TransportWatch.swift` al 100%. Suites: `MIDI` 21 (1 omitido) + 875,
+        `Engine` 888, cero fallos.
 - [ ] Task: Pull Request
   - [ ] Rama `fix/hardware-screen-sync`, PR contra `main`. Cuerpo corto, con los
         números del conteo.
