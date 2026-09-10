@@ -146,13 +146,14 @@ con la verificación en dispositivo detrás.
 
 ## FASE 6: DISPOSITIVO Y CIERRE
 
-- [~] Task: Verificación en dispositivo (NFR6)
-  - [ ] **Parada el 2026-09-10 por lo que encontró.** Ver *FASE 7*; se retoma con
+- [x] Task: Verificación en dispositivo (NFR6) — `cf16e51`
+  - [x] **Parada el 2026-09-10 por lo que encontró.** Ver *FASE 7*; retomada con
         las correcciones dentro.
-  - [ ] Los trece criterios de aceptación del `spec.md`, con el iPad delante.
-  - [ ] Incluye pegar encima del que suena sin que el audio se corte.
-  - [ ] Escribir `device-verification.md` con lo observado, no con lo esperado.
-- [ ] Task: Cobertura y suite completa
+  - [x] Los trece criterios de aceptación del `spec.md`, con el iPad delante.
+        **El 8 falló** y arrastró al 5; los dos cerrados tras la Fase 7.
+  - [x] Incluye pegar encima del que suena sin que el audio se corte.
+  - [x] Escribir `device-verification.md` con lo observado, no con lo esperado.
+- [~] Task: Cobertura y suite completa
   - [ ] `Engine` ≥90%. `MIDI` no debería moverse; comprobarlo.
   - [ ] `MIDI` se corre con la partición de CI, por el flake conocido de
         `VirtualLoopbackTests`.
