@@ -1,0 +1,28 @@
+Tarea 'Cerrar el defecto en el registro' de la Fase 4 del track
+hardware-screen-sync_20260908.
+
+QUÉ CAMBIA
+- conductor/tracks.md: el track pasa a [x] con lo verificado en dispositivo.
+- El index.md del track pasa a Status: complete.
+- App/TransportModel.swift: la nota de followsExternalClock que declaraba este
+  límite desde el 2026-09-06 se reescribe como resuelto, diciendo qué lo resuelve
+  y —lo que importa— que el aviso no sale del hilo de recepción, que era lo que
+  aquel límite temía y lo que hundió a los tres intentos revertidos.
+- spec.md gana 'Lo que se corrigió al implementar' con las tres desviaciones
+  fechadas, y dos límites conocidos nuevos.
+
+LAS TRES DESVIACIONES, para que el spec se pueda comparar con lo que pasó
+1. El segundo síntoma ya estaba resuelto por un TimelineView existente. Se supo
+   preguntando, no midiendo, y se enmendó el plan antes de escribir código.
+2. El defecto era simétrico: la copia tampoco se enteraba de un Stop del maestro.
+   Se encontró contando en la Fase 1.
+3. Tercer síntoma no reportado: el anillo del playhead cuelga de la misma copia.
+   Entró como FR8b.
+
+La forma del arreglo no cambió: es la de control-input-adoption_20260908.
+Lo que se ganó de más es NFR2, resuelto eliminando la lectura en vez de dejarla
+escrita, y adelantado a la Fase 2.
+
+VERIFICACIÓN
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
