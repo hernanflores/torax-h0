@@ -125,7 +125,7 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
         está sin lector.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: LA APP LO LEE, EN EL `.task` QUE YA EXISTE
+## FASE 3: LA APP LO LEE, EN EL `.task` QUE YA EXISTE [checkpoint: 0af6b6d]
 
 - [x] Task: El modelo invalida cuando el hardware cambió algo (FR6, FR7) `0af6b6d`
   - [x] Tests (Red): con el contador movido, `TransportWatch` reporta y el modelo
@@ -144,7 +144,7 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
       atómico. Implementar la comparación añadiría una invalidación del modelo
       entero dos veces por segundo para algo que ya funciona con un repintado
       local de una etiqueta. FR4 y FR9 pasan a verificarse en la Fase 4.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: DISPOSITIVO Y CIERRE — **requiere iPad y BeatStep Pro**
 
