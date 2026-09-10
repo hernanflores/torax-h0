@@ -1,0 +1,23 @@
+Task: Retirar `copyingSelectedPattern(to:)` (FR23) (Fase 1, pattern-copy_20260910)
+
+The decision the plan left open: rewrite now, retire in Fase 3. It still has one
+caller — App/TransportModel.swift:322, which is the defective `copy here` path —
+so deleting it here would break the build for two phases. It is now a one-line
+wrapper on `copyingPattern(from:to:)`, with a doc note saying it is on its way
+out and why.
+
+`PatternCopyTests` is kept as it stands and still passes; a comment above its
+Project section records that what it proves also lives in
+`PatternCopyWithOriginTests`, so Fase 3 can delete both the method and those
+cases without losing coverage.
+
+Files:
+- Packages/Engine/Sources/Engine/Project.swift
+- Packages/Engine/Tests/EngineTests/PatternCopyTests.swift
+
+Verification: `swift test --package-path Packages/Engine` — 899 tests, 0
+failures.
+
+Why: an implicit origin is the defect itself. Collapsing the old entry point
+onto the explicit one means there is a single copy rule in the engine while the
+screen catches up.
