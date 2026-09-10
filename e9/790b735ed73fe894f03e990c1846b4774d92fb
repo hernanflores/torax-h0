@@ -34,3 +34,33 @@ Packages/Engine/Tests/EngineTests/PatternCopyTests.swift
 Verification: `swift test --package-path Packages/Engine` — 915 tests, 0
 failures (two cases fewer: the retired method's). `xcodebuild build -scheme
 ToraxH0 -destination 'generic/platform=iOS'` — BUILD SUCCEEDED.
+
+---
+
+Phase Verification & Checkpoint — FASE 3: PORTAPAPELES, `copy` Y `paste`
+
+Automated tests:
+  swift test --package-path Packages/Engine --enable-code-coverage
+  → 915 tests, 0 failures (two fewer: the retired method's cases)
+  Coverage: Engine 98.70% of lines, PatternClipboard.swift 100% — threshold ≥90%.
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → BUILD SUCCEEDED
+  Also built, installed and launched on the iPad Pro 11-inch simulator; the app
+  runs. The simulator takes no taps from the command line, so the grid itself was
+  checked by the user.
+
+Manual verification, all six steps confirmed by the user:
+  1. banks tab, transport stopped.
+  2. Three buttons under the grid — copy, paste, clear — with paste disabled
+     while the clipboard is empty (FR4).
+  3. Slot 01 selected, copy pressed, paste becomes enabled.
+  4. **The original defect check**: slot 09 (empty) selected, paste pressed, and
+     09 turns `ready`. This is what `copy here` never did.
+  5. Across Banks: copied in Bank 1, switched to Bank 5, pasted into an empty
+     slot, and the slot fills. This is what the clipboard adds and the chord
+     cannot do.
+  6. `clear` unchanged, as the spec's Out of Scope asks.
+
+User confirmation: "1. OK 2. OK 3. OK 4. OK 5. OK 6. OK".
+
+The reported defect is closed here. Fases 4 and 5 add the chord and the visual
+signals; if they never existed, what is delivered works and nothing is half done.
