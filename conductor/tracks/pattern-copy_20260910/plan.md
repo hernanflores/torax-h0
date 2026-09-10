@@ -104,7 +104,7 @@ con la verificación en dispositivo detrás.
   - [x] Y entre Banks, que es lo que el portapapeles añade. **Verificado del
         Bank 1 al Bank 5.**
 
-## FASE 4: LA CAPA DE TOQUES — el riesgo del track
+## FASE 4: LA CAPA DE TOQUES — el riesgo del track [checkpoint: d3952d3]
 
 - [x] Task: Resolver los toques de la rejilla con `UIViewRepresentable` — `32f2849`
   - [x] `touchesBegan/Ended/Cancelled` sobre la rejilla entera; punto → índice de
@@ -120,14 +120,15 @@ con la verificación en dispositivo detrás.
         portapapeles** (FR19).
   - [x] El acorde no arma, no mueve selección, no toca transporte ni
         `pendingAdoption` (FR18).
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
-  - [ ] En iPad, con el transporte corriendo: el acorde copia y **sigue sonando
-        el mismo Pattern**, en los dos órdenes de levantada.
-  - [ ] Un toque sencillo sigue armando, con su cuenta atrás.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] En iPad, con el transporte corriendo: el acorde copia y **sigue sonando
+        el mismo Pattern**, en los dos órdenes de levantada. **Verificado.**
+  - [x] Un toque sencillo sigue armando, con su cuenta atrás. **Verificado**, y
+        también que el acorde no arma nada.
 
 ## FASE 5: LO QUE SE VE
 
-- [ ] Task: Marca de la celda de origen (FR12)
+- [~] Task: Marca de la celda de origen (FR12)
   - [ ] Visible desde `copy` hasta que el portapapeles se sustituye.
   - [ ] Solo en el Bank de origen; en otro Bank no se dibuja nada.
   - [ ] Distinguible de `playing`, `queued` y del seleccionado, que ya se reparten
