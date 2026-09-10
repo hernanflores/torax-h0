@@ -1,0 +1,16 @@
+Task: Tests de la máquina de estados del acorde (FR16, FR17) (Fase 2, pattern-copy_20260910)
+
+Red phase. Twelve cases for `PatternChord`: a lone down has no effect yet and
+selects on the way up (FR20), the second down copies, either release order
+yields nothing (FR17), a third down is ignored, two fingers on the same slot do
+not copy onto themselves, the next gesture starts fresh once every finger is up,
+a cancelled touch does not select (FR21) and leaves the machine clean, releasing
+an untouched slot does nothing, and the chord works in either direction.
+
+Files: Packages/Engine/Tests/EngineTests/PatternChordTests.swift (new)
+
+Why: the rule decides something, so it belongs where there are tests — `App` is
+not measured (NFR1, NFR2). Same move `PatternSlotState` made on 2026-09-07. The
+chord is consumed on the second `down` rather than on a release, which is what
+makes the release order irrelevant: in live use nobody can be asked to lift
+fingers in a particular order.
