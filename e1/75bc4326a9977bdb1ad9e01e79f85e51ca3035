@@ -1,0 +1,25 @@
+Task: Implementar el valor de la regla (Fase 2, pattern-copy_20260910)
+
+Green phase. `PatternChord` takes `pressing(_:)`, `releasing(_:)` and
+`cancelling(_:)` and answers `.none`, `.select(Int)` or `.copy(from:to:)`. It
+keeps the fingers that are down in press order — the first is the copy origin —
+plus one `spent` flag covering both ways a gesture can run out: it copied, or it
+was cancelled. Neither selects on the way up.
+
+The machine resets whenever the last finger lifts, whatever spent it. That is
+the one thing the first attempt got wrong: it only reset on a selecting release,
+so after a chord the flag survived into the next gesture and the following lone
+tap selected nothing. `testTheNextGestureStartsFresh` caught it.
+
+No `UIKit`, no `SwiftUI`, no stdlib-external import — `DependencyBoundaryTests`
+still passes. It validates no indices either: the slot range belongs to `Bank`.
+
+Files: Packages/Engine/Sources/Engine/PatternChord.swift (new)
+
+Verification: `swift test --package-path Packages/Engine --enable-code-coverage`
+— 911 tests, 0 failures. PatternChord.swift at 100% of lines; Engine total
+98.70%.
+
+Why: consuming the chord on the second `down` is what makes the release order
+irrelevant (FR17), and a live gesture cannot ask the player to lift fingers in
+order.
