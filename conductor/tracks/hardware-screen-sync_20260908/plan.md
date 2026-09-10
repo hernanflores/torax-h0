@@ -96,7 +96,7 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
         `scheduler` desde el hilo de recepción sin lector concurrente en el hilo
         principal. Se anota en el `spec.md` al cerrar, con su ruta, y no se
         arregla de paso — que es lo que este defecto enseñó.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: EL TRANSPORTE PUBLICA SU ESTADO [checkpoint: 6317238]
 
@@ -146,7 +146,7 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
       local de una etiqueta. FR4 y FR9 pasan a verificarse en la Fase 4.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 4: DISPOSITIVO Y CIERRE — **requiere iPad y BeatStep Pro**
+## FASE 4: DISPOSITIVO Y CIERRE — **requiere iPad y BeatStep Pro** [checkpoint: eb993ff]
 
 - [x] Task: Verificación en iPad con BeatStep Pro (NFR6) `eb993ff`
   - [x] **Los dos síntomas reportados, primero**: Start del BeatStep deja el
@@ -173,9 +173,9 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
         `Engine/Sources` como dice `workflow.md` (umbral ≥80%).
         `TransportWatch.swift` al 100%. Suites: `MIDI` 21 (1 omitido) + 875,
         `Engine` 888, cero fallos.
-- [ ] Task: Pull Request
-  - [ ] Rama `fix/hardware-screen-sync`, PR contra `main`. Cuerpo corto, con los
-        números del conteo.
+- [x] Task: Pull Request `08da05c`
+  - [x] Rama `fix/hardware-screen-sync`, **PR #51 mergeado en `main`** el
+        2026-09-10, con los quince commits del track.
 - [x] Task: Cerrar el defecto en el registro `210148a`
   - [x] Marcado en `tracks.md` con lo que se verificó en dispositivo, y el
         `index.md` del track a `complete`.
@@ -184,4 +184,4 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
         aquel límite temía.
   - [x] Anotado en el `spec.md`, con fecha, lo que se corrigió al implementar:
         las tres desviaciones y los dos límites conocidos nuevos.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
