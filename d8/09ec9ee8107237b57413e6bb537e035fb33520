@@ -23,3 +23,24 @@ Verification: `swift test --package-path Packages/Engine` — 921 tests, 0
 failures. `xcodebuild build -scheme ToraxH0 -destination
 'generic/platform=iOS'` — BUILD SUCCEEDED. The behaviour itself is checked on
 the iPad, which is where it was found.
+
+---
+
+Phase Verification & Checkpoint — FASE 7: CORRECCIONES DE LA VERIFICACIÓN EN DISPOSITIVO
+
+Automated: swift test --package-path Packages/Engine --enable-code-coverage →
+921 tests, 0 failures. PatternPasteRefresh.swift 100% of lines; Engine total
+98.70%. xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' →
+BUILD SUCCEEDED.
+
+Manual verification on the iPad, all four steps confirmed:
+  1. Running, slot 09 armed, paste pressed — **what was pasted is what sounds**
+     at the bar boundary, not what 09 held when it was armed.
+  2. Turning a knob right after keeps the pasted material. The first turn used to
+     erase it.
+  3. Stopped, paste into another slot and the `track` screen shows the pasted
+     material; a knob turn does not lose it either.
+  4. Acceptance criterion 9, still outstanding until now: running with nothing
+     armed, pasting over what sounds does not cut the audio.
+
+User confirmation: "1, 2, 3 y 4 ok".
