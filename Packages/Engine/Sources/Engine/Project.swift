@@ -172,6 +172,20 @@ public struct Project: Equatable, Sendable {
         copy(controlNumbers: .some(numbers))
     }
 
+    /// El Project con ese Pattern en ese hueco del **Bank vigente**, y los otros
+    /// quince intactos.
+    ///
+    /// **El material entra como valor, no como índice.** Es lo que el pegado
+    /// entre Banks necesita (FR22): el Pattern del portapapeles puede venir de
+    /// otro Banco, donde el hueco 3 contiene otra cosa, así que no hay origen
+    /// que nombrar. Sustituye lo que hubiera, sin mezcla. Fuera de rango
+    /// devuelve el Project tal cual.
+    public func replacing(_ pattern: Pattern, at index: Int) -> Project {
+        guard let bank = bank(at: selectedBank) else { return self }
+        guard (0..<Bank.patternCount).contains(index) else { return self }
+        return replacing(bank.replacing(pattern, at: index), at: selectedBank)
+    }
+
     /// El Project con el Pattern de `origin` copiado en `destination`, ambos
     /// dentro del **Bank vigente**.
     ///
