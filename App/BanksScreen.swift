@@ -43,8 +43,10 @@ struct BanksScreen: View {
                 beatsUntilChange: model.beatsUntilPatternChange,
                 onSelect: model.selectPattern,
                 canPaste: model.canPaste,
+                isRunning: model.isPlaying,
                 onCopy: model.copyPattern,
                 onPaste: model.pastePattern,
+                onChordCopy: model.copyPattern(from:to:),
                 onClear: model.clearPattern
             )
 
@@ -146,8 +148,12 @@ struct PatternGrid: View {
     /// Si hay algo en el portapapeles. Vacío, `paste` no se puede pulsar (FR4).
     let canPaste: Bool
 
+    /// Si el transporte corre. **El acorde solo actúa corriendo** (FR15).
+    let isRunning: Bool
+
     let onCopy: () -> Void
     let onPaste: () -> Void
+    let onChordCopy: (Int, Int) -> Void
     let onClear: (Int) -> Void
 
     /// Dónde quedó dibujada cada celda. Lo dicen las celdas y lo lee la capa de
@@ -160,6 +166,10 @@ struct PatternGrid: View {
     /// `Button` daba gratis y su ausencia se leería como que la rejilla no
     /// responde.
     @State private var pressed: Set<Int> = []
+
+    /// La regla del acorde, que decide qué significa cada toque cuando el
+    /// transporte corre. Vive en `Engine`, donde hay tests.
+    @State private var chord = PatternChord()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -241,25 +251,57 @@ struct PatternGrid: View {
     /// las busca. Los dos tienen que hablar del mismo origen.
     private static let gridSpace = "patternGrid"
 
-    /// Un dedo baja sobre una celda: solo se resalta.
+    /// Un dedo baja sobre una celda.
+    ///
+    /// **Corriendo, el segundo dedo copia en el acto**, que es lo que hace que
+    /// el acorde responda ya y que el orden de levantada dé igual.
     ///
     /// **Parado no hay acorde** (FR15): el toque sencillo carga el Pattern de
     /// inmediato, así que el `down` del primer dedo ya habría cambiado el
-    /// material antes de saber si era un acorde.
+    /// material antes de saber si el toque era un acorde. Ahí solo se resalta.
     private func down(_ index: Int) {
         pressed.insert(index)
+        guard isRunning else { return }
+        apply(chord.pressing(index))
     }
 
     /// Un dedo se levanta sobre su celda: selecciona, que es donde un `Button`
     /// ya lo resolvía (FR20).
+    ///
+    /// Corriendo, la regla decide: si el toque fue parte de un acorde, no
+    /// selecciona nada y **sigue sonando lo que sonaba** (FR17, FR18).
     private func up(_ index: Int) {
         pressed.remove(index)
-        onSelect(index)
+
+        guard isRunning else {
+            onSelect(index)
+            return
+        }
+        apply(chord.releasing(index))
     }
 
     /// Un toque que se levanta fuera de su celda no selecciona (FR21).
     private func cancel(_ index: Int) {
         pressed.remove(index)
+        guard isRunning else { return }
+        apply(chord.cancelling(index))
+    }
+
+    /// Hace lo que la regla decidió.
+    ///
+    /// **El acorde no arma, no mueve la selección, no toca el transporte ni
+    /// `pendingAdoption`** (FR18): copiar escribe material y nada más. Y carga
+    /// el portapapeles con el origen (FR19), así que el backup hecho con dos
+    /// dedos se puede llevar luego a otro Bank con `paste`.
+    private func apply(_ effect: PatternChord.Effect) {
+        switch effect {
+        case .none:
+            break
+        case .select(let index):
+            onSelect(index)
+        case .copy(let origin, let destination):
+            onChordCopy(origin, destination)
+        }
     }
 
     private func cell(_ index: Int) -> some View {
