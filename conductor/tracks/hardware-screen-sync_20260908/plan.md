@@ -176,10 +176,12 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
 - [ ] Task: Pull Request
   - [ ] Rama `fix/hardware-screen-sync`, PR contra `main`. Cuerpo corto, con los
         números del conteo.
-- [ ] Task: Cerrar el defecto en el registro
-  - [ ] Marcarlo en `tracks.md` con lo que se verificó en dispositivo.
-  - [ ] Quitar de `TransportModel.followsExternalClock` la nota que declara este
-        límite, o reescribirla con lo que quede.
-  - [ ] Anotar en el `spec.md` lo que se haya corregido al implementar, con
-        fecha.
+- [x] Task: Cerrar el defecto en el registro `210148a`
+  - [x] Marcado en `tracks.md` con lo que se verificó en dispositivo, y el
+        `index.md` del track a `complete`.
+  - [x] Reescrita la nota de `TransportModel.followsExternalClock`: dice qué lo
+        resuelve y que **el aviso no sale del hilo de recepción**, que era lo que
+        aquel límite temía.
+  - [x] Anotado en el `spec.md`, con fecha, lo que se corrigió al implementar:
+        las tres desviaciones y los dos límites conocidos nuevos.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
