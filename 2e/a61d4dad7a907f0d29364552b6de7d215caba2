@@ -1,0 +1,15 @@
+Task: Tests de `Project.copyingPattern(from:to:)` (Fase 1, pattern-copy_20260910)
+
+Red phase. Adds PatternCopyWithOriginTests with the six cases the plan lists:
+copying from a slot other than the selected one, copying inside the selected
+Bank, replacing existing material, out-of-range on either end returning the
+Project unchanged (FR24), `from == to` changing nothing, and copying moving
+neither the selection nor the session settings.
+
+Files: Packages/Engine/Tests/EngineTests/PatternCopyWithOriginTests.swift (new)
+
+Why: the reported defect is an implicit origin. `copyingSelectedPattern(to:)`
+takes the selected slot as origin and BanksScreen hands it that same slot as
+destination, so the cell copies onto itself. With both ends explicit the
+mistake stops being expressible. The tests fail as expected — `Project` has no
+member `copyingPattern` yet.
