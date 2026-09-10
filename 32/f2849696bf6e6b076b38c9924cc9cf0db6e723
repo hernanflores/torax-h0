@@ -1,0 +1,36 @@
+Task: Resolver los toques de la rejilla con `UIViewRepresentable` (Fase 4, pattern-copy_20260910)
+
+The grid stops being sixteen Buttons and becomes sixteen drawn cells with one
+touch layer over them. `PatternTouchLayer` wraps a `TouchGridView` with
+`isMultipleTouchEnabled`, and `touchesBegan/Ended/Cancelled` map each touch to a
+slot index.
+
+- A touch belongs to the cell it went down on. Lifting somewhere else cancels it
+  rather than moving it — what a Button already did, written out (FR21).
+- Origins are keyed by `UITouch` identity, not by cell, because two fingers can
+  land on the same cell and UIKit guarantees the touch object lives for the whole
+  touch.
+- Cell frames are measured, not derived: each cell reports its own frame through
+  a `PatternCellFrames` preference key in a named coordinate space. Deriving the
+  grid from four columns and eight points of spacing would work today and break
+  silently the day the spacing changes.
+- The pressed highlight is drawn by hand — `Brutalist.pressedOpacity`, new —
+  because `.buttonStyle(.plain)` gave it for free and its absence reads as a grid
+  that does not respond.
+- Accessibility is kept explicitly: each cell is still an element with the button
+  trait, the selected one carries `.isSelected`, and an accessibility action
+  selects it.
+
+Behaviour is unchanged in this commit: a touch still selects on the way up. The
+chord is wired in the next task.
+
+Files: App/PatternTouchLayer.swift (new), App/BanksScreen.swift,
+App/Brutalist.swift
+
+Verification: `xcodebuild build -scheme ToraxH0 -destination
+'generic/platform=iOS'` — BUILD SUCCEEDED. Also built and installed on the iPad
+Pro 11-inch simulator.
+
+Why: two sibling SwiftUI Buttons never see simultaneous touches — each claims
+its own and the second finger never arrives — so the chord cannot be expressed
+with sixteen buttons. This is the risk the plan put in its own phase.
