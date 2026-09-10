@@ -1,0 +1,21 @@
+Task: Verificación en dispositivo (NFR6) (Fase 6, pattern-copy_20260910)
+
+`device-verification.md` records the thirteen acceptance criteria against the
+iPad with the BeatStep Pro, written from what was observed — which is why it
+contains a failure.
+
+Criterion 8 failed: the copy happened but the pasted material did not sound
+until the Pattern was triggered by hand again. Investigating it turned up a
+second, worse half — the live copy of the Pattern kept the previous material, so
+the first knob turn wrote it back over the paste — and showed criterion 5 had
+been passed on incomplete evidence: only the grid was checked, and the grid reads
+the Bank, which was telling the truth. The `track` screen was not.
+
+Fase 7 fixed both halves and the four re-checks are recorded too. The document
+also states what was not measured (no jitter, NFR4) and the method lesson: no
+test pass would have found this — the live copy lives in `App`, which is not
+measured, and the missing rule did not exist in `Engine` yet to be tested. What
+found it was one concrete case with the iPad in front; what closed it was moving
+the rule down to `Engine` so it is tested from now on.
+
+Files: conductor/tracks/pattern-copy_20260910/device-verification.md (new)
