@@ -99,6 +99,24 @@ acorde no puede cruzar Banks —los dos dedos caen en la misma rejilla— y sin
   no cancela una adopción pendiente**. Escribe material y nada más.
 - **FR11.** Pegar dispara el autosave del Bank vigente, como ya hacen copiar y
   borrar.
+- **FR11b.** **Pegar refresca las dos copias que el `Project` no gobierna.**
+  Añadido el 2026-09-10, después de que la verificación en dispositivo
+  encontrara que sin esto el pegado no sonaba y se perdía:
+  - Si el destino es el **hueco cargado**, la copia viva del Pattern y la entrada
+    de control adoptan lo pegado. Esa copia es la que la pantalla `track` edita y
+    la que se vuelca al Bank en cada edición, así que sin refrescarla **el primer
+    giro de knob escribe el material anterior encima de lo pegado**, que se
+    pierde sin aviso.
+  - Si el destino es el **hueco armado**, se vuelve a armar **ese mismo hueco**
+    con el material nuevo. El transporte recibió su snapshot al armar, antes del
+    pegado, así que sin rearmar entra el material viejo en el límite de compás —
+    que fue el síntoma observado: lo pegado no sonaba hasta volver a disparar el
+    Pattern a mano.
+
+  **No contradice FR10**, que prohíbe armar un hueco *distinto* y mover la
+  selección. Refrescar una copia no es ninguna de las dos, y rearmar el mismo
+  hueco no cambia a dónde va el transporte, solo con qué. El audio sigue sin
+  cortarse (FR9).
 
 ### Lo que se ve
 
@@ -191,6 +209,8 @@ acorde no puede cruzar Banks —los dos dedos caen en la misma rejilla— y sin
 7. Con el portapapeles vacío, `paste` está deshabilitado.
 8. Con el transporte corriendo, tocar el hueco 9 —que queda armado— y pulsar
    `paste` escribe en el 9, y lo que suena no cambia hasta el límite de compás.
+   **Y en ese límite entra lo pegado, no el material que el 9 tenía al armarse**
+   (FR11b, añadido el 2026-09-10 al observarlo fallar).
 9. Pegar encima del Pattern que suena no corta el audio.
 10. La celda de origen lleva su marca mientras se mira su Bank, y no se dibuja
     ninguna marca en otro Bank.
@@ -213,6 +233,27 @@ acorde no puede cruzar Banks —los dos dedos caen en la misma rejilla— y sin
 - **Arrastrar y soltar** un Pattern de un hueco a otro.
 - **El acorde entre Banks.** Los dos dedos caen en la misma rejilla; para cruzar
   Banks está `paste`.
+
+## Lo que enseñó la verificación en dispositivo
+
+> **Nota del 2026-09-10.** El criterio 8 falló con el iPad delante: la copia
+> ocurría, pero **el material pegado no sonaba** hasta volver a disparar el
+> Pattern a mano. Investigándolo apareció una segunda mitad que no se ve y que es
+> peor: al entrar el compás, la copia viva quedaba con el material anterior y
+> **el primer giro de knob lo escribía encima de lo pegado**. Y no era solo el
+> caso armado — parado, pegar en el hueco seleccionado tenía la misma pérdida; el
+> criterio 5 pasó porque solo se miró la rejilla, que lee el Bank.
+>
+> **Este spec no lo había previsto.** Describía el pegado como una escritura en
+> el `Project` y daba por hecho que el resto se enteraba, cuando `TransportModel`
+> mantiene dos copias que el `Project` no gobierna. FR11b es la corrección, y la
+> decisión de arreglar las dos mitades se tomó con el usuario ese mismo día.
+>
+> **El método es la lección que ya dejó `hardware-screen-sync_20260908`** y que
+> este track citaba en su índice: lo que vive en el hardware se verifica en el
+> hardware. Aquí no era el multitouch sino el transporte sonando, y ninguna
+> pasada de tests lo habría dicho — `App` no se mide, y la regla que faltaba no
+> existía todavía en `Engine` para poder probarla.
 
 ## Known Limitations
 
