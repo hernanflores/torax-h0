@@ -24,14 +24,14 @@ con la verificación en dispositivo detrás.
 
 ## FASE 1: EL MOTOR APRENDE UN ORIGEN
 
-- [ ] Task: Tests de `Project.copyingPattern(from:to:)`
-  - [ ] Copia con origen distinto del seleccionado, dentro del Bank vigente.
-  - [ ] Opera sobre el Bank seleccionado, no sobre el primero.
-  - [ ] Origen o destino fuera de rango devuelven el `Project` intacto.
-  - [ ] `from == to` devuelve el `Project` intacto — el caso que el defecto
+- [x] Task: Tests de `Project.copyingPattern(from:to:)` — `2ea61d4`
+  - [x] Copia con origen distinto del seleccionado, dentro del Bank vigente.
+  - [x] Opera sobre el Bank seleccionado, no sobre el primero.
+  - [x] Origen o destino fuera de rango devuelven el `Project` intacto.
+  - [x] `from == to` devuelve el `Project` intacto — el caso que el defecto
         disparaba, ahora escrito y esperado.
-  - [ ] No mueve la selección ni los ajustes de sesión.
-- [ ] Task: Implementar `Project.copyingPattern(from:to:)`
+  - [x] No mueve la selección ni los ajustes de sesión.
+- [~] Task: Implementar `Project.copyingPattern(from:to:)`
   - [ ] Sobre `Bank.copyingPattern(from:to:)`, que ya existe.
 - [ ] Task: Tests de escribir un Pattern suelto en un hueco
   - [ ] Un `Pattern` cualquiera entra en el hueco indicado del Bank vigente.
