@@ -88,4 +88,54 @@ final class PatternCopyWithOriginTests: XCTestCase {
         XCTAssertEqual(after.destinationName, project.destinationName)
         XCTAssertEqual(after.sourceName, project.sourceName)
     }
+
+    // MARK: - Escribir un Pattern suelto, que es lo que el pegado necesita
+
+    /// Un `Pattern` cualquiera entra en el hueco indicado del Bank vigente.
+    ///
+    /// **Es lo que `copyingSelectedPattern(to:)` no puede expresar** (FR22): el
+    /// material del portapapeles puede venir de otro Bank, donde el hueco 3
+    /// contiene otra cosa. El origen no es un índice, es un valor.
+    func testReplacingALoosePatternIntoASlotOfTheSelectedBank() {
+        let material = Pattern().replacing(
+            Cycle(shape: Shape(steps: Steps(12)!, pulses: Pulses(7)!)),
+            at: 0
+        )
+        let project = Project.initial.selectingBank(5).replacing(material, at: 3)
+
+        XCTAssertEqual(project.bank(at: 5)?.pattern(at: 3), material)
+    }
+
+    /// Escribir un Pattern no toca ninguno de los otros quince huecos ni los otros Banks.
+    func testReplacingLeavesEveryOtherSlotAndBankAlone() {
+        let project = Project.initial.replacing(Pattern(), at: 4)
+
+        XCTAssertEqual(project.bank(at: 0)?.pattern(at: 0), Pattern.initial)
+        XCTAssertEqual(project.bank(at: 1), Bank())
+    }
+
+    /// Escribir sobre un hueco con material lo sustituye, sin mezcla.
+    func testReplacingOverMaterialReplacesIt() {
+        let project = Project.initial.replacing(Pattern(), at: 0)
+        XCTAssertEqual(project.bank(at: 0)?.pattern(at: 0), Pattern())
+    }
+
+    /// Fuera de rango, el Project vuelve intacto (FR24).
+    func testReplacingAPatternOutsideTheRangeReturnsTheProjectUnchanged() {
+        let project = Project.initial
+
+        for index in [-1, Bank.patternCount, Int.max, Int.min] {
+            XCTAssertEqual(project.replacing(Pattern.initial, at: index), project, "hueco \(index)")
+        }
+    }
+
+    /// Escribir un Pattern no mueve la selección ni los ajustes de sesión.
+    func testReplacingAPatternMovesNeitherTheSelectionNorTheSessionSettings() {
+        let project = Project.initial.selectingPattern(3).withClockSource(.external)
+        let after = project.replacing(Pattern(), at: 7)
+
+        XCTAssertEqual(after.selectedBank, project.selectedBank)
+        XCTAssertEqual(after.selectedPattern, project.selectedPattern)
+        XCTAssertEqual(after.clockSource, project.clockSource)
+    }
 }
