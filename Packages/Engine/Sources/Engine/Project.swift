@@ -172,6 +172,23 @@ public struct Project: Equatable, Sendable {
         copy(controlNumbers: .some(numbers))
     }
 
+    /// El Project con el Pattern de `origin` copiado en `destination`, ambos
+    /// dentro del **Bank vigente**.
+    ///
+    /// **Las dos puntas son explícitas, y ese es el arreglo.** Con el origen
+    /// implícito —el hueco seleccionado— la pantalla, que solo conoce un índice,
+    /// acababa pasando ese mismo índice como destino: la celda se copiaba sobre
+    /// sí misma y no cambiaba nada. Pedir el origen hace que el error no se
+    /// pueda escribir.
+    ///
+    /// Copiar un hueco sobre sí mismo sigue sin cambiar nada, pero ahora es una
+    /// decisión y no un accidente. Fuera de rango, en cualquiera de las dos
+    /// puntas, devuelve el Project tal cual.
+    public func copyingPattern(from origin: Int, to destination: Int) -> Project {
+        guard let bank = bank(at: selectedBank) else { return self }
+        return replacing(bank.copyingPattern(from: origin, to: destination), at: selectedBank)
+    }
+
     /// El Project con el **Pattern vigente** copiado en otro hueco del **Bank
     /// vigente** (FR13).
     ///

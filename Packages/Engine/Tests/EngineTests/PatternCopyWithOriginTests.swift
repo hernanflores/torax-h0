@@ -22,7 +22,8 @@ final class PatternCopyWithOriginTests: XCTestCase {
         let project = Project.initial.selectingPattern(9).copyingPattern(from: 0, to: 4)
 
         XCTAssertEqual(project.bank(at: 0)?.pattern(at: 4), Pattern.initial)
-        XCTAssertEqual(project.bank(at: 0)?.pattern(at: 0), Pattern.initial, "el origen no se mueve")
+        XCTAssertEqual(
+            project.bank(at: 0)?.pattern(at: 0), Pattern.initial, "el origen no se mueve")
     }
 
     /// Opera sobre el Bank seleccionado, no sobre el primero.
