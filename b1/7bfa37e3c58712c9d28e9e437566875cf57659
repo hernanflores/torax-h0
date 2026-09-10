@@ -1,0 +1,16 @@
+Task: Tests de escribir un Pattern suelto en un hueco (Fase 1, pattern-copy_20260910)
+
+Red phase. Five cases for `Project.replacing(_ pattern: Pattern, at:)`: a loose
+Pattern lands in the named slot of the selected Bank, every other slot and Bank
+is left alone, existing material is replaced without mixing, out of range
+returns the Project unchanged (FR24), and neither the selection nor the session
+settings move.
+
+Files: Packages/Engine/Tests/EngineTests/PatternCopyWithOriginTests.swift
+
+Why: pasting across Banks needs an origin that is a value, not an index — the
+clipboard holds the Pattern itself, and slot 3 of another Bank contains
+something else entirely. `copyingSelectedPattern(to:)` cannot express that
+(FR22). The name is an overload of the existing `replacing(_:at:)` rather than a
+new verb, because `Bank` already writes a Pattern into a slot under that name
+and the quality gate asks for no new synonyms.
