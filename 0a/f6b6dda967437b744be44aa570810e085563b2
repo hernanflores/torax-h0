@@ -1,0 +1,53 @@
+Tarea 'El modelo invalida cuando el hardware cambió algo' (FR6, FR7) de la
+Fase 3 del track hardware-screen-sync_20260908.
+
+QUÉ CAMBIA
+TransportWatch, nuevo en MIDI: guarda el contador visto la última vez y devuelve
+Bool? — el estado en el que quedó el transporte si cambió, nil si no. Sigue el
+contador y no el flag, que es la razón de que FR1 pida un contador: un Start del
+maestro sobre algo que ya suena reinicia dejando el flag donde estaba, y mirar
+solo el flag no vería el cambio.
+
+En TransportModel, applyTransportState(): dos lecturas atómicas, la llamada al
+watch, y si hay algo, isPlaying = sounding y clockRevision &+= 1. Sin decisiones
+en App (NFR4). El incremento de clockRevision refresca clockStatus y la marca
+EXT/INT; son cuatro incrementos en tres minutos, no una cadencia.
+
+En ToraxH0App, una línea dentro del .task de 16 ms que ya existía. El número de
+.task sigue siendo 2, que es el criterio 7 del spec.
+
+TESTS (10, todos nuevos)
+TransportWatchTests cubre: sin movimiento no reporta; un segundo de cuadros
+quietos reporta una vez —el arranque en frío— y calla las otras 59; un
+transporte que ya sonaba al primer poll se reporta y uno recién nacido no;
+reporta el estado y no el contador, en los dos sentidos; reportar consume el
+cambio; dos transiciones en un cuadro reportan el estado final; un reinicio se
+reporta aunque el estado no cambie; y una sesión entera con los cuadros vacíos
+de por medio da exactamente [true, false, true].
+
+Un test se corrigió durante la tarea: comprobaba que un observador nuevo callara
+contra una generación 7, y el arranque en frío debe reportar. El fallo estaba en
+el test, no en el código. Otros dos tenían el mismo cuerpo y se fusionaron.
+
+VERIFICACIÓN
+  swift test --package-path Packages/MIDI --filter TransportWatchTests
+    → 10 tests, 0 fallos
+  MIDI, partición de CI: 21 (1 omitido) + 875 tests, 0 fallos
+  Engine: 888 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+  grep -c '.task {' App/ToraxH0App.swift → 2, el mismo número de antes
+
+FICHEROS
+Packages/MIDI/Sources/MIDI/TransportWatch.swift (nuevo)
+Packages/MIDI/Tests/MIDITests/TransportWatchTests.swift (nuevo)
+App/TransportModel.swift, App/ToraxH0App.swift
+
+POR QUÉ ASÍ
+Es la forma que control-input-adoption_20260908 ya había encontrado para la
+adopción, aplicada tal cual. No inventa un mecanismo nuevo, y eso es la mitad de
+por qué es defendible después de tres intentos revertidos.
+
+PENDIENTE
+Verificación en dispositivo (Fase 4), que es donde FR8, FR8b, FR9 y FR10 se
+comprueban de verdad. NFR6: en esta zona una captura no vale como prueba.
