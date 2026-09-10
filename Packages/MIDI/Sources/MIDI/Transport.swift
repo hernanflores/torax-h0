@@ -220,26 +220,6 @@ public final class Transport: @unchecked Sendable {
         /// lectura por ventana» sea una propiedad comprobable y no una
         /// intención escrita en un comentario.
         var handoffLoadCount: UInt64 { handoff.loadCount.value }
-
-        // MARK: - Diagnóstico de la Fase 1 de `hardware-screen-sync_20260908`
-        //
-        // **Temporal, y se quita al cerrar la fase.** Existe para contar en
-        // dispositivo lo que FR5 afirma: que el camino del tick no avisa a nadie
-        // y que las transiciones son las cuatro puertas y nada más. El
-        // precedente de tenerlo bajo `#if DEBUG` es `handoffLoadCount`, arriba.
-        //
-        // Son `AtomicCounter` y no enteros porque quien los incrementa es el
-        // hilo de recepción de CoreMIDI y quien los lee es el principal — la
-        // misma razón por la que existe el resto de los atómicos de esta clase.
-
-        private let diagnosticTicks = AtomicCounter(0)
-        private let diagnosticTransitions = AtomicCounter(0)
-
-        /// Ticks de reloj atendidos desde que existe el transporte.
-        public var diagnosticTickCount: UInt64 { diagnosticTicks.value }
-
-        /// Arranques y paradas efectivos, vengan de la app o del maestro.
-        public var diagnosticTransitionCount: UInt64 { diagnosticTransitions.value }
     #endif
 
     /// Último material publicado: los dieciséis Tracks.
@@ -471,9 +451,6 @@ public final class Transport: @unchecked Sendable {
             return true
 
         case .timingClock:
-            #if DEBUG
-                diagnosticTicks.increment()
-            #endif
             follow(tickAtHostTime: hostTime)
             return true
 
@@ -733,10 +710,6 @@ public final class Transport: @unchecked Sendable {
         // desde el hilo principal tiene que encontrarse un transporte que ya
         // suena, no uno a medio montar.
         publishTransportState(sounding: true)
-
-        #if DEBUG
-            diagnosticTransitions.increment()
-        #endif
     }
 
     /// Para el reloj y apaga lo que estuviera sonando.
@@ -803,10 +776,6 @@ public final class Transport: @unchecked Sendable {
         // **Después de la guarda**, que es lo que hace que parar lo ya parado no
         // cuente: sin transición no hay nada que la pantalla deba repintar.
         publishTransportState(sounding: false)
-
-        #if DEBUG
-            diagnosticTransitions.increment()
-        #endif
 
         // **Parar es apagar los doce.** El ámbito es lo único que distingue esto
         // de silenciar un Track al mutearlo: el procedimiento —`all notes off`
