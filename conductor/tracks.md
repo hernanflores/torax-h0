@@ -1072,6 +1072,38 @@ en cualquier momento.
 
   Dato acumulado por si sirve al diagnóstico: en la rebanada 5 apareció en 2 de 8 pasadas y **siempre con la misma firma** —las 4 pruebas de `VirtualLoopbackTests`, ningún otro test—. El fallo está localizado en la creación de endpoints virtuales, no es difuso.
 
+---
+
+- [ ] **Track: `copy here` de la rejilla de Patterns no hace nada**
+  *Link: [conductor/tracks/pattern-copy_20260910/index.md](./tracks/pattern-copy_20260910/index.md)*
+
+  **Planificado el 2026-09-10**, en seis fases. `BanksScreen.swift:179` llama
+  `onCopy(selected)` y eso acaba en `Project.copyingSelectedPattern(to:)`, que
+  copia el Pattern seleccionado al índice recibido: **origen y destino son el
+  mismo hueco**. El motor está bien y `PatternCopyTests` lo prueba con origen
+  distinto del destino; nadie probó el caso que la vista dispara.
+
+  **Entrega dos interacciones, separadas por el transporte.** Corriendo, un
+  **acorde de dos dedos** —mantener el origen, tocar el destino— copia en el acto
+  y sigue sonando lo que sonaba: el equivalente por Pattern de lo que `reload`
+  hace por Banco. Parado, `copy` y `paste` con un portapapeles que guarda el
+  Pattern entero, así que **se puede pegar en otro Bank**; `paste` también
+  funciona corriendo, porque el acorde no cruza Banks.
+
+  **Se permite pegar encima del que suena**, decidido con el usuario: el audio no
+  se corta porque el transporte no relee su snapshot hasta la próxima adopción.
+
+  **La Fase 3 cierra el defecto reportado**; las fases 4 y 5 añaden el acorde y
+  sus señales. **El riesgo está en la Fase 4**: dos `Button` hermanos de SwiftUI
+  no ven toques simultáneos, así que la rejilla resuelve los toques con
+  `UIViewRepresentable`, y eso solo se verifica en iPad.
+
+  **Fuera de alcance:** `clear`, deshacer un pegado —la vuelta atrás ya es el
+  punto de retorno del Banco—, persistir el portapapeles y copiar Banks enteros.
+
+  **Sin medición de jitter**: no mueve ningún instante ni toca el hilo del
+  scheduler.
+
 ## Archivados
 
 - [x] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay** — swing y Delay suenan; jitter recto máx 0,151 ms · σ 0,009–0,013 ms. **Cerrado con deuda: fase *Review Fixes* abierta**
