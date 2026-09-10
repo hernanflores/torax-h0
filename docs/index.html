@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Torax H-0 es un secuenciador MIDI algorítmico nativo para iPad." />
+    <title>Torax H-0 — algorithmic midi sequencer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23111211'/%3E%3Cpath d='M16 4l3 9 9 3-9 3-3 9-3-9-9-3 9-3z' fill='%239aab79'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="wordmark" href="#top" aria-label="Torax H-0, inicio"><span class="mark">✦</span> torax <span class="quiet">h-0</span></a>
+      <nav aria-label="Navegación principal">
+        <a href="#engine">engine</a>
+        <a href="#features">features</a>
+        <a href="#specs">specs</a>
+      </nav>
+      <a class="header-cta" href="https://github.com/hernanflores/torax-h0" target="_blank" rel="noreferrer">view on github <span>↗</span></a>
+    </header>
+
+    <main id="top">
+      <section class="hero section-wrap">
+        <div class="hero-copy">
+          <p class="kicker"><span class="live-dot"></span> native for ipad · coremidi</p>
+          <h1>patterns with<br /><i>room to move.</i></h1>
+          <p class="hero-text">Un secuenciador MIDI algorítmico para crear ritmo, tono y variación con las manos. Define las reglas. El motor encuentra el movimiento.</p>
+          <div class="hero-actions">
+            <a class="button button-accent" href="#features">explore torax <span>↓</span></a>
+            <a class="plain-link" href="https://github.com/hernanflores/torax-h0" target="_blank" rel="noreferrer">source code <span>↗</span></a>
+          </div>
+        </div>
+        <div class="instrument" aria-label="Visualización animada de un patrón circular">
+          <div class="instrument-note">12 tracks<br /><span>one living pattern</span></div>
+          <div class="ring ring-outer"></div>
+          <div class="ring ring-middle"></div>
+          <div class="ring ring-inner"></div>
+          <div class="ring-core"><span class="core-play"></span><small>play</small></div>
+          <div class="ring-label label-top">shape</div>
+          <div class="ring-label label-right">tonal</div>
+          <div class="ring-label label-bottom">groove</div>
+        </div>
+      </section>
+
+      <div class="ticker" aria-label="Características principales">
+        <div class="ticker-track"><span>algorithmic composition</span><b>✦</b><span>tactile control</span><b>✦</b><span>external midi</span><b>✦</b><span>algorithmic composition</span><b>✦</b><span>tactile control</span></div>
+      </div>
+
+      <section id="engine" class="section-wrap manifesto">
+        <div class="section-tag">[ 001 / the idea ]</div>
+        <div class="manifesto-grid">
+          <h2>El controlador<br /><em>es el instrumento.</em></h2>
+          <div class="manifesto-copy">
+            <p>Torax H-0 no genera audio ni te encierra en un piano-roll. Es el cerebro entre tus manos y tus máquinas: un motor que convierte reglas musicales en secuencias reproducibles, abiertas a la variación.</p>
+            <p class="dim">El iPad muestra el estado. El hardware hace la música. Gira un knob, toca un pad, escucha el siguiente step.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section-wrap feature-section">
+        <div class="section-tag">[ 002 / what it does ]</div>
+        <div class="feature-heading"><h2>Generative tools<br /><em>that stay yours.</em></h2><p>El material musical vive en capas. Cada capa añade expresión sin esconder la regla que la produce.</p></div>
+        <div class="feature-grid">
+          <article class="feature-card shape-card"><span class="feature-index">01 / shape</span><h3>Ritmo<br />euclidiano</h3><p>Construye una vuelta con <strong>Steps</strong>, <strong>Pulses</strong>, <strong>Rotate</strong> y <strong>Division</strong>. El anillo hace visible el pulso y la simetría.</p><div class="mini-meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+          <article class="feature-card tonal-card"><span class="feature-index">02 / tonal</span><h3>Pool tonal,<br />no melodía fija</h3><p>Elige <strong>Scale</strong>, <strong>Root</strong> y hasta ocho pitches. El motor selecciona dentro del material; la nota no está congelada por step.</p><div class="scale-dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+          <article class="feature-card groove-card"><span class="feature-index">03 / groove</span><h3>Movimiento<br />con intención</h3><p><strong>Velocity</strong>, <strong>Sustain</strong>, <strong>Probability</strong>, <strong>Timing</strong> y <strong>Delay</strong> convierten el patrón en interpretación.</p><div class="wave"><span></span><span></span><span></span><span></span><span></span><span></span></div></article>
+          <article class="feature-card cycles-card"><span class="feature-index">04 / development</span><h3>Ciclos que<br />evolucionan</h3><p>Hasta 16 <strong>Cycles</strong> por Track. Cada vuelta puede ser un snapshot distinto sin cambiar de Pattern.</p><div class="cycle-stack"><i>cycle 01</i><i>cycle 02</i><i>cycle 03</i></div></article>
+        </div>
+      </section>
+
+      <section class="section-wrap capabilities">
+        <div class="section-tag">[ 003 / live workflow ]</div>
+        <div class="capability-list">
+          <div class="capability-row"><span class="cap-number">01</span><div><h3>12 tracks polifónicos</h3><p>Selecciona, mutea o solea cada voz. Cada Track tiene su propio marco tonal, canal MIDI, ritmo y velocidad.</p></div><span class="arrow">↗</span></div>
+          <div class="capability-row"><span class="cap-number">02</span><div><h3>Patterns que entran a tiempo</h3><p>16 Banks con 16 Patterns cada uno. Cambia de sección durante la reproducción y entra en el próximo compás.</p></div><span class="arrow">↗</span></div>
+          <div class="capability-row"><span class="cap-number">03</span><div><h3>Note Repeater + modulation</h3><p>Ratchets de hasta 8 repeticiones y LFO sobre velocity: movimiento añadido sobre el ritmo, sin alterar su estructura.</p></div><span class="arrow">↗</span></div>
+          <div class="capability-row"><span class="cap-number">04</span><div><h3>Play it your way</h3><p>Preset para BeatStep Pro, MIDI Learn para otros controladores, reloj interno o sincronía desde un maestro MIDI externo.</p></div><span class="arrow">↗</span></div>
+        </div>
+      </section>
+
+      <section id="specs" class="section-wrap specs-section">
+        <div class="section-tag">[ 004 / under the hood ]</div>
+        <div class="specs-layout">
+          <div><h2>Built for<br /><em>the next step.</em></h2><p class="specs-lede">El camino de timing está separado de la interfaz. El scheduler calcula por adelantado y entrega eventos con timestamps futuros a CoreMIDI.</p></div>
+          <dl class="spec-list">
+            <div><dt>platform</dt><dd>iPadOS 17+</dd></div>
+            <div><dt>output</dt><dd>CoreMIDI · USB / Camera Kit</dd></div>
+            <div><dt>clock</dt><dd>internal or external MIDI</dd></div>
+            <div><dt>persistence</dt><dd>JSON · Autosave · Reload</dd></div>
+            <div><dt>architecture</dt><dd>SwiftUI · Swift · SPM</dd></div>
+            <div><dt>dependencies</dt><dd>none in v1</dd></div>
+          </dl>
+        </div>
+        <div class="timing-callout"><span class="live-dot"></span><strong>timing is the feature</strong><span>look-ahead scheduling · lock-free handoff · deterministic engine</span></div>
+      </section>
+
+      <section class="section-wrap scope-section">
+        <div class="section-tag">[ 005 / honest scope ]</div>
+        <div class="scope-grid"><h2>Open-ended<br /><em>by design.</em></h2><div><p>Torax H-0 prioriza un instrumento sólido antes que una lista infinita de modos. El estado actual deja fuera Ableton Link, MIDI Program Change, encadenado de Patterns, Backup Project y Random Modulation.</p><p class="dim">La salida de producto es hardware MIDI externo. Los endpoints virtuales solo existen como instrumentación de medición.</p></div></div>
+      </section>
+
+      <section class="final-cta section-wrap"><p class="kicker"><span class="live-dot"></span> torax h-0 · current build</p><h2>Make a rule.<br /><em>Let it run.</em></h2><a class="button button-accent" href="https://github.com/hernanflores/torax-h0" target="_blank" rel="noreferrer">explore the repository <span>↗</span></a></section>
+    </main>
+
+    <footer class="site-footer section-wrap"><a class="wordmark" href="#top"><span class="mark">✦</span> torax <span class="quiet">h-0</span></a><span>algorithmic midi sequencer · ipadOS 17+</span><span>updated september 2026</span></footer>
+    <script src="script.js"></script>
+  </body>
+</html>
