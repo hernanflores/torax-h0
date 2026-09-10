@@ -1,0 +1,25 @@
+Task: El portapapeles en `TransportModel` (FR1–FR4) (Fase 3, pattern-copy_20260910)
+
+`PatternClipboard` holds the whole Pattern plus the Bank and slot it came from,
+and answers two questions the screen would otherwise decide for itself:
+`markedSlot(inBank:)` (the origin mark is drawn only in its own Bank, FR12) and
+`destination(selected:armed:isRunning:)` (stopped the selected slot, running the
+armed one if there is one and otherwise what sounds, FR8).
+
+`TransportModel` stores it as an optional that starts empty, with `canPaste` and
+`copiedSlotIndex` on top. It is memory only — no `Persistence`, no disk format,
+no `schemaVersion` (FR3, NFR5).
+
+Files:
+- Packages/Engine/Sources/Engine/PatternClipboard.swift (new)
+- Packages/Engine/Tests/EngineTests/PatternClipboardTests.swift (new)
+- App/TransportModel.swift
+
+Verification: `swift test --package-path Packages/Engine` — 917 tests, 0
+failures. `xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'`
+— BUILD SUCCEEDED.
+
+Why: the material has to travel as a value, not as a slot number, or pasting
+into another Bank would name a slot that holds something else entirely (FR1).
+The two rules sit in `Engine` and not in the view for the usual reason: they
+decide something, and `App` is not measured.
