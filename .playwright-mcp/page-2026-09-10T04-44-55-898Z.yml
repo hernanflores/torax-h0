@@ -1,0 +1,184 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - link "Torax H-0, inicio" [ref=f1e3] [cursor=pointer]:
+      - /url: "#top"
+      - generic [ref=f1e4]: ✦
+      - text: torax h-0
+    - link "view on github ↗" [ref=f1e5] [cursor=pointer]:
+      - /url: https://github.com/hernanflores/torax-h0
+  - main [ref=f1e6]:
+    - generic [ref=f1e7]:
+      - generic [ref=f1e8]:
+        - paragraph [ref=f1e9]: native for ipad · coremidi
+        - heading "patterns with room to move." [level=1] [ref=f1e11]: patterns withroom to move.
+        - paragraph [ref=f1e12]: Un secuenciador MIDI algorítmico para crear ritmo, tono y variación con las manos. Define las reglas. El motor encuentra el movimiento.
+        - generic [ref=f1e13]:
+          - link "explore torax ↓" [ref=f1e14] [cursor=pointer]:
+            - /url: "#features"
+            - text: explore torax
+            - generic [ref=f1e15]: ↓
+          - link "source code ↗" [ref=f1e16] [cursor=pointer]:
+            - /url: https://github.com/hernanflores/torax-h0
+      - generic "Visualización animada de un patrón circular" [ref=f1e17]:
+        - generic [ref=f1e18]: 12 tracksone living pattern
+        - generic [ref=f1e22]: play
+        - generic [ref=f1e25]: shape
+        - generic [ref=f1e26]: tonal
+        - generic [ref=f1e27]: groove
+    - generic "Características principales" [ref=f1e28]:
+      - generic [ref=f1e29]:
+        - generic [ref=f1e30]: algorithmic composition
+        - generic [ref=f1e31]: ✦
+        - generic [ref=f1e32]: tactile control
+        - generic [ref=f1e33]: ✦
+        - generic [ref=f1e34]: external midi
+        - generic [ref=f1e35]: ✦
+        - generic [ref=f1e36]: algorithmic composition
+        - generic [ref=f1e37]: ✦
+        - generic [ref=f1e38]: tactile control
+    - generic [ref=f1e39]:
+      - generic [ref=f1e40]: "[ 001 / the idea ]"
+      - generic [ref=f1e41]:
+        - heading [level=2] [ref=f1e42]:
+          - text: El controlador
+          - emphasis [ref=f1e43]: es el instrumento.
+        - generic [ref=f1e44]:
+          - paragraph [ref=f1e45]: "Torax H-0 no genera audio ni te encierra en un piano-roll. Es el cerebro entre tus manos y tus máquinas: un motor que convierte reglas musicales en secuencias reproducibles, abiertas a la variación."
+          - paragraph [ref=f1e46]: El iPad muestra el estado. El hardware hace la música. Gira un knob, toca un pad, escucha el siguiente step.
+    - generic [ref=f1e47]:
+      - generic [ref=f1e48]: "[ 002 / what it does ]"
+      - generic [ref=f1e49]:
+        - heading [level=2] [ref=f1e50]:
+          - text: Generative tools
+          - emphasis [ref=f1e51]: that stay yours.
+        - paragraph [ref=f1e52]: El material musical vive en capas. Cada capa añade expresión sin esconder la regla que la produce.
+      - generic [ref=f1e53]:
+        - article [ref=f1e54]:
+          - generic [ref=f1e55]: 01 / shape
+          - heading "Ritmo euclidiano" [level=3] [ref=f1e56]: Ritmoeuclidiano
+          - paragraph [ref=f1e57]:
+            - text: Construye una vuelta con
+            - strong [ref=f1e58]: Steps
+            - text: ","
+            - strong [ref=f1e59]: Pulses
+            - text: ","
+            - strong [ref=f1e60]: Rotate
+            - text: "y"
+            - strong [ref=f1e61]: Division
+            - text: . El anillo hace visible el pulso y la simetría.
+        - article [ref=f1e71]:
+          - generic [ref=f1e72]: 02 / tonal
+          - heading "Pool tonal, no melodía fija" [level=3] [ref=f1e73]: Pool tonal,no melodía fija
+          - paragraph [ref=f1e74]:
+            - text: Elige
+            - strong [ref=f1e75]: Scale
+            - text: ","
+            - strong [ref=f1e76]: Root
+            - text: y hasta ocho pitches. El motor selecciona dentro del material; la nota no está congelada por step.
+        - article [ref=f1e86]:
+          - generic [ref=f1e87]: 03 / groove
+          - heading "Movimiento con intención" [level=3] [ref=f1e88]: Movimientocon intención
+          - paragraph [ref=f1e89]:
+            - strong [ref=f1e90]: Velocity
+            - text: ","
+            - strong [ref=f1e91]: Sustain
+            - text: ","
+            - strong [ref=f1e92]: Probability
+            - text: ","
+            - strong [ref=f1e93]: Timing
+            - text: "y"
+            - strong [ref=f1e94]: Delay
+            - text: convierten el patrón en interpretación.
+        - article [ref=f1e102]:
+          - generic [ref=f1e103]: 04 / development
+          - heading "Ciclos que evolucionan" [level=3] [ref=f1e104]: Ciclos queevolucionan
+          - paragraph [ref=f1e105]:
+            - text: Hasta 16
+            - strong [ref=f1e106]: Cycles
+            - text: por Track. Cada vuelta puede ser un snapshot distinto sin cambiar de Pattern.
+          - generic [ref=f1e107]:
+            - generic [ref=f1e108]: cycle 01
+            - generic [ref=f1e109]: cycle 02
+            - generic [ref=f1e110]: cycle 03
+    - generic [ref=f1e111]:
+      - generic [ref=f1e112]: "[ 003 / live workflow ]"
+      - generic [ref=f1e113]:
+        - generic [ref=f1e114]:
+          - generic [ref=f1e115]: "01"
+          - generic [ref=f1e116]:
+            - heading "12 tracks polifónicos" [level=3] [ref=f1e117]
+            - paragraph [ref=f1e118]: Selecciona, mutea o solea cada voz. Cada Track tiene su propio marco tonal, canal MIDI, ritmo y velocidad.
+          - generic [ref=f1e119]: ↗
+        - generic [ref=f1e120]:
+          - generic [ref=f1e121]: "02"
+          - generic [ref=f1e122]:
+            - heading "Patterns que entran a tiempo" [level=3] [ref=f1e123]
+            - paragraph [ref=f1e124]: 16 Banks con 16 Patterns cada uno. Cambia de sección durante la reproducción y entra en el próximo compás.
+          - generic [ref=f1e125]: ↗
+        - generic [ref=f1e126]:
+          - generic [ref=f1e127]: "03"
+          - generic [ref=f1e128]:
+            - heading "Note Repeater + modulation" [level=3] [ref=f1e129]
+            - paragraph [ref=f1e130]: "Ratchets de hasta 8 repeticiones y LFO sobre velocity: movimiento añadido sobre el ritmo, sin alterar su estructura."
+          - generic [ref=f1e131]: ↗
+        - generic [ref=f1e132]:
+          - generic [ref=f1e133]: "04"
+          - generic [ref=f1e134]:
+            - heading "Play it your way" [level=3] [ref=f1e135]
+            - paragraph [ref=f1e136]: Preset para BeatStep Pro, MIDI Learn para otros controladores, reloj interno o sincronía desde un maestro MIDI externo.
+          - generic [ref=f1e137]: ↗
+    - generic [ref=f1e138]:
+      - generic [ref=f1e139]: "[ 004 / under the hood ]"
+      - generic [ref=f1e140]:
+        - generic [ref=f1e141]:
+          - heading [level=2] [ref=f1e142]:
+            - text: Built for
+            - emphasis [ref=f1e143]: the next step.
+          - paragraph [ref=f1e144]: El camino de timing está separado de la interfaz. El scheduler calcula por adelantado y entrega eventos con timestamps futuros a CoreMIDI.
+        - generic [ref=f1e145]:
+          - generic [ref=f1e146]:
+            - term [ref=f1e147]: platform
+            - definition [ref=f1e148]: iPadOS 17+
+          - generic [ref=f1e149]:
+            - term [ref=f1e150]: output
+            - definition [ref=f1e151]: CoreMIDI · USB / Camera Kit
+          - generic [ref=f1e152]:
+            - term [ref=f1e153]: clock
+            - definition [ref=f1e154]: internal or external MIDI
+          - generic [ref=f1e155]:
+            - term [ref=f1e156]: persistence
+            - definition [ref=f1e157]: JSON · Autosave · Reload
+          - generic [ref=f1e158]:
+            - term [ref=f1e159]: architecture
+            - definition [ref=f1e160]: SwiftUI · Swift · SPM
+          - generic [ref=f1e161]:
+            - term [ref=f1e162]: dependencies
+            - definition [ref=f1e163]: none in v1
+      - generic [ref=f1e164]:
+        - strong [ref=f1e166]: timing is the feature
+        - generic [ref=f1e167]: look-ahead scheduling · lock-free handoff · deterministic engine
+    - generic [ref=f1e168]:
+      - generic [ref=f1e169]: "[ 005 / honest scope ]"
+      - generic [ref=f1e170]:
+        - heading [level=2] [ref=f1e171]:
+          - text: Open-ended
+          - emphasis [ref=f1e172]: by design.
+        - generic [ref=f1e173]:
+          - paragraph [ref=f1e174]: Torax H-0 prioriza un instrumento sólido antes que una lista infinita de modos. El estado actual deja fuera Ableton Link, MIDI Program Change, encadenado de Patterns, Backup Project y Random Modulation.
+          - paragraph [ref=f1e175]: La salida de producto es hardware MIDI externo. Los endpoints virtuales solo existen como instrumentación de medición.
+    - generic [ref=f1e176]:
+      - paragraph [ref=f1e177]: torax h-0 · current build
+      - heading [level=2] [ref=f1e179]:
+        - text: Make a rule.
+        - emphasis [ref=f1e180]: Let it run.
+      - link "explore the repository ↗" [ref=f1e181] [cursor=pointer]:
+        - /url: https://github.com/hernanflores/torax-h0
+        - text: explore the repository
+        - generic [ref=f1e182]: ↗
+  - contentinfo [ref=f1e183]:
+    - link "✦ torax h-0" [ref=f1e184] [cursor=pointer]:
+      - /url: "#top"
+      - generic [ref=f1e185]: ✦
+      - text: torax h-0
+    - generic [ref=f1e186]: algorithmic midi sequencer · ipadOS 17+
+    - generic [ref=f1e187]: updated september 2026
