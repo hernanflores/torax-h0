@@ -23,3 +23,25 @@ Verification: `swift test --package-path Packages/Engine --enable-code-coverage`
 Why: consuming the chord on the second `down` is what makes the release order
 irrelevant (FR17), and a live gesture cannot ask the player to lift fingers in
 order.
+
+---
+
+Phase Verification & Checkpoint — FASE 2: LA REGLA DEL ACORDE, EN `Engine`
+
+Automated tests:
+  swift test --package-path Packages/Engine --enable-code-coverage
+  → 911 tests, 0 failures
+  PatternChord.swift: 100% of lines. Engine total: 98.70% — threshold ≥90%.
+  DependencyBoundaryTests still green: the rule imports nothing beyond the stdlib.
+
+Deviation from the plan, recorded in plan.md: `cancelling(_:)` was added
+alongside the `pressing(_:)` / `releasing(_:)` inputs the plan named. FR21 needs
+it — without it a cancelled touch still selected.
+
+Manual verification proposed: run the app and confirm the pattern grid behaves
+exactly as before — a tap selects, `clear` clears, `copy here` still does
+nothing, and two fingers do not copy yet. The rule exists and is tested, but the
+grid does not use it until Fase 4, because sibling SwiftUI Buttons never see
+simultaneous touches.
+
+User confirmation: "ok".
