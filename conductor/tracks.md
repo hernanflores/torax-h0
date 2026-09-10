@@ -1074,7 +1074,7 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: `copy here` de la rejilla de Patterns no hace nada**
+- [~] **Track: `copy here` de la rejilla de Patterns no hace nada**
   *Link: [conductor/tracks/pattern-copy_20260910/index.md](./tracks/pattern-copy_20260910/index.md)*
 
   **Planificado el 2026-09-10**, en seis fases. `BanksScreen.swift:179` llama
