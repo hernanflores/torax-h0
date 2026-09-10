@@ -76,22 +76,28 @@ con la verificación en dispositivo detrás.
         marca. En `PatternClipboard`, dentro de `Engine`: la marca y el destino
         del pegado son reglas, y `App` no se mide.
   - [x] Empieza vacío; de memoria, sin tocar `Persistence` (NFR5).
-- [~] Task: `copy` (FR5, FR6)
-  - [ ] Carga el hueco vigente del Bank vigente.
-  - [ ] Toma el material **guardado en el Bank**, no la superposición de un gesto
+- [x] Task: `copy` (FR5, FR6) — `e9790b7`
+  - [x] Carga el hueco vigente del Bank vigente.
+  - [x] Toma el material **guardado en el Bank**, no la superposición de un gesto
         en curso.
-  - [ ] Disponible con el transporte parado y corriendo.
-- [ ] Task: `paste` (FR7–FR11)
-  - [ ] Destino: parado, el seleccionado; corriendo, el armado si lo hay y si no
+  - [x] Disponible con el transporte parado y corriendo.
+- [x] Task: `paste` (FR7–FR11) — `e9790b7`
+  - [x] Destino: parado, el seleccionado; corriendo, el armado si lo hay y si no
         el que suena.
-  - [ ] Escribe en el Bank vigente, venga el material del Bank que venga.
-  - [ ] No mueve la selección, no arma, no toca el transporte ni
+  - [x] Escribe en el Bank vigente, venga el material del Bank que venga.
+  - [x] No mueve la selección, no arma, no toca el transporte ni
         `pendingAdoption`.
-  - [ ] Dispara el autosave del Bank vigente.
-- [ ] Task: Sustituir `copy here` por `copy` y `paste` en `PatternGrid`
-  - [ ] `paste` deshabilitado con el portapapeles vacío.
-  - [ ] `clear` se queda como está (fuera de alcance).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Dispara el autosave del Bank vigente.
+- [x] Task: Sustituir `copy here` por `copy` y `paste` en `PatternGrid` — `e9790b7`
+  - [x] `paste` deshabilitado con el portapapeles vacío.
+  - [x] `clear` se queda como está (fuera de alcance).
+
+  **Las tres tareas van en un commit**, a propósito: quitar `copy here` y añadir
+  `copy` y `paste` es el mismo cambio de firma de `PatternGrid`, y separarlas
+  dejaría un commit que no compila. Ahí se retira además
+  `copyingSelectedPattern(to:)` (FR23), que era la decisión que la Fase 1 dejó
+  aplazada.
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [ ] **Comprobación del defecto original**: parado, `copy` en un hueco y
         `paste` en otro cambian el contenido de verdad — lo que `copy here` nunca
         hizo.
