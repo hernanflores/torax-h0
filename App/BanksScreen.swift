@@ -150,6 +150,17 @@ struct PatternGrid: View {
     let onPaste: () -> Void
     let onClear: (Int) -> Void
 
+    /// Dónde quedó dibujada cada celda. Lo dicen las celdas y lo lee la capa de
+    /// toques.
+    @State private var cellFrames: [CGRect] = []
+
+    /// Los huecos con un dedo encima ahora mismo.
+    ///
+    /// **El resaltado de pulsación se conserva a mano**, porque es lo que un
+    /// `Button` daba gratis y su ausencia se leería como que la rejilla no
+    /// responde.
+    @State private var pressed: Set<Int> = []
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -170,6 +181,11 @@ struct PatternGrid: View {
                 }
             }
 
+            // **La rejilla resuelve sus propios toques** desde el 2026-09-10.
+            // Dos `Button` hermanos de SwiftUI no ven toques simultáneos, así
+            // que el acorde de dos dedos no se podía expresar con dieciséis
+            // botones. Las celdas se dibujan y una capa encima traduce los
+            // toques a índices; lo que significan lo decide `PatternChord`.
             LazyVGrid(
                 columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
                 spacing: 8
@@ -177,6 +193,18 @@ struct PatternGrid: View {
                 ForEach(0..<Bank.patternCount, id: \.self) { index in
                     cell(index)
                 }
+            }
+            .coordinateSpace(name: Self.gridSpace)
+            .onPreferenceChange(PatternCellFrames.self) { frames in
+                cellFrames = (0..<Bank.patternCount).map { frames[$0] ?? .zero }
+            }
+            .overlay {
+                PatternTouchLayer(
+                    cellFrames: cellFrames,
+                    onDown: down,
+                    onUp: up,
+                    onCancel: cancel
+                )
             }
 
             // **Los tres operan sobre el hueco elegido**, y por eso están
@@ -209,30 +237,69 @@ struct PatternGrid: View {
         index < states.count ? states[index] : .empty
     }
 
+    /// El espacio en el que se miden las celdas y en el que la capa de toques
+    /// las busca. Los dos tienen que hablar del mismo origen.
+    private static let gridSpace = "patternGrid"
+
+    /// Un dedo baja sobre una celda: solo se resalta.
+    ///
+    /// **Parado no hay acorde** (FR15): el toque sencillo carga el Pattern de
+    /// inmediato, así que el `down` del primer dedo ya habría cambiado el
+    /// material antes de saber si era un acorde.
+    private func down(_ index: Int) {
+        pressed.insert(index)
+    }
+
+    /// Un dedo se levanta sobre su celda: selecciona, que es donde un `Button`
+    /// ya lo resolvía (FR20).
+    private func up(_ index: Int) {
+        pressed.remove(index)
+        onSelect(index)
+    }
+
+    /// Un toque que se levanta fuera de su celda no selecciona (FR21).
+    private func cancel(_ index: Int) {
+        pressed.remove(index)
+    }
+
     private func cell(_ index: Int) -> some View {
         let state = state(index)
         let isSelected = index == selected
 
-        return Button(action: { onSelect(index) }) {
-            VStack(spacing: 4) {
-                Text(display: (index + 1).paddedForDisplay)
-                    .font(state == .playing ? Typography.valueTitle : Typography.parameterLine)
-                    .monospacedDigit()
-                    .foregroundStyle(state == .playing ? Palette.shape : Palette.mutedBright)
+        return VStack(spacing: 4) {
+            Text(display: (index + 1).paddedForDisplay)
+                .font(state == .playing ? Typography.valueTitle : Typography.parameterLine)
+                .monospacedDigit()
+                .foregroundStyle(state == .playing ? Palette.shape : Palette.mutedBright)
 
-                Text(display: state.label)
-                    .font(Typography.caption)
-                    .foregroundStyle(state == .empty ? Palette.border : Palette.muted)
-            }
-            .frame(maxWidth: .infinity, minHeight: 72)
-            .contentShape(Rectangle())
+            Text(display: state.label)
+                .font(Typography.caption)
+                .foregroundStyle(state == .empty ? Palette.border : Palette.muted)
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, minHeight: 72)
+        .contentShape(Rectangle())
+        .opacity(pressed.contains(index) ? Brutalist.pressedOpacity : 1)
         .background(Palette.inset, in: RoundedRectangle(cornerRadius: Brutalist.radius))
         .overlay {
             RoundedRectangle(cornerRadius: Brutalist.radius)
                 .stroke(border(state: state, isSelected: isSelected), lineWidth: width(isSelected))
         }
+        .background {
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: PatternCellFrames.self,
+                    value: [index: proxy.frame(in: .named(Self.gridSpace))]
+                )
+            }
+        }
+        // **La celda deja de ser un `Button` pero no deja de ser pulsable.**
+        // VoiceOver la sigue leyendo como tal y la sigue pudiendo activar; el
+        // acorde es un gesto de dos dedos que no tiene equivalente accesible, y
+        // para eso están `copy` y `paste`.
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("pattern \(index + 1), \(state.label)")
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAction { onSelect(index) }
     }
 
     /// **El que suena lleva el olivo de Shape; el que espera, el mismo olivo más

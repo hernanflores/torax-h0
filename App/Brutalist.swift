@@ -55,6 +55,16 @@ enum Brutalist {
     /// Lo grande: paneles y tarjetas. **El techo de la escala.**
     static let radiusLarge: CGFloat = 8
 
+    // MARK: - Pulsación
+
+    /// Lo que se atenúa una celda con el dedo encima.
+    ///
+    /// **Existe desde que la rejilla de Patterns dejó de usar `Button`**, el
+    /// 2026-09-10: el resaltado de pulsación venía gratis con `.buttonStyle` y
+    /// hay que dibujarlo a mano. Es el mismo valor que `.plain` aplicaba, para
+    /// que el gesto se sienta igual que en el resto de la app.
+    static let pressedOpacity: Double = 0.6
+
     // MARK: - Sombra
 
     /// El desplazamiento de la sombra dura.
