@@ -128,16 +128,19 @@ con la verificación en dispositivo detrás.
 
 ## FASE 5: LO QUE SE VE
 
-- [~] Task: Marca de la celda de origen (FR12)
-  - [ ] Visible desde `copy` hasta que el portapapeles se sustituye.
-  - [ ] Solo en el Bank de origen; en otro Bank no se dibuja nada.
-  - [ ] Distinguible de `playing`, `queued` y del seleccionado, que ya se reparten
-        el borde.
-- [ ] Task: Destello de la celda de destino (FR13, FR14)
-  - [ ] Al pegar y al copiar por acorde, tuviera material o no.
-  - [ ] Dentro del lenguaje de `Brutalist`/`ShapeTheme`, sin animación nueva
+- [x] Task: Marca de la celda de origen (FR12) — `7e01bd3`
+  - [x] Visible desde `copy` hasta que el portapapeles se sustituye.
+  - [x] Solo en el Bank de origen; en otro Bank no se dibuja nada.
+  - [x] Distinguible de `playing`, `queued` y del seleccionado, que ya se reparten
+        el borde: **es un bloque en la esquina, no un cuarto borde.**
+- [x] Task: Destello de la celda de destino (FR13, FR14) — `7e01bd3`
+  - [x] Al pegar y al copiar por acorde, tuviera material o no.
+  - [x] Dentro del lenguaje de `Brutalist`/`ShapeTheme`, sin animación nueva
         colgada del reloj.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+  **Las dos van en un commit**: comparten el cuerpo de la celda y las constantes
+  nuevas, y ninguna compila sin el cableado de la otra.
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [ ] Las dos señales se leen a un metro, que es la distancia de la pantalla.
 
 ## FASE 6: DISPOSITIVO Y CIERRE
