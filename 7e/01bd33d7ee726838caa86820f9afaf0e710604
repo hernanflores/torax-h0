@@ -32,3 +32,26 @@ Why: FR9 lets a paste land on a slot that already had material, where the state
 label does not change. Without a flash that gesture reads as the dead button
 this track exists to fix — and in live use, with the chord, nobody is looking at
 the screen straight on.
+
+---
+
+Phase Verification & Checkpoint — FASE 5: LO QUE SE VE
+
+Automated: xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+→ BUILD SUCCEEDED. swift test --package-path Packages/Engine → 915 tests, 0
+failures. Both signals are visual and are judged by looking at them.
+
+Manual verification at a metre, all eight steps confirmed:
+  1. Stopped, `copy` on slot 01 draws the corner block, distinguishable from the
+     selected cell's border.
+  2. The mark stays on 01 when the selection moves.
+  3. In Bank 5 no mark is drawn, and `paste` stays enabled (FR12).
+  4. Back in Bank 1 the mark is still there; a new `copy` moves it.
+  5. Paste into an empty slot flashes and turns it `ready`.
+  6. Paste over a slot that already had material flashes just the same — the
+     case the flash exists for (FR9, FR13).
+  7. Running, the chord flashes the destination and marks the held origin (FR14,
+     FR19).
+  8. Both signals read at a metre, which is the distance of the screen.
+
+User confirmation: "todo ok".
