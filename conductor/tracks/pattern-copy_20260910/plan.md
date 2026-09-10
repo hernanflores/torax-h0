@@ -160,7 +160,7 @@ con la verificación en dispositivo detrás.
   - [ ] Entrada en `tracks.md` con lo que entregó y lo que dejó fuera.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 7: CORRECCIONES DE LA VERIFICACIÓN EN DISPOSITIVO
+## FASE 7: CORRECCIONES DE LA VERIFICACIÓN EN DISPOSITIVO [checkpoint: d809ec9]
 
 **La encontró la Fase 6, con el iPad delante**, y es lo que la verificación en
 dispositivo existe para encontrar. El criterio 8 copió bien pero **el material
@@ -196,7 +196,9 @@ se arreglan las dos mitades.
 - [x] Task: Enmendar el `spec.md` con lo que la verificación enseñó — `13bf4ad`
   - [x] FR11b, el criterio 8 ampliado, y una sección con lo que la pasada en
         dispositivo enseñó sobre el método.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
-  - [ ] Corriendo: armar el 09, pegar, y **al límite de compás suena lo pegado**.
-  - [ ] Después de eso, girar un knob **no devuelve el material viejo**.
-  - [ ] Parado: pegar en el seleccionado y ver la pantalla `track` con lo pegado.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Corriendo: armar el 09, pegar, y **al límite de compás suena lo pegado**.
+  - [x] Después de eso, girar un knob **no devuelve el material viejo**.
+  - [x] Parado: pegar en el seleccionado y ver la pantalla `track` con lo pegado.
+  - [x] Y el criterio 9, que seguía pendiente: pegar encima del que suena no
+        corta el audio.
