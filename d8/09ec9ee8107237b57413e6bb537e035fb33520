@@ -1,0 +1,25 @@
+Task: Pegar refresca la copia viva y lo armado (Fase 7, pattern-copy_20260910)
+
+Green phase. `PatternPasteRefresh` decides, and `pastePattern()` acts on it:
+
+- Destination equal to the loaded slot → `pattern` and `ControlInput` adopt what
+  was pasted. Without this the track screen kept showing the previous material
+  and `recordEdit()` wrote it back over the paste on the first knob turn — the
+  paste was lost with no warning.
+- Destination equal to the armed slot → the same slot is armed again with the new
+  material, and the pending adoption stores the new one. Without this the
+  transport still held the snapshot handed to it at arming time, so the old
+  material entered at the bar boundary. That was the reported symptom: what was
+  pasted did not sound until the Pattern was triggered by hand again.
+
+Neither arms a different slot nor moves the selection, which is what FR10
+forbids. Audio still does not cut (FR9): nothing is published to the transport
+outside the re-arm, so what sounds keeps sounding until the next Pattern change.
+
+Files: Packages/Engine/Sources/Engine/PatternPasteRefresh.swift (new),
+App/TransportModel.swift
+
+Verification: `swift test --package-path Packages/Engine` — 921 tests, 0
+failures. `xcodebuild build -scheme ToraxH0 -destination
+'generic/platform=iOS'` — BUILD SUCCEEDED. The behaviour itself is checked on
+the iPad, which is where it was found.
