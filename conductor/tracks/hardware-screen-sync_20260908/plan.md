@@ -98,7 +98,7 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
         arregla de paso — que es lo que este defecto enseñó.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: EL TRANSPORTE PUBLICA SU ESTADO
+## FASE 2: EL TRANSPORTE PUBLICA SU ESTADO [checkpoint: 6317238]
 
 - [x] Task: El contador y el flag de transporte (FR1, FR2, FR3, NFR1) `6317238`
   - [x] Tests (Red): el contador arranca en cero y **se mueve exactamente una vez
@@ -123,7 +123,7 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
         principal desaparece en cuanto el estado se publica. Adelantarlo es lo
         que hace verdad la promesa de la fase — si la 3 no llegara, la carrera ya
         está sin lector.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: LA APP LO LEE, EN EL `.task` QUE YA EXISTE
 
