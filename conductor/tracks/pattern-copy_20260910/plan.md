@@ -71,11 +71,12 @@ con la verificación en dispositivo detrás.
 
 ## FASE 3: PORTAPAPELES, `copy` Y `paste` — **cierra el defecto reportado**
 
-- [~] Task: El portapapeles en `TransportModel` (FR1–FR4)
-  - [ ] Guarda el `Pattern` entero, más el Bank y el hueco de origen para la
-        marca.
-  - [ ] Empieza vacío; de memoria, sin tocar `Persistence` (NFR5).
-- [ ] Task: `copy` (FR5, FR6)
+- [x] Task: El portapapeles en `TransportModel` (FR1–FR4) — `ca86e18`
+  - [x] Guarda el `Pattern` entero, más el Bank y el hueco de origen para la
+        marca. En `PatternClipboard`, dentro de `Engine`: la marca y el destino
+        del pegado son reglas, y `App` no se mide.
+  - [x] Empieza vacío; de memoria, sin tocar `Persistence` (NFR5).
+- [~] Task: `copy` (FR5, FR6)
   - [ ] Carga el hueco vigente del Bank vigente.
   - [ ] Toma el material **guardado en el Bank**, no la superposición de un gesto
         en curso.
