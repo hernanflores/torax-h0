@@ -1,0 +1,50 @@
+Tarea 'Verificación en iPad con BeatStep Pro' (NFR6) de la Fase 4 del track
+hardware-screen-sync_20260908.
+
+QUÉ CAMBIA
+Se retira la instrumentación #if DEBUG que la Fase 1 introdujo:
+diagnosticTicks y diagnosticTransitions en Transport, y reportDiagnosticCounts()
+en TransportModel. El diff neto del track vuelve a ser solo el arreglo.
+
+VERIFICACIÓN EN DISPOSITIVO — iPad con BeatStep Pro, 2026-09-09
+Escrita entera en conductor/tracks/hardware-screen-sync_20260908/device-verification.md.
+Resumen:
+
+- Los dos síntomas reportados, resueltos. Start del BeatStep deja el botón en
+  stop y pulsarlo para (FR8). El tempo del maestro llega a la barra (FR9), que
+  ya funcionaba antes de este track y se prueba como no-regresión.
+- El Stop del BeatStep devuelve el botón a play. Es la mitad simétrica que el
+  spec no contaba, encontrada midiendo en la Fase 1.
+- El anillo del playhead vuelve a moverse con un Start del maestro (FR8b), que
+  no estaba reportado y se descubrió al instrumentar.
+- Corte de reloj y recuperación: clockStatus refleja las dos transiciones
+  (FR10).
+- Sin regresión con reloj interno: play y stop de la app, mute y desmute
+  sonando, Pattern elegido sonando y parado.
+
+LOS NÚMEROS (criterio 6), pasada final con el arreglo puesto, 125 bpm
+- Ventana t=10 s → t=100 s: 4520 ticks en 90 s = 50,2 ticks/s, contra los 50,0
+  que son 125 × 24 PPQN / 60. La diferencia es la deriva del cronómetro, no del
+  reloj.
+- Transiciones: 1 durante los noventa segundos. Cuatro mil quinientos veinte
+  ticks movieron el contador cero veces. FR5 comprobado contando.
+- transport.isPlaying y model.isPlaying coinciden en las diez líneas. Esa
+  discrepancia era el defecto entero.
+
+EL HILO PRINCIPAL, que es donde el tercer intento se rompió
+- Contando: ToraxH0App sigue con 2 .task, los mismos de antes (criterio 7).
+- Con los knobs: encoders del BeatStep con la secuencia sonando, los valores
+  siguen al knob igual de fluido que antes, sin tirones ni retraso.
+
+COBERTURA
+MIDI en un proceso, ignorando Engine/Sources: 91,74% de líneas (umbral ≥80%).
+TransportWatch.swift al 100%, Transport.swift al 89,69%.
+
+SUITES
+MIDI, partición de CI: 21 (1 omitido) + 875 tests, 0 fallos.
+Engine: 888 tests, 0 fallos.
+xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS': SUCCEEDED.
+
+SIN MEDICIÓN DE JITTER (NFR5)
+La suspensión del 2026-09-02 manda y este cambio no mueve ningún instante. Lo
+que sí se comprobó es el coste por tick, que se mide contando y está arriba.
