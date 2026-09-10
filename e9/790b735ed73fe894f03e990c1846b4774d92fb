@@ -1,0 +1,36 @@
+Tasks: `copy` (FR5, FR6), `paste` (FR7–FR11) and Sustituir `copy here` por `copy`
+y `paste` en `PatternGrid` (Fase 3, pattern-copy_20260910)
+
+Three plan tasks in one commit, deliberately: removing `copy here` and adding
+`copy`/`paste` is one change of signature on `PatternGrid`, and splitting it
+would leave a commit that does not compile.
+
+**This closes the reported defect.** With the transport stopped, `copy` in one
+slot and `paste` in another now change the content — which `copy here` never
+did — and the clipboard holds the whole Pattern, so it crosses Banks.
+
+- `copyPattern()` loads the current slot of the current Bank. It reads the
+  material saved in the Bank and not `pattern`, the live copy, so a Temp or Ctrl
+  All overlay in flight is not frozen into a slot (FR6) — the same rule
+  `recordEdit()` already follows. Available stopped and running (FR5).
+- `pastePattern()` writes into the Bank being looked at, whatever Bank the
+  material came from (FR7). The destination comes from
+  `PatternClipboard.destination(...)` (FR8). It moves no selection, arms
+  nothing, touches neither the transport nor `pendingAdoption` (FR10), and
+  triggers the Bank autosave (FR11).
+- `copyPattern(from:to:)` is the chord's entry point: it copies and loads the
+  clipboard with the origin (FR19). Nothing calls it until Fase 4.
+- `copyingSelectedPattern(to:)` is now gone (FR23) — the decision Fase 1
+  deferred. Its App caller was the defect. `PatternCopyTests` keeps what was
+  only its own (clearing, and neither operation moving the selection) and hands
+  the copy cases to `PatternCopyWithOriginTests`, which state the origin.
+- `paste` is disabled while the clipboard is empty (FR4). `clear` is untouched,
+  as the spec's Out of Scope asks.
+
+Files: App/TransportModel.swift, App/BanksScreen.swift,
+Packages/Engine/Sources/Engine/Project.swift,
+Packages/Engine/Tests/EngineTests/PatternCopyTests.swift
+
+Verification: `swift test --package-path Packages/Engine` — 915 tests, 0
+failures (two cases fewer: the retired method's). `xcodebuild build -scheme
+ToraxH0 -destination 'generic/platform=iOS'` — BUILD SUCCEEDED.
