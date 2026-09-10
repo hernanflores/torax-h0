@@ -1,0 +1,55 @@
+Tarea 'El contador y el flag de transporte' (FR1, FR2, FR3, NFR1) de la Fase 2
+del track hardware-screen-sync_20260908.
+
+QUÉ CAMBIA
+Transport gana dos atómicos: transportGenerationCounter (AtomicCounter) y
+sounding (AtomicFlag), expuestos como transportGeneration e isSounding. Los
+escribe publishTransportState(sounding:), que es una sola función y por una
+razón concreta: publicar el flag y el contador por separado dejaría un hueco en
+el que quien lee ve el estado nuevo con el contador viejo, o al revés. El orden
+es primero el estado y después el aviso.
+
+Se llama en dos sitios y solo en dos: al final de startPlaying(atHostTime:) —el
+último paso del arranque, para que quien lea encuentre un transporte ya montado
+y no uno a medio montar— y en stop() después de su guard, que es lo que hace
+que parar lo ya parado no cuente como transición.
+
+isPlaying pasa de scheduler?.isRunning a isSounding. Es la decisión de NFR2
+tomada en la Fase 1: elimina el lector del hilo principal sobre una propiedad
+almacenada que el hilo de recepción reescribe. Lo que queda es la escritura de
+scheduler sin lector concurrente, anotado en el propio doc comment con su ruta
+de cierre.
+
+TESTS (12, todos nuevos)
+TransportGenerationTests cubre: arranque en cero y en silencio; una transición
+por puerta en las cuatro; parar lo parado y arrancar lo que suena no lo mueven;
+un Start sobre algo que ya suena reinicia dejando contador y flag consistentes;
+2880 .timingClock no lo mueven —el número son los ticks de un minuto a 120 bpm
+con 24 PPQN— y con reloj interno no llegan siquiera; lectura concurrente desde
+otro hilo sin que el contador retroceda, mismo patrón que
+AdoptionGenerationTests; e isPlaying de acuerdo con el flag en las cuatro
+puertas.
+
+VERIFICACIÓN
+  swift test --package-path Packages/MIDI --filter TransportGenerationTests
+    → 12 tests, 0 fallos
+  MIDI, partición de CI: 21 (1 omitido) + 865 tests, 0 fallos
+  Engine: 888 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+  Cobertura MIDI en un proceso, ignorando Engine/Sources: 91,68% de líneas
+    (umbral ≥80%). Transport.swift al 89,46%.
+
+FR5 COMPROBADO POR LAS DOS VÍAS
+Por test —los 2880 ticks no mueven el contador— y por lectura: el case
+.timingClock de receive sigue llamando solo a follow(tickAtHostTime:), que no
+ganó ninguna escritura.
+
+FICHEROS
+Packages/MIDI/Sources/MIDI/Transport.swift
+Packages/MIDI/Tests/MIDITests/TransportGenerationTests.swift (nuevo)
+
+POR QUÉ ASÍ
+La fase deja el producto mejor aunque la 3 no llegara: el transporte ya publica
+su estado y la carrera sobre scheduler ya no tiene lector. Nadie lo lee todavía
+desde la app, y no se ha roto nada.
