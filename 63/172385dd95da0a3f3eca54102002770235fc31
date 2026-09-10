@@ -53,3 +53,36 @@ POR QUÉ ASÍ
 La fase deja el producto mejor aunque la 3 no llegara: el transporte ya publica
 su estado y la carrera sobre scheduler ya no tiene lector. Nadie lo lee todavía
 desde la app, y no se ha roto nada.
+
+=== INFORME DE VERIFICACIÓN DE FASE — FASE 2 ===
+
+COBERTURA DE LOS CAMBIOS DE LA FASE
+Diff contra el checkpoint de la Fase 1 (521e52b): un solo fichero de código,
+Transport.swift, con TransportGenerationTests.swift nuevo y 12 tests dedicados.
+
+COMANDOS AUTOMÁTICOS
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    → 21 tests, 1 omitido, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    → 865 tests, 0 fallos
+  swift test --package-path Packages/Engine
+    → 888 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+  Cobertura MIDI en un proceso, ignorando Engine/Sources: 91,68% de líneas
+    (umbral ≥80%). Transport.swift al 89,46%.
+
+VERIFICACIÓN MANUAL — PLAN PROPUESTO
+Esta fase no cambia nada de lo que se ve: el transporte publica su estado y la
+app todavía no lo lee. Lo que se verifica es que no hay regresión, porque
+isPlaying cambió de fuente y de él cuelgan el botón, el anillo, los mutes, la
+selección de Pattern y el armado. Pasos propuestos: play y stop desde la app con
+reloj interno, comprobando botón, anillo y ausencia de notas colgadas; mute y
+desmute con la secuencia sonando; elegir Pattern sonando (queda queued y entra
+en el límite de compás) y parado (entra al momento); y repetir play y stop con
+reloj externo. El síntoma reportado sigue roto en esta fase, y así se dijo.
+
+CONFIRMACIÓN DEL USUARIO
+Confirmado explícitamente el 2026-09-09: «Sí, cerrar la Fase 2». El usuario
+optó por cerrar sobre la evidencia automática, con la verificación en
+dispositivo concentrada en la Fase 4, que es la que la exige (NFR6).
