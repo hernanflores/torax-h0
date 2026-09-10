@@ -48,3 +48,38 @@ xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS': SUCCEEDED.
 SIN MEDICIÓN DE JITTER (NFR5)
 La suspensión del 2026-09-02 manda y este cambio no mueve ningún instante. Lo
 que sí se comprobó es el coste por tick, que se mide contando y está arriba.
+
+=== INFORME DE VERIFICACIÓN DE FASE — FASE 4 ===
+
+COBERTURA DE LOS CAMBIOS DE LA FASE
+Diff contra el checkpoint de la Fase 3 (0af6b6d): dos ficheros de código,
+TransportModel.swift y Transport.swift, y en los dos el cambio es la retirada de
+la instrumentación #if DEBUG más un comentario reescrito. No hay comportamiento
+nuevo que cubrir; los tests que cubren estos ficheros —TransportGenerationTests
+y TransportWatchTests— siguen verdes.
+
+COMANDOS AUTOMÁTICOS
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    → 21 tests, 1 omitido, 0 fallos
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    → 875 tests, 0 fallos
+  swift test --package-path Packages/Engine
+    → 888 tests, 0 fallos
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    → BUILD SUCCEEDED
+  Cobertura MIDI en un proceso, ignorando Engine/Sources: 91,74% de líneas
+    (umbral ≥80%). TransportWatch.swift al 100%, Transport.swift al 89,69%.
+
+VERIFICACIÓN MANUAL
+La de esta fase es la sesión en iPad con BeatStep Pro del 2026-09-09, escrita
+entera en device-verification.md: los dos síntomas reportados, el simétrico del
+Stop, el anillo, el corte de reloj y su recuperación, la no-regresión con reloj
+interno, los 4520 ticks que movieron el contador cero veces, los 2 .task de
+ToraxH0App y los knobs respondiendo igual de fluido.
+
+INTEGRACIÓN
+PR #51 mergeado en main el 2026-09-10 (merge 08da05c), con los quince commits
+del track.
+
+CONFIRMACIÓN DEL USUARIO
+Confirmado explícitamente el 2026-09-10: «Sí, cerrar el track».
