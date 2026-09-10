@@ -128,6 +128,12 @@ final class PatternCopyTests: XCTestCase {
 
     // MARK: - Sobre el Project, que es como lo llama la pantalla
 
+    // `copyingSelectedPattern(to:)` está en retirada (FR23 de
+    // `pattern-copy_20260910`): su origen implícito es el defecto que ese track
+    // arregla, y hoy ya es un envoltorio de `copyingPattern(from:to:)`. Estos
+    // tests se conservan mientras siga teniendo llamadores; lo que prueban vive
+    // también en `PatternCopyWithOriginTests`.
+
     /// «Copiar el Pattern vigente a un hueco» (FR13): el origen es el Pattern
     /// seleccionado y el Bank es el seleccionado.
     func testTheProjectCopiesTheSelectedPatternIntoASlot() {

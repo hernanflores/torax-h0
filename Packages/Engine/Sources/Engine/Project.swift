@@ -206,14 +206,15 @@ public struct Project: Equatable, Sendable {
     /// El Project con el **Pattern vigente** copiado en otro hueco del **Bank
     /// vigente** (FR13).
     ///
-    /// Es la forma en que lo llama la pantalla: el origen no se elige, es lo que
-    /// se está mirando. Fuera de rango devuelve el Project tal cual.
+    /// **Con el origen implícito, y por eso está en retirada** (FR23). La
+    /// pantalla conoce un solo índice y acababa pasándolo por las dos puntas,
+    /// que es el defecto que este track arregla. Queda como envoltorio de
+    /// `copyingPattern(from:to:)` mientras siga teniendo llamadores, y se retira
+    /// cuando `copy` y `paste` sustituyan a `copy here`.
+    ///
+    /// Fuera de rango devuelve el Project tal cual.
     public func copyingSelectedPattern(to destination: Int) -> Project {
-        guard let bank = bank(at: selectedBank) else { return self }
-        return replacing(
-            bank.copyingPattern(from: selectedPattern, to: destination),
-            at: selectedBank
-        )
+        copyingPattern(from: selectedPattern, to: destination)
     }
 
     /// El Project con ese hueco del Bank vigente vacío.
