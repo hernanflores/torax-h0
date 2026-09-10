@@ -856,11 +856,15 @@ final class TransportModel {
     /// > vista tenga que acordarse de nada. Un contador de invalidación que hay
     /// > que recordar leer es un contador que alguien va a olvidar.
     ///
-    /// **Lo que esto no arregla, y conviene que esté escrito:** un cambio que
-    /// venga del hardware —el tempo de un maestro externo, un Start del
-    /// BeatStep— sigue sin invalidar nada, porque nadie incrementa el contador
-    /// desde el hilo de recepción. Eso necesita un aviso desde ese hilo y es otro
-    /// trabajo; tres intentos de resolverlo de paso dejaron la app peor.
+    /// > **Resuelto el 2026-09-10** por `hardware-screen-sync_20260908`. Aquí
+    /// > decía que un cambio venido del hardware seguía sin invalidar nada,
+    /// > porque nadie incrementaba el contador desde el hilo de recepción. Ya lo
+    /// > hace alguien: el transporte publica sus transiciones por un atómico y
+    /// > `applyTransportState()` las recoge en el `.task` de 16 ms.
+    /// >
+    /// > **El aviso no sale del hilo de recepción**, que es lo que aquel límite
+    /// > temía y lo que hundió a los tres intentos revertidos. Ese hilo solo
+    /// > incrementa un contador; quien pregunta es la app cuando dibuja.
     var followsExternalClock: Bool {
         _ = clockRevision
         return transport?.clockSource == .external

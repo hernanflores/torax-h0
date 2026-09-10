@@ -248,6 +248,36 @@ o un porcentaje de CPU **no valen como prueba** en esta zona.
   no la Fase 4 que lo encontró.
 - **Medición de jitter** (NFR5).
 
+## Lo que se corrigió al implementar
+
+> **Nota del 2026-09-10, al cerrar.** Tres cosas cambiaron respecto a lo que
+> este documento decía el 2026-09-08. Se dejan escritas porque el valor de un
+> spec está en que se pueda comparar con lo que pasó.
+>
+> **1. El segundo síntoma ya estaba resuelto** (enmienda del 2026-09-09, arriba).
+> El tempo del maestro sí llegaba a la barra, y lo resolvía un `TimelineView` que
+> ya existía. FR4 pasó de implementarse a verificarse, y con él se cayó una tarea
+> entera de la Fase 3. **Se descubrió preguntando**, no midiendo: el usuario lo
+> dijo al leer el diagnóstico.
+>
+> **2. El defecto era simétrico, y aquí solo estaba escrita la mitad.** La copia
+> tampoco se enteraba de un Stop del maestro. Se encontró **contando** en la
+> Fase 1: en t=90 s de la pasada de diagnóstico el maestro paró,
+> `transport.isPlaying` pasó a `false` y `model.isPlaying` se quedó en `true`.
+>
+> **3. Había un tercer síntoma que nadie había reportado: el anillo.** El
+> playhead cuelga de la misma copia, así que con un Start del maestro no avanzaba
+> aunque la secuencia sonara. Entró como FR8b y lo arregló el mismo cambio.
+>
+> **La forma del arreglo no cambió.** Es la que
+> `control-input-adoption_20260908` ya había encontrado: contador atómico escrito
+> en el hilo de tiempo real, leído desde el `.task` de 16 ms. Eso se planificó
+> bien y se implementó tal cual.
+>
+> **Lo que sí se ganó de más:** NFR2 se resolvió eliminando la lectura, no
+> dejándola como límite conocido, y se adelantó a la Fase 2 — así la carrera se
+> quedó sin lector aunque la Fase 3 no hubiera llegado.
+
 ## Known Limitations
 
 - **Hasta un cuadro de retraso** entre el gesto del hardware y la pantalla
@@ -255,4 +285,9 @@ o un porcentaje de CPU **no valen como prueba** en esta zona.
 - **Si la app no está dibujando, no se entera hasta que vuelva.** El sonido no
   depende de ello, igual que en la adopción.
 - **El tempo se compara redondeado**, así que un cambio del maestro por debajo de
-  la décima no refresca. Es lo que ya se ve en pantalla.
+  la décima no refresca. Es lo que ya se ve en pantalla. *(Lo hace el
+  `TimelineView` de la barra, no este track — enmienda del 2026-09-09.)*
+- **La escritura de `scheduler` desde el hilo de recepción sigue ahí.** Lo que
+  este track elimina es el **lector** del hilo principal. Cerrarla del todo
+  exigiría que la referencia viajara por un atómico o que el hilo dejara de
+  reasignarse, y eso es un track propio (NFR2).

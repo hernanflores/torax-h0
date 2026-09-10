@@ -1,6 +1,6 @@
 # Track: La pantalla no ve lo que cambia el hardware
 
-**ID:** `hardware-screen-sync_20260908` · **Type:** Bug · **Status:** in progress
+**ID:** `hardware-screen-sync_20260908` · **Type:** Bug · **Status:** complete
 
 El estado del transporte y del reloj vive en `Transport`, que no es observable, y
 **nadie incrementa `clockRevision` desde el hilo de recepción de CoreMIDI**. Un
