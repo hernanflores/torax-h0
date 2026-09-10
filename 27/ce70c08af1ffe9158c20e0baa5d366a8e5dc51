@@ -1,0 +1,18 @@
+Task: Implementar `Project.copyingPattern(from:to:)` (Fase 1, pattern-copy_20260910)
+
+Green phase. `Project.copyingPattern(from:to:)` copies inside the selected Bank
+on top of `Bank.copyingPattern(from:to:)`, which already existed and already
+handles out-of-range on either end by returning the Bank unchanged (FR24).
+
+Files:
+- Packages/Engine/Sources/Engine/Project.swift (modified)
+- Packages/Engine/Tests/EngineTests/PatternCopyWithOriginTests.swift (formatting
+  only, from `swift format`)
+
+Verification: `swift test --package-path Packages/Engine` — 894 tests, 0
+failures.
+
+Why: with the origin implicit, the screen — which knows a single index — passed
+that same index as the destination, so the cell copied onto itself. Asking for
+the origin makes the mistake unwritable. `from == to` still changes nothing, but
+now that is a decision with a test behind it rather than an accident.
