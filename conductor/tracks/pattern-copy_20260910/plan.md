@@ -69,7 +69,7 @@ con la verificación en dispositivo detrás.
   - [x] Suite de `Engine` en verde y cobertura ≥90%. **911 tests, 0 fallos;
         cobertura 98,70%, y `PatternChord` al 100%.**
 
-## FASE 3: PORTAPAPELES, `copy` Y `paste` — **cierra el defecto reportado**
+## FASE 3: PORTAPAPELES, `copy` Y `paste` — **cierra el defecto reportado** [checkpoint: e9790b7]
 
 - [x] Task: El portapapeles en `TransportModel` (FR1–FR4) — `ca86e18`
   - [x] Guarda el `Pattern` entero, más el Bank y el hueco de origen para la
@@ -97,15 +97,16 @@ con la verificación en dispositivo detrás.
   dejaría un commit que no compila. Ahí se retira además
   `copyingSelectedPattern(to:)` (FR23), que era la decisión que la Fase 1 dejó
   aplazada.
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
-  - [ ] **Comprobación del defecto original**: parado, `copy` en un hueco y
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] **Comprobación del defecto original**: parado, `copy` en un hueco y
         `paste` en otro cambian el contenido de verdad — lo que `copy here` nunca
-        hizo.
-  - [ ] Y entre Banks, que es lo que el portapapeles añade.
+        hizo. **Verificado: el hueco 09, vacío, pasa a `ready`.**
+  - [x] Y entre Banks, que es lo que el portapapeles añade. **Verificado del
+        Bank 1 al Bank 5.**
 
 ## FASE 4: LA CAPA DE TOQUES — el riesgo del track
 
-- [ ] Task: Resolver los toques de la rejilla con `UIViewRepresentable`
+- [~] Task: Resolver los toques de la rejilla con `UIViewRepresentable`
   - [ ] `touchesBegan/Ended/Cancelled` sobre la rejilla entera; punto → índice de
         celda.
   - [ ] Los `Button` por celda desaparecen; el resaltado de pulsación se conserva
