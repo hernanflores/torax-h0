@@ -49,7 +49,7 @@ con la verificación en dispositivo detrás.
   - [x] Suite de `Engine` en verde y cobertura ≥90%. **899 tests, 0 fallos;
         cobertura 98,67%.**
 
-## FASE 2: LA REGLA DEL ACORDE, EN `Engine`
+## FASE 2: LA REGLA DEL ACORDE, EN `Engine` [checkpoint: e175bc4]
 
 - [x] Task: Tests de la máquina de estados del acorde (FR16, FR17) — `9f26047`
   - [x] `down(A)` solo: sin efecto. `up(A)`: selecciona A.
@@ -65,12 +65,13 @@ con la verificación en dispositivo detrás.
         necesita y las entradas del plan no nombraban.
   - [x] Sin `import UIKit` ni `SwiftUI`: es una regla, y por eso se puede probar
         (NFR1).
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
-  - [ ] Suite de `Engine` en verde y cobertura ≥90%.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Suite de `Engine` en verde y cobertura ≥90%. **911 tests, 0 fallos;
+        cobertura 98,70%, y `PatternChord` al 100%.**
 
 ## FASE 3: PORTAPAPELES, `copy` Y `paste` — **cierra el defecto reportado**
 
-- [ ] Task: El portapapeles en `TransportModel` (FR1–FR4)
+- [~] Task: El portapapeles en `TransportModel` (FR1–FR4)
   - [ ] Guarda el `Pattern` entero, más el Bank y el hueco de origen para la
         marca.
   - [ ] Empieza vacío; de memoria, sin tocar `Persistence` (NFR5).
