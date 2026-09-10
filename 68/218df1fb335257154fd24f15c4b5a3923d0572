@@ -1,0 +1,16 @@
+Task: Implementar la escritura de un Pattern suelto (Fase 1, pattern-copy_20260910)
+
+Green phase. `Project.replacing(_ pattern: Pattern, at:)` writes the Pattern
+into that slot of the selected Bank, leaving the other fifteen and the other
+Banks alone. The range guard is explicit here rather than delegated, because
+`Bank.replacing(_:at:)` returning the Bank unchanged would still rebuild the
+Project and the test asks for the same value back.
+
+Files: Packages/Engine/Sources/Engine/Project.swift
+
+Verification: `swift test --package-path Packages/Engine` — 899 tests, 0
+failures.
+
+Why: the clipboard holds a Pattern, not a slot number, so pasting across Banks
+has no origin index to name (FR22). It is an overload of the existing
+`replacing(_:at:)` and not a new verb, matching what `Bank` already calls this.
