@@ -147,6 +147,8 @@ con la verificación en dispositivo detrás.
 ## FASE 6: DISPOSITIVO Y CIERRE
 
 - [~] Task: Verificación en dispositivo (NFR6)
+  - [ ] **Parada el 2026-09-10 por lo que encontró.** Ver *FASE 7*; se retoma con
+        las correcciones dentro.
   - [ ] Los trece criterios de aceptación del `spec.md`, con el iPad delante.
   - [ ] Incluye pegar encima del que suena sin que el audio se corte.
   - [ ] Escribir `device-verification.md` con lo observado, no con lo esperado.
@@ -157,3 +159,42 @@ con la verificación en dispositivo detrás.
 - [ ] Task: Cerrar el defecto en el registro
   - [ ] Entrada en `tracks.md` con lo que entregó y lo que dejó fuera.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+
+## FASE 7: CORRECCIONES DE LA VERIFICACIÓN EN DISPOSITIVO
+
+**La encontró la Fase 6, con el iPad delante**, y es lo que la verificación en
+dispositivo existe para encontrar. El criterio 8 copió bien pero **el material
+pegado no sonaba** hasta volver a disparar el Pattern a mano.
+
+**El síntoma tenía una mitad que no se ve, y es peor.** `TransportModel` guarda
+una copia viva del Pattern cargado, `pattern`, que es la que la pantalla `track`
+edita y la que `recordEdit()` vuelca al Bank en cada edición. `pastePattern()`
+escribía en el `Project` y no la refrescaba, así que:
+
+- Cuando el compás entra, `applyPendingAdoption` deja en `pattern` el material
+  **anterior al pegado** y mueve la selección al hueco pegado. **El primer giro
+  de knob lo escribe encima de lo pegado**, que se pierde sin aviso.
+- Y no es solo el caso armado: parado, pegar en el hueco seleccionado deja la
+  pantalla `track` enseñando lo viejo, con la misma pérdida al primer knob. El
+  criterio 5 pasó porque solo se miró la rejilla, que lee el Bank.
+
+**El `spec.md` no lo previó.** FR10 prohíbe armar y mover la selección; refrescar
+la copia viva no es ninguna de las dos, y rearmar **el mismo hueco** con el
+material nuevo tampoco arma uno distinto. Decidido con el usuario el 2026-09-10:
+se arreglan las dos mitades.
+
+- [ ] Task: Tests de la decisión de refresco, en `Engine`
+  - [ ] Qué hay que refrescar al pegar: nada, la copia viva, o la copia viva y
+        lo armado.
+  - [ ] Depende de si el destino es el hueco cargado y de si es el armado.
+- [ ] Task: Pegar refresca la copia viva y lo armado
+  - [ ] Destino igual al hueco cargado: `pattern` y `ControlInput` adoptan lo
+        pegado.
+  - [ ] Destino igual al hueco armado: se rearma **ese mismo** hueco con el
+        material nuevo, y la adopción pendiente guarda el nuevo.
+  - [ ] Sigue sin mover la selección y sin armar un hueco distinto (FR10).
+- [ ] Task: Enmendar el `spec.md` con lo que la verificación enseñó
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [ ] Corriendo: armar el 09, pegar, y **al límite de compás suena lo pegado**.
+  - [ ] Después de eso, girar un knob **no devuelve el material viejo**.
+  - [ ] Parado: pegar en el seleccionado y ver la pantalla `track` con lo pegado.
