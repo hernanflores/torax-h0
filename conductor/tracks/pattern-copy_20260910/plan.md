@@ -38,8 +38,8 @@ con la verificación en dispositivo detrás.
   - [x] Fuera de rango, `Project` intacto.
   - [x] Es lo que el pegado entre Banks necesita y `copyingSelectedPattern(to:)`
         no puede expresar (FR22).
-- [~] Task: Implementar la escritura de un Pattern suelto
-- [ ] Task: Retirar `copyingSelectedPattern(to:)` (FR23)
+- [x] Task: Implementar la escritura de un Pattern suelto — `68218df`
+- [~] Task: Retirar `copyingSelectedPattern(to:)` (FR23)
   - [ ] Sin llamadores en `App` al terminar la Fase 3; aquí se decide si se retira
         o se reescribe sobre `copyingPattern(from:to:)`.
   - [ ] Adaptar `PatternCopyTests`, conservando lo que prueban.
