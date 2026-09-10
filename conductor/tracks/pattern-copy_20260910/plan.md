@@ -106,13 +106,14 @@ con la verificación en dispositivo detrás.
 
 ## FASE 4: LA CAPA DE TOQUES — el riesgo del track
 
-- [~] Task: Resolver los toques de la rejilla con `UIViewRepresentable`
-  - [ ] `touchesBegan/Ended/Cancelled` sobre la rejilla entera; punto → índice de
-        celda.
-  - [ ] Los `Button` por celda desaparecen; el resaltado de pulsación se conserva
-        a mano.
-  - [ ] La accesibilidad de cada celda no se pierde al dejar de ser `Button`.
-- [ ] Task: Enchufar la regla de la Fase 2
+- [x] Task: Resolver los toques de la rejilla con `UIViewRepresentable` — `32f2849`
+  - [x] `touchesBegan/Ended/Cancelled` sobre la rejilla entera; punto → índice de
+        celda. **Las celdas dicen dónde quedaron** por una preference key, en vez
+        de deducir la rejilla de su espaciado.
+  - [x] Los `Button` por celda desaparecen; el resaltado de pulsación se conserva
+        a mano, con `Brutalist.pressedOpacity`.
+  - [x] La accesibilidad de cada celda no se pierde al dejar de ser `Button`.
+- [~] Task: Enchufar la regla de la Fase 2
   - [ ] El acorde **solo con el transporte corriendo** (FR15). Parado, cada toque
         selecciona en el `up`, como hoy.
   - [ ] `.select` llama a `selectPattern(_:)`; `.copy` copia y **carga el
