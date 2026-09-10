@@ -33,12 +33,12 @@ con la verificación en dispositivo detrás.
   - [x] No mueve la selección ni los ajustes de sesión.
 - [x] Task: Implementar `Project.copyingPattern(from:to:)` — `27ce70c`
   - [x] Sobre `Bank.copyingPattern(from:to:)`, que ya existe.
-- [~] Task: Tests de escribir un Pattern suelto en un hueco
-  - [ ] Un `Pattern` cualquiera entra en el hueco indicado del Bank vigente.
-  - [ ] Fuera de rango, `Project` intacto.
-  - [ ] Es lo que el pegado entre Banks necesita y `copyingSelectedPattern(to:)`
+- [x] Task: Tests de escribir un Pattern suelto en un hueco — `b17bfa3`
+  - [x] Un `Pattern` cualquiera entra en el hueco indicado del Bank vigente.
+  - [x] Fuera de rango, `Project` intacto.
+  - [x] Es lo que el pegado entre Banks necesita y `copyingSelectedPattern(to:)`
         no puede expresar (FR22).
-- [ ] Task: Implementar la escritura de un Pattern suelto
+- [~] Task: Implementar la escritura de un Pattern suelto
 - [ ] Task: Retirar `copyingSelectedPattern(to:)` (FR23)
   - [ ] Sin llamadores en `App` al terminar la Fase 3; aquí se decide si se retira
         o se reescribe sobre `copyingPattern(from:to:)`.
