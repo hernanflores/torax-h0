@@ -144,7 +144,7 @@ con la verificación en dispositivo detrás.
   - [x] Las dos señales se leen a un metro, que es la distancia de la pantalla.
         **Verificado.**
 
-## FASE 6: DISPOSITIVO Y CIERRE
+## FASE 6: DISPOSITIVO Y CIERRE [checkpoint: d5a7779]
 
 - [x] Task: Verificación en dispositivo (NFR6) — `cf16e51`
   - [x] **Parada el 2026-09-10 por lo que encontró.** Ver *FASE 7*; retomada con
@@ -161,9 +161,11 @@ con la verificación en dispositivo detrás.
         `VirtualLoopbackTests`. **21 + 875 tests, 0 fallos.** En un proceso
         aparecen las 4 de `VirtualLoopbackTests` con `clientCreationFailed(-50)`,
         que es la firma conocida y aplazada, no este cambio.
-- [~] Task: Cerrar el defecto en el registro
-  - [ ] Entrada en `tracks.md` con lo que entregó y lo que dejó fuera.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Cerrar el defecto en el registro — `d5a7779`
+  - [x] Entrada en `tracks.md` con lo que entregó y lo que dejó fuera.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Suite entera en verde y los trece criterios verificados. Ver la nota de
+        `cf16e51` y `device-verification.md`.
 
 ## FASE 7: CORRECCIONES DE LA VERIFICACIÓN EN DISPOSITIVO [checkpoint: d809ec9]
 
