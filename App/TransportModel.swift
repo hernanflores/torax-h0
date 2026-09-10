@@ -385,6 +385,14 @@ final class TransportModel {
     /// corta: el transporte tiene su propio snapshot publicado y no lo relee
     /// hasta la próxima adopción, así que el material sustituido entra al
     /// siguiente cambio de Pattern.
+    ///
+    /// **Y refresca lo que el `Project` no gobierna**, que es la corrección del
+    /// 2026-09-10: la copia viva cuando el destino es el hueco cargado, y el
+    /// armado cuando el destino es el que espera al compás. Sin lo primero el
+    /// primer giro de knob devolvía el material anterior encima de lo pegado;
+    /// sin lo segundo entraba el material viejo en el límite de compás. Ninguna
+    /// de las dos arma un hueco distinto ni mueve la selección, que es lo que
+    /// FR10 prohíbe.
     func pastePattern() {
         guard let clipboard else { return }
 
@@ -394,6 +402,31 @@ final class TransportModel {
             isRunning: isPlaying
         )
         project = project.replacing(clipboard.pattern, at: index)
+
+        // **Refrescar las dos copias que el `Project` no gobierna.** Lo encontró
+        // la verificación en dispositivo del 2026-09-10: sin esto, lo pegado no
+        // sonaba y el primer giro de knob lo borraba. La regla vive en
+        // `PatternPasteRefresh`, donde hay tests.
+        let refresh = PatternPasteRefresh(
+            destination: index,
+            loaded: project.selectedPattern,
+            armed: armedPatternIndex
+        )
+        if refresh.refreshesLiveCopy {
+            pattern = clipboard.pattern
+            controlInput.adopt(clipboard.pattern)
+        }
+        if refresh.rearms {
+            transport?.armForNextBar(clipboard.pattern)
+            pendingAdoption.arm(
+                PendingAdoption.Adoption(
+                    bankIndex: project.selectedBank,
+                    patternIndex: index,
+                    pattern: clipboard.pattern
+                ),
+                adoptionCount: transport?.adoptionCount ?? 0
+            )
+        }
         autosave.changed(bank, at: project.selectedBank)
     }
 
