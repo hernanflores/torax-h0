@@ -1,0 +1,9 @@
+Task: Cerrar el defecto en el registro (Fase 6, pattern-copy_20260910)
+
+The registry entry now says what the track delivered and what it left out, and
+carries the one thing worth remembering: the device pass found a defect no test
+run would have reported, because the live copy lives in `App`, which is not
+measured, and the missing rule did not exist in `Engine` yet. It cost an extra
+phase and the spec gained FR11b.
+
+Files: conductor/tracks.md
