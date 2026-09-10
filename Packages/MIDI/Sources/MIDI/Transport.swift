@@ -166,6 +166,52 @@ public final class Transport: @unchecked Sendable {
     private let lastTickNanoseconds = AtomicCounter(0)
     private let cyclePlaybackClock = CyclePlaybackClock()
 
+    /// Cuántas veces ha arrancado o parado el transporte.
+    ///
+    /// **Es un contador de generación: importa que cambió, no su valor.** Misma
+    /// forma que `PatternHandoff.adoptionCount` y `CyclePlaybackClock`, y por la
+    /// misma razón — el hilo de recepción de CoreMIDI no puede llamar hacia el
+    /// modelo, así que publica una palabra y la app la lee cuando dibuja.
+    ///
+    /// Lo mueven **las cuatro puertas** y ninguna otra cosa: `play()`, `stop()`,
+    /// y el `.start` y el `.stop` del maestro. **El tick no lo mueve**, y eso es
+    /// deliberado: son cincuenta por segundo, y avisar por tick serían once mil
+    /// invalidaciones por minuto contra las cuatro que hubo en los 220 s
+    /// medidos en dispositivo el 2026-09-09.
+    private let transportGenerationCounter = AtomicCounter(0)
+
+    /// Si el transporte está sonando ahora mismo.
+    ///
+    /// **Viaja junto al contador, y por eso los dos son atómicos.** Sin él,
+    /// quien lee sabe que algo pasó pero tiene que volver a `scheduler` para
+    /// saber qué — y `scheduler` es una propiedad almacenada normal que el hilo
+    /// de recepción reescribe mientras el principal dibujaría.
+    private let sounding = AtomicFlag(false)
+
+    /// **Se escribe una sola vez por transición, y aquí está el porqué de que
+    /// sea una función.** Publicar el flag y el contador por separado dejaría un
+    /// hueco en el que quien lee ve el estado nuevo con el contador viejo, o al
+    /// revés. El orden importa: **primero el estado, después el aviso**, para
+    /// que quien reaccione al contador encuentre el flag ya puesto.
+    ///
+    /// Realtime: llamado desde el hilo de recepción de CoreMIDI.
+    /// Sin asignaciones, sin locks, sin await.
+    private func publishTransportState(sounding isSounding: Bool) {
+        sounding.value = isSounding
+        transportGenerationCounter.increment()
+    }
+
+    /// Cuántas veces ha arrancado o parado el transporte. Lo lee la app para
+    /// saber si tiene que invalidar la pantalla.
+    ///
+    /// Realtime: legible desde cualquier hilo.
+    public var transportGeneration: UInt64 { transportGenerationCounter.value }
+
+    /// Si suena, según lo que el transporte publicó al cambiar.
+    ///
+    /// Realtime: legible desde cualquier hilo.
+    public var isSounding: Bool { sounding.value }
+
     private var scheduler: SchedulerThread?
 
     #if DEBUG
@@ -183,7 +229,21 @@ public final class Transport: @unchecked Sendable {
     /// máxima en lugar del patrón. Aquí siempre hay un Pattern válido.
     private var lastPublishedPattern: Pattern
 
-    public var isPlaying: Bool { scheduler?.isRunning ?? false }
+    /// Si el transporte está sonando.
+    ///
+    /// **Sale del flag atómico y no de `scheduler`** (NFR2 del track
+    /// `hardware-screen-sync_20260908`). Era `scheduler?.isRunning`, y ahí había
+    /// una carrera: `isRunning` sí es atómica, pero `scheduler` es una propiedad
+    /// almacenada normal que `startPlaying(atHostTime:)` y `stop()` reescriben
+    /// desde el hilo de recepción de CoreMIDI, mientras la pantalla la leía
+    /// desde el principal al dibujar.
+    ///
+    /// Leer el flag elimina ese lector. La escritura de `scheduler` desde el
+    /// hilo de recepción sigue existiendo y **queda sin lector concurrente**;
+    /// cerrarla del todo exigiría que la referencia viajara por un atómico o que
+    /// el hilo dejara de reasignarse, y eso es un track propio, no un arreglo de
+    /// paso.
+    public var isPlaying: Bool { isSounding }
 
     /// Los dieciséis Tracks vigentes. Cambiarlos mientras suena se hace con
     /// `publish(_:)`.
@@ -645,6 +705,11 @@ public final class Transport: @unchecked Sendable {
         }
         scheduler = thread
         thread.start(atHostTime: origin)
+
+        // **El último paso del arranque**, y a propósito: quien lea el contador
+        // desde el hilo principal tiene que encontrarse un transporte que ya
+        // suena, no uno a medio montar.
+        publishTransportState(sounding: true)
     }
 
     /// Para el reloj y apaga lo que estuviera sonando.
@@ -707,6 +772,10 @@ public final class Transport: @unchecked Sendable {
         guard let scheduler else { return }
         scheduler.stop()
         self.scheduler = nil
+
+        // **Después de la guarda**, que es lo que hace que parar lo ya parado no
+        // cuente: sin transición no hay nada que la pantalla deba repintar.
+        publishTransportState(sounding: false)
 
         // **Parar es apagar los doce.** El ámbito es lo único que distingue esto
         // de silenciar un Track al mutearlo: el procedimiento —`all notes off`

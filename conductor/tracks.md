@@ -962,7 +962,7 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: La pantalla no ve lo que cambia el hardware**
+- [x] **Track: La pantalla no ve lo que cambia el hardware**
   *Link: [conductor/tracks/hardware-screen-sync_20260908/index.md](./tracks/hardware-screen-sync_20260908/index.md)*
 
   **Planificado el 2026-09-08**, en cuatro fases. Descubierto el 2026-09-06, durante la Fase 4 de `screens-redesign_20260906`.
@@ -998,6 +998,38 @@ en cualquier momento.
   llega un `.start` o un `.stop` —no en cada tick de reloj, que serían cuarenta y
   ocho saltos por segundo al hilo principal—, y dejar el tempo externo con su
   propia cadencia. Nada de temporizadores colgados de vistas.
+
+  > **Cerrado el 2026-09-10.** El transporte publica sus transiciones por un
+  > contador atómico y un flag, escritos en las cuatro puertas y en ninguna otra;
+  > la app los lee desde el `.task` de 16 ms que ya existía, junto a
+  > `applyPendingAdoption()`. Es la forma que `control-input-adoption_20260908`
+  > había encontrado, aplicada tal cual — no se inventó nada, y eso es la mitad
+  > de por qué salió a la primera después de tres intentos revertidos.
+  >
+  > **El segundo síntoma ya estaba resuelto** y se descubrió al empezar: el tempo
+  > del maestro sí llega a la barra, porque el `TimelineView` de `AppChrome` la
+  > repregunta cuatro veces por segundo. Se enmendó el plan antes de escribir
+  > código en vez de implementar algo que sobraba.
+  >
+  > **Y había dos síntomas que el reporte no tenía.** El defecto era simétrico
+  > —la copia tampoco se enteraba de un Stop del maestro—, y el anillo del
+  > playhead cuelga de la misma copia, así que no avanzaba con un Start del
+  > hardware aunque la secuencia sonara. Los dos se encontraron contando en el
+  > dispositivo, que es lo que este defecto había enseñado a hacer.
+  >
+  > **De propina, la carrera sobre `scheduler` se queda sin lector**:
+  > `isPlaying` deja de ser `scheduler?.isRunning` y pasa a leer el flag. Lo que
+  > sobrevive es la escritura desde el hilo de recepción, anotada con su ruta.
+  >
+  > **Verificado en iPad con BeatStep Pro.** Los dos síntomas reportados, el
+  > simétrico, el anillo, el corte de reloj y la no-regresión con reloj interno.
+  > **Contado, no estimado**: 4520 ticks en 90 s a 125 bpm movieron el contador de
+  > transiciones **cero veces**. `ToraxH0App` sigue con los mismos 2 `.task` y los
+  > knobs responden igual de fluido. Detalle en `device-verification.md`.
+  >
+  > `MIDI`: 896 tests en la partición de CI (875 + 21), cobertura 91,74% de
+  > líneas, `TransportWatch.swift` al 100%.
+  > Sin medición de jitter (NFR5): no mueve ningún instante.
 
   > **Al planificarlo, el 2026-09-08 — la forma ya no es probable, es la que hay
   > en el repositorio.** `control-input-adoption_20260908` resolvió el mismo

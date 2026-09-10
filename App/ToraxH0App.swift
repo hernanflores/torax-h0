@@ -68,10 +68,23 @@ struct ToraxH0App: App {
                 //
                 // Sin nada pendiente cuesta una lectura atómica y una
                 // comparación, que es lo que pasa en casi todos los cuadros.
+                //
+                // **Y por aquí entra también el transporte**, en el mismo
+                // `.task` y no en uno propio. El hilo de recepción de CoreMIDI
+                // publica una palabra atómica al arrancar y al parar —lo mismo
+                // que el del scheduler al adoptar—, así que el mecanismo es el
+                // mismo y el sitio donde se pregunta también.
+                //
+                // **Ni un `.task` nuevo, ni un temporizador colgado de una
+                // vista**: eso último fue el tercer intento de arreglar este
+                // defecto, y se multiplicaban con cada invalidación hasta
+                // saturar el hilo principal — el mismo al que la entrada de
+                // control salta para publicar un giro.
                 .task {
                     while !Task.isCancelled {
                         try? await Task.sleep(for: .milliseconds(16))
                         model.applyPendingAdoption()
+                        model.applyTransportState()
                     }
                 }
         }
