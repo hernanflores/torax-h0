@@ -127,16 +127,17 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
 
 ## FASE 3: LA APP LO LEE, EN EL `.task` QUE YA EXISTE
 
-- [ ] Task: El modelo invalida cuando el hardware cambió algo (FR6, FR7)
-  - [ ] Tests (Red): con el contador movido, el modelo incrementa
-        `clockRevision`; sin moverse, no lo toca (FR7).
-  - [ ] Tests (Red): el estado que la pantalla lee sale del flag y no de
-        `scheduler` (NFR2).
-  - [ ] Implementación (Green): la comparación vive en `MIDI`, donde hay tests;
-        en `App` queda la llamada (NFR4).
-  - [ ] **En el `.task` de 16 ms que ya existe**, junto a
-        `applyPendingAdoption()`. Ni un `.task` nuevo, ni un temporizador colgado
-        de una vista — es el error del tercer intento (FR6).
+- [x] Task: El modelo invalida cuando el hardware cambió algo (FR6, FR7) `0af6b6d`
+  - [x] Tests (Red): con el contador movido, `TransportWatch` reporta y el modelo
+        invalida; sin moverse, devuelve `nil` y no se toca nada (FR7).
+  - [x] Tests (Red): el estado que la pantalla lee sale del flag y no de
+        `scheduler` (NFR2). Cubierto en la Fase 2, donde `isPlaying` cambió de
+        fuente.
+  - [x] Implementación (Green): `TransportWatch` vive en `MIDI`, donde hay tests;
+        en `App` quedan una llamada y una asignación (NFR4).
+  - [x] **En el `.task` de 16 ms que ya existe**, junto a
+        `applyPendingAdoption()`. Comprobado: `ToraxH0App` sigue con **2**
+        `.task`, los mismos de antes (criterio 7).
 - [x] ~~Task: El tempo externo, por comparación y sin contador (FR4, FR9)~~
       **Cancelada el 2026-09-09.** El `TimelineView` de `AppChrome.swift:222` ya
       refresca el número cuatro veces por segundo leyendo `currentTempo`, que es
