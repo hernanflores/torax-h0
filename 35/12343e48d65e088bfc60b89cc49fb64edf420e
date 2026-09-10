@@ -21,3 +21,20 @@ failures.
 Why: an implicit origin is the defect itself. Collapsing the old entry point
 onto the explicit one means there is a single copy rule in the engine while the
 screen catches up.
+
+---
+
+Phase Verification & Checkpoint — FASE 1: EL MOTOR APRENDE UN ORIGEN
+
+Automated tests:
+  swift test --package-path Packages/Engine --enable-code-coverage
+  → 899 tests, 0 failures
+  Coverage (llvm-cov, ignoring .build and Tests): 98.67% of lines — threshold ≥90%.
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' → BUILD SUCCEEDED
+
+Manual verification proposed: run the app, open the Banks screen, and confirm
+nothing changed — selecting a slot works as before, `clear` still clears, and
+`copy here` still does nothing. The phase is engine-only and has no visible
+surface yet.
+
+User confirmation: "nada cambio" — the expected outcome for this phase.
