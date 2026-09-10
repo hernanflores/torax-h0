@@ -1,0 +1,15 @@
+Task: Tests de la decisión de refresco, en `Engine` (Fase 7, pattern-copy_20260910)
+
+Red phase. Six cases for `PatternPasteRefresh(destination:loaded:armed:)`:
+pasting into the loaded slot refreshes the live copy, pasting elsewhere does
+not, pasting into the armed slot re-arms it, pasting outside the armed slot does
+not, a destination that is both loaded and armed does both, and nothing is ever
+re-armed when nothing is armed.
+
+Files: Packages/Engine/Tests/EngineTests/PatternPasteRefreshTests.swift (new)
+
+Why: found by the device pass. `Project` does not govern the two copies that
+made the paste look dead — `TransportModel.pattern`, the live copy the track
+screen edits and `recordEdit()` writes back to the Bank, and the snapshot the
+transport already had armed. Deciding which of them a paste has to refresh is a
+rule, so it lives where there are tests.
