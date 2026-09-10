@@ -59,12 +59,13 @@ con la verificación en dispositivo detrás.
   - [x] `down(A)`, `down(A)`: no copia sobre sí mismo.
   - [x] Después de un acorde, el primer `down` siguiente vuelve a empezar limpio.
   - [x] Un toque cancelado no selecciona (FR21).
-- [~] Task: Implementar el valor de la regla
-  - [ ] Entradas `pressing(_:)` / `releasing(_:)`; salidas `.none`,
-        `.select(Int)`, `.copy(from:to:)`.
-  - [ ] Sin `import UIKit` ni `SwiftUI`: es una regla, y por eso se puede probar
+- [x] Task: Implementar el valor de la regla — `e175bc4`
+  - [x] Entradas `pressing(_:)` / `releasing(_:)`; salidas `.none`,
+        `.select(Int)`, `.copy(from:to:)`. Con `cancelling(_:)` además, que FR21
+        necesita y las entradas del plan no nombraban.
+  - [x] Sin `import UIKit` ni `SwiftUI`: es una regla, y por eso se puede probar
         (NFR1).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [ ] Suite de `Engine` en verde y cobertura ≥90%.
 
 ## FASE 3: PORTAPAPELES, `copy` Y `paste` — **cierra el defecto reportado**
