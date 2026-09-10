@@ -51,15 +51,15 @@ con la verificación en dispositivo detrás.
 
 ## FASE 2: LA REGLA DEL ACORDE, EN `Engine`
 
-- [~] Task: Tests de la máquina de estados del acorde (FR16, FR17)
-  - [ ] `down(A)` solo: sin efecto. `up(A)`: selecciona A.
-  - [ ] `down(A)`, `down(B)`: copia A → B en el segundo `down`.
-  - [ ] Levantar A primero y B primero dan el mismo resultado: **nada**.
-  - [ ] Un tercer `down` con dos dedos abajo se ignora.
-  - [ ] `down(A)`, `down(A)`: no copia sobre sí mismo.
-  - [ ] Después de un acorde, el primer `down` siguiente vuelve a empezar limpio.
-  - [ ] Un toque cancelado no selecciona (FR21).
-- [ ] Task: Implementar el valor de la regla
+- [x] Task: Tests de la máquina de estados del acorde (FR16, FR17) — `9f26047`
+  - [x] `down(A)` solo: sin efecto. `up(A)`: selecciona A.
+  - [x] `down(A)`, `down(B)`: copia A → B en el segundo `down`.
+  - [x] Levantar A primero y B primero dan el mismo resultado: **nada**.
+  - [x] Un tercer `down` con dos dedos abajo se ignora.
+  - [x] `down(A)`, `down(A)`: no copia sobre sí mismo.
+  - [x] Después de un acorde, el primer `down` siguiente vuelve a empezar limpio.
+  - [x] Un toque cancelado no selecciona (FR21).
+- [~] Task: Implementar el valor de la regla
   - [ ] Entradas `pressing(_:)` / `releasing(_:)`; salidas `.none`,
         `.select(Int)`, `.copy(from:to:)`.
   - [ ] Sin `import UIKit` ni `SwiftUI`: es una regla, y por eso se puede probar
