@@ -22,7 +22,7 @@ ven toques simultáneos, así que la rejilla pasa a resolver los toques ella mis
 sobre `UIViewRepresentable`. Es la fase que puede sorprender, y por eso va sola y
 con la verificación en dispositivo detrás.
 
-## FASE 1: EL MOTOR APRENDE UN ORIGEN
+## FASE 1: EL MOTOR APRENDE UN ORIGEN [checkpoint: 3512343]
 
 - [x] Task: Tests de `Project.copyingPattern(from:to:)` — `2ea61d4`
   - [x] Copia con origen distinto del seleccionado, dentro del Bank vigente.
@@ -45,12 +45,13 @@ con la verificación en dispositivo detrás.
         aquí como envoltorio y se retira en la Fase 3**, cuando `copy` y `paste`
         sustituyan al llamador de `TransportModel`.
   - [x] Adaptar `PatternCopyTests`, conservando lo que prueban.
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
-  - [ ] Suite de `Engine` en verde y cobertura ≥90%.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Suite de `Engine` en verde y cobertura ≥90%. **899 tests, 0 fallos;
+        cobertura 98,67%.**
 
 ## FASE 2: LA REGLA DEL ACORDE, EN `Engine`
 
-- [ ] Task: Tests de la máquina de estados del acorde (FR16, FR17)
+- [~] Task: Tests de la máquina de estados del acorde (FR16, FR17)
   - [ ] `down(A)` solo: sin efecto. `up(A)`: selecciona A.
   - [ ] `down(A)`, `down(B)`: copia A → B en el segundo `down`.
   - [ ] Levantar A primero y B primero dan el mismo resultado: **nada**.
