@@ -65,6 +65,22 @@ enum Brutalist {
     /// que el gesto se sienta igual que en el resto de la app.
     static let pressedOpacity: Double = 0.6
 
+    // MARK: - Copiar y pegar
+
+    /// El lado de la marca de la celda de origen.
+    ///
+    /// **Es un bloque y no un borde** porque los tres bordes ya están repartidos
+    /// —el que suena, el que espera y el elegido— y un cuarto no se distinguiría
+    /// de ellos a un metro (FR12).
+    static let copyMark: CGFloat = 10
+
+    /// Cuánto dura el destello de la celda de destino.
+    ///
+    /// **Existe para el caso que FR9 autoriza**: pegar encima de un hueco que ya
+    /// tenía material, donde el estado no cambia y sin destello el gesto se lee
+    /// como el botón muerto que este track viene a arreglar.
+    static let flashDuration: Double = 0.45
+
     // MARK: - Sombra
 
     /// El desplazamiento de la sombra dura.

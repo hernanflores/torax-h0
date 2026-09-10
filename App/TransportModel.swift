@@ -336,6 +336,22 @@ final class TransportModel {
     /// `nil` si no hay marca que dibujar aquí (FR12).
     var copiedSlotIndex: Int? { clipboard?.markedSlot(inBank: project.selectedBank) }
 
+    /// En qué hueco caería un pegado ahora mismo, o `nil` si no hay nada que
+    /// pegar.
+    ///
+    /// **La pantalla lo necesita para el destello** (FR13): la celda que recibe
+    /// el material tiene que decirlo, y con el transporte corriendo no es la
+    /// seleccionada.
+    var pasteDestinationIndex: Int? {
+        guard clipboard != nil else { return nil }
+
+        return PatternClipboard.destination(
+            selected: project.selectedPattern,
+            armed: armedPatternIndex,
+            isRunning: isPlaying
+        )
+    }
+
     /// Carga el hueco vigente en el portapapeles (FR5, FR6).
     ///
     /// **Disponible siempre**, con el transporte parado y corriendo: copiar no

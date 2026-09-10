@@ -41,6 +41,8 @@ struct BanksScreen: View {
                 selected: model.selectedPatternIndex,
                 states: model.patternSlotStates,
                 beatsUntilChange: model.beatsUntilPatternChange,
+                copied: model.copiedSlotIndex,
+                pasteDestination: model.pasteDestinationIndex,
                 onSelect: model.selectPattern,
                 canPaste: model.canPaste,
                 isRunning: model.isPlaying,
@@ -143,6 +145,13 @@ struct PatternGrid: View {
     /// Cuántas negras faltan para que entre el Pattern armado.
     let beatsUntilChange: Int?
 
+    /// El hueco del que salió lo que hay en el portapapeles, si está en este
+    /// Bank (FR12).
+    let copied: Int?
+
+    /// Dónde caería un pegado ahora, para saber qué celda destella.
+    let pasteDestination: Int?
+
     let onSelect: (Int) -> Void
 
     /// Si hay algo en el portapapeles. Vacío, `paste` no se puede pulsar (FR4).
@@ -170,6 +179,9 @@ struct PatternGrid: View {
     /// La regla del acorde, que decide qué significa cada toque cuando el
     /// transporte corre. Vive en `Engine`, donde hay tests.
     @State private var chord = PatternChord()
+
+    /// La celda que está destellando ahora mismo, si alguna.
+    @State private var flashed: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -229,7 +241,7 @@ struct PatternGrid: View {
             HStack(spacing: 8) {
                 Button("copy") { onCopy() }
                     .brutalistControl(accent: Palette.offWhite, isSelected: false)
-                Button("paste") { onPaste() }
+                Button("paste") { paste() }
                     .brutalistControl(accent: Palette.offWhite, isSelected: false)
                     .disabled(!canPaste)
                 Button("clear") { onClear(selected) }
@@ -301,6 +313,34 @@ struct PatternGrid: View {
             onSelect(index)
         case .copy(let origin, let destination):
             onChordCopy(origin, destination)
+            flash(destination)
+        }
+    }
+
+    /// Pega, y **destella la celda que recibió el material** (FR13).
+    ///
+    /// El destino se pide antes de pegar: pegar puede cambiar lo que la vista
+    /// sabe, y la celda que destella es la que recibió, no la que reciba la
+    /// próxima vez.
+    private func paste() {
+        let destination = pasteDestination
+        onPaste()
+        if let destination { flash(destination) }
+    }
+
+    /// El destello de la celda de destino (FR13, FR14).
+    ///
+    /// **Se enciende y se apaga solo, sin colgarse del reloj**: no es una
+    /// animación al ritmo del transporte sino un desvanecido de una vez, así que
+    /// no añade trabajo por cuadro ni depende de que algo esté sonando.
+    ///
+    /// El salto a la siguiente vuelta del bucle es lo que separa el encendido
+    /// del apagado; en la misma pasada SwiftUI los fundiría en uno y no se vería
+    /// nada.
+    private func flash(_ index: Int) {
+        flashed = index
+        Task { @MainActor in
+            withAnimation(.easeOut(duration: Brutalist.flashDuration)) { flashed = nil }
         }
     }
 
@@ -326,6 +366,24 @@ struct PatternGrid: View {
             RoundedRectangle(cornerRadius: Brutalist.radius)
                 .stroke(border(state: state, isSelected: isSelected), lineWidth: width(isSelected))
         }
+        // **La marca de origen es un bloque en la esquina**, no un borde: los
+        // tres bordes ya están repartidos entre el que suena, el que espera y el
+        // elegido, y un cuarto no se distinguiría a un metro (FR12).
+        .overlay(alignment: .topTrailing) {
+            if index == copied {
+                Rectangle()
+                    .fill(Palette.offWhite)
+                    .frame(width: Brutalist.copyMark, height: Brutalist.copyMark)
+                    .padding(6)
+                    .accessibilityHidden(true)
+            }
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: Brutalist.radius)
+                .fill(Palette.offWhite)
+                .opacity(index == flashed ? 1 : 0)
+                .allowsHitTesting(false)
+        }
         .background {
             GeometryReader { proxy in
                 Color.clear.preference(
@@ -339,7 +397,11 @@ struct PatternGrid: View {
         // acorde es un gesto de dos dedos que no tiene equivalente accesible, y
         // para eso están `copy` y `paste`.
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("pattern \(index + 1), \(state.label)")
+        .accessibilityLabel(
+            index == copied
+                ? "pattern \(index + 1), \(state.label), copied"
+                : "pattern \(index + 1), \(state.label)"
+        )
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction { onSelect(index) }
     }
