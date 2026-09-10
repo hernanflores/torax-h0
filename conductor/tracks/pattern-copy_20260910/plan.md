@@ -183,17 +183,19 @@ la copia viva no es ninguna de las dos, y rearmar **el mismo hueco** con el
 material nuevo tampoco arma uno distinto. Decidido con el usuario el 2026-09-10:
 se arreglan las dos mitades.
 
-- [ ] Task: Tests de la decisión de refresco, en `Engine`
-  - [ ] Qué hay que refrescar al pegar: nada, la copia viva, o la copia viva y
+- [x] Task: Tests de la decisión de refresco, en `Engine` — `35d6458`
+  - [x] Qué hay que refrescar al pegar: nada, la copia viva, o la copia viva y
         lo armado.
-  - [ ] Depende de si el destino es el hueco cargado y de si es el armado.
-- [ ] Task: Pegar refresca la copia viva y lo armado
-  - [ ] Destino igual al hueco cargado: `pattern` y `ControlInput` adoptan lo
+  - [x] Depende de si el destino es el hueco cargado y de si es el armado.
+- [x] Task: Pegar refresca la copia viva y lo armado — `d809ec9`
+  - [x] Destino igual al hueco cargado: `pattern` y `ControlInput` adoptan lo
         pegado.
-  - [ ] Destino igual al hueco armado: se rearma **ese mismo** hueco con el
+  - [x] Destino igual al hueco armado: se rearma **ese mismo** hueco con el
         material nuevo, y la adopción pendiente guarda el nuevo.
-  - [ ] Sigue sin mover la selección y sin armar un hueco distinto (FR10).
-- [ ] Task: Enmendar el `spec.md` con lo que la verificación enseñó
+  - [x] Sigue sin mover la selección y sin armar un hueco distinto (FR10).
+- [x] Task: Enmendar el `spec.md` con lo que la verificación enseñó — `13bf4ad`
+  - [x] FR11b, el criterio 8 ampliado, y una sección con lo que la pasada en
+        dispositivo enseñó sobre el método.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [ ] Corriendo: armar el 09, pegar, y **al límite de compás suena lo pegado**.
   - [ ] Después de eso, girar un knob **no devuelve el material viejo**.
