@@ -31,9 +31,9 @@ con la verificación en dispositivo detrás.
   - [x] `from == to` devuelve el `Project` intacto — el caso que el defecto
         disparaba, ahora escrito y esperado.
   - [x] No mueve la selección ni los ajustes de sesión.
-- [~] Task: Implementar `Project.copyingPattern(from:to:)`
-  - [ ] Sobre `Bank.copyingPattern(from:to:)`, que ya existe.
-- [ ] Task: Tests de escribir un Pattern suelto en un hueco
+- [x] Task: Implementar `Project.copyingPattern(from:to:)` — `27ce70c`
+  - [x] Sobre `Bank.copyingPattern(from:to:)`, que ya existe.
+- [~] Task: Tests de escribir un Pattern suelto en un hueco
   - [ ] Un `Pattern` cualquiera entra en el hueco indicado del Bank vigente.
   - [ ] Fuera de rango, `Project` intacto.
   - [ ] Es lo que el pegado entre Banks necesita y `copyingSelectedPattern(to:)`
