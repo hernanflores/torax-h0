@@ -153,11 +153,15 @@ con la verificación en dispositivo detrás.
         **El 8 falló** y arrastró al 5; los dos cerrados tras la Fase 7.
   - [x] Incluye pegar encima del que suena sin que el audio se corte.
   - [x] Escribir `device-verification.md` con lo observado, no con lo esperado.
-- [~] Task: Cobertura y suite completa
-  - [ ] `Engine` ≥90%. `MIDI` no debería moverse; comprobarlo.
-  - [ ] `MIDI` se corre con la partición de CI, por el flake conocido de
-        `VirtualLoopbackTests`.
-- [ ] Task: Cerrar el defecto en el registro
+- [x] Task: Cobertura y suite completa
+  - [x] `Engine` ≥90%. `MIDI` no debería moverse; comprobarlo. **`Engine`: 921
+        tests, 98,70% de líneas. `MIDI`: 91,77%, sin moverse — el track no toca
+        ese paquete.**
+  - [x] `MIDI` se corre con la partición de CI, por el flake conocido de
+        `VirtualLoopbackTests`. **21 + 875 tests, 0 fallos.** En un proceso
+        aparecen las 4 de `VirtualLoopbackTests` con `clientCreationFailed(-50)`,
+        que es la firma conocida y aplazada, no este cambio.
+- [~] Task: Cerrar el defecto en el registro
   - [ ] Entrada en `tracks.md` con lo que entregó y lo que dejó fuera.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
