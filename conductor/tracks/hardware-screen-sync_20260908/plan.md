@@ -100,22 +100,29 @@ comprueba es el coste por tick, contando eventos y no cronometrando.
 
 ## FASE 2: EL TRANSPORTE PUBLICA SU ESTADO
 
-- [ ] Task: El contador y el flag de transporte (FR1, FR2, FR3, NFR1)
-  - [ ] Tests (Red): el contador arranca en cero y **se mueve exactamente una vez
+- [x] Task: El contador y el flag de transporte (FR1, FR2, FR3, NFR1) `6317238`
+  - [x] Tests (Red): el contador arranca en cero y **se mueve exactamente una vez
         por transición**.
-  - [ ] Tests (Red): lo mueven las cuatro puertas —`play()`, `stop()`, `.start` y
-        `.stop` entrantes— y ninguna otra (FR3).
-  - [ ] Tests (Red): un Start sobre un transporte que ya suena reinicia **y**
+  - [x] Tests (Red): lo mueven las cuatro puertas —`play()`, `stop()`, `.start` y
+        `.stop` entrantes— y ninguna otra (FR3). Además: parar lo ya parado y
+        arrancar lo que ya suena **no** lo mueven.
+  - [x] Tests (Red): un Start sobre un transporte que ya suena reinicia **y**
         deja el contador consistente con lo que el flag dice.
-  - [ ] Tests (Red): **2880 `.timingClock` no lo mueven** (FR5). Es el test que
+  - [x] Tests (Red): **2880 `.timingClock` no lo mueven** (FR5). Es el test que
         impide que alguien «arregle» el tempo avisando por tick.
-  - [ ] Tests (Red): el flag y el contador se leen desde otro hilo sin romper
-        nada — el mismo test de concurrencia que tiene `CyclePlaybackClock`.
-  - [ ] Implementación (Green): `AtomicCounter` y `AtomicFlag` en `Transport`,
-        escritos en las cuatro puertas. Marcador `/// Realtime:` en lo que toque
-        el hilo de recepción.
-  - [ ] Comprobar que el camino del tick **no gana ni una escritura** (FR5,
-        NFR1).
+  - [x] Tests (Red): el flag y el contador se leen desde otro hilo sin romper
+        nada — mismo patrón que `AdoptionGenerationTests`.
+  - [x] Implementación (Green): `AtomicCounter` y `AtomicFlag` en `Transport`,
+        escritos en las cuatro puertas por `publishTransportState(sounding:)`.
+        Marcador `/// Realtime:` en lo que toca el hilo de recepción.
+  - [x] Comprobado que el camino del tick **no gana ni una escritura** (FR5,
+        NFR1): por test y por lectura — el `case .timingClock` sigue llamando
+        solo a `follow(tickAtHostTime:)`.
+  - [x] **NFR2 aplicado aquí y no en la Fase 3**: `isPlaying` pasa de
+        `scheduler?.isRunning` a leer el flag, así que el lector del hilo
+        principal desaparece en cuanto el estado se publica. Adelantarlo es lo
+        que hace verdad la promesa de la fase — si la 3 no llegara, la carrera ya
+        está sin lector.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: LA APP LO LEE, EN EL `.task` QUE YA EXISTE
