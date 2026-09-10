@@ -113,14 +113,14 @@ con la verificación en dispositivo detrás.
   - [x] Los `Button` por celda desaparecen; el resaltado de pulsación se conserva
         a mano, con `Brutalist.pressedOpacity`.
   - [x] La accesibilidad de cada celda no se pierde al dejar de ser `Button`.
-- [~] Task: Enchufar la regla de la Fase 2
-  - [ ] El acorde **solo con el transporte corriendo** (FR15). Parado, cada toque
+- [x] Task: Enchufar la regla de la Fase 2 — `d3952d3`
+  - [x] El acorde **solo con el transporte corriendo** (FR15). Parado, cada toque
         selecciona en el `up`, como hoy.
-  - [ ] `.select` llama a `selectPattern(_:)`; `.copy` copia y **carga el
+  - [x] `.select` llama a `selectPattern(_:)`; `.copy` copia y **carga el
         portapapeles** (FR19).
-  - [ ] El acorde no arma, no mueve selección, no toca transporte ni
+  - [x] El acorde no arma, no mueve selección, no toca transporte ni
         `pendingAdoption` (FR18).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [ ] En iPad, con el transporte corriendo: el acorde copia y **sigue sonando
         el mismo Pattern**, en los dos órdenes de levantada.
   - [ ] Un toque sencillo sigue armando, con su cuenta atrás.
