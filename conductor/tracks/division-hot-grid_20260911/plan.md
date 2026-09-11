@@ -49,18 +49,18 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
 
 ## FASE 2: EL SCHEDULER REANCLA CUANDO GIRA EL KNOB
 
-- [ ] Task: Tests del reanclaje en `LookAheadScheduler`
-  - [ ] Reanclar no mueve la marca de agua: el Step siguiente es el siguiente
+- [x] Task: Tests del reanclaje en `LookAheadScheduler` — `24cf886`
+  - [x] Reanclar no mueve la marca de agua: el Step siguiente es el siguiente
         (FR5).
-  - [ ] Sobre ventanas sucesivas con un reanclaje en medio, **cada Step se emite
+  - [x] Sobre ventanas sucesivas con un reanclaje en medio, **cada Step se emite
         exactamente una vez** y los rangos no retroceden (FR7, criterio 3).
-  - [ ] Ningún Step posterior al reanclaje cae antes del horizonte ya entregado
+  - [x] Ningún Step posterior al reanclaje cae antes del horizonte ya entregado
         (FR7).
-- [ ] Task: Implementar el reanclaje en `LookAheadScheduler`
-  - [ ] Toma la Division nueva y ancla en el Step aún no entregado, con el
+- [x] Task: Implementar el reanclaje en `LookAheadScheduler` — `6c7ba17`
+  - [x] Toma la Division nueva y ancla en el Step aún no entregado, con el
         instante que ese Step tenía en la rejilla anterior.
-  - [ ] Realtime: sin asignaciones, sin locks, sin await.
-- [ ] Task: Tests de `TrackScheduler` con la Division cambiando entre ventanas
+  - [x] Realtime: sin asignaciones, sin locks, sin await.
+- [~] Task: Tests de `TrackScheduler` con la Division cambiando entre ventanas
   - [ ] Publicar un Track con otra Division cambia el espaciado de los Steps
         emitidos a partir de la ventana siguiente (FR1, FR2, criterio 1).
   - [ ] No se reinicia nada: mismo índice de Step, `turnStartStep` quieto, cursor
