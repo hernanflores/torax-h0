@@ -1,0 +1,19 @@
+Task: Tests de Ctrl All sobre Division (Fase 6, division-hot-grid_20260911)
+
+Archivos creados:
+- Packages/MIDI/Tests/MIDITests/DivisionCtrlAllTests.swift (2 tests)
+
+Qué fijan (FR13, criterio 11): un giro de Ctrl All sobre Division publica un
+Pattern con los doce Tracks desplazados, y el scheduler reancla los doce en la
+misma ventana. En cada Track ningún Step se pierde, se repite ni se pide para
+el pasado.
+- Con los doce en 1/16: el fill pone fusas desde el Step 9, a 1125 ms, y al
+  soltar el Step 16 cae a 1562,5 ms, sin rebobinar, otra vez en 1/16.
+- Con Divisions distintas, los pares en 1/16 y los impares en 1/8: cada Track
+  desplaza la suya y su espaciado se reduce a la mitad.
+
+Nota: el spec dice «dieciséis Tracks»; Pattern.trackCount es 12 desde
+ui-declutter_20260902, y el test usa Pattern.trackCount.
+
+Verdes desde el primer intento, por la misma razón que los de Temp: Ctrl All
+publica un Pattern normal por el handoff de siempre.
