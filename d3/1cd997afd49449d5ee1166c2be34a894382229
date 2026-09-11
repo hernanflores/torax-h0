@@ -1,0 +1,12 @@
+Task: Tests de la rejilla anclada en MusicalTimeline (Fase 1, division-hot-grid_20260911)
+
+Fase roja: el archivo no compila porque MusicalTimeline no tiene anchorStep,
+anchorNanoseconds ni rebased(to:atStep:). Confirmado con
+swift test --package-path Packages/Engine --filter AnchoredTimelineTests.
+
+Archivos creados:
+- Packages/Engine/Tests/EngineTests/AnchoredTimelineTests.swift (12 tests)
+
+El porqué: el ancla se calcula dentro de rebased(to:atStep:) y no se recibe
+como parámetro, para que quien reancla y quien emite no puedan discrepar sobre
+dónde caía el Step del corte.
