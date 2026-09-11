@@ -175,23 +175,35 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
 
 ## FASE 5: EL ANILLO MIDE CON EL MISMO ANCLA
 
-- [ ] Task: Tests de la publicación del ancla
-  - [ ] El hilo del scheduler publica el ancla vigente de cada Track y el hilo de
+- [x] Task: Tests de la publicación del ancla — `7fe0676`
+  - [x] El hilo del scheduler publica el ancla vigente de cada Track y el hilo de
         dibujo la lee sin locks, con la forma de `CyclePlaybackClock` (FR10).
-  - [ ] Lo que cruza son enteros, no un snapshot (NFR5b).
-  - [ ] Un Track que no ha reanclado publica el ancla de Play (FR11).
-- [ ] Task: Implementar la publicación del ancla
-- [ ] Task: Tests de `Playhead` contra el ancla
-  - [ ] Un Track reanclado marca el Step que suena, no el que marcaría midiendo
+  - [x] Lo que cruza son enteros, no un snapshot (NFR5b).
+  - [x] Un Track que no ha reanclado publica el ancla de Play (FR11).
+- [x] Task: Implementar la publicación del ancla — `35f2ccd`
+  - `CyclePlaybackClock` publica por Track la rejilla vigente y la anterior
+    —la anterior cubre el look-ahead— como seis enteros bajo un seqlock. El
+    scheduler escribe sin esperar y la interfaz reintenta. En `Engine`,
+    `PlaybackGrid` y el init anclado de `MusicalTimeline`, ahora público.
+- [x] Task: Tests de `Playhead` contra el ancla — `b913040`
+  - [x] Un Track reanclado marca el Step que suena, no el que marcaría midiendo
         desde el origen de Play (FR9, criterio 10).
-  - [ ] Un Track que no reancló se dibuja exactamente como hoy: los tests
+  - [x] Un Track que no reancló se dibuja exactamente como hoy: los tests
         actuales de `Playhead` siguen pasando sin tocarlos (FR11).
-- [ ] Task: Implementar `Playhead` con ancla
-  - [ ] `Playhead.forEachTrack` deja de asumir la rejilla desde el origen de
+  - [x] *(Ampliación del 2026-09-11.)* `CyclePosition` deduce el Cycle en curso
+        con la misma rejilla. La Fase 3 hizo falsa su premisa: la rejilla ya no
+        sale del Cycle 1, que era la limitación 8 de `cycles_20260901`.
+- [x] Task: Implementar `Playhead` con ancla — `8f17674`
+  - [x] `Playhead.forEachTrack` deja de asumir la rejilla desde el origen de
         Play; el comentario que promete que ver y oír no discrepan pasa a ser
         cierto también después de girar el knob.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
-  - [ ] Suites de `Engine` y `MIDI` en verde, con sus umbrales.
+  - [x] `CyclePosition` recibe la misma rejilla; `Transport` se la pasa a los
+        dos.
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Suites de `Engine` y `MIDI` en verde, con sus umbrales. **`Engine` 943
+        tests, cobertura 98,74%. `MIDI` 939 tests; los 7 fallos son los cuatro
+        `VirtualLoopbackTests` con `clientCreationFailed(-50)`, el flake
+        conocido. Cobertura 92,00%. `xcodebuild build` correcto.**
 
 ## FASE 6: TEMP Y CTRL ALL SOBRE DIVISION
 
