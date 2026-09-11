@@ -171,6 +171,16 @@ Esto no es organización cosmética: **el compilador garantiza que el motor es p
   rescate de ficheros ilegibles. Depende de `Engine` y de Foundation.
 - **App** — SwiftUI, presentación y estado de aplicación.
 
+> **Nota del 2026-09-10 — `App` tiene su primer trozo de UIKit.**
+> La rejilla de Patterns resuelve sus propios toques con `UIViewRepresentable`
+> (`PatternTouchLayer`), porque **dos `Button` hermanos de SwiftUI no ven toques
+> simultáneos**: cada uno reclama el suyo y el segundo dedo no llega nunca. Sin
+> eso, el acorde de dos dedos de `pattern-copy_20260910` no se puede expresar.
+>
+> **La regla de módulos no se mueve.** Lo que la capa hace es traducir toques a
+> índices; qué significan lo decide `PatternChord`, en `Engine`, que sigue sin
+> importar nada fuera de la stdlib.
+
 > **Nota del 2026-09-07 — por qué el disco es un paquete y no cabe en los que
 > hay.** Lo pide la rebanada 4 de la v2 (`persistence_20260907`), que es el
 > primer track que escribe un fichero. Ninguno de los tres paquetes puede

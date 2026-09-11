@@ -311,6 +311,20 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > exige un modificador nuevo, que es una decisión de mapeo y toca el preset
 > cerrado en la rebanada 7. Tampoco entran nombres editables ni copiar Banks.
 
+> **Nota del 2026-09-10 — copiar un Pattern son dos gestos, no uno.**
+> `pattern-copy_20260910` arregla un botón que no hacía nada y, al hacerlo, añade
+> una interacción de directo que la Pre Spec no nombraba: **corriendo, un acorde
+> de dos dedos** —mantener el origen, tocar el destino— copia en el acto y sigue
+> sonando lo que sonaba. Es el equivalente por Pattern de lo que `reload` hace
+> por Banco: dejar una copia antes de experimentar encima.
+>
+> Parado, `copy` y `paste`, con un portapapeles que guarda el Pattern entero y
+> **cruza Banks**. `paste` también funciona corriendo, porque el acorde no puede:
+> los dos dedos caen en la misma rejilla.
+>
+> Sigue fuera: copiar Banks enteros, y deshacer un pegado — la vuelta atrás ya es
+> el punto de retorno de `save`/`reload`.
+
 > **Nota del 2026-09-07 — el Note Repeater sale de «Fuera de v1».** Sale por la
 > misma vía por la que salieron los múltiples Tracks, los Cycles y la
 > persistencia: lo entrega una rebanada de la v2, la 5

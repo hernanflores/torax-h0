@@ -317,9 +317,134 @@ final class TransportModel {
         autosave.changedHeader(project)
     }
 
-    /// Copia el Pattern vigente en otro hueco (FR13).
-    func copyPattern(to index: Int) {
-        project = project.copyingSelectedPattern(to: index)
+    // MARK: - El portapapeles de Patterns
+
+    /// El Pattern copiado, o `nil` si no se ha copiado nada todavía (FR1–FR4).
+    ///
+    /// **Empieza vacío y vive en memoria.** No se persiste: no toca
+    /// `Persistence`, ni el formato de disco, ni `schemaVersion` (FR3, NFR5).
+    /// Se pierde al cerrar la app, que es lo que un portapapeles hace.
+    ///
+    /// Es un `Observable` más, así que `paste` se habilita solo en cuanto hay
+    /// algo que pegar.
+    private(set) var clipboard: PatternClipboard?
+
+    /// Si `paste` se puede pulsar. Con el portapapeles vacío, no (FR4).
+    var canPaste: Bool { clipboard != nil }
+
+    /// Qué hueco lleva la marca de origen en el Bank que se está mirando, o
+    /// `nil` si no hay marca que dibujar aquí (FR12).
+    var copiedSlotIndex: Int? { clipboard?.markedSlot(inBank: project.selectedBank) }
+
+    /// En qué hueco caería un pegado ahora mismo, o `nil` si no hay nada que
+    /// pegar.
+    ///
+    /// **La pantalla lo necesita para el destello** (FR13): la celda que recibe
+    /// el material tiene que decirlo, y con el transporte corriendo no es la
+    /// seleccionada.
+    var pasteDestinationIndex: Int? {
+        guard clipboard != nil else { return nil }
+
+        return PatternClipboard.destination(
+            selected: project.selectedPattern,
+            armed: armedPatternIndex,
+            isRunning: isPlaying
+        )
+    }
+
+    /// Carga el hueco vigente en el portapapeles (FR5, FR6).
+    ///
+    /// **Disponible siempre**, con el transporte parado y corriendo: copiar no
+    /// destruye nada.
+    ///
+    /// **Toma el material guardado en el Bank, no `pattern`**, que es la copia
+    /// viva y lleva encima la superposición de un gesto en curso (FR6). Temp y
+    /// Ctrl All superponen valores que vuelven solos al soltar y que
+    /// `recordEdit()` no escribe en el Bank; copiar sigue la misma regla y por
+    /// el mismo motivo: congelar en un hueco un fill que el usuario espera que
+    /// se deshaga sería material que nadie pidió conservar.
+    func copyPattern() {
+        guard let material = bank.pattern(at: project.selectedPattern) else { return }
+
+        clipboard = PatternClipboard(
+            pattern: material,
+            bankIndex: project.selectedBank,
+            slotIndex: project.selectedPattern
+        )
+    }
+
+    /// Escribe el portapapeles en su hueco de destino (FR7–FR11).
+    ///
+    /// **Escribe en el Bank vigente, venga el material del Bank que venga**
+    /// (FR7): se pega donde se está mirando, y el Banco de origen no interviene.
+    ///
+    /// **No mueve la selección, no arma nada, no toca el transporte y no cancela
+    /// una adopción pendiente** (FR10). Escribe material y nada más.
+    ///
+    /// **Se permite pegar encima del Pattern que suena** (FR9). El audio no se
+    /// corta: el transporte tiene su propio snapshot publicado y no lo relee
+    /// hasta la próxima adopción, así que el material sustituido entra al
+    /// siguiente cambio de Pattern.
+    ///
+    /// **Y refresca lo que el `Project` no gobierna**, que es la corrección del
+    /// 2026-09-10: la copia viva cuando el destino es el hueco cargado, y el
+    /// armado cuando el destino es el que espera al compás. Sin lo primero el
+    /// primer giro de knob devolvía el material anterior encima de lo pegado;
+    /// sin lo segundo entraba el material viejo en el límite de compás. Ninguna
+    /// de las dos arma un hueco distinto ni mueve la selección, que es lo que
+    /// FR10 prohíbe.
+    func pastePattern() {
+        guard let clipboard else { return }
+
+        let index = PatternClipboard.destination(
+            selected: project.selectedPattern,
+            armed: armedPatternIndex,
+            isRunning: isPlaying
+        )
+        project = project.replacing(clipboard.pattern, at: index)
+
+        // **Refrescar las dos copias que el `Project` no gobierna.** Lo encontró
+        // la verificación en dispositivo del 2026-09-10: sin esto, lo pegado no
+        // sonaba y el primer giro de knob lo borraba. La regla vive en
+        // `PatternPasteRefresh`, donde hay tests.
+        let refresh = PatternPasteRefresh(
+            destination: index,
+            loaded: project.selectedPattern,
+            armed: armedPatternIndex
+        )
+        if refresh.refreshesLiveCopy {
+            pattern = clipboard.pattern
+            controlInput.adopt(clipboard.pattern)
+        }
+        if refresh.rearms {
+            transport?.armForNextBar(clipboard.pattern)
+            pendingAdoption.arm(
+                PendingAdoption.Adoption(
+                    bankIndex: project.selectedBank,
+                    patternIndex: index,
+                    pattern: clipboard.pattern
+                ),
+                adoptionCount: transport?.adoptionCount ?? 0
+            )
+        }
+        autosave.changed(bank, at: project.selectedBank)
+    }
+
+    /// Copia un Pattern en otro hueco del Bank vigente, con las dos puntas
+    /// dichas, y **carga el portapapeles con el origen** (FR19).
+    ///
+    /// Es lo que produce el acorde de dos dedos: un solo portapapeles para los
+    /// dos gestos, así que el backup hecho con dos dedos se puede llevar luego a
+    /// otro Bank con `paste` sin repetir nada.
+    func copyPattern(from origin: Int, to destination: Int) {
+        guard let material = bank.pattern(at: origin) else { return }
+
+        project = project.copyingPattern(from: origin, to: destination)
+        clipboard = PatternClipboard(
+            pattern: material,
+            bankIndex: project.selectedBank,
+            slotIndex: origin
+        )
         autosave.changed(bank, at: project.selectedBank)
     }
 

@@ -41,8 +41,14 @@ struct BanksScreen: View {
                 selected: model.selectedPatternIndex,
                 states: model.patternSlotStates,
                 beatsUntilChange: model.beatsUntilPatternChange,
+                copied: model.copiedSlotIndex,
+                pasteDestination: model.pasteDestinationIndex,
                 onSelect: model.selectPattern,
+                canPaste: model.canPaste,
+                isRunning: model.isPlaying,
                 onCopy: model.copyPattern,
+                onPaste: model.pastePattern,
+                onChordCopy: model.copyPattern(from:to:),
                 onClear: model.clearPattern
             )
 
@@ -139,9 +145,43 @@ struct PatternGrid: View {
     /// Cuántas negras faltan para que entre el Pattern armado.
     let beatsUntilChange: Int?
 
+    /// El hueco del que salió lo que hay en el portapapeles, si está en este
+    /// Bank (FR12).
+    let copied: Int?
+
+    /// Dónde caería un pegado ahora, para saber qué celda destella.
+    let pasteDestination: Int?
+
     let onSelect: (Int) -> Void
-    let onCopy: (Int) -> Void
+
+    /// Si hay algo en el portapapeles. Vacío, `paste` no se puede pulsar (FR4).
+    let canPaste: Bool
+
+    /// Si el transporte corre. **El acorde solo actúa corriendo** (FR15).
+    let isRunning: Bool
+
+    let onCopy: () -> Void
+    let onPaste: () -> Void
+    let onChordCopy: (Int, Int) -> Void
     let onClear: (Int) -> Void
+
+    /// Dónde quedó dibujada cada celda. Lo dicen las celdas y lo lee la capa de
+    /// toques.
+    @State private var cellFrames: [CGRect] = []
+
+    /// Los huecos con un dedo encima ahora mismo.
+    ///
+    /// **El resaltado de pulsación se conserva a mano**, porque es lo que un
+    /// `Button` daba gratis y su ausencia se leería como que la rejilla no
+    /// responde.
+    @State private var pressed: Set<Int> = []
+
+    /// La regla del acorde, que decide qué significa cada toque cuando el
+    /// transporte corre. Vive en `Engine`, donde hay tests.
+    @State private var chord = PatternChord()
+
+    /// La celda que está destellando ahora mismo, si alguna.
+    @State private var flashed: Int?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -163,6 +203,11 @@ struct PatternGrid: View {
                 }
             }
 
+            // **La rejilla resuelve sus propios toques** desde el 2026-09-10.
+            // Dos `Button` hermanos de SwiftUI no ven toques simultáneos, así
+            // que el acorde de dos dedos no se podía expresar con dieciséis
+            // botones. Las celdas se dibujan y una capa encima traduce los
+            // toques a índices; lo que significan lo decide `PatternChord`.
             LazyVGrid(
                 columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4),
                 spacing: 8
@@ -171,13 +216,34 @@ struct PatternGrid: View {
                     cell(index)
                 }
             }
+            .coordinateSpace(name: Self.gridSpace)
+            .onPreferenceChange(PatternCellFrames.self) { frames in
+                cellFrames = (0..<Bank.patternCount).map { frames[$0] ?? .zero }
+            }
+            .overlay {
+                PatternTouchLayer(
+                    cellFrames: cellFrames,
+                    onDown: down,
+                    onUp: up,
+                    onCancel: cancel
+                )
+            }
 
-            // **Copiar y borrar operan sobre el hueco elegido**, y por eso están
-            // debajo de la rejilla y no dentro de cada celda: dieciséis pares de
+            // **Los tres operan sobre el hueco elegido**, y por eso están
+            // debajo de la rejilla y no dentro de cada celda: dieciséis tríos de
             // botones diminutos serían imposibles de acertar con el dedo.
+            //
+            // **`copy here` era un gesto de un solo paso que nunca existió**: la
+            // pantalla conoce un índice y se lo pasaba a las dos puntas de la
+            // copia, así que la celda se copiaba sobre sí misma. Dos gestos y un
+            // portapapeles sí se pueden expresar — y el portapapeles guarda el
+            // Pattern entero, así que se puede pegar en otro Bank.
             HStack(spacing: 8) {
-                Button("copy here") { onCopy(selected) }
+                Button("copy") { onCopy() }
                     .brutalistControl(accent: Palette.offWhite, isSelected: false)
+                Button("paste") { paste() }
+                    .brutalistControl(accent: Palette.offWhite, isSelected: false)
+                    .disabled(!canPaste)
                 Button("clear") { onClear(selected) }
                     .brutalistControl(accent: Palette.offWhite, isSelected: false)
             }
@@ -193,30 +259,151 @@ struct PatternGrid: View {
         index < states.count ? states[index] : .empty
     }
 
+    /// El espacio en el que se miden las celdas y en el que la capa de toques
+    /// las busca. Los dos tienen que hablar del mismo origen.
+    private static let gridSpace = "patternGrid"
+
+    /// Un dedo baja sobre una celda.
+    ///
+    /// **Corriendo, el segundo dedo copia en el acto**, que es lo que hace que
+    /// el acorde responda ya y que el orden de levantada dé igual.
+    ///
+    /// **Parado no hay acorde** (FR15): el toque sencillo carga el Pattern de
+    /// inmediato, así que el `down` del primer dedo ya habría cambiado el
+    /// material antes de saber si el toque era un acorde. Ahí solo se resalta.
+    private func down(_ index: Int) {
+        pressed.insert(index)
+        guard isRunning else { return }
+        apply(chord.pressing(index))
+    }
+
+    /// Un dedo se levanta sobre su celda: selecciona, que es donde un `Button`
+    /// ya lo resolvía (FR20).
+    ///
+    /// Corriendo, la regla decide: si el toque fue parte de un acorde, no
+    /// selecciona nada y **sigue sonando lo que sonaba** (FR17, FR18).
+    private func up(_ index: Int) {
+        pressed.remove(index)
+
+        guard isRunning else {
+            onSelect(index)
+            return
+        }
+        apply(chord.releasing(index))
+    }
+
+    /// Un toque que se levanta fuera de su celda no selecciona (FR21).
+    private func cancel(_ index: Int) {
+        pressed.remove(index)
+        guard isRunning else { return }
+        apply(chord.cancelling(index))
+    }
+
+    /// Hace lo que la regla decidió.
+    ///
+    /// **El acorde no arma, no mueve la selección, no toca el transporte ni
+    /// `pendingAdoption`** (FR18): copiar escribe material y nada más. Y carga
+    /// el portapapeles con el origen (FR19), así que el backup hecho con dos
+    /// dedos se puede llevar luego a otro Bank con `paste`.
+    private func apply(_ effect: PatternChord.Effect) {
+        switch effect {
+        case .none:
+            break
+        case .select(let index):
+            onSelect(index)
+        case .copy(let origin, let destination):
+            onChordCopy(origin, destination)
+            flash(destination)
+        }
+    }
+
+    /// Pega, y **destella la celda que recibió el material** (FR13).
+    ///
+    /// El destino se pide antes de pegar: pegar puede cambiar lo que la vista
+    /// sabe, y la celda que destella es la que recibió, no la que reciba la
+    /// próxima vez.
+    private func paste() {
+        let destination = pasteDestination
+        onPaste()
+        if let destination { flash(destination) }
+    }
+
+    /// El destello de la celda de destino (FR13, FR14).
+    ///
+    /// **Se enciende y se apaga solo, sin colgarse del reloj**: no es una
+    /// animación al ritmo del transporte sino un desvanecido de una vez, así que
+    /// no añade trabajo por cuadro ni depende de que algo esté sonando.
+    ///
+    /// El salto a la siguiente vuelta del bucle es lo que separa el encendido
+    /// del apagado; en la misma pasada SwiftUI los fundiría en uno y no se vería
+    /// nada.
+    private func flash(_ index: Int) {
+        flashed = index
+        Task { @MainActor in
+            withAnimation(.easeOut(duration: Brutalist.flashDuration)) { flashed = nil }
+        }
+    }
+
     private func cell(_ index: Int) -> some View {
         let state = state(index)
         let isSelected = index == selected
 
-        return Button(action: { onSelect(index) }) {
-            VStack(spacing: 4) {
-                Text(display: (index + 1).paddedForDisplay)
-                    .font(state == .playing ? Typography.valueTitle : Typography.parameterLine)
-                    .monospacedDigit()
-                    .foregroundStyle(state == .playing ? Palette.shape : Palette.mutedBright)
+        return VStack(spacing: 4) {
+            Text(display: (index + 1).paddedForDisplay)
+                .font(state == .playing ? Typography.valueTitle : Typography.parameterLine)
+                .monospacedDigit()
+                .foregroundStyle(state == .playing ? Palette.shape : Palette.mutedBright)
 
-                Text(display: state.label)
-                    .font(Typography.caption)
-                    .foregroundStyle(state == .empty ? Palette.border : Palette.muted)
-            }
-            .frame(maxWidth: .infinity, minHeight: 72)
-            .contentShape(Rectangle())
+            Text(display: state.label)
+                .font(Typography.caption)
+                .foregroundStyle(state == .empty ? Palette.border : Palette.muted)
         }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, minHeight: 72)
+        .contentShape(Rectangle())
+        .opacity(pressed.contains(index) ? Brutalist.pressedOpacity : 1)
         .background(Palette.inset, in: RoundedRectangle(cornerRadius: Brutalist.radius))
         .overlay {
             RoundedRectangle(cornerRadius: Brutalist.radius)
                 .stroke(border(state: state, isSelected: isSelected), lineWidth: width(isSelected))
         }
+        // **La marca de origen es un bloque en la esquina**, no un borde: los
+        // tres bordes ya están repartidos entre el que suena, el que espera y el
+        // elegido, y un cuarto no se distinguiría a un metro (FR12).
+        .overlay(alignment: .topTrailing) {
+            if index == copied {
+                Rectangle()
+                    .fill(Palette.offWhite)
+                    .frame(width: Brutalist.copyMark, height: Brutalist.copyMark)
+                    .padding(6)
+                    .accessibilityHidden(true)
+            }
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: Brutalist.radius)
+                .fill(Palette.offWhite)
+                .opacity(index == flashed ? 1 : 0)
+                .allowsHitTesting(false)
+        }
+        .background {
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: PatternCellFrames.self,
+                    value: [index: proxy.frame(in: .named(Self.gridSpace))]
+                )
+            }
+        }
+        // **La celda deja de ser un `Button` pero no deja de ser pulsable.**
+        // VoiceOver la sigue leyendo como tal y la sigue pudiendo activar; el
+        // acorde es un gesto de dos dedos que no tiene equivalente accesible, y
+        // para eso están `copy` y `paste`.
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            index == copied
+                ? "pattern \(index + 1), \(state.label), copied"
+                : "pattern \(index + 1), \(state.label)"
+        )
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityAction { onSelect(index) }
     }
 
     /// **El que suena lleva el olivo de Shape; el que espera, el mismo olivo más

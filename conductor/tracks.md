@@ -1072,6 +1072,49 @@ en cualquier momento.
 
   Dato acumulado por si sirve al diagnóstico: en la rebanada 5 apareció en 2 de 8 pasadas y **siempre con la misma firma** —las 4 pruebas de `VirtualLoopbackTests`, ningún otro test—. El fallo está localizado en la creación de endpoints virtuales, no es difuso.
 
+---
+
+- [x] **Track: `copy here` de la rejilla de Patterns no hace nada** — *cerrado el 2026-09-10, verificado en iPad*
+  *Link: [conductor/tracks/pattern-copy_20260910/index.md](./tracks/pattern-copy_20260910/index.md)*
+
+  **El defecto.** `BanksScreen.swift:179` llamaba `onCopy(selected)` y eso acababa
+  en `Project.copyingSelectedPattern(to:)`, que copiaba el Pattern seleccionado al
+  índice recibido: **origen y destino eran el mismo hueco**. El motor estaba bien
+  y `PatternCopyTests` lo probaba con origen distinto del destino; nadie probó el
+  caso que la vista disparaba. Era de cableado, no de reglas.
+
+  **Qué entregó.** Cuatro gestos, separados por el transporte. Corriendo, un
+  **acorde de dos dedos** —mantener el origen, tocar el destino— copia en el acto
+  y sigue sonando lo que sonaba. Parado, `copy` y `paste` con un portapapeles que
+  guarda el Pattern entero, así que **se puede pegar en otro Bank**; `paste`
+  también funciona corriendo. La celda de origen lleva su marca y la de destino
+  destella. `copyingSelectedPattern(to:)` se retiró.
+
+  **El riesgo salió bien a la primera.** Dos `Button` hermanos de SwiftUI no ven
+  toques simultáneos, así que la rejilla pasó a resolver los toques con
+  `UIViewRepresentable`. Verificado en iPad sin sorpresas.
+
+  **Lo que costó una fase de más, y es lo que hay que recordar.** La verificación
+  en dispositivo **encontró un fallo** que ninguna pasada de tests habría dicho:
+  pegar escribía en el `Project` y no refrescaba las dos copias que el `Project`
+  no gobierna —la copia viva que la pantalla `track` edita, y el snapshot ya
+  armado en el transporte—. El síntoma visible era que **lo pegado no sonaba**; el
+  invisible, que **el primer giro de knob lo borraba**. Alcanzaba también al caso
+  parado, que se había dado por bueno mirando solo la rejilla. Se arreglaron las
+  dos mitades en la Fase 7, con la regla bajada a `PatternPasteRefresh` en
+  `Engine` para que a partir de ahora sí se pruebe, y el `spec.md` ganó FR11b.
+  Detalle en `device-verification.md`.
+
+  **Verificación:** `Engine` 921 tests · 98,70%. `MIDI` 91,77%, sin moverse.
+  Los trece criterios de aceptación con el iPad delante.
+
+  **Fuera de alcance:** `clear`, deshacer un pegado —la vuelta atrás ya es el
+  punto de retorno del Banco—, persistir el portapapeles, copiar Banks enteros y
+  el acorde entre Banks.
+
+  **Sin medición de jitter**: no mueve ningún instante ni toca el hilo del
+  scheduler.
+
 ## Archivados
 
 - [x] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay** — swing y Delay suenan; jitter recto máx 0,151 ms · σ 0,009–0,013 ms. **Cerrado con deuda: fase *Review Fixes* abierta**
