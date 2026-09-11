@@ -1,0 +1,10 @@
+Task: Implementar lo que falte (Fase 6, division-hot-grid_20260911)
+
+Archivos: Packages/Engine/Sources/Engine/ParameterOverlay.swift, solo un comentario.
+
+No hacía falta código, como el plan anticipaba. ParameterOverlay y
+CtrlAllOffset publican un Pattern normal por el handoff, y el scheduler reancla
+con cada Pattern que recibe desde las Fases 2 y 3. La pulsación y la soltada
+son dos reanclajes normales, y soltar no rebobina porque la rejilla vuelve
+anclada al instante de la soltada. Queda escrito en el tipo, con los tests que
+lo fijan (DivisionTempOverlayTests, DivisionCtrlAllTests).
