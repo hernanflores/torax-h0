@@ -196,12 +196,17 @@ public struct TrackScheduler {
     /// Cuánto dura un Step, que es contra lo que se miden los dos parámetros
     /// temporales.
     ///
-    /// **Se calcula una vez, al construir.** La rejilla la fija la
-    /// `MusicalTimeline` con la que nace este valor y no se vuelve a leer —está
-    /// documentado arriba—, así que la duración tampoco cambia. Convertirla en
-    /// cada ventana sería aritmética de coma flotante repetida en el hilo del
-    /// scheduler para obtener siempre el mismo número.
-    private let stepDurationNanoseconds: Int64
+    /// **Se recalcula cuando la rejilla se reancla, y solo entonces.** Hasta el
+    /// 2026-09-11 era un `let` fijado al construir, porque la rejilla no
+    /// cambiaba nunca; desde que la Division se sigue en caliente
+    /// (`division-hot-grid_20260911`) sí cambia, y dejar este valor congelado
+    /// era justo la mitad del defecto: el gate lo recalculaba `Transport` por
+    /// nota contra la Division viva y el espaciado se quedaba en la vieja.
+    ///
+    /// Sigue sin convertirse en cada ventana: la conversión de coma flotante
+    /// ocurre en el reanclaje, que es raro, y no una vez por ventana para
+    /// obtener siempre el mismo número.
+    private var stepDurationNanoseconds: Int64
 
     /// El generador que decide qué Pulse concreto se omite.
     ///
@@ -293,6 +298,34 @@ public struct TrackScheduler {
     /// Sin asignaciones, sin locks, sin await.
     mutating func refresh(with cycle: Cycle) {
         material = .cycle(cycle)
+        adoptGridOfCurrentMaterial()
+    }
+
+    /// Pone la rejilla en la Division del material vigente, si no lo estaba ya.
+    ///
+    /// **Es todo el arreglo de `division-hot-grid_20260911`.** La rejilla dejó
+    /// de ser lo que hubiera al pulsar Play y pasó a ser función del material:
+    /// mientras el snapshot traiga la misma Division esto no hace nada, y en
+    /// cuanto traiga otra, la rejilla la adopta anclando en el Step aún no
+    /// entregado (FR1, FR6).
+    ///
+    /// **La comparación es lo que se paga por ventana**, no el reanclaje: dos
+    /// enteros, y casi siempre iguales (NFR2). `Division` es `Equatable` sobre
+    /// numerador y denominador, así que no hay nada que asignar.
+    ///
+    /// **Sin Cycle no hay Division que seguir**, y ahí está la vía del arnés: el
+    /// material `.everyStep` mide la rejilla que le dio su configuración y no
+    /// debe moverse de ella (FR18).
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    private mutating func adoptGridOfCurrentMaterial() {
+        guard let division = material.cycle?.shape.division,
+            division != lookAhead.timeline.division
+        else { return }
+
+        lookAhead.rebase(to: division)
+        stepDurationNanoseconds = Int64(lookAhead.timeline.stepDurationNanoseconds)
     }
 
     /// Sustituye el Track sin tocar ni la posición en la rejilla ni el cursor de
@@ -311,6 +344,7 @@ public struct TrackScheduler {
         if let cycle = track.cycle(at: cursor) ?? track.cycle(at: 0) {
             material = .cycle(cycle)
         }
+        adoptGridOfCurrentMaterial()
     }
 
     /// Pone la reproducción en el primer Cycle.
