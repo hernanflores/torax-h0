@@ -1,0 +1,15 @@
+Task: Implementar la publicación del ancla (Fase 5, division-hot-grid_20260911)
+
+Archivos:
+- Packages/Engine/Sources/Engine/PlaybackGrid.swift (nuevo): la rejilla vigente y la anterior, y timeline(atNanoseconds:), que elige entre las dos según el ancla.
+- Packages/Engine/Sources/Engine/MusicalTime.swift: el init anclado pasa a ser público, solo para reconstruir desde enteros. Crear un ancla sigue siendo cosa de rebased.
+- Packages/MIDI/Sources/MIDI/CyclePlaybackClock.swift: publishGrid(track:current:previous:) y grids(tempo:). Seis palabras por Track: índice de Step, instante y Division empaquetada, de cada una de las dos rejillas. Seqlock con una sola generación para los dieciséis, porque hay un único escritor. La generación sube con increment (fetch_add acq_rel) y no con un store de liberación: así ninguna palabra se hace visible antes que la generación impar. El lector reintenta hasta 8 veces y, si no lo consigue, devuelve nil: se dibuja como antes del track.
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift: publica la rejilla de Play en reportPlayback y la nueva, con la anterior, en los dos adoptGridOfCurrentMaterial.
+- GridPublicationTests.swift: solo formato (swift format).
+
+Verificación:
+- MIDI: 939 tests. Los 7 fallos son los cuatro VirtualLoopbackTests con clientCreationFailed(-50), el flake conocido. Cobertura 92,17%; TrackScheduler 98,56%. GridPublicationTests 8/8.
+- Engine: 935 tests, 0 fallos.
+- xcodebuild build: BUILD SUCCEEDED.
+
+Nota de método: la primera pasada no encontraba PlaybackGrid desde MIDI. Era un build incremental obsoleto: un fichero nuevo en Engine no se ve desde el .build de MIDI hasta que se borra Packages/MIDI/.build. Es lo mismo que registra la nota de 304eb6b.
