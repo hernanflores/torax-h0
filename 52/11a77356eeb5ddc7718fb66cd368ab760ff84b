@@ -1,0 +1,14 @@
+Task: Tests de TrackScheduler con la Division cambiando entre ventanas (Fase 2)
+
+Fase roja parcial y deliberada: 8 tests, 2 fallando.
+
+Fallan los dos que miden el espaciado —testPublishingASlowerDivisionDoublesTheSpacing
+y testPublishingAFasterDivisionHalvesTheSpacing—, que son el defecto: los Steps
+siguen separados 125 ms tras publicar 1/8 o 1/32.
+
+Los otros seis pasan ya hoy porque describen lo que el arreglo NO debe romper
+(el anillo no se reinicia, lo sellado no se reescribe, el arnés no reancla). No
+son prueba de nada todavía; son la red para la implementación.
+
+Archivos creados:
+- Packages/MIDI/Tests/MIDITests/HotDivisionChangeTests.swift
