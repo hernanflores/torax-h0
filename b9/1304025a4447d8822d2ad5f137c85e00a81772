@@ -1,0 +1,29 @@
+Task: Tests de Playhead contra el ancla (Fase 5, division-hot-grid_20260911)
+
+Archivos creados:
+- Packages/Engine/Tests/EngineTests/AnchoredPlayheadTests.swift (8 tests)
+
+Qué fijan:
+- FR9, criterio 10: un Track reanclado marca el Step que suena. A 1000 ms
+  sobre 1/16 hasta el Step 4 y 1/8 desde ahí suena el 6; medir desde Play
+  daría el 4 o el 8. La fracción de vuelta y el cierre del anillo también se
+  miden desde el ancla. Un instante anterior al ancla envuelve al anillo sin
+  posiciones negativas.
+- FR11: con la rejilla de Play, turn es exactamente el cálculo de siempre,
+  comparado en un barrido.
+- PlaybackGrid: antes del ancla manda la rejilla anterior.
+- Playhead.forEachTrack(grids:): cada Track contra su rejilla publicada; sin
+  rejilla, igual que antes.
+- CyclePosition(grid:): con el Cycle 1 en 1/16 y el Cycle 2 en 1/8, a los 5 s
+  sigue sonando el Cycle 2, a 3/4 de su vuelta. Contado con el Step del Cycle
+  1, como hasta ahora, ya habría vuelto al Cycle 1.
+
+Ampliación sobre el plan, anotada en él: CyclePosition entra en la fase porque
+la Fase 3 hizo falsa su premisa, la de que la rejilla sale del Cycle 1 (la
+limitación 8 de cycles_20260901). Sin esto, el Cycle en curso que se ve y el
+que suena discreparían con Cycles de Divisions distintas.
+
+Rojo: no compila. Faltan el parámetro grids en forEachTrack y grid en
+CyclePosition. Un test se corrigió antes del commit: su nombre prometía un
+origen virtual anterior a Play y el caso no lo era; ahora prueba un instante
+anterior al ancla.
