@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		1A0000000000000000000014 /* Engine in Frameworks */ = {isa = PBXBuildFile; productRef = 1A0000000000000000000012 /* Engine */; };
 		1A0000000000000000000015 /* MIDI in Frameworks */ = {isa = PBXBuildFile; productRef = 1A0000000000000000000013 /* MIDI */; };
-		1A0000000000000000000017 /* Persistence in Frameworks */ = {isa = PBXBuildFile; productRef = 1A0000000000000000000016 /* Persistence */; };
+		5F8713CD3053543F00B542B9 /* Persistence in Frameworks */ = {isa = PBXBuildFile; productRef = 1A0000000000000000000016 /* Persistence */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5F8713CD3053543F00B542B9 /* Persistence in Frameworks */,
 				1A0000000000000000000014 /* Engine in Frameworks */,
 				1A0000000000000000000015 /* MIDI in Frameworks */,
 			);
