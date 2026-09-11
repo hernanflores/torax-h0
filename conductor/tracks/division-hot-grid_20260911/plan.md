@@ -74,13 +74,24 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
         reanclar (NFR1, NFR2).
   - [x] La vía del arnés —`PatternScheduler(timeline:material:)`— no reancla
         nunca: mide la rejilla, no el material (FR18).
-- [~] Task: Tests de aislamiento entre Tracks
-  - [ ] Cambiar la Division del Track 1 no mueve ni un offset de los otros
+- [x] Task: Tests de aislamiento entre Tracks — `194d185`
+  - [x] Cambiar la Division del Track 1 no mueve ni un offset de los otros
         quince (criterio 6).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
-  - [ ] Suite de `MIDI` en verde y cobertura ≥80%.
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Suite de `MIDI` en verde y cobertura ≥80%. **912 tests; los 7 fallos son
+        los cuatro `VirtualLoopbackTests` con `clientCreationFailed(-50)`, el
+        flake conocido, idénticos a la base. Cobertura 91,79%;
+        `TrackScheduler` 98,17% y `LookAheadScheduler` 97,67%. `Engine` 933
+        tests en verde. `xcodebuild build` correcto.**
   - [ ] **Verificación manual: el defecto reportado ya no ocurre** — con un Cycle
         activo, girar Division mientras suena cambia la velocidad de la línea.
+        **Pendiente: la sesión se dejó aquí el 2026-09-11 con la verificación en
+        iPad sin hacer.** El checkpoint de fase no se sella hasta que se ejecute.
+        Qué comprobar: la velocidad de la línea cambia al girar, no salta al
+        principio del anillo, no se oye nota repetida ni perdida en el corte, y
+        el contraste con un instrumento tonal. Con **un solo Cycle activo**. El
+        anillo puede quedar desfasado respecto a lo que suena — eso es esperado
+        hasta la Fase 5.
 
 ## FASE 3: EL AVANCE DE CYCLE TRAE SU PROPIA REJILLA
 
