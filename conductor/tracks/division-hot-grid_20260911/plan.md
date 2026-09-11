@@ -23,7 +23,7 @@ fácil, y con FR7 como criterio duro.
 anotado que este track es justo el caso que la regla anterior cubría: la Fase 7
 incluye por eso una escucha larga en dispositivo, que es lo único que queda.
 
-## FASE 1: LA REJILLA APRENDE UN ANCLA
+## FASE 1: LA REJILLA APRENDE UN ANCLA [checkpoint: 304eb6b]
 
 - [x] Task: Tests de la rejilla anclada en `MusicalTimeline` — `d31cd99`
   - [x] Sin ancla, `nanosecondOffset(forStep:)` da exactamente lo de hoy: los
@@ -43,7 +43,7 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
   - [x] El inicializador de hoy sigue existiendo y significa «anclada en el Step
         0 al instante 0», que es la rejilla de siempre (FR11).
   - [x] `Sendable`, `Equatable` y sin asignaciones, como el tipo que ya era.
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [x] Suite de `Engine` en verde y cobertura ≥90%. **933 tests, 0 fallos;
         cobertura 98,71% de líneas y `MusicalTime.swift` al 100%.**
 
