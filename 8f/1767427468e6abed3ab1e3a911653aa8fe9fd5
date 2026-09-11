@@ -1,0 +1,15 @@
+Task: Implementar Playhead con ancla (Fase 5, division-hot-grid_20260911)
+
+Archivos:
+- Packages/Engine/Sources/Engine/Playhead.swift: init mide desde el origen virtual de la rejilla, que es el instante del ancla menos el Step del ancla por su duración, y envuelve al anillo los valores negativos. Sin ancla, la suma es Double(elapsed) + 0, el mismo número de siempre (FR11). forEachTrack(grids:) toma por Track la rejilla publicada que manda en ese instante; los Steps siguen siendo los del anillo en edición.
+- Packages/Engine/Sources/Engine/CyclePosition.swift: grid: PlaybackGrid?. Con ella, los Steps transcurridos se cuentan desde el ancla; sin ella, con el Step del Cycle 1, como antes. Se reescribe el comentario que citaba la limitación 8 de cycles_20260901, que la Fase 3 retiró.
+- Packages/MIDI/Sources/MIDI/Transport.swift: playheads pasa las rejillas de CyclePlaybackClock.
+- Packages/MIDI/Sources/MIDI/CyclePlaybackClock.swift: positions pasa la rejilla de cada Track a CyclePosition.
+- AnchoredPlayheadTests.swift: solo formato (líneas largas).
+
+Fuera de alcance: Transport.playhead, el de un solo Track, sigue midiendo contra configuration.timeline. Es la vía heredada de antes de los dieciséis Tracks.
+
+Verificación:
+- Engine: 943 tests, 0 fallos. Cobertura 98,74%; Playhead 98,44%, PlaybackGrid 100%, CyclePosition 93,97%. Los PlayheadTests y CyclePositionTests de antes pasan sin tocarlos.
+- MIDI: 939 tests. Los 7 fallos son los cuatro VirtualLoopbackTests con clientCreationFailed(-50), el flake conocido. Cobertura 92,00%.
+- xcodebuild build: BUILD SUCCEEDED.
