@@ -1,0 +1,21 @@
+Task: Tests del cambio de rejilla en el límite de vuelta (Fase 3, division-hot-grid_20260911)
+
+Archivos:
+- Packages/MIDI/Tests/MIDITests/CycleDivisionGridTests.swift (nuevo, 6 tests)
+- Packages/MIDI/Tests/MIDITests/CycleAdvanceTests.swift: testTheDivisionOfLaterCyclesIsIgnoredAndTheGridStays
+  pasa a testTheDivisionChangesWithTheCycle. Fijaba la limitación del 2026-09-02,
+  que este track retira.
+
+Qué fijan: Cycle 1 en 1/16 y Cycle 2 en 1/8 (o 1/32). El Step 16 cae a 2 s y el 17
+ya con la rejilla nueva (FR3, criterio 5). Volver al Cycle 1 ancla al cierre de
+vuelta (6 s) y no al origen de Play (FR6). A mitad de ventana, con ventanas de
+30 ms, ningún Step se pierde ni se repite, y lo troceado coincide con lo emitido
+de una vez (FR7).
+
+El caso hacia más rápido (1/32) es el que decide el diseño: tras el cierre de
+vuelta caben más Steps de los que calculó la rejilla vieja, y cada uno tiene que
+salir en su propia ventana, nunca después del horizonte ya entregado.
+
+Rojo: fallan 5 de 6, más el test reescrito. El caso a mitad de ventana hacia más
+lento pasa ya hoy y se queda como red de seguridad: con la rejilla congelada
+tampoco se pierde nada, solo suena en otro sitio.
