@@ -37,14 +37,15 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
   - [x] Índices anteriores al ancla no se consultan nunca; queda escrito qué
         devuelven para que nadie lo dé por definido.
   - [x] Reanclar con la **misma** Division no mueve ningún offset.
-- [~] Task: Implementar la rejilla anclada
-  - [ ] `MusicalTimeline` gana ancla —índice de Step e instante— y sigue
+- [x] Task: Implementar la rejilla anclada — `304eb6b`
+  - [x] `MusicalTimeline` gana ancla —índice de Step e instante— y sigue
         multiplicando desde ella, nunca acumulando (NFR3).
-  - [ ] El inicializador de hoy sigue existiendo y significa «anclada en el Step
+  - [x] El inicializador de hoy sigue existiendo y significa «anclada en el Step
         0 al instante 0», que es la rejilla de siempre (FR11).
-  - [ ] `Sendable`, `Equatable` y sin asignaciones, como el tipo que ya era.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
-  - [ ] Suite de `Engine` en verde y cobertura ≥90%.
+  - [x] `Sendable`, `Equatable` y sin asignaciones, como el tipo que ya era.
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Suite de `Engine` en verde y cobertura ≥90%. **933 tests, 0 fallos;
+        cobertura 98,71% de líneas y `MusicalTime.swift` al 100%.**
 
 ## FASE 2: EL SCHEDULER REANCLA CUANDO GIRA EL KNOB
 
