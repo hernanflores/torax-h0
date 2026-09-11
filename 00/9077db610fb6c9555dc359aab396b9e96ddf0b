@@ -1,0 +1,19 @@
+Task: Verificación en dispositivo (Fase 7, division-hot-grid_20260911)
+
+Archivos creados:
+- conductor/tracks/division-hot-grid_20260911/device-verification.md
+
+Recoge los catorce criterios con lo observado fase a fase en el iPad, y los dos
+fallos con su arreglo:
+- Criterio 9, Delay negativo: lo destapó DelayBudgetDivisionTests, no el
+  dispositivo. Arreglado en bdcd478 con el ancla retrasada (enmienda de FR17).
+- Criterio 10, el anillo: falló en el iPad con Delay -100% y una Division mas
+  lenta. Eran dos efectos, el salto atras de este track (arreglado en b35ef92)
+  y el desfase constante de un Step de la decision 9 de la rebanada 6, que el
+  usuario decidio mantener.
+
+Escucha larga (NFR4), lo unico que sustituye a la medicion de jitter
+suspendida: el usuario respondio «Validado ok» el 2026-09-11, sin detallar
+duracion ni combinaciones. Queda escrito asi, con su palabra literal, y con la
+advertencia de que esto no es una medicion: no hay numero de jitter para este
+track. La referencia valida sigue siendo la de la rebanada 2 de la v2.
