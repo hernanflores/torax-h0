@@ -253,10 +253,16 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
 
 ## FASE 7: DISPOSITIVO Y CIERRE
 
-- [ ] Task: Suite completa y cobertura
-  - [ ] `Engine` ≥90%, `MIDI` ≥80%, todo en verde (criterio 13).
-  - [ ] La vía del arnés sigue midiendo lo mismo (criterio 12).
-- [ ] Task: Verificación en dispositivo
+- [x] Task: Suite completa y cobertura
+  - [x] `Engine` ≥90%, `MIDI` ≥80%, todo en verde (criterio 13). **`Engine`
+        945 tests, 98,74%. `MIDI` 944 tests, 92,00%; los 7 fallos son los
+        cuatro `VirtualLoopbackTests` con `clientCreationFailed(-50)`, el
+        flake conocido. `xcodebuild build` correcto.** Sin commit propio: son
+        las cifras de cierre de la Fase 6, sobre el mismo código.
+  - [x] La vía del arnés sigue midiendo lo mismo (criterio 12).
+        **`JitterHarnessTests`, `PatternSchedulerTests` y
+        `testTheMeasurementPathNeverRebases` en verde.**
+- [~] Task: Verificación en dispositivo
   - [ ] **Con una pista rítmica de one-shots y un solo Cycle activo**, que es
         como se reportó: girar Division mientras suena cambia la velocidad de la
         línea de forma audible e inmediata, sin cortes, sin duplicados y sin que
@@ -267,10 +273,12 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
         dar la cara donde no hay medición de jitter (NFR4).
   - [ ] Registrar lo observado en `device-verification.md`, como hizo
         `pattern-copy_20260910`.
-- [ ] Task: Anotar lo que queda fuera
-  - [ ] En el registry: el rediseño del origen adelantado de Delay
+- [x] Task: Anotar lo que queda fuera — `11aa1e0`
+  - [x] En el registry: el rediseño del origen adelantado de Delay
         (`advanceBudgetNanoseconds` y el desplazamiento de origen de
         `SchedulerThread`) frente a una rejilla que cambia en caliente.
-  - [ ] En el registry: que el cursor de edición sigue pudiendo tapar el knob con
+  - [x] En el registry: que el cursor de edición sigue pudiendo tapar el knob con
         varios Cycles activos, y que eso es de `cycle-edit-cursor_20260908`.
+  - [x] En el registry, y no estaba en el plan: el desfase del anillo con Delay
+        negativo, que es la decisión 9 de la rebanada 6 y el usuario mantuvo.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
