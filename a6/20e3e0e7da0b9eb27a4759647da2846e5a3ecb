@@ -1,0 +1,38 @@
+Task: Implementar el reanclaje en advanceCycleIfTheTurnClosed (Fase 3, division-hot-grid_20260911)
+
+Archivos:
+- Packages/MIDI/Sources/MIDI/LookAheadScheduler.swift: rebase(to:reopeningAt:), que
+  ancla en un Step del rango en curso que aún no salió y devuelve ahí la marca de agua.
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift: el bucle de advance pasa de
+  for-in a while/popFirst; advanceCycleIfTheTurnClosed devuelve si cerró vuelta;
+  adoptGridOfCurrentMaterial(reopeningAt:) y divisionToAdopt. Se reescribe el
+  comentario del tipo, que describía la limitación retirada.
+- Packages/MIDI/Sources/MIDI/PatternScheduler.swift: la promesa de fase común
+  vale en Play (FR8).
+- Packages/MIDI/Tests/MIDITests/LookAheadRebaseTests.swift: 2 tests de la API nueva.
+
+Decisión de FR7: truncar el rango y reentrar, no emitir el resto ya anclado. El
+resto del rango se calculó con la rejilla vieja. Hacia más lento sobran Steps,
+que saldrían muy por delante del horizonte y quedarían fuera del alcance de
+cualquier knob. Hacia más rápido faltan, y saldrían en la ventana siguiente para
+un instante ya entregado. Reentrar no tiene ninguno de los dos problemas: el Step
+del corte conserva su instante, que está antes del horizonte, así que el rango
+recalculado empieza siempre por él y cada reentrada avanza al menos un Step.
+turnStartStep ya apunta al corte, así que la reentrada no vuelve a avanzar el
+cursor.
+
+NFR2: la comparación de Division se hace solo cuando cierra la vuelta, no por
+Step. Realtime: Range.popFirst y dropFirst devuelven Range, sin asignaciones.
+
+Verificación:
+- swift test --package-path Packages/MIDI --enable-code-coverage: 919 tests, 7
+  fallos, todos de VirtualLoopbackTests con clientCreationFailed(-50), el flake
+  conocido. Cobertura 91,89% de líneas (sin Engine/Sources); TrackScheduler
+  98,36%, LookAheadScheduler 97,87%.
+- swift test --package-path Packages/Engine: 933 tests, 0 fallos.
+- xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: BUILD SUCCEEDED.
+
+Fuera de la tarea: advanceBudgetNanoseconds se fija una vez por ventana con el
+material de su inicio; si el Cycle entrante cambia Delay o Division a mitad de
+ventana, el presupuesto no se recalcula hasta la siguiente. Es territorio de FR17
+(Fase 4).
