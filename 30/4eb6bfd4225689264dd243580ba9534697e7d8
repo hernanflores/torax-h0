@@ -19,3 +19,22 @@ MusicalTimeline.init. Era un build incremental obsoleto —el bundle de tests
 enlazaba un Engine con el layout viejo de dos campos—, no un defecto: se
 resolvió borrando Packages/MIDI/.build. Merece recordarse porque un cambio de
 layout en Engine puede volver a producirlo.
+
+--- Phase Verification & Checkpoint: FASE 1 (division-hot-grid_20260911) ---
+
+Comandos ejecutados:
+- swift test --package-path Packages/Engine --enable-code-coverage
+  933 tests, 0 fallos. Cobertura 98,71% de lineas; MusicalTime.swift al 100%.
+- swift test --package-path Packages/MIDI
+  896 tests, 7 fallos: los cuatro VirtualLoopbackTests con
+  clientCreationFailed(-50), el flake conocido de CoreMIDI. Misma cuenta y misma
+  firma en la base antes de este cambio, comprobado con git stash.
+- xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  BUILD SUCCEEDED.
+
+Verificacion manual: propuesta al usuario (Play sin cambios, Division seguiria
+cambiando solo la duracion de la nota, anillo igual) y el usuario autorizo
+continuar sin ejecutarla en dispositivo. Queda constancia de que NO se corrio en
+iPad: esta fase es valor puro y no cambia ningun comportamiento observable — la
+rejilla anclada existe pero todavia no la usa nadie. La verificacion en
+dispositivo del track esta concentrada en la Fase 7.
