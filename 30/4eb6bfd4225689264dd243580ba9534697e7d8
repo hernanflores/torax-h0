@@ -1,0 +1,21 @@
+Task: Implementar la rejilla anclada (Fase 1, division-hot-grid_20260911)
+
+Fase verde. Archivos modificados:
+- Packages/Engine/Sources/Engine/MusicalTime.swift
+
+Cambios:
+- MusicalTimeline gana anchorStep/anchorNanoseconds (públicos, let) y un init
+  privado completo; el init público delega con ancla 0/0.
+- rebased(to:atStep:) nuevo, marcado realtime: sin asignaciones, sin locks.
+- nanosecondOffset(forStep:) mide (step - anchorStep) desde anchorNanoseconds.
+
+Verificación: Engine 933 tests, 0 fallos (los 921 anteriores más los 12 nuevos).
+MIDI 896 tests, 7 fallos — los cuatro VirtualLoopbackTests con
+clientCreationFailed(-50), el flake conocido de CoreMIDI; idénticos a la base
+antes de este cambio, comprobado con git stash.
+
+Nota de método: la primera pasada de MIDI abortó con SIGSEGV dentro de
+MusicalTimeline.init. Era un build incremental obsoleto —el bundle de tests
+enlazaba un Engine con el layout viejo de dos campos—, no un defecto: se
+resolvió borrando Packages/MIDI/.build. Merece recordarse porque un cambio de
+layout en Engine puede volver a producirlo.
