@@ -1,0 +1,10 @@
+Task: Implementar lo que haga falta para el gate (Fase 4, division-hot-grid_20260911)
+
+Archivos: Packages/MIDI/Sources/MIDI/Transport.swift, solo un comentario.
+
+No hacía falta código, como el plan anticipaba. El cierre de Transport que
+entrega cada Pulse al NoteEmitter calcula la duración de Step con la Division
+del Cycle que emite. TrackScheduler la calcula al reanclar con la del material
+vigente, que es ese mismo Cycle, así que desde 171175d las dos coinciden. Queda
+escrito junto a esa expresión, con el test que lo fija
+(SustainGateDivisionTests).
