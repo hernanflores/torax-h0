@@ -22,6 +22,15 @@
 /// **No cruza al hilo del scheduler** (NFR2). Vive en el hilo de control, que es
 /// por lo que puede permitirse un `Dictionary`: lo que cruza sigue siendo un
 /// `Pattern` normal por el `PatternHandoff` de siempre.
+///
+/// > **Un fill de Division suena desde `division-hot-grid_20260911`, y sin
+/// > tocar este tipo.** Antes, superponer Division cambiaba la duración de la
+/// > nota y no la velocidad de la línea, porque la rejilla se congelaba en Play.
+/// > Ahora el scheduler reancla con cada `Pattern` que recibe, así que la
+/// > pulsación y la soltada son dos reanclajes normales. Soltar no rebobina: la
+/// > rejilla vuelve anclada al instante de la soltada. Con `CtrlAllOffset`
+/// > pasa lo mismo, con doce reanclajes en la misma ventana. Lo fijan
+/// > `DivisionTempOverlayTests` y `DivisionCtrlAllTests`, en `MIDI`.
 public struct ParameterOverlay: Equatable, Sendable {
 
     /// Por parámetro tocado, el valor base de cada Cycle activo.
