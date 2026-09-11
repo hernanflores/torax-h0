@@ -1,0 +1,27 @@
+Task: Tests de no-regresión de Delay negativo (Fase 4, division-hot-grid_20260911)
+
+Archivos creados:
+- Packages/MIDI/Tests/MIDITests/DelayBudgetDivisionTests.swift (5 tests)
+
+El test simula el bucle de SchedulerThread con sus números: ventanas cada 10 ms
+(la mitad del look-ahead), el horizonte 20 ms por delante del presente, y el
+presente medido contra el origen desplazado con el presupuesto del arranque. Un
+evento está en el pasado si su offset es menor que el presente de la ventana
+que lo emite.
+
+ROJO, y con un defecto real (FR17, criterio 9): 35 fallos en 3 de los 5 tests.
+Con Delay negativo, cuando la Division se vuelve más lenta crece el
+presupuesto de adelanto. El ancla conserva el instante de rejilla del Step del
+corte, así que su instante de emisión se adelanta lo que crece el presupuesto
+y cae antes del presente. Con Delay -100% y 1/16 a 1/8 llega hasta 110 ms
+tarde. Siempre es un único evento por cambio, el Step del corte. Pasa por las
+dos puertas, el knob y el avance de Cycle. Hacia más rápido no ocurre, y con
+Delay >= 0 el presupuesto sigue en cero.
+
+Primer error del propio test, que queda escrito en él: girar el knob a los
+1000 ms exactos caía justo después de que un Step entrara en la ventana, con
+un Step entero de margen, y pasaba sin probar nada. Ahora se barre el instante
+del giro a lo largo de un Step completo y las fases de la ventana.
+
+El usuario decidió el 2026-09-11 arreglarlo en este track en vez de aceptarlo
+como limitación: se añade al plan una tarea de implementación.
