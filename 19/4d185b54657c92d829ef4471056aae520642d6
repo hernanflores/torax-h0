@@ -1,0 +1,11 @@
+Task: Tests de aislamiento entre Tracks (Fase 2, division-hot-grid_20260911)
+
+Archivos creados:
+- Packages/MIDI/Tests/MIDITests/DivisionIsolationTests.swift (2 tests)
+
+Sin fase roja, y a propósito: el plan no pone tarea de implementación detrás.
+Estos tests verifican una propiedad que el diseño ya da —cada TrackScheduler
+tiene su propia rejilla y adoptGridOfCurrentMaterial() solo toca la suya—, así
+que pasan en verde desde el primer intento. Valen como red contra una regresión
+futura, no como prueba de trabajo nuevo. Queda dicho para que nadie lea el verde
+inmediato como que el test no comprueba nada.
