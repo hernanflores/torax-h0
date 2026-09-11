@@ -9,3 +9,22 @@ tiene su propia rejilla y adoptGridOfCurrentMaterial() solo toca la suya—, as�
 que pasan en verde desde el primer intento. Valen como red contra una regresión
 futura, no como prueba de trabajo nuevo. Queda dicho para que nadie lea el verde
 inmediato como que el test no comprueba nada.
+
+--- Phase Verification & Checkpoint: FASE 2 (division-hot-grid_20260911) ---
+
+Comandos ejecutados:
+- swift test --package-path Packages/Engine --enable-code-coverage
+  933 tests, 0 fallos.
+- swift test --package-path Packages/MIDI --enable-code-coverage (profdata fusionado a mano)
+  912 tests, 7 fallos: los cuatro VirtualLoopbackTests con
+  clientCreationFailed(-50), el flake conocido, identicos a la base.
+  Cobertura MIDI 91,79% de lineas; TrackScheduler 98,17%, LookAheadScheduler 97,67%.
+- xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  BUILD SUCCEEDED.
+
+Verificacion manual en iPad, con un solo Cycle activo: girar Division mientras
+suena cambia la velocidad de la linea, sin saltar al principio del anillo y sin
+notas repetidas ni perdidas en el corte. El desfase del anillo es esperado hasta
+la Fase 5.
+
+Confirmacion del usuario (2026-09-11): «Ya la hice y funciona».
