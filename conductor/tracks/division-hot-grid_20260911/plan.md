@@ -123,30 +123,52 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
 
 ## FASE 4: LO QUE SE ARREGLA DE PASO
 
-- [ ] Task: Tests de la ventana de repeticiones
-  - [ ] El corte de las repeticiones y el hueco base se miden contra el mismo
+- [x] Task: Tests de la ventana de repeticiones — `28948f2`
+  - [x] El corte de las repeticiones y el hueco base se miden contra el mismo
         Step tras un cambio de Division (FR15, criterio 7).
-  - [ ] Una repetición que cabía no se descarta; una que no cabía no cae encima
+  - [x] Una repetición que cabía no se descarta; una que no cabía no cae encima
         del Pulse siguiente.
-- [ ] Task: Implementar la coherencia de la ventana de repeticiones
-  - [ ] `repeatWindowNanoseconds` y `gapNanoseconds(forStep:division:)` leen el
-        mismo Step (`TrackScheduler.swift:538` y `:540`).
-- [ ] Task: Tests de gate y Sustain contra la rejilla nueva
-  - [ ] Sustain 100% sobre la Division nueva: el note-off cae exactamente donde
+  - **Verdes desde el primer intento sobre HEAD**, porque `171175d` ya
+    recalcula `stepDurationNanoseconds` al reanclar. Sobre `5211a77`, anterior a
+    ese arreglo, el test del hueco base falla (31,25 ms en vez de 62,5 ms): el
+    test detecta el defecto.
+- [x] Task: Implementar la coherencia de la ventana de repeticiones — `a39a9bb`
+  - [x] `repeatWindowNanoseconds` y `gapNanoseconds(forStep:division:)` leen el
+        mismo Step (`TrackScheduler.swift:538` y `:540`). **Sin código: ya
+        convergían desde la Fase 2.** Queda escrito en `emitRepetitions`.
+- [x] Task: Tests de gate y Sustain contra la rejilla nueva — `8c74436`
+  - [x] Sustain 100% sobre la Division nueva: el note-off cae exactamente donde
         empieza el note-on siguiente (FR16, criterio 8).
-  - [ ] Sustain 200%: solapa como corresponde, sin quedarse en la Division vieja.
-  - [ ] 1/32 a 300 BPM, que es el extremo que `Division.ordered` documenta.
-- [ ] Task: Implementar lo que haga falta para el gate
-  - [ ] Puede no hacer falta código: `Transport.swift:699` ya lee la Division
+  - [x] Sustain 200%: solapa como corresponde, sin quedarse en la Division vieja.
+  - [x] 1/32 a 300 BPM, que es el extremo que `Division.ordered` documenta.
+  - **Verdes sobre HEAD; sobre `5211a77` fallan 36 aserciones**, con el
+    note-off un Step de 1/16 después del note-on siguiente: el defecto
+    reportado.
+- [x] Task: Implementar lo que haga falta para el gate — `097f607`
+  - [x] Puede no hacer falta código: `Transport.swift:699` ya lee la Division
         viva y la rejilla pasa a coincidir con ella. Si los tests pasan tal cual,
         **la tarea es dejar escrito que convergen y por qué**, no inventar un
-        cambio.
-- [ ] Task: Tests de no-regresión de Delay negativo
-  - [ ] Tras un cambio de Division, ningún evento se pide para un instante ya
-        pasado (FR17, criterio 9).
-  - [ ] Con Delay ≥ 0 el presupuesto sigue siendo cero y nada cambia.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
-  - [ ] Suite de `MIDI` en verde, cobertura ≥80%.
+        cambio. **Sin código**; escrito junto a la expresión de `Transport`.
+- [x] Task: Tests de no-regresión de Delay negativo — `af6bdb7`
+  - [x] Tras un cambio de Division, ningún evento se pide para un instante ya
+        pasado (FR17, criterio 9). **Rojo, con un defecto real**: con Delay
+        negativo y una Division más lenta, el Step del corte se pedía tarde,
+        hasta 110 ms con −100%. Pasaba por el knob y por el avance de Cycle.
+  - [x] Con Delay ≥ 0 el presupuesto sigue siendo cero y nada cambia.
+- [x] Task: Implementar el ancla que conserva el instante que suena — `bdcd478`
+  *(Añadida el 2026-09-11: el usuario decidió arreglarlo aquí y no aceptarlo
+  como limitación. Ver la enmienda de FR17 en `spec.md`.)*
+  - [x] `MusicalTimeline.rebased(to:atStep:delayedBy:)`, con tests en `Engine`.
+  - [x] Cuando un reanclaje hace crecer el presupuesto respecto al que decidió
+        la ventana, el ancla se retrasa lo que crece.
+  - [x] En el avance de Cycle, la reentrada mide con el presupuesto nuevo, y un
+        Step del corte que ya no cabe espera a su ventana sin repetirse.
+  - [x] `DelayBudgetDivisionTests` en verde.
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Suite de `MIDI` en verde, cobertura ≥80%. **931 tests; los 7 fallos son
+        los cuatro `VirtualLoopbackTests` con `clientCreationFailed(-50)`, el
+        flake conocido. Cobertura 92,01%; `TrackScheduler` 98,52%. `Engine`
+        935 tests en verde. `xcodebuild build` correcto.**
 
 ## FASE 5: EL ANILLO MIDE CON EL MISMO ANCLA
 
