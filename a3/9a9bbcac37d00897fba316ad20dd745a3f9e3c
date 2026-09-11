@@ -1,0 +1,10 @@
+Task: Implementar la coherencia de la ventana de repeticiones (Fase 4, division-hot-grid_20260911)
+
+Archivos: Packages/MIDI/Sources/MIDI/TrackScheduler.swift, solo un comentario en emitRepetitions.
+
+No hacía falta código. repeatWindowNanoseconds y gapNanoseconds(forStep:division:)
+ya leen el mismo Step desde 171175d (Fase 2), que recalcula
+stepDurationNanoseconds al reanclar. La tarea queda como el plan pide para el
+gate: escrito dónde convergen, por qué y qué test lo fija
+(RepeatWindowDivisionTests, que falla sobre 5211a77 y pasa sobre HEAD). No se
+inventa un cambio para que haya diff.
