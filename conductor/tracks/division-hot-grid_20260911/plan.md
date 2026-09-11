@@ -47,7 +47,7 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
   - [x] Suite de `Engine` en verde y cobertura ≥90%. **933 tests, 0 fallos;
         cobertura 98,71% de líneas y `MusicalTime.swift` al 100%.**
 
-## FASE 2: EL SCHEDULER REANCLA CUANDO GIRA EL KNOB
+## FASE 2: EL SCHEDULER REANCLA CUANDO GIRA EL KNOB [checkpoint: 194d185]
 
 - [x] Task: Tests del reanclaje en `LookAheadScheduler` — `24cf886`
   - [x] Reanclar no mueve la marca de agua: el Step siguiente es el siguiente
@@ -77,21 +77,18 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
 - [x] Task: Tests de aislamiento entre Tracks — `194d185`
   - [x] Cambiar la Division del Track 1 no mueve ni un offset de los otros
         quince (criterio 6).
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [x] Suite de `MIDI` en verde y cobertura ≥80%. **912 tests; los 7 fallos son
         los cuatro `VirtualLoopbackTests` con `clientCreationFailed(-50)`, el
         flake conocido, idénticos a la base. Cobertura 91,79%;
         `TrackScheduler` 98,17% y `LookAheadScheduler` 97,67%. `Engine` 933
         tests en verde. `xcodebuild build` correcto.**
-  - [ ] **Verificación manual: el defecto reportado ya no ocurre** — con un Cycle
+  - [x] **Verificación manual: el defecto reportado ya no ocurre** — con un Cycle
         activo, girar Division mientras suena cambia la velocidad de la línea.
-        **Pendiente: la sesión se dejó aquí el 2026-09-11 con la verificación en
-        iPad sin hacer.** El checkpoint de fase no se sella hasta que se ejecute.
-        Qué comprobar: la velocidad de la línea cambia al girar, no salta al
-        principio del anillo, no se oye nota repetida ni perdida en el corte, y
-        el contraste con un instrumento tonal. Con **un solo Cycle activo**. El
-        anillo puede quedar desfasado respecto a lo que suena — eso es esperado
-        hasta la Fase 5.
+        **Verificado en iPad el 2026-09-11, con un solo Cycle activo:** la línea
+        cambia de velocidad al girar, no salta al principio del anillo y no se
+        oye nota repetida ni perdida en el corte. El desfase del anillo es
+        esperado hasta la Fase 5.
 
 ## FASE 3: EL AVANCE DE CYCLE TRAE SU PROPIA REJILLA
 
