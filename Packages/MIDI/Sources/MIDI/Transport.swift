@@ -683,6 +683,15 @@ public final class Transport: @unchecked Sendable {
                 pitch: pitch,
                 groove: groove,
                 on: MIDIChannel(source.channel),
+                // **Es la misma duración de Step que mide la rejilla** (FR16 de
+                // `division-hot-grid_20260911`). Aquí se calcula por nota con
+                // la Division del Cycle que emite; `TrackScheduler` la calcula
+                // al reanclar con la del material vigente, que es ese mismo
+                // Cycle. Hasta ese track la rejilla se congelaba en Play y este
+                // cálculo era la única mitad que seguía al knob: por eso girar
+                // Division alargaba la nota sin mover la línea. Lo fija
+                // `SustainGateDivisionTests`.
+                //
                 // **La duración se escala con el maestro.** Se calcula contra
                 // el tempo de referencia, como los instantes, y se convierte a
                 // tiempo de reloj: sin esto, seguir a un maestro lento dejaría
