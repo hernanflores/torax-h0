@@ -221,7 +221,7 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
         `VirtualLoopbackTests` con `clientCreationFailed(-50)`, el flake
         conocido. Cobertura 92,00%. `xcodebuild build` correcto.**
 
-## FASE 6: TEMP Y CTRL ALL SOBRE DIVISION
+## FASE 6: TEMP Y CTRL ALL SOBRE DIVISION [checkpoint: eef5f63]
 
 - [x] Task: Tests del overlay de Division, ida y vuelta — `64a8b31`
   - [x] Mantener Temp y girar Division cambia la velocidad mientras dura (FR12,
@@ -243,7 +243,9 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
         handoff de siempre, así que puede no hacer falta código. Si los tests
         pasan, la tarea es dejarlo escrito. **Sin código**; escrito en
         `ParameterOverlay`.
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Verificación en iPad (fill de Temp, Temp con dos Cycles, Ctrl All):
+        **el usuario respondió «ok» el 2026-09-11.**
   - [x] **`Engine` 945 tests, cobertura 98,74%. `MIDI` 944 tests; los 7
         fallos son los cuatro `VirtualLoopbackTests` con
         `clientCreationFailed(-50)`, el flake conocido. Cobertura 92,00%.
