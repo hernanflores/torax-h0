@@ -92,24 +92,31 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
 
 ## FASE 3: EL AVANCE DE CYCLE TRAE SU PROPIA REJILLA
 
-- [ ] Task: Tests del cambio de rejilla en el límite de vuelta
-  - [ ] Un Track con Cycle 1 en 1/16 y Cycle 2 en 1/8 cambia de espaciado al
+- [x] Task: Tests del cambio de rejilla en el límite de vuelta — `2074f88`
+  - [x] Un Track con Cycle 1 en 1/16 y Cycle 2 en 1/8 cambia de espaciado al
         entrar el Cycle 2, en el límite de vuelta (FR3, criterio 5).
-  - [ ] El primer Step de la vuelta nueva ya suena con la rejilla nueva, como ya
+  - [x] El primer Step de la vuelta nueva ya suena con la rejilla nueva, como ya
         suena con el material nuevo (FR5 de la rebanada de Cycles).
-  - [ ] Ni se pierde ni se repite ningún Step cuando el cambio cae **a mitad de
+  - [x] Ni se pierde ni se repite ningún Step cuando el cambio cae **a mitad de
         ventana** (FR7) — el caso que hace falta escribir antes de tocar nada.
-  - [ ] Volver al Cycle 1 devuelve la rejilla, anclada al cierre de vuelta y no
+  - [x] Volver al Cycle 1 devuelve la rejilla, anclada al cierre de vuelta y no
         al origen de Play (FR6).
-- [ ] Task: Implementar el reanclaje en `advanceCycleIfTheTurnClosed`
-  - [ ] El rango de la ventana ya está calculado con la rejilla vieja: la
+- [x] Task: Implementar el reanclaje en `advanceCycleIfTheTurnClosed` — `a620e3e`
+  - [x] El rango de la ventana ya está calculado con la rejilla vieja: la
         decisión de cómo respetar FR7 —truncar la ventana y reentrar, o emitir el
         resto ya anclado— se toma aquí, con los tests delante, y se deja escrita
-        en el código con su porqué.
-  - [ ] Realtime: sin asignaciones, y el coste solo cuando el Cycle entrante
+        en el código con su porqué. **Truncar y reentrar**, con
+        `LookAheadScheduler.rebase(to:reopeningAt:)`: emitir el resto anclado
+        adelanta Steps muy por delante del horizonte hacia más lento y los
+        entrega tarde hacia más rápido.
+  - [x] Realtime: sin asignaciones, y el coste solo cuando el Cycle entrante
         declara otra Division (NFR2).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
-  - [ ] Suite de `MIDI` en verde, cobertura ≥80%.
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Suite de `MIDI` en verde, cobertura ≥80%. **919 tests; los 7 fallos son
+        los cuatro `VirtualLoopbackTests` con `clientCreationFailed(-50)`, el
+        flake conocido. Cobertura 91,89%; `TrackScheduler` 98,36% y
+        `LookAheadScheduler` 97,87%. `Engine` 933 tests en verde.
+        `xcodebuild build` correcto.**
 
 ## FASE 4: LO QUE SE ARREGLA DE PASO
 
