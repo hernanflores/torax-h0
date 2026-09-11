@@ -90,7 +90,7 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
         oye nota repetida ni perdida en el corte. El desfase del anillo es
         esperado hasta la Fase 5.
 
-## FASE 3: EL AVANCE DE CYCLE TRAE SU PROPIA REJILLA
+## FASE 3: EL AVANCE DE CYCLE TRAE SU PROPIA REJILLA [checkpoint: a620e3e]
 
 - [x] Task: Tests del cambio de rejilla en el límite de vuelta — `2074f88`
   - [x] Un Track con Cycle 1 en 1/16 y Cycle 2 en 1/8 cambia de espaciado al
@@ -111,12 +111,15 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
         entrega tarde hacia más rápido.
   - [x] Realtime: sin asignaciones, y el coste solo cuando el Cycle entrante
         declara otra Division (NFR2).
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [x] Suite de `MIDI` en verde, cobertura ≥80%. **919 tests; los 7 fallos son
         los cuatro `VirtualLoopbackTests` con `clientCreationFailed(-50)`, el
         flake conocido. Cobertura 91,89%; `TrackScheduler` 98,36% y
         `LookAheadScheduler` 97,87%. `Engine` 933 tests en verde.
         `xcodebuild build` correcto.**
+  - [x] **Verificado en iPad el 2026-09-11:** Cycle 1 en 1/16 y Cycle 2 en 1/8,
+        y después en 1/32. La línea cambia de velocidad en el límite de vuelta
+        y vuelve en la siguiente, sin golpes repetidos ni perdidos.
 
 ## FASE 4: LO QUE SE ARREGLA DE PASO
 
