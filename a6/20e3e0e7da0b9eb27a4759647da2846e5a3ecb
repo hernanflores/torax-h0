@@ -36,3 +36,23 @@ Fuera de la tarea: advanceBudgetNanoseconds se fija una vez por ventana con el
 material de su inicio; si el Cycle entrante cambia Delay o Division a mitad de
 ventana, el presupuesto no se recalcula hasta la siguiente. Es territorio de FR17
 (Fase 4).
+
+--- Phase Verification & Checkpoint: FASE 3 (division-hot-grid_20260911) ---
+
+Comandos ejecutados:
+- swift test --package-path Packages/Engine --enable-code-coverage
+  933 tests, 0 fallos.
+- swift test --package-path Packages/MIDI --enable-code-coverage (profdata fusionado a mano)
+  919 tests, 7 fallos: los cuatro VirtualLoopbackTests con
+  clientCreationFailed(-50), el flake conocido. Cobertura MIDI 91,89% de lineas;
+  TrackScheduler 98,36%, LookAheadScheduler 97,87%.
+- xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  BUILD SUCCEEDED.
+
+Verificacion manual en iPad: un Track con dos Cycles activos de 16 Steps, el
+Cycle 1 en 1/16 y el Cycle 2 en 1/8, y despues el Cycle 2 en 1/32. La linea
+cambia de velocidad en el limite de vuelta y vuelve al 1/16 en la vuelta
+siguiente, sin golpes repetidos ni perdidos y sin volver al principio del
+desarrollo.
+
+Confirmacion del usuario (2026-09-11): «yes, funciona en el iPad».
