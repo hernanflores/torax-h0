@@ -1,0 +1,18 @@
+Task: Implementar la detección en refresh(with: Track) (Fase 2, division-hot-grid_20260911)
+
+Fase verde. Archivos modificados:
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift
+
+Cambios:
+- stepDurationNanoseconds: let -> var, recalculado solo al reanclar.
+- adoptGridOfCurrentMaterial() privado, marcado realtime; llamado desde
+  refresh(with: Cycle) y refresh(with: Track).
+- Guard sobre material.cycle?.shape.division: sin Cycle no se reancla (arnés).
+
+Verificación: MIDI 910 tests, 7 fallos — los cuatro VirtualLoopbackTests con
+clientCreationFailed(-50), el flake conocido de CoreMIDI, idénticos a la base.
+Los dos tests del espaciado que fallaban ahora pasan.
+
+Pendiente de la Fase 3: el avance de Cycle dentro de la ventana todavía no
+adopta la Division del Cycle entrante. adoptGridOfCurrentMaterial() está escrito
+para servir también a ese camino.
