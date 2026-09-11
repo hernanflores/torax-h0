@@ -1,0 +1,7 @@
+Task: Tests del reanclaje en LookAheadScheduler (Fase 2, division-hot-grid_20260911)
+
+Fase roja: no compila porque LookAheadScheduler no tiene rebase(to:).
+Confirmado con swift test --package-path Packages/MIDI --filter LookAheadRebaseTests.
+
+Archivos creados:
+- Packages/MIDI/Tests/MIDITests/LookAheadRebaseTests.swift (7 tests)
