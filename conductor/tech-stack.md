@@ -133,6 +133,37 @@ puede dejar un salto perceptible si el maestro tiene mucho jitter propio. Las
 dos están registradas como limitaciones conocidas en
 `conductor/tracks/external-clock_20260903/spec.md`.
 
+### Enmienda — 2026-09-11: la rejilla deja de fijarse en Play
+
+**Qué cambia.** La `MusicalTimeline` de cada Track se construía al pulsar Play y
+no se volvía a leer. Pasa a **reanclarse mientras suena**, con un ancla —índice
+de Step e instante— cada vez que cambia la Division del material vigente: por el
+knob, una vez por ventana, y por el avance de Cycle, dentro de ella.
+
+**Por qué.** Sin esto, girar Division con el transporte corriendo cambiaba la
+duración de la nota y no el espaciado de los Steps, y un Cycle 2 en 1/8 sonaba
+sobre la rejilla del Cycle 1. La rejilla es función del material, no del material
+que hubiera al pulsar Play.
+
+**Qué se conserva.** El ancla no acumula: los offsets se siguen multiplicando
+desde ella, así que el error queda acotado a un redondeo por ancla. La marca de
+agua del `LookAheadScheduler` solo se devuelve a un Step que el rango anunció y
+nadie emitió, así que ninguno se pierde ni se repite. Con la rejilla quieta, todo
+se calcula exactamente como antes.
+
+**Lo que introduce.** Un Track reanclado mide desde su propio corte y deja de
+estar en fase con el origen de Play; para alinearlos está Play. Y con Delay
+negativo, una Division más lenta hace crecer el presupuesto de adelanto de la
+enmienda del 2026-08-30: el ancla se retrasa lo que crece, para que el Step del
+corte siga sonando cuando sonaba. El caso sin reanclaje —girar Delay a negativo
+mientras suena— sigue siendo la limitación conocida de la rebanada 6.
+
+**Lo que la interfaz necesitó.** El anillo no puede medir desde Play si el sonido
+no lo hace: el hilo del scheduler publica el ancla vigente y la anterior de cada
+Track, como enteros bajo un seqlock, y `Playhead` y `CyclePosition` miden con
+ellas. Las dos rejillas hacen falta porque el ancla publicada puede estar
+todavía en el futuro.
+
 ## Concurrencia
 
 **Estado inmutable con snapshot publicado atómicamente.** La UI edita el estado en el hilo principal; el scheduler lee un snapshot inmutable. **No hay locks en el camino de timing** — ni esperas, ni riesgo de inversión de prioridad, ni suspensiones por `await`.

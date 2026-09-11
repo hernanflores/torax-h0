@@ -42,8 +42,22 @@ public struct Playhead: Equatable, Sendable {
             return
         }
 
-        let ringDuration = timeline.stepDurationNanoseconds * Double(steps.count)
-        let intoRing = Double(elapsedNanoseconds).truncatingRemainder(dividingBy: ringDuration)
+        let stepDuration = timeline.stepDurationNanoseconds
+        let ringDuration = stepDuration * Double(steps.count)
+
+        // **Se mide desde el origen virtual de la rejilla, no desde Play**
+        // (FR9 de `division-hot-grid_20260911`). Una rejilla reanclada cuenta
+        // sus Steps desde el ancla, así que el Step 0 «virtual» cae donde la
+        // Division nueva lo pondría. Sin ancla ese origen es Play y la suma de
+        // abajo es `Double(elapsed) + 0`, el mismo número de siempre (FR11).
+        let sinceOrigin =
+            Double(elapsedNanoseconds - timeline.anchorNanoseconds)
+            + stepDuration * Double(timeline.anchorStep)
+        var intoRing = sinceOrigin.truncatingRemainder(dividingBy: ringDuration)
+        // Antes del ancla la cuenta puede ser negativa; se envuelve al anillo,
+        // y el borde exacto se queda en el principio de la vuelta y no en 1.
+        if intoRing < 0 { intoRing += ringDuration }
+        if intoRing >= ringDuration { intoRing = 0 }
 
         turn = intoRing / ringDuration
         // El Step sale de la fracción y no de una segunda división, para que los
@@ -67,25 +81,36 @@ extension Playhead {
     /// moverían de sitio— y su rejilla avanza igual: lo único que no hace es
     /// emitir.
     ///
-    /// La rejilla de cada Track es la misma que le da `PatternScheduler` al
-    /// programarlo —`MusicalTimeline(tempo:division:)` con la Division del
-    /// Track—, y eso es lo que garantiza que lo que se ve y lo que suena no
-    /// puedan discrepar.
+    /// **La rejilla de cada Track es la que publica el scheduler**, en `grids`:
+    /// la misma con la que programa, anclada donde reancló. Es lo que garantiza
+    /// que lo que se ve y lo que suena no puedan discrepar, también después de
+    /// girar Division (FR9 de `division-hot-grid_20260911`). Antes de ese track
+    /// bastaba con reconstruirla desde la Division del Track, porque no
+    /// cambiaba nunca.
+    ///
+    /// Sin rejilla publicada para un Track —el arnés, o `grids` en `nil`— se
+    /// reconstruye como antes: `MusicalTimeline(tempo:division:)` con la
+    /// Division del Cycle en edición.
     ///
     /// No es código de tiempo real: lo consulta la interfaz al redibujar.
     public static func forEachTrack(
         in pattern: Pattern,
         tempo: Tempo,
-        elapsedNanoseconds: Int64
+        elapsedNanoseconds: Int64,
+        grids: [PlaybackGrid?]? = nil
     ) -> [Playhead] {
         (0..<Pattern.trackCount).map { index in
             // Sobre el Cycle en edición, que es el que se dibuja: el playhead
             // tiene que caer sobre el anillo que se está viendo, o marcaría una
             // posición de un anillo que no está en pantalla.
             let cycle = pattern.editingCycle(at: index) ?? Pattern.emptyCycle
+            // Los Steps son los del anillo que se ve; el tiempo, el de la
+            // rejilla que suena.
+            let published = grids.flatMap { index < $0.count ? $0[index] : nil }
             return Playhead(
                 elapsedNanoseconds: elapsedNanoseconds,
-                timeline: MusicalTimeline(tempo: tempo, division: cycle.shape.division),
+                timeline: published?.timeline(atNanoseconds: elapsedNanoseconds)
+                    ?? MusicalTimeline(tempo: tempo, division: cycle.shape.division),
                 steps: cycle.shape.steps
             )
         }

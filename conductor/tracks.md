@@ -1115,6 +1115,82 @@ en cualquier momento.
   **Sin medición de jitter**: no mueve ningún instante ni toca el hilo del
   scheduler.
 
+---
+
+- [x] **Track: La Division no mueve la rejilla mientras suena** — *entregado y verificado en iPad el 2026-09-11*; **sin medición de jitter**
+  *Link: [conductor/tracks/division-hot-grid_20260911/index.md](./tracks/division-hot-grid_20260911/index.md)*
+
+  **Qué entregó.** La rejilla de cada Track pasa a ser función del material
+  vigente, con un **ancla** —índice de Step e instante— en `MusicalTimeline`.
+  Girar Division mientras suena cambia la velocidad de la línea en la ventana
+  siguiente, sin reiniciar el desarrollo y sin perder ni repetir un Step; cada
+  Cycle suena con la suya, que era el mismo defecto por otra puerta; el anillo
+  mide con el ancla que publica el scheduler, y Temp y Ctrl All sobre Division
+  suenan sin tocar el overlay. De paso quedaron coherentes la ventana de las
+  repeticiones y el gate de Sustain, que ya lo estaban desde la Fase 2.
+
+  **Dos defectos aparecieron durante el track, y los dos se arreglaron.** Con
+  Delay negativo, una Division más lenta hacía crecer el presupuesto de adelanto
+  y el Step del corte se pedía tarde —hasta 110 ms—; lo destapó un test y se
+  arregló retrasando el ancla lo que crece el presupuesto (enmienda de FR17 en
+  el `spec.md`). Y el anillo saltaba atrás en ese mismo caso, encontrado en el
+  iPad: ahora cambia de rejilla donde las dos marcan la misma posición.
+
+  **Verificación:** `Engine` 945 tests · 98,74%. `MIDI` 944 tests · 92,00%, con
+  el flake conocido de `VirtualLoopbackTests`. Los catorce criterios en iPad,
+  en `device-verification.md`, escucha larga incluida.
+
+  Encontrado el 2026-09-10. **Girar Division con el transporte corriendo no
+  cambia la velocidad de la línea**: cambia la duración de la nota y nada más.
+  En un instrumento tonal con notas sostenidas eso se oye, así que el knob
+  parecía funcionar; en una pista rítmica de one-shots la duración del note-on
+  es irrelevante y el knob parece muerto. Ese fue el reporte.
+
+  **La raíz.** La rejilla de cada Track se congela al pulsar Play:
+  `PatternScheduler.swift:102` construye un `MusicalTimeline` por Track leyendo
+  `cycle.shape.division` una sola vez, y `TrackScheduler` guarda su
+  `stepDurationNanoseconds` como `let`. `refresh(with: Track)` sustituye **solo
+  el material**. El gate sí obedece —`Transport.swift:699` lo recalcula por nota
+  contra el snapshot vivo—, y de ahí la asimetría exacta que se oye. **Nadie lo
+  probó**: no hay un solo test que cambie la Division a mitad de reproducción.
+
+  **No es un defecto de la Division, es un defecto de la rejilla.** Cada Cycle
+  tiene su propio Shape, así que hoy **un Cycle 2 en 1/8 suena sobre la rejilla
+  del Cycle 1**. Misma causa, se arregla de una vez.
+
+  **Planificado en siete fases.** La pieza que falta es un **ancla** —índice de
+  Step e instante—, en `Engine` por ser valor puro. **La Fase 2 cierra el defecto
+  reportado.** El riesgo va solo en la Fase 3: el avance de Cycle ocurre dentro
+  de una ventana ya calculada con la rejilla vieja. El anillo mide con la misma
+  ancla (Fase 5), o se rompería la invariante que `Playhead.swift` tiene escrita.
+
+  **Fuera de alcance, y anotado aquí para que no se pierda:** el rediseño del
+  origen adelantado de Delay —`advanceBudgetNanoseconds` y el desplazamiento de
+  origen que `SchedulerThread` calcula al arrancar— frente a una rejilla que
+  cambia en caliente; aquí solo se comprueba que no se rompe. Y el **segundo**
+  motivo por el que un knob puede parecer muerto: con varios Cycles activos se
+  edita el Cycle en edición y suena el del cursor de reproducción, que es de
+  [`cycle-edit-cursor_20260908`](./tracks/cycle-edit-cursor_20260908/index.md).
+
+  **Sin medición de jitter**, por la suspensión del 2026-09-02 — en el track que
+  más la habría justificado. Se sustituye por una escucha larga en dispositivo y
+  el riesgo queda escrito en el spec.
+
+  **Pendientes que deja, anotados el 2026-09-11 al cerrar su Fase 7:**
+  - **El origen adelantado de Delay frente a una rejilla que cambia en
+    caliente.** `SchedulerThread` desplaza el origen una sola vez al arrancar
+    con `advanceBudgetNanoseconds`. Este track solo lo protegió donde reancla:
+    el ancla se retrasa lo que crece el presupuesto (enmienda de FR17). Queda
+    sin rediseñar el caso sin reanclaje, girar Delay a negativo mientras suena,
+    que es la limitación 2 de la rebanada 6.
+  - **El cursor de edición puede tapar el knob con varios Cycles activos.**
+    Division se gira sobre el Cycle en edición y suena el del cursor de
+    reproducción; si no son el mismo, el giro no se oye hasta que el editado
+    entra. Es de [`cycle-edit-cursor_20260908`](./tracks/cycle-edit-cursor_20260908/index.md).
+  - **Con Delay negativo el anillo va por detrás de lo que suena**, un Step con
+    −100%, y más milisegundos en Divisions lentas. Es la decisión 9 de la
+    rebanada 6 y el usuario decidió mantenerla; revisarla sería un track propio.
+
 ## Archivados
 
 - [x] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay** — swing y Delay suenan; jitter recto máx 0,151 ms · σ 0,009–0,013 ms. **Cerrado con deuda: fase *Review Fixes* abierta**

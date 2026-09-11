@@ -160,9 +160,71 @@ public struct MusicalTimeline: Equatable, Sendable {
     public let tempo: Tempo
     public let division: Division
 
+    /// El Step desde el que se mide, y el instante que ese Step ocupa.
+    ///
+    /// **Existen porque la Division se gira mientras suena.** Sin ancla, cambiar
+    /// la Division de una rejilla recalcularía también todo el pasado: el Step
+    /// siguiente saltaría a un instante que no tiene nada que ver con el que se
+    /// estaba tocando, y la línea daría un tumbo en vez de cambiar de velocidad.
+    /// Con ancla, **el pasado queda como sonó y el futuro obedece al knob**.
+    ///
+    /// En reposo valen cero los dos, que es la rejilla de siempre: medida desde
+    /// el origen de Play. Un Track que no ha cambiado de Division no sabe que
+    /// esto existe.
+    public let anchorStep: Int
+    public let anchorNanoseconds: Int64
+
     public init(tempo: Tempo, division: Division) {
+        self.init(tempo: tempo, division: division, anchorStep: 0, anchorNanoseconds: 0)
+    }
+
+    /// Una rejilla ya anclada, a partir de sus enteros.
+    ///
+    /// **Público desde la Fase 5 de `division-hot-grid_20260911`, y solo para
+    /// reconstruir.** El scheduler publica el ancla de cada Track como enteros
+    /// —índice de Step, instante y Division— y la interfaz rehace aquí la misma
+    /// rejilla con su tempo. Para **crear** un ancla nueva sigue estando
+    /// `rebased(to:atStep:delayedBy:)`, que calcula el instante en vez de
+    /// aceptarlo.
+    public init(tempo: Tempo, division: Division, anchorStep: Int, anchorNanoseconds: Int64) {
         self.tempo = tempo
         self.division = division
+        self.anchorStep = anchorStep
+        self.anchorNanoseconds = anchorNanoseconds
+    }
+
+    /// La misma rejilla con otra Division, **midiendo desde el instante que ese
+    /// Step ya ocupaba**.
+    ///
+    /// El ancla se calcula aquí y no la recibe de fuera, a propósito: el
+    /// instante del corte es el que esta rejilla dice que es, y dejarlo entrar
+    /// como parámetro abriría la puerta a que quien reancla y quien emite
+    /// discreparan sobre dónde caía el Step.
+    ///
+    /// **Reanclar sobre la misma Division no mueve nada**, y es el caso de casi
+    /// todas las ventanas: el instante que se guarda es el que el propio cálculo
+    /// devolvía. Por eso quien llama puede permitirse no comprobarlo.
+    ///
+    /// **`delay` retrasa el ancla respecto a ese instante**, y es cero salvo en
+    /// un caso: con Delay negativo, una Division más lenta hace crecer lo que
+    /// cada Step se adelanta a su rejilla, y el scheduler retrasa el ancla eso
+    /// mismo para que el Step del corte siga sonando cuando sonaba (enmienda
+    /// de FR17 de `division-hot-grid_20260911`). Lo que entra de fuera es un
+    /// desplazamiento sobre el instante que esta rejilla calcula, no el
+    /// instante: quien reancla y quien emite siguen sin poder discrepar sobre
+    /// dónde caía el Step.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func rebased(
+        to division: Division, atStep step: Int, delayedBy delay: Int64 = 0
+    ) -> MusicalTimeline {
+        MusicalTimeline(
+            tempo: tempo,
+            division: division,
+            anchorStep: step,
+            anchorNanoseconds: nanosecondOffset(forStep: step) + delay
+        )
     }
 
     /// Duración de un Step en nanosegundos.
@@ -179,10 +241,22 @@ public struct MusicalTimeline: Equatable, Sendable {
     /// Admite índices negativos: los usará Delay, que desplaza un Track entero
     /// hacia atrás respecto a la rejilla.
     ///
+    /// **Se mide desde el ancla y se sigue multiplicando, nunca acumulando.** La
+    /// distancia es `step - anchorStep`, así que el error queda acotado a un
+    /// redondeo por ancla en vez de a uno por Step — que es la misma razón por
+    /// la que esto multiplicaba desde el origen antes de que el ancla existiera.
+    /// Sin ancla los dos cálculos son el mismo.
+    ///
+    /// Los índices anteriores al ancla salen de la misma multiplicación, con
+    /// distancia negativa: la rejilla se extiende hacia atrás con la duración
+    /// **nueva**. No describen lo que sonó —eso lo describía la rejilla
+    /// anterior, que ya no existe— y nadie los consulta: la marca de agua del
+    /// `LookAheadScheduler` solo avanza.
+    ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
     public func nanosecondOffset(forStep step: Int) -> Int64 {
-        Int64((stepDurationNanoseconds * Double(step)).rounded())
+        anchorNanoseconds + Int64((stepDurationNanoseconds * Double(step - anchorStep)).rounded())
     }
 }
 

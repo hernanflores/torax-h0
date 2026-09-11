@@ -168,23 +168,18 @@ public enum SchedulerMaterial: Equatable, Sendable {
 /// nunca a mitad. Un cambio a media ventana partiría el patrón dentro del mismo
 /// horizonte y haría imposible razonar sobre qué Steps ya se habían entregado.
 ///
-/// **Lo que el snapshot todavía no puede cambiar en caliente: Division.**
-/// La rejilla temporal —cuándo cae cada Step— la fija la `MusicalTimeline` con
-/// la que se construye este valor, y no se vuelve a leer. Cambiar la Division de
-/// un Track publicado altera la duración del Step, así que reubicaría todos los
-/// Steps futuros respecto a un origen que ya pasó: hace falta rebasar la línea
-/// de tiempo en un límite de Step, no solo leer un valor nuevo. En esta rebanada
-/// Steps, Pulses y Rotate sí cambian en caliente y están cubiertos por tests.
+/// **La rejilla sigue a la Division del material vigente**, desde
+/// `division-hot-grid_20260911`. Hasta entonces la fijaba la `MusicalTimeline`
+/// con la que se construía este valor y no se volvía a leer. Ahora cambia por
+/// las dos puertas por las que cambia el material: el snapshot, al principio de
+/// cada ventana, y el avance de Cycle, dentro de ella. En las dos se reancla en
+/// un Step que todavía no ha salido, así que lo ya entregado se queda como
+/// sonó y ningún Step se pierde ni se repite.
 ///
-/// > **Con Cycles hay una vía más de llegar aquí, y queda acotada.** Desde la
-/// > rebanada 3 de la v2, dos Cycles de un mismo Track pueden declarar Divisions
-/// > distintas. No se aplica: el Cycle nuevo suena con todo lo suyo —Steps,
-/// > Pulses, Rotate, pool, marco tonal, Groove y canal— sobre la rejilla del
-/// > Cycle que estuviera vigente al pulsar Play. Resolverlo exigiría rebasar la
-/// > línea de tiempo por Track, que es romper el invariante que mantiene en fase
-/// > a los dieciséis: todas las rejillas se miden contra el mismo origen. Está
-/// > en *Known Limitations* del spec del track `cycles_20260901`, y fijado con
-/// > tests en `WhatChangesWithTheCycleTests`.
+/// > **El precio, aceptado a sabiendas.** Un Track reanclado mide desde su
+/// > propio corte y no desde el origen de Play, así que deja de estar en fase
+/// > con los demás. Está en *Known Limitations* del spec del track; para
+/// > volver a alinearlos está Play.
 public struct TrackScheduler {
 
     /// Material vigente. Se conserva entre ventanas: si una lectura del snapshot
@@ -196,12 +191,17 @@ public struct TrackScheduler {
     /// Cuánto dura un Step, que es contra lo que se miden los dos parámetros
     /// temporales.
     ///
-    /// **Se calcula una vez, al construir.** La rejilla la fija la
-    /// `MusicalTimeline` con la que nace este valor y no se vuelve a leer —está
-    /// documentado arriba—, así que la duración tampoco cambia. Convertirla en
-    /// cada ventana sería aritmética de coma flotante repetida en el hilo del
-    /// scheduler para obtener siempre el mismo número.
-    private let stepDurationNanoseconds: Int64
+    /// **Se recalcula cuando la rejilla se reancla, y solo entonces.** Hasta el
+    /// 2026-09-11 era un `let` fijado al construir, porque la rejilla no
+    /// cambiaba nunca; desde que la Division se sigue en caliente
+    /// (`division-hot-grid_20260911`) sí cambia, y dejar este valor congelado
+    /// era justo la mitad del defecto: el gate lo recalculaba `Transport` por
+    /// nota contra la Division viva y el espaciado se quedaba en la vieja.
+    ///
+    /// Sigue sin convertirse en cada ventana: la conversión de coma flotante
+    /// ocurre en el reanclaje, que es raro, y no una vez por ventana para
+    /// obtener siempre el mismo número.
+    private var stepDurationNanoseconds: Int64
 
     /// El generador que decide qué Pulse concreto se omite.
     ///
@@ -269,6 +269,8 @@ public struct TrackScheduler {
         self.lookAhead = LookAheadScheduler(timeline: timeline, startingAtStep: startingStep)
         self.random = SeededRandom(seed: seed)
         self.stepDurationNanoseconds = Int64(timeline.stepDurationNanoseconds)
+        self.windowBudgetNanoseconds = material.groove.advanceBudgetNanoseconds(
+            forStep: Int64(timeline.stepDurationNanoseconds))
         self.turnStartStep = startingStep
         self.playbackClock = nil
     }
@@ -279,6 +281,8 @@ public struct TrackScheduler {
         clock.publish(
             track: index, cycle: cursor, previousCycle: cursor, earlierCycle: cursor,
             turnStartStep: turnStartStep)
+        // Sin reanclar, la vigente y la anterior son la de Play (FR11).
+        clock.publishGrid(track: index, current: lookAhead.timeline, previous: lookAhead.timeline)
     }
 
     /// Sustituye el material sin tocar la posición en la rejilla.
@@ -293,6 +297,103 @@ public struct TrackScheduler {
     /// Sin asignaciones, sin locks, sin await.
     mutating func refresh(with cycle: Cycle) {
         material = .cycle(cycle)
+        adoptGridOfCurrentMaterial()
+    }
+
+    /// Pone la rejilla en la Division del material vigente, si no lo estaba ya.
+    ///
+    /// **Es todo el arreglo de `division-hot-grid_20260911`.** La rejilla dejó
+    /// de ser lo que hubiera al pulsar Play y pasó a ser función del material:
+    /// mientras el snapshot traiga la misma Division esto no hace nada, y en
+    /// cuanto traiga otra, la rejilla la adopta anclando en el Step aún no
+    /// entregado (FR1, FR6).
+    ///
+    /// **La comparación es lo que se paga por ventana**, no el reanclaje: dos
+    /// enteros, y casi siempre iguales (NFR2). `Division` es `Equatable` sobre
+    /// numerador y denominador, así que no hay nada que asignar.
+    ///
+    /// **Sin Cycle no hay Division que seguir**, y ahí está la vía del arnés: el
+    /// material `.everyStep` mide la rejilla que le dio su configuración y no
+    /// debe moverse de ella (FR18).
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    private mutating func adoptGridOfCurrentMaterial() {
+        guard let division = divisionToAdopt else { return }
+
+        let previous = lookAhead.timeline
+        lookAhead.rebase(to: division, delayedBy: anchorDelay(adopting: division))
+        stepDurationNanoseconds = Int64(lookAhead.timeline.stepDurationNanoseconds)
+        publishGrid(replacing: previous)
+    }
+
+    /// Le cuenta a la interfaz con qué rejilla se mide ahora, y cuál había
+    /// antes (FR10). Sin reloj de reproducción —schedulers aislados, arnés— no
+    /// hace nada.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler, solo al reanclar.
+    /// Sin asignaciones, sin locks, sin await.
+    private func publishGrid(replacing previous: MusicalTimeline) {
+        playbackClock?.publishGrid(
+            track: playbackTrack, current: lookAhead.timeline, previous: previous)
+    }
+
+    /// El presupuesto de adelanto con el que se decidió la ventana en curso, o
+    /// la última: es contra lo que se colocó la marca de agua.
+    private var windowBudgetNanoseconds: Int64
+
+    /// Cuánto retrasar el ancla al adoptar `division`.
+    ///
+    /// **Cero salvo con Delay negativo y un presupuesto que crece**, que es la
+    /// enmienda de FR17. La marca de agua se colocó con el presupuesto de la
+    /// ventana: el Step aún no entregado cae como mucho eso por delante del
+    /// horizonte ya servido. Si la rejilla nueva le pide adelantarse más, su
+    /// instante de emisión caería antes del presente. Retrasar el ancla lo que
+    /// crece el presupuesto deja ese Step sonando cuando sonaba.
+    ///
+    /// Si el presupuesto encoge no se adelanta nada: el Step suena algo más
+    /// tarde, nunca en el pasado.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await. La conversión de coma flotante
+    /// ocurre solo al reanclar.
+    private func anchorDelay(adopting division: Division) -> Int64 {
+        let step = Int64(
+            MusicalTimeline(tempo: lookAhead.timeline.tempo, division: division)
+                .stepDurationNanoseconds)
+        return max(
+            0, material.groove.advanceBudgetNanoseconds(forStep: step) - windowBudgetNanoseconds)
+    }
+
+    /// Lo mismo, pero a mitad de ventana: ancla en `step`, que el rango en curso
+    /// anunció y todavía no ha salido, y devuelve ahí la marca de agua.
+    ///
+    /// Devuelve si reancló, que es lo que le dice a `advance` que el resto del
+    /// rango ya no vale.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    private mutating func adoptGridOfCurrentMaterial(reopeningAt step: Int) -> Bool {
+        guard let division = divisionToAdopt else { return false }
+
+        let previous = lookAhead.timeline
+        lookAhead.rebase(
+            to: division, reopeningAt: step, delayedBy: anchorDelay(adopting: division))
+        stepDurationNanoseconds = Int64(lookAhead.timeline.stepDurationNanoseconds)
+        publishGrid(replacing: previous)
+        return true
+    }
+
+    /// La Division del material vigente si la rejilla no la tiene ya, o `nil`
+    /// si no hay nada que adoptar —la misma, o la vía del arnés, sin Cycle—.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    private var divisionToAdopt: Division? {
+        guard let division = material.cycle?.shape.division,
+            division != lookAhead.timeline.division
+        else { return nil }
+        return division
     }
 
     /// Sustituye el Track sin tocar ni la posición en la rejilla ni el cursor de
@@ -311,6 +412,7 @@ public struct TrackScheduler {
         if let cycle = track.cycle(at: cursor) ?? track.cycle(at: 0) {
             material = .cycle(cycle)
         }
+        adoptGridOfCurrentMaterial()
     }
 
     /// Pone la reproducción en el primer Cycle.
@@ -412,14 +514,49 @@ public struct TrackScheduler {
         //
         // Con Delay ≥ 0 el presupuesto es cero y el horizonte es exactamente el
         // de antes de la rebanada 6.
-        let budget = advanceBudgetNanoseconds
+        windowBudgetNanoseconds = advanceBudgetNanoseconds
+        var target = horizonNanoseconds + windowBudgetNanoseconds
 
-        for step in lookAhead.advance(toHorizon: horizonNanoseconds + budget) {
+        var steps = lookAhead.advance(toHorizon: target)
+        while let step = steps.popFirst() {
             if restartsTurnAtNextStep {
                 restartsTurnAtNextStep = false
                 turnStartStep = step
-            } else {
-                advanceCycleIfTheTurnClosed(before: step)
+            } else if advanceCycleIfTheTurnClosed(before: step),
+                adoptGridOfCurrentMaterial(reopeningAt: step)
+            {
+                // **El Cycle entrante trae otra Division: se trunca el rango y
+                // se reentra** (FR3, FR7). El rango se calculó con la rejilla
+                // vieja, así que lo que queda de él no es lo que cabe con la
+                // nueva: con una Division más lenta sobran Steps, que saldrían
+                // lejos por delante del horizonte; con una más rápida faltan, y
+                // saldrían en la ventana siguiente para un instante que ya se
+                // entregó. Emitir el resto «ya anclado» tiene los dos defectos.
+                //
+                // Reentrar no los tiene. La rejilla nueva ancla en este Step y
+                // el resto se recalcula **con el presupuesto nuevo**, que es el
+                // que la rejilla nueva pide: con Delay negativo, el ancla se
+                // retrasó lo que el presupuesto creció, y medir contra el viejo
+                // dejaría fuera de la ventana al propio Step del corte. El Step
+                // en curso sigue su camino con la rejilla nueva y el material
+                // nuevo, que es FR5 de la rebanada de Cycles. `turnStartStep` ya
+                // apunta aquí, así que la reentrada no vuelve a avanzar el
+                // cursor.
+                //
+                // El coste solo se paga cuando el Cycle entrante declara otra
+                // Division (NFR2): dos enteros de un rango, sin asignar nada.
+                windowBudgetNanoseconds = advanceBudgetNanoseconds
+                target = horizonNanoseconds + windowBudgetNanoseconds
+                steps = lookAhead.advance(toHorizon: target)
+
+                // **El Step del corte puede no caber ya en esta ventana**, y
+                // entonces espera a la suya. Pasa cuando el Cycle entrante
+                // adelanta menos que el que sale: el presupuesto encoge y el
+                // horizonte queda por detrás del Step. No se pierde, porque la
+                // marca de agua apunta a él, ni avanza el cursor dos veces,
+                // porque `turnStartStep` también. Emitirlo aquí sí lo repetiría
+                // en la ventana siguiente.
+                guard steps.popFirst() == step else { continue }
             }
             let cycleStep = step - turnStartStep
 
@@ -534,6 +671,13 @@ public struct TrackScheduler {
         let count = repeater.repeats.count
         guard count > 0 else { return }
 
+        // **El corte y el hueco base leen el mismo Step** (FR15 de
+        // `division-hot-grid_20260911`). Mientras la rejilla se congelaba en
+        // Play, el corte se medía con el Step de entonces y el hueco con la
+        // Division viva, y al girar el knob los dos lados discrepaban: con
+        // 1/16 → 1/8 el hueco salía la mitad de largo. Desde que
+        // `stepDurationNanoseconds` se recalcula al reanclar, los dos salen de
+        // la rejilla vigente; lo fija `RepeatWindowDivisionTests`.
         let window = cycle.repeatWindowNanoseconds(
             fromStep: cycleStep, stepDurationNanoseconds: stepDurationNanoseconds)
         let base = repeater.time.gapNanoseconds(
@@ -598,11 +742,15 @@ public struct TrackScheduler {
     /// seguir avanzando igual — si no, un Track que subiera a dos Cycles
     /// mientras suena mediría su primera vuelta desde el arranque.
     ///
+    /// Devuelve si la vuelta se cerró, que es el único momento en que el
+    /// material puede haber traído otra Division: así la comparación se hace
+    /// una vez por vuelta y no una por Step (NFR2).
+    ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
-    private mutating func advanceCycleIfTheTurnClosed(before step: Int) {
-        guard let track, let stepCount = material.stepCount else { return }
-        guard step - turnStartStep >= stepCount else { return }
+    private mutating func advanceCycleIfTheTurnClosed(before step: Int) -> Bool {
+        guard let track, let stepCount = material.stepCount else { return false }
+        guard step - turnStartStep >= stepCount else { return false }
 
         let earlierCursor = previousCursor
         previousCursor = cursor
@@ -613,5 +761,6 @@ public struct TrackScheduler {
             track: playbackTrack, cycle: cursor, previousCycle: previousCursor,
             earlierCycle: earlierCursor,
             turnStartStep: turnStartStep)
+        return true
     }
 }

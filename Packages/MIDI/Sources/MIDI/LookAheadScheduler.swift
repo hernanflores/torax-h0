@@ -19,7 +19,11 @@ import Engine
 /// sería una nota repetida; omitirlo, una nota perdida.
 public struct LookAheadScheduler {
 
-    public let timeline: MusicalTimeline
+    /// **`var` desde el 2026-09-11, y no `let`**: la Division se gira mientras
+    /// suena, así que la rejilla tiene que poder cambiar sin reconstruir el
+    /// scheduler — reconstruirlo perdería la marca de agua, que es lo único que
+    /// impide duplicar o perder un Step.
+    public private(set) var timeline: MusicalTimeline
 
     /// Primer Step aún no entregado. Marca de agua que solo avanza.
     public private(set) var nextStep: Int
@@ -27,6 +31,58 @@ public struct LookAheadScheduler {
     public init(timeline: MusicalTimeline, startingAtStep startingStep: Int = 0) {
         self.timeline = timeline
         self.nextStep = startingStep
+    }
+
+    /// Cambia la Division **sin mover la marca de agua**, anclando la rejilla
+    /// nueva en el Step aún no entregado.
+    ///
+    /// **Por qué el ancla es `nextStep` y no el Step que suena.** Ese Step
+    /// todavía no cabía en ninguna ventana, así que su instante está por delante
+    /// del horizonte ya servido: anclar ahí es lo que hace imposible que el
+    /// cambio produzca un evento para un instante que ya pasó (FR7). Anclar en
+    /// el que suena sí podría, porque su instante quedó atrás.
+    ///
+    /// **Lo ya entregado no se reescribe** (FR4). Los Steps que salieron con la
+    /// rejilla anterior salieron con sus timestamps sellados y CoreMIDI los va a
+    /// emitir donde dijeron; el cambio empieza a oírse en la ventana siguiente.
+    ///
+    /// **Reanclar sobre la misma Division no mueve nada**, así que quien llama
+    /// no tiene que acordarse de si ya reancló: el instante que se guarda es el
+    /// que el propio cálculo devolvía.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    ///
+    /// **`delay` retrasa el ancla**, y solo lo pide el Delay negativo cuando el
+    /// presupuesto de adelanto crece con la Division nueva. Retrasar no puede
+    /// llevar ningún Step al pasado, así que FR7 se sigue cumpliendo.
+    public mutating func rebase(to division: Division, delayedBy delay: Int64 = 0) {
+        timeline = timeline.rebased(to: division, atStep: nextStep, delayedBy: delay)
+    }
+
+    /// Cambia la Division anclando en un Step del **último rango devuelto que
+    /// quien llama todavía no ha consumido**, y devuelve la marca de agua a él.
+    ///
+    /// **Existe para el cambio de Division a mitad de ventana.** El avance de
+    /// Cycle ocurre mientras se recorre un rango que ya se calculó con la
+    /// rejilla vieja: los Steps que quedan de ese rango no son los que caben con
+    /// la nueva —sobran si es más lenta, faltan si es más rápida—. Devolver la
+    /// marca de agua al Step del corte deja que el `advance(toHorizon:)`
+    /// siguiente recalcule el resto del rango sobre la rejilla nueva.
+    ///
+    /// **No rompe el invariante porque esos Steps nunca salieron.** La marca de
+    /// agua solo retrocede sobre Steps que el rango anunció y nadie emitió; el
+    /// contrato es de quien llama, que es quien sabe hasta dónde consumió. El
+    /// Step del corte conserva su instante, que ya estaba antes del horizonte,
+    /// así que el rango recalculado empieza siempre por él.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public mutating func rebase(
+        to division: Division, reopeningAt step: Int, delayedBy delay: Int64 = 0
+    ) {
+        timeline = timeline.rebased(to: division, atStep: step, delayedBy: delay)
+        nextStep = step
     }
 
     /// Devuelve los Steps cuyo offset cae antes de `horizonNanoseconds`, y que
@@ -65,7 +121,14 @@ public struct LookAheadScheduler {
         guard horizonNanoseconds > 0 else { return 0 }
 
         let stepDuration = timeline.stepDurationNanoseconds
-        var candidate = Int(Double(horizonNanoseconds) / stepDuration)
+        // **La estimación se mide desde el ancla, no desde el origen.** Dividir
+        // el horizonte entre la duración de Step solo acierta si la rejilla
+        // empieza en cero; con una rejilla reanclada daría un índice muy lejano
+        // y los ajustes de abajo —pensados para corregir por uno— se volverían
+        // un bucle largo dentro del hilo de tiempo real.
+        var candidate =
+            timeline.anchorStep
+            + Int(Double(horizonNanoseconds - timeline.anchorNanoseconds) / stepDuration)
 
         // La estimación se quedó corta: avanza mientras el Step siga cayendo
         // antes del horizonte.
