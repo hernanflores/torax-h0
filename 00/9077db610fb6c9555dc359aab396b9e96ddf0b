@@ -17,3 +17,22 @@ suspendida: el usuario respondio «Validado ok» el 2026-09-11, sin detallar
 duracion ni combinaciones. Queda escrito asi, con su palabra literal, y con la
 advertencia de que esto no es una medicion: no hay numero de jitter para este
 track. La referencia valida sigue siendo la de la rebanada 2 de la v2.
+
+--- Phase Verification & Checkpoint: FASE 7 (division-hot-grid_20260911) ---
+
+Comandos ejecutados, sobre el mismo codigo que cerro la Fase 6:
+- swift test --package-path Packages/Engine --enable-code-coverage
+  945 tests, 0 fallos. Cobertura 98,74%.
+- swift test --package-path Packages/MIDI --enable-code-coverage (profdata fusionado a mano)
+  944 tests, 7 fallos: los cuatro VirtualLoopbackTests con
+  clientCreationFailed(-50), el flake conocido. Cobertura 92,00%.
+- swift test --package-path Packages/MIDI --filter 'JitterHarnessTests|testTheMeasurementPathNeverRebases|PatternSchedulerTests'
+  41 tests, 0 fallos. Criterio 12: la via del arnes sigue midiendo lo mismo.
+- xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  BUILD SUCCEEDED.
+
+Verificacion en dispositivo: recogida en device-verification.md, con los
+catorce criterios, los dos fallos encontrados y sus arreglos.
+
+Escucha larga (NFR4): el usuario respondio «Validado ok» el 2026-09-11, sin
+detallar duracion. Sin medicion de jitter, por la suspension del 2026-09-02.
