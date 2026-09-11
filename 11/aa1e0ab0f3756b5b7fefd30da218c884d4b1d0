@@ -1,0 +1,16 @@
+Task: Anotar lo que queda fuera (Fase 7, division-hot-grid_20260911)
+
+Archivos: conductor/tracks.md, en la entrada del track.
+
+Se anotan tres pendientes:
+1. El origen adelantado de Delay frente a una rejilla que cambia en caliente.
+   Este track solo lo protegió donde reancla (enmienda de FR17); sigue abierto
+   el caso sin reanclaje, girar Delay a negativo mientras suena, que es la
+   limitación 2 de la rebanada 6.
+2. El cursor de edición puede tapar el knob con varios Cycles activos. Es de
+   cycle-edit-cursor_20260908.
+3. Con Delay negativo el anillo va por detrás de lo que suena. Es la decisión
+   9 de la rebanada 6, que el usuario decidió mantener el 2026-09-11.
+
+Los dos primeros son los que pedía el plan; el tercero salió de la verificación
+en iPad de la Fase 5.
