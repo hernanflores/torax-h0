@@ -178,7 +178,15 @@ public struct MusicalTimeline: Equatable, Sendable {
         self.init(tempo: tempo, division: division, anchorStep: 0, anchorNanoseconds: 0)
     }
 
-    private init(tempo: Tempo, division: Division, anchorStep: Int, anchorNanoseconds: Int64) {
+    /// Una rejilla ya anclada, a partir de sus enteros.
+    ///
+    /// **Público desde la Fase 5 de `division-hot-grid_20260911`, y solo para
+    /// reconstruir.** El scheduler publica el ancla de cada Track como enteros
+    /// —índice de Step, instante y Division— y la interfaz rehace aquí la misma
+    /// rejilla con su tempo. Para **crear** un ancla nueva sigue estando
+    /// `rebased(to:atStep:delayedBy:)`, que calcula el instante en vez de
+    /// aceptarlo.
+    public init(tempo: Tempo, division: Division, anchorStep: Int, anchorNanoseconds: Int64) {
         self.tempo = tempo
         self.division = division
         self.anchorStep = anchorStep

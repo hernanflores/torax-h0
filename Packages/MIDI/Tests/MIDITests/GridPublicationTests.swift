@@ -184,8 +184,10 @@ final class GridPublicationTests: XCTestCase {
         let other = MusicalTimeline(
             tempo: tempo, division: .thirtySecond, anchorStep: 9_000,
             anchorNanoseconds: 999_000_000_000)
-        let valid = [PlaybackGrid(current: one, previous: other),
-            PlaybackGrid(current: other, previous: one)]
+        let valid = [
+            PlaybackGrid(current: one, previous: other),
+            PlaybackGrid(current: other, previous: one),
+        ]
         clock.publishGrid(track: 0, current: one, previous: other)
 
         let running = AtomicFlag(true)

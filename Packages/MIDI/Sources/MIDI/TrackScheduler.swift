@@ -281,6 +281,8 @@ public struct TrackScheduler {
         clock.publish(
             track: index, cycle: cursor, previousCycle: cursor, earlierCycle: cursor,
             turnStartStep: turnStartStep)
+        // Sin reanclar, la vigente y la anterior son la de Play (FR11).
+        clock.publishGrid(track: index, current: lookAhead.timeline, previous: lookAhead.timeline)
     }
 
     /// Sustituye el material sin tocar la posición en la rejilla.
@@ -319,8 +321,21 @@ public struct TrackScheduler {
     private mutating func adoptGridOfCurrentMaterial() {
         guard let division = divisionToAdopt else { return }
 
+        let previous = lookAhead.timeline
         lookAhead.rebase(to: division, delayedBy: anchorDelay(adopting: division))
         stepDurationNanoseconds = Int64(lookAhead.timeline.stepDurationNanoseconds)
+        publishGrid(replacing: previous)
+    }
+
+    /// Le cuenta a la interfaz con qué rejilla se mide ahora, y cuál había
+    /// antes (FR10). Sin reloj de reproducción —schedulers aislados, arnés— no
+    /// hace nada.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler, solo al reanclar.
+    /// Sin asignaciones, sin locks, sin await.
+    private func publishGrid(replacing previous: MusicalTimeline) {
+        playbackClock?.publishGrid(
+            track: playbackTrack, current: lookAhead.timeline, previous: previous)
     }
 
     /// El presupuesto de adelanto con el que se decidió la ventana en curso, o
@@ -361,9 +376,11 @@ public struct TrackScheduler {
     private mutating func adoptGridOfCurrentMaterial(reopeningAt step: Int) -> Bool {
         guard let division = divisionToAdopt else { return false }
 
+        let previous = lookAhead.timeline
         lookAhead.rebase(
             to: division, reopeningAt: step, delayedBy: anchorDelay(adopting: division))
         stepDurationNanoseconds = Int64(lookAhead.timeline.stepDurationNanoseconds)
+        publishGrid(replacing: previous)
         return true
     }
 
