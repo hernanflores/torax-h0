@@ -276,6 +276,14 @@ con la duración nueva. El pasado queda como sonó y el futuro obedece al knob.
   no se confunda con este defecto al verificar en dispositivo — la prueba del
   criterio 14 se hace **con un solo Cycle activo**. El caso general es de
   `cycle-edit-cursor_20260908`.
+- **Con Delay negativo el anillo va por detrás de lo que suena, y más en
+  Divisions lentas.** *(Añadido el 2026-09-11, verificando la Fase 5 en el
+  iPad.)* No es de este track: es la decisión 9 de la rebanada 6, «el playhead
+  sigue la rejilla, no el desplazamiento», y el usuario decidió mantenerla. Con
+  Delay −100% el anillo marca el Step anterior al que suena. Como el desfase
+  es un Step, girar Division a una más lenta lo alarga en milisegundos: de 125
+  a 250 ms al pasar de 1/16 a 1/8 a 120 BPM. Lo que sí era de este track, un
+  salto atrás del anillo en el corte, se arregló.
 - **Soltar un Temp de Division no rebobina la fase** (FR14): la línea vuelve a su
   velocidad pero no al punto donde habría estado sin el fill. Es coherente con
   FR6 y con cómo se comportan hoy los demás parámetros, que tampoco rebobinan

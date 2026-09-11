@@ -97,6 +97,49 @@ final class AnchoredPlayheadTests: XCTestCase {
         XCTAssertEqual(grid.timeline(atNanoseconds: 2_000_000_000), rebased)
     }
 
+    // MARK: - Con el ancla retrasada, sin salto
+
+    /// La rejilla que publica el scheduler con Delay −100% al pasar de 1/16 a
+    /// 1/8 con el Step 9 como el siguiente sin entregar: el ancla se retrasa lo
+    /// que crece el presupuesto, de 1125 ms a 1250 ms. El Step 9 suena a
+    /// 1000 ms, un Step de 1/8 antes de su rejilla.
+    private var delayedGrid: PlaybackGrid {
+        PlaybackGrid(
+            current: playGrid.rebased(to: .eighth, atStep: 9, delayedBy: 125_000_000),
+            previous: playGrid)
+    }
+
+    /// **El cambio de rejilla cae donde las dos marcan lo mismo, no en el
+    /// ancla.** Encontrado en el iPad el 2026-09-11: con el ancla retrasada, la
+    /// rejilla anterior seguía contando más allá del corte, el anillo llegaba
+    /// a 9,6 y al alcanzar el ancla saltaba atrás a 9. Las dos rejillas marcan
+    /// 8 a los 1000 ms, que es cuando suena el Step del corte.
+    func testWithADelayedAnchorTheGridsSwitchWhereTheyAgree() {
+        let grid = delayedGrid
+
+        XCTAssertEqual(grid.timeline(atNanoseconds: 999_999_999), playGrid)
+        XCTAssertEqual(grid.timeline(atNanoseconds: 1_000_000_000), grid.current)
+    }
+
+    /// Y visto desde el anillo: alrededor del corte el playhead avanza siempre,
+    /// sin volver atrás, milisegundo a milisegundo.
+    func testWithADelayedAnchorThePlayheadNeverMovesBackwards() {
+        let grid = delayedGrid
+        var last = -1.0
+
+        for elapsed in stride(from: Int64(900_000_000), to: 1_400_000_000, by: 1_000_000) {
+            let position =
+                Playhead(
+                    elapsedNanoseconds: elapsed, timeline: grid.timeline(atNanoseconds: elapsed),
+                    steps: sixteen
+                ).turn * 16
+
+            XCTAssertGreaterThanOrEqual(
+                position, last, "el anillo volvió atrás a los \(elapsed) ns")
+            last = position
+        }
+    }
+
     // MARK: - Los dieciséis
 
     /// Con rejillas publicadas, cada Track se dibuja contra la suya; sin ella,

@@ -30,9 +30,44 @@ public struct PlaybackGrid: Equatable, Sendable {
         self.previous = previous
     }
 
-    /// La rejilla que manda en `nanoseconds`: la vigente desde su ancla, y la
-    /// anterior antes de ella.
+    /// La rejilla que manda en `nanoseconds`: la anterior hasta que las dos
+    /// marcan la misma posición, y la vigente desde ahí.
     public func timeline(atNanoseconds nanoseconds: Int64) -> MusicalTimeline {
-        nanoseconds >= current.anchorNanoseconds ? current : previous
+        Double(nanoseconds) >= switchNanoseconds ? current : previous
+    }
+
+    /// El instante en que se pasa de la anterior a la vigente.
+    ///
+    /// **Sin Delay es el ancla**, porque ahí las dos rejillas marcan el mismo
+    /// Step: el ancla conserva el instante que ese Step tenía.
+    ///
+    /// **Con el ancla retrasada no lo es**, y cambiar en el ancla hacía saltar
+    /// el anillo. Encontrado en el iPad el 2026-09-11, con Delay −100% y 1/16 →
+    /// 1/8. El scheduler retrasa el ancla lo que crece el presupuesto de Delay
+    /// (enmienda de FR17), y hasta llegar a ella la rejilla anterior seguía
+    /// contando con su Step corto: el anillo se adelantaba hasta casi un Step y,
+    /// en el ancla, volvía atrás. Las dos rectas se cruzan antes, en el
+    /// instante en que suena el Step del corte, y cambiar ahí deja el anillo
+    /// continuo.
+    ///
+    /// El cruce se calcula multiplicando las dos duraciones y no restando sus
+    /// inversas: con Divisions del knob el resultado sale exacto. Se acota
+    /// entre las dos anclas por si las rejillas no fueran consecutivas.
+    var switchNanoseconds: Double {
+        let anchor = Double(current.anchorNanoseconds)
+        let before = previous.stepDurationNanoseconds
+        let after = current.stepDurationNanoseconds
+        guard before != after else { return anchor }
+
+        // Cuántos Steps va por delante la anterior en el ancla de la vigente.
+        let stepsSincePreviousAnchor: Double =
+            (anchor - Double(previous.anchorNanoseconds)) / before
+        let previousPosition: Double = Double(previous.anchorStep) + stepsSincePreviousAnchor
+        let lead: Double = previousPosition - Double(current.anchorStep)
+
+        let nanosecondsPerStepOfLead: Double = before * after / (after - before)
+        let crossing: Double = anchor - lead * nanosecondsPerStepOfLead
+        let earliest = Double(previous.anchorNanoseconds)
+        return min(max(crossing, earliest), anchor)
     }
 }
