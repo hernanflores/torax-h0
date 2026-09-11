@@ -1156,6 +1156,21 @@ en cualquier momento.
   más la habría justificado. Se sustituye por una escucha larga en dispositivo y
   el riesgo queda escrito en el spec.
 
+  **Pendientes que deja, anotados el 2026-09-11 al cerrar su Fase 7:**
+  - **El origen adelantado de Delay frente a una rejilla que cambia en
+    caliente.** `SchedulerThread` desplaza el origen una sola vez al arrancar
+    con `advanceBudgetNanoseconds`. Este track solo lo protegió donde reancla:
+    el ancla se retrasa lo que crece el presupuesto (enmienda de FR17). Queda
+    sin rediseñar el caso sin reanclaje, girar Delay a negativo mientras suena,
+    que es la limitación 2 de la rebanada 6.
+  - **El cursor de edición puede tapar el knob con varios Cycles activos.**
+    Division se gira sobre el Cycle en edición y suena el del cursor de
+    reproducción; si no son el mismo, el giro no se oye hasta que el editado
+    entra. Es de [`cycle-edit-cursor_20260908`](./tracks/cycle-edit-cursor_20260908/index.md).
+  - **Con Delay negativo el anillo va por detrás de lo que suena**, un Step con
+    −100%, y más milisegundos en Divisions lentas. Es la decisión 9 de la
+    rebanada 6 y el usuario decidió mantenerla; revisarla sería un track propio.
+
 ## Archivados
 
 - [x] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay** — swing y Delay suenan; jitter recto máx 0,151 ms · σ 0,009–0,013 ms. **Cerrado con deuda: fase *Review Fixes* abierta**
