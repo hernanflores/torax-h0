@@ -1117,8 +1117,28 @@ en cualquier momento.
 
 ---
 
-- [~] **Track: La Division no mueve la rejilla mientras suena** — *planificado el 2026-09-11; en curso desde el 2026-09-11*
+- [x] **Track: La Division no mueve la rejilla mientras suena** — *entregado y verificado en iPad el 2026-09-11*; **sin medición de jitter**
   *Link: [conductor/tracks/division-hot-grid_20260911/index.md](./tracks/division-hot-grid_20260911/index.md)*
+
+  **Qué entregó.** La rejilla de cada Track pasa a ser función del material
+  vigente, con un **ancla** —índice de Step e instante— en `MusicalTimeline`.
+  Girar Division mientras suena cambia la velocidad de la línea en la ventana
+  siguiente, sin reiniciar el desarrollo y sin perder ni repetir un Step; cada
+  Cycle suena con la suya, que era el mismo defecto por otra puerta; el anillo
+  mide con el ancla que publica el scheduler, y Temp y Ctrl All sobre Division
+  suenan sin tocar el overlay. De paso quedaron coherentes la ventana de las
+  repeticiones y el gate de Sustain, que ya lo estaban desde la Fase 2.
+
+  **Dos defectos aparecieron durante el track, y los dos se arreglaron.** Con
+  Delay negativo, una Division más lenta hacía crecer el presupuesto de adelanto
+  y el Step del corte se pedía tarde —hasta 110 ms—; lo destapó un test y se
+  arregló retrasando el ancla lo que crece el presupuesto (enmienda de FR17 en
+  el `spec.md`). Y el anillo saltaba atrás en ese mismo caso, encontrado en el
+  iPad: ahora cambia de rejilla donde las dos marcan la misma posición.
+
+  **Verificación:** `Engine` 945 tests · 98,74%. `MIDI` 944 tests · 92,00%, con
+  el flake conocido de `VirtualLoopbackTests`. Los catorce criterios en iPad,
+  en `device-verification.md`, escucha larga incluida.
 
   Encontrado el 2026-09-10. **Girar Division con el transporte corriendo no
   cambia la velocidad de la línea**: cambia la duración de la nota y nada más.
