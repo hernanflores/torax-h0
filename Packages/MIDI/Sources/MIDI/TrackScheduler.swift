@@ -609,6 +609,13 @@ public struct TrackScheduler {
         let count = repeater.repeats.count
         guard count > 0 else { return }
 
+        // **El corte y el hueco base leen el mismo Step** (FR15 de
+        // `division-hot-grid_20260911`). Mientras la rejilla se congelaba en
+        // Play, el corte se medía con el Step de entonces y el hueco con la
+        // Division viva, y al girar el knob los dos lados discrepaban: con
+        // 1/16 → 1/8 el hueco salía la mitad de largo. Desde que
+        // `stepDurationNanoseconds` se recalcula al reanclar, los dos salen de
+        // la rejilla vigente; lo fija `RepeatWindowDivisionTests`.
         let window = cycle.repeatWindowNanoseconds(
             fromStep: cycleStep, stepDurationNanoseconds: stepDurationNanoseconds)
         let base = repeater.time.gapNanoseconds(
