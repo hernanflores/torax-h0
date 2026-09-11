@@ -199,6 +199,18 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
         cierto también después de girar el knob.
   - [x] `CyclePosition` recibe la misma rejilla; `Transport` se la pasa a los
         dos.
+- [x] Task: Arreglar el salto del anillo con el ancla retrasada — `b35ef92`
+  *(Añadida el 2026-09-11: la verificación en iPad encontró que, con Delay
+  −100% y una Division más lenta, el playhead se desfasaba.)* Se diagnosticó
+  con una simulación y eran dos efectos:
+  - [x] **Un salto atrás, de este track.** `PlaybackGrid` cambiaba de rejilla
+        en el ancla. Con el ancla retrasada, la rejilla anterior seguía
+        contando más allá del corte: 9,2, 9,6 y vuelta a 9,0. Pasa a cambiar
+        en el instante en que las dos rejillas marcan la misma posición, que
+        sin Delay es el ancla.
+  - [x] **Un desfase constante de un Step, de la rebanada 6** (su decisión 9:
+        el playhead sigue la rejilla). El usuario decidió mantenerlo. Queda en
+        *Known Limitations* del spec.
 - [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [x] Suites de `Engine` y `MIDI` en verde, con sus umbrales. **`Engine` 943
         tests, cobertura 98,74%. `MIDI` 939 tests; los 7 fallos son los cuatro
