@@ -8,3 +8,24 @@ con cada Pattern que recibe desde las Fases 2 y 3. La pulsación y la soltada
 son dos reanclajes normales, y soltar no rebobina porque la rejilla vuelve
 anclada al instante de la soltada. Queda escrito en el tipo, con los tests que
 lo fijan (DivisionTempOverlayTests, DivisionCtrlAllTests).
+
+--- Phase Verification & Checkpoint: FASE 6 (division-hot-grid_20260911) ---
+
+Comandos ejecutados:
+- swift test --package-path Packages/Engine --enable-code-coverage
+  945 tests, 0 fallos. Cobertura 98,74%.
+- swift test --package-path Packages/MIDI --enable-code-coverage (profdata fusionado a mano)
+  944 tests, 7 fallos: los cuatro VirtualLoopbackTests con
+  clientCreationFailed(-50), el flake conocido. Cobertura 92,00%.
+- xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  BUILD SUCCEEDED.
+
+Verificacion manual propuesta en iPad:
+1. Fill de Temp sobre Division: acelera al momento, y al soltar vuelve sin
+   saltar al principio del anillo y sin golpes repetidos ni perdidos.
+2. Temp con dos Cycles de Divisions distintas: al soltar, cada uno recupera
+   la suya.
+3. Ctrl All sobre Division con varios Tracks: todos cambian a la vez, sin
+   tropiezos, y vuelven al soltar.
+
+Respuesta del usuario (2026-09-11): «ok».
