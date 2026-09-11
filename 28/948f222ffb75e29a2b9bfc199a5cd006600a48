@@ -1,0 +1,18 @@
+Task: Tests de la ventana de repeticiones (Fase 4, division-hot-grid_20260911)
+
+Archivos creados:
+- Packages/MIDI/Tests/MIDITests/RepeatWindowDivisionTests.swift (4 tests)
+
+Qué fijan (FR15, criterio 7): tras girar Division, el corte de las repeticiones
+y el hueco base de Time se miden contra el mismo Step. De 1/16 a 1/8 caben las
+tres repeticiones; de 1/16 a 1/32 no cabe ninguna y ninguna pisa el Pulse
+siguiente; en las seis Divisions del knob, toda repetición cae entre su Pulse y
+el siguiente; y el hueco base se queda en 1/32 de redonda (62,5 ms a 120 BPM).
+
+Sin fase roja sobre HEAD, y con motivo: 171175d (Fase 2) convirtió
+stepDurationNanoseconds de let en var y lo recalcula al reanclar, así que los
+dos lados ya leen el mismo Step. Para comprobar que el test detecta el defecto,
+se corrió sobre 5211a77, el commit anterior a ese arreglo, en un worktree
+temporal: testTheBaseGapStaysOneThirtySecondAfterTheChange falla con 31250000
+en vez de 62500000. Ese es el desajuste de FR15: el Step congelado en 1/16
+contra la Division viva en 1/8.
