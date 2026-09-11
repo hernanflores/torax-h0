@@ -60,21 +60,21 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
   - [x] Toma la Division nueva y ancla en el Step aún no entregado, con el
         instante que ese Step tenía en la rejilla anterior.
   - [x] Realtime: sin asignaciones, sin locks, sin await.
-- [~] Task: Tests de `TrackScheduler` con la Division cambiando entre ventanas
-  - [ ] Publicar un Track con otra Division cambia el espaciado de los Steps
+- [x] Task: Tests de `TrackScheduler` con la Division cambiando entre ventanas — `5211a77`
+  - [x] Publicar un Track con otra Division cambia el espaciado de los Steps
         emitidos a partir de la ventana siguiente (FR1, FR2, criterio 1).
-  - [ ] No se reinicia nada: mismo índice de Step, `turnStartStep` quieto, cursor
+  - [x] No se reinicia nada: mismo índice de Step, `turnStartStep` quieto, cursor
         de Cycles quieto (FR5, criterio 2).
-  - [ ] Los eventos ya sellados en la ventana en curso no se reescriben (FR4).
-  - [ ] Reanclar con la misma Division no emite nada distinto — el caso de cada
+  - [x] Los eventos ya sellados en la ventana en curso no se reescriben (FR4).
+  - [x] Reanclar con la misma Division no emite nada distinto — el caso de cada
         ventana, que es el que no puede costar nada.
-- [ ] Task: Implementar la detección en `refresh(with: Track)`
-  - [ ] `stepDurationNanoseconds` deja de ser `let` y pasa a salir de la rejilla
+- [x] Task: Implementar la detección en `refresh(with: Track)` — `171175d`
+  - [x] `stepDurationNanoseconds` deja de ser `let` y pasa a salir de la rejilla
         vigente; una comparación de enteros por ventana decide si hay que
         reanclar (NFR1, NFR2).
-  - [ ] La vía del arnés —`PatternScheduler(timeline:material:)`— no reancla
+  - [x] La vía del arnés —`PatternScheduler(timeline:material:)`— no reancla
         nunca: mide la rejilla, no el material (FR18).
-- [ ] Task: Tests de aislamiento entre Tracks
+- [~] Task: Tests de aislamiento entre Tracks
   - [ ] Cambiar la Division del Track 1 no mueve ni un offset de los otros
         quince (criterio 6).
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
