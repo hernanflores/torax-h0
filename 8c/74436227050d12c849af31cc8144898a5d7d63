@@ -1,0 +1,20 @@
+Task: Tests de gate y Sustain contra la rejilla nueva (Fase 4, division-hot-grid_20260911)
+
+Archivos creados:
+- Packages/MIDI/Tests/MIDITests/SustainGateDivisionTests.swift (3 tests)
+
+Qué fijan (FR16, criterio 8): tras girar Division, el gate que Transport da a
+cada nota y el espaciado de la rejilla salen del mismo Step. Con Sustain 100% en
+1/8 el note-off cae exactamente en el note-on siguiente; con 200% el gate dura
+500 ms y acaba en el note-on del tercero; y en el extremo del knob, 1/32 a 300
+BPM (25 ms), el legato sigue siendo exacto.
+
+El gate se calcula con la misma expresión que Transport.swift, en el cierre que
+entrega cada Pulse al NoteEmitter: MusicalTimeline(tempo:division:
+source.shape.division). No se arranca el transporte para no añadir hilos a
+prioridad máxima, que es la presión que dispara el flake de CoreMIDI.
+
+Verdes sobre HEAD desde el primer intento. Sobre 5211a77, anterior a 171175d,
+fallan 36 aserciones: el note-off cae un Step de 1/16 después del note-on
+siguiente. Es exactamente el defecto reportado, con la nota larga y el
+espaciado viejo.
