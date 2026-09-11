@@ -33,7 +33,8 @@ final class AnchoredPlayheadTests: XCTestCase {
     /// **Un Track reanclado marca el Step que suena.** A los 1000 ms suena el
     /// Step 6. Medir 1/8 desde Play daría el 4, y medir 1/16 daría el 8.
     func testARebasedTrackMarksTheStepThatSounds() {
-        let playhead = Playhead(elapsedNanoseconds: 1_000_000_000, timeline: rebased, steps: sixteen)
+        let playhead = Playhead(
+            elapsedNanoseconds: 1_000_000_000, timeline: rebased, steps: sixteen)
 
         XCTAssertEqual(playhead.step, 6)
     }
@@ -41,7 +42,8 @@ final class AnchoredPlayheadTests: XCTestCase {
     /// La fracción de vuelta también se mide desde el ancla: medio Step de 1/8
     /// después del Step 6 es el 6,5 de 16.
     func testTheTurnFractionIsMeasuredFromTheAnchor() {
-        let playhead = Playhead(elapsedNanoseconds: 1_125_000_000, timeline: rebased, steps: sixteen)
+        let playhead = Playhead(
+            elapsedNanoseconds: 1_125_000_000, timeline: rebased, steps: sixteen)
 
         XCTAssertEqual(playhead.turn, 6.5 / 16, accuracy: 1e-9)
     }
@@ -49,7 +51,8 @@ final class AnchoredPlayheadTests: XCTestCase {
     /// Y el anillo se cierra donde lo cierra el scheduler: el Step 20 —el 4 de
     /// la vuelta siguiente— cae a 500 + 16 × 250 ms.
     func testTheRingWrapsOnTheRebasedGrid() {
-        let playhead = Playhead(elapsedNanoseconds: 4_500_000_000, timeline: rebased, steps: sixteen)
+        let playhead = Playhead(
+            elapsedNanoseconds: 4_500_000_000, timeline: rebased, steps: sixteen)
 
         XCTAssertEqual(playhead.step, 4)
     }
@@ -124,7 +127,8 @@ final class AnchoredPlayheadTests: XCTestCase {
         let second = Cycle(shape: Shape(steps: sixteen, pulses: Pulses(1)!, division: .eighth))
         let track = Track(first).withActiveCount(2).replacing(second, at: 1)
         let phase = CyclePosition.Phase(cycle: 1, previousCycle: 0, turnStartStep: 16)
-        let grid = PlaybackGrid(current: playGrid.rebased(to: .eighth, atStep: 16), previous: playGrid)
+        let grid = PlaybackGrid(
+            current: playGrid.rebased(to: .eighth, atStep: 16), previous: playGrid)
 
         let position = CyclePosition(
             elapsedNanoseconds: 5_000_000_000, track: track, tempo: tempo, phase: phase, grid: grid)

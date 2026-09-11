@@ -11,10 +11,13 @@
 /// ese cursor y el inicio de vuelta con el reloj real. Así un cambio de
 /// `activeCount` no reinventa el recorrido y el look-ahead no adelanta la vista.
 ///
-/// **La rejilla sale del Cycle 1 y no del que esté sonando.** Es la limitación 8
-/// del track `cycles_20260901`: la Division de un Cycle posterior se ignora, así
-/// que la duración del Step es la que fijó Play. Deducir con otra cosa haría que
-/// la pantalla y el sonido discreparan justo donde la limitación existe.
+/// **La rejilla es la que publica el scheduler**, desde
+/// `division-hot-grid_20260911`. Hasta entonces salía del Cycle 1, porque la
+/// Division de un Cycle posterior se ignoraba —la limitación 8 del track
+/// `cycles_20260901`—. Ahora cada Cycle suena con la suya y el scheduler
+/// reancla al entrar, así que contar Steps con la duración del Cycle 1
+/// adelantaría o retrasaría el cambio de Cycle en pantalla. Sin rejilla
+/// publicada se sigue contando con el Cycle 1, como antes.
 ///
 /// No es código de tiempo real: lo consulta la interfaz al redibujar.
 public struct CyclePosition: Equatable, Sendable {
@@ -56,11 +59,16 @@ public struct CyclePosition: Equatable, Sendable {
     /// Un tiempo negativo o nulo se trata como el origen: es el margen que el
     /// scheduler reserva para el Delay negativo, y ahí todavía no ha sonado
     /// nada.
+    ///
+    /// `grid` es la rejilla que publicó el scheduler para este Track. Con ella,
+    /// los Steps transcurridos se cuentan desde su ancla. Sin ella, con la
+    /// Division del Cycle 1, que es lo de antes de `division-hot-grid_20260911`.
     public init(
         elapsedNanoseconds: Int64,
         track: Track,
         tempo: Tempo,
-        phase: Phase? = nil
+        phase: Phase? = nil,
+        grid: PlaybackGrid? = nil
     ) {
         guard elapsedNanoseconds > 0 else {
             cycle = 0
@@ -79,7 +87,18 @@ public struct CyclePosition: Equatable, Sendable {
             (0..<Track.cycleCount).contains(phase.previousCycle),
             (0..<Track.cycleCount).contains(phase.earlierCycle)
         {
-            let elapsedStep = Double(elapsedNanoseconds) / stepDuration
+            // Los Steps transcurridos, en la misma cuenta que `turnStartStep`:
+            // desde el ancla de la rejilla que suena si está publicada, o desde
+            // Play con el Step del Cycle 1 si no.
+            let elapsedStep: Double
+            if let timeline = grid?.timeline(atNanoseconds: elapsedNanoseconds) {
+                elapsedStep =
+                    Double(timeline.anchorStep)
+                    + Double(elapsedNanoseconds - timeline.anchorNanoseconds)
+                    / timeline.stepDurationNanoseconds
+            } else {
+                elapsedStep = Double(elapsedNanoseconds) / stepDuration
+            }
             var current = phase.cycle
             var turnStart = Double(phase.turnStartStep)
 

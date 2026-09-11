@@ -150,10 +150,16 @@ final class CyclePlaybackClock: @unchecked Sendable {
         phases[track].value = packed
     }
 
+    /// El Cycle en curso de los dieciséis, deducido con la fase **y la rejilla**
+    /// que publicó el scheduler: contar Steps con otra rejilla movería el
+    /// cambio de Cycle en pantalla respecto al que suena.
+    ///
+    /// Lo llama la interfaz al redibujar. No es código de tiempo real.
     func positions(in pattern: Pattern, tempo: Tempo, elapsedNanoseconds: Int64)
         -> [CyclePosition]
     {
-        (0..<Pattern.trackCount).map { index in
+        let grids = grids(tempo: tempo)
+        return (0..<Pattern.trackCount).map { index in
             let packed = phases[index].value
             let phase = CyclePosition.Phase(
                 cycle: Int(packed & Self.cursorMask),
@@ -165,7 +171,8 @@ final class CyclePlaybackClock: @unchecked Sendable {
                 elapsedNanoseconds: elapsedNanoseconds,
                 track: pattern.track(at: index)!,
                 tempo: tempo,
-                phase: phase
+                phase: phase,
+                grid: grids[index]
             )
         }
     }

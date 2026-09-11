@@ -287,10 +287,13 @@ public final class Transport: @unchecked Sendable {
     /// animación no derivada del reloj musical.
     public var playheads: [Playhead]? {
         guard let elapsed = playheadClock.elapsedNanoseconds() else { return nil }
+        // **Cada anillo mide con la rejilla que publica el scheduler**, anclada
+        // donde reancló (FR9 de `division-hot-grid_20260911`).
         return Playhead.forEachTrack(
             in: lastPublishedPattern,
             tempo: configuration.timeline.tempo,
-            elapsedNanoseconds: elapsed
+            elapsedNanoseconds: elapsed,
+            grids: cyclePlaybackClock.grids(tempo: configuration.timeline.tempo)
         )
     }
 
