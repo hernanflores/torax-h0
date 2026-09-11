@@ -32,3 +32,29 @@ Verificación:
   VirtualLoopbackTests con -50, el flake conocido. Cobertura 92,00%. En la
   simulación el anillo pasa de 8,0 a 9,2 sin volver atrás.
 - xcodebuild build: BUILD SUCCEEDED.
+
+--- Phase Verification & Checkpoint: FASE 5 (division-hot-grid_20260911) ---
+
+Comandos ejecutados:
+- swift test --package-path Packages/Engine --enable-code-coverage
+  945 tests, 0 fallos. Cobertura 98,74%.
+- swift test --package-path Packages/MIDI --enable-code-coverage (profdata fusionado a mano)
+  940 tests (la simulacion temporal incluida, ya borrada). 7 fallos: los
+  cuatro VirtualLoopbackTests con clientCreationFailed(-50), el flake
+  conocido. Cobertura 92,00%.
+- xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+  BUILD SUCCEEDED.
+
+Verificacion manual en iPad:
+1. Un solo Cycle sin Delay, girando Division: el playhead marca el Step que
+   suena. Bien.
+2. Varios Tracks, girando uno: los demas no se mueven. Bien.
+3. Dos Cycles en 1/16 y 1/8: el playhead y el Cycle en curso cambian con el
+   sonido. Bien.
+4. Delay -100% y una Division mas lenta: primero el usuario vio que se
+   desfasaba. Se diagnosticaron dos efectos, un salto atras de este track y
+   un desfase constante de un Step que viene de la decision 9 de la rebanada
+   6. El salto se arreglo en b35ef92 y el desfase se mantiene por decision
+   del usuario.
+
+Confirmacion del usuario (2026-09-11), tras repetir el caso 4 con el arreglo: «ok».
