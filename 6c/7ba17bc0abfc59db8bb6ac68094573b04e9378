@@ -1,0 +1,12 @@
+Task: Implementar el reanclaje en LookAheadScheduler (Fase 2, division-hot-grid_20260911)
+
+Fase verde. Archivos modificados:
+- Packages/MIDI/Sources/MIDI/LookAheadScheduler.swift
+
+Verificación: LookAheadRebaseTests + LookAheadSchedulerTests, 17 tests, 0 fallos.
+
+El ajuste de firstStep(atOrAfter:) no lo pedía ningún test que fallara — los
+bucles de corrección habrían dado el índice correcto igualmente. Entra porque
+convertirían una corrección acotada por uno en un recorrido largo en el hilo de
+tiempo real, que es NFR1. Queda anotado por si alguien lo lee como cambio
+gratuito.
