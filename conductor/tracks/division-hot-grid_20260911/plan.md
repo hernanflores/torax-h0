@@ -25,19 +25,19 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
 
 ## FASE 1: LA REJILLA APRENDE UN ANCLA
 
-- [ ] Task: Tests de la rejilla anclada en `MusicalTimeline`
-  - [ ] Sin ancla, `nanosecondOffset(forStep:)` da exactamente lo de hoy: los
+- [x] Task: Tests de la rejilla anclada en `MusicalTimeline` — `d31cd99`
+  - [x] Sin ancla, `nanosecondOffset(forStep:)` da exactamente lo de hoy: los
         tests actuales siguen pasando sin tocarlos.
-  - [ ] Anclada en el Step *n* con el instante que *n* tenía en la rejilla
+  - [x] Anclada en el Step *n* con el instante que *n* tenía en la rejilla
         anterior, el offset de *n* es ese mismo instante (FR6).
-  - [ ] Del ancla en adelante, los Steps se separan según la Division nueva;
+  - [x] Del ancla en adelante, los Steps se separan según la Division nueva;
         1/16 → 1/8 dobla, 1/16 → 1/32 divide (criterio 1).
-  - [ ] Anclar dos y tres veces seguidas no acumula deriva: el offset coincide
+  - [x] Anclar dos y tres veces seguidas no acumula deriva: el offset coincide
         con el cálculo directo desde el último ancla (NFR3, criterio 4).
-  - [ ] Índices anteriores al ancla no se consultan nunca; queda escrito qué
+  - [x] Índices anteriores al ancla no se consultan nunca; queda escrito qué
         devuelven para que nadie lo dé por definido.
-  - [ ] Reanclar con la **misma** Division no mueve ningún offset.
-- [ ] Task: Implementar la rejilla anclada
+  - [x] Reanclar con la **misma** Division no mueve ningún offset.
+- [~] Task: Implementar la rejilla anclada
   - [ ] `MusicalTimeline` gana ancla —índice de Step e instante— y sigue
         multiplicando desde ella, nunca acumulando (NFR3).
   - [ ] El inicializador de hoy sigue existiendo y significa «anclada en el Step
