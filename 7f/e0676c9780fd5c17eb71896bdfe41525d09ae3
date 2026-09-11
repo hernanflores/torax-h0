@@ -1,0 +1,26 @@
+Task: Tests de la publicación del ancla (Fase 5, division-hot-grid_20260911)
+
+Archivos creados:
+- Packages/MIDI/Tests/MIDITests/GridPublicationTests.swift (8 tests)
+
+Qué fijan (FR10, FR11, NFR5b):
+- Un Track que no reancló publica la rejilla de Play, igual como vigente y
+  como anterior.
+- Un Track del que nunca se publicó nada no tiene rejilla.
+- El knob y el avance de Cycle publican el ancla nueva; la anterior es la de
+  antes.
+- Con dos reanclajes seguidos, la anterior es la del primero.
+- Con Delay negativo se publica el ancla ya retrasada (enmienda de FR17).
+- Cada Track publica en su sitio.
+- Un lector concurrente nunca ve una rejilla partida.
+
+Diseño que los tests piden: CyclePlaybackClock publica por Track la rejilla
+vigente y la anterior, porque el ancla publicada puede estar en el futuro por
+el look-ahead, igual que los tres cursores que ya guarda. Lo que cruza son
+enteros: índice de Step, instante y Division. La interfaz reconstruye la
+MusicalTimeline con su propio tempo. Como son varias palabras por Track, se
+protege con un seqlock sobre AtomicCounter: el escritor, que es el hilo del
+scheduler, no se bloquea nunca; el lector, que es la interfaz, reintenta.
+
+Rojo: no compila. Faltan PlaybackGrid, CyclePlaybackClock.grids(tempo:) y
+publishGrid, y el init anclado de MusicalTimeline es privado.
