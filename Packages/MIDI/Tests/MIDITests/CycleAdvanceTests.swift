@@ -401,12 +401,12 @@ final class CurrentCycleDecidesEverythingTests: XCTestCase {
     }
 }
 
-/// Qué parámetros cambian de verdad al cambiar de Cycle, y cuál no.
+/// Qué parámetros cambian de verdad al cambiar de Cycle.
 ///
-/// **Los tests de aquí no describen un ideal sino lo que pasa.** Uno de los ocho
-/// parámetros —Division— no cambia, y esto lo deja fijado con un número en vez de
-/// dejarlo como una sorpresa que alguien encuentre en el iPad. El porqué está en
-/// *Known Limitations* del `spec.md`.
+/// **Los tests de aquí no describen un ideal sino lo que pasa.** Hasta el
+/// 2026-09-11 uno de los ocho parámetros —Division— no cambiaba, y esto lo
+/// dejaba fijado con un número; desde `division-hot-grid_20260911` cambian los
+/// ocho.
 final class WhatChangesWithTheCycleTests: XCTestCase {
 
     private let tempo = Tempo(beatsPerMinute: 120)!
@@ -482,38 +482,35 @@ final class WhatChangesWithTheCycleTests: XCTestCase {
         XCTAssertTrue(events.filter { $0.step >= 16 }.allSatisfy { $0.pitch == 72 })
     }
 
-    // MARK: - Lo que no cambia: Division
+    // MARK: - Division también
 
-    /// **Division NO cambia de Cycle a Cycle. Decidido el 2026-09-02, con este
-    /// test delante.**
+    /// **Division también cambia de Cycle a Cycle**, desde
+    /// `division-hot-grid_20260911`.
     ///
-    /// La rejilla temporal de un Track la fija la `MusicalTimeline` con la que se
-    /// construye su scheduler, en Play, y no se vuelve a leer. Cambiar la
-    /// Division a mitad de reproducción reubicaría todos los Steps futuros
-    /// respecto a un origen que ya pasó, y hacerlo bien exigiría rebasar la línea
-    /// de tiempo por Track — es decir, romper el invariante que mantiene en fase
-    /// a los dieciséis sin sincronización posterior: **todas las rejillas se
-    /// miden contra el mismo origen**.
+    /// Hasta el 2026-09-11 este test fijaba lo contrario: la rejilla se decidía
+    /// en Play con la Division del Cycle 1 y el segundo Cycle sonaba sobre ella.
+    /// Se aceptó el 2026-09-02 porque hacerlo bien exigía rebasar la línea de
+    /// tiempo por Track; la rejilla con ancla es exactamente eso, y el precio
+    /// —un Track reanclado deja de estar en fase con el origen de Play— está
+    /// escrito en *Known Limitations* del spec de ese track.
     ///
-    /// Así que se acota: el segundo Cycle suena, con todo lo demás suyo, sobre la
-    /// rejilla del Cycle que estaba vigente al pulsar Play. Está escrito en
-    /// *Known Limitations* del `spec.md`.
-    func testTheDivisionOfLaterCyclesIsIgnoredAndTheGridStays() {
+    /// El Step 16 cae donde la vuelta anterior lo dejaba, y el 17 ya a 500 ms
+    /// de él, que es lo que dura un Step de 1/4. Los casos a mitad de ventana
+    /// están en `CycleDivisionGridTests`.
+    func testTheDivisionChangesWithTheCycle() {
         let events = turns(
             cycle(pitch: 48, division: .sixteenth),
             cycle(pitch: 72, division: .quarter)
         )
 
-        // El material del segundo Cycle sí entra: la altura es la suya.
         XCTAssertEqual(events.first(where: { $0.step == 16 })?.pitch, 72)
-        // Pero cae sobre la rejilla de 1/16 —125 ms por Step— y no sobre la de
-        // 1/4, que serían 500 ms.
         XCTAssertEqual(events.first(where: { $0.step == 16 })?.offset, 16 * stepNanoseconds)
-        XCTAssertEqual(events.first(where: { $0.step == 17 })?.offset, 17 * stepNanoseconds)
+        XCTAssertEqual(
+            events.first(where: { $0.step == 17 })?.offset, 16 * stepNanoseconds + 500_000_000)
     }
 
-    /// Y la Division del Cycle 1 sí manda, porque es la que había al construir:
-    /// la limitación es «no cambia», no «se ignora siempre».
+    /// Y la Division del Cycle 1 manda desde Play, antes de que haya ninguna
+    /// vuelta que cerrar.
     func testTheDivisionOfTheFirstCycleDoesSetTheGrid() {
         let events = turns(
             cycle(pitch: 48, division: .eighth),
