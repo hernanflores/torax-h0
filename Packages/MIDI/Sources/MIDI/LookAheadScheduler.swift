@@ -56,6 +56,29 @@ public struct LookAheadScheduler {
         timeline = timeline.rebased(to: division, atStep: nextStep)
     }
 
+    /// Cambia la Division anclando en un Step del **último rango devuelto que
+    /// quien llama todavía no ha consumido**, y devuelve la marca de agua a él.
+    ///
+    /// **Existe para el cambio de Division a mitad de ventana.** El avance de
+    /// Cycle ocurre mientras se recorre un rango que ya se calculó con la
+    /// rejilla vieja: los Steps que quedan de ese rango no son los que caben con
+    /// la nueva —sobran si es más lenta, faltan si es más rápida—. Devolver la
+    /// marca de agua al Step del corte deja que el `advance(toHorizon:)`
+    /// siguiente recalcule el resto del rango sobre la rejilla nueva.
+    ///
+    /// **No rompe el invariante porque esos Steps nunca salieron.** La marca de
+    /// agua solo retrocede sobre Steps que el rango anunció y nadie emitió; el
+    /// contrato es de quien llama, que es quien sabe hasta dónde consumió. El
+    /// Step del corte conserva su instante, que ya estaba antes del horizonte,
+    /// así que el rango recalculado empieza siempre por él.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public mutating func rebase(to division: Division, reopeningAt step: Int) {
+        timeline = timeline.rebased(to: division, atStep: step)
+        nextStep = step
+    }
+
     /// Devuelve los Steps cuyo offset cae antes de `horizonNanoseconds`, y que
     /// no se hayan entregado ya.
     ///

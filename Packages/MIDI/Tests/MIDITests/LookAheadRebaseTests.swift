@@ -131,4 +131,32 @@ final class LookAheadRebaseTests: XCTestCase {
         // ese hueco caben cuatro y no ocho.
         XCTAssertEqual(scheduler.advance(toHorizon: 12 * stepNanoseconds), 4..<8)
     }
+
+    // MARK: - A mitad de rango — Fase 3
+
+    /// **Reabrir el rango en el Step del corte.** El rango anunció 0..<12 y
+    /// quien llama consumió hasta el 3: la marca de agua vuelve al 4, que
+    /// conserva su instante, y el resto se recalcula sobre la corchea.
+    func testRebasingMidRangeReopensItAtTheCutStep() {
+        var scheduler = makeScheduler()
+        XCTAssertEqual(scheduler.advance(toHorizon: 12 * stepNanoseconds), 0..<12)
+
+        scheduler.rebase(to: .eighth, reopeningAt: 4)
+
+        XCTAssertEqual(scheduler.nextStep, 4)
+        XCTAssertEqual(scheduler.timeline.nanosecondOffset(forStep: 4), 4 * stepNanoseconds)
+        XCTAssertEqual(scheduler.advance(toHorizon: 12 * stepNanoseconds), 4..<8)
+    }
+
+    /// Y hacia más rápido el rango recalculado es **más largo** que lo que
+    /// quedaba del viejo: en los 1000 ms que siguen al Step 4 caben dieciséis
+    /// fusas donde había ocho semicorcheas.
+    func testRebasingMidRangeTowardsFasterYieldsTheStepsThatNowFit() {
+        var scheduler = makeScheduler()
+        _ = scheduler.advance(toHorizon: 12 * stepNanoseconds)
+
+        scheduler.rebase(to: .thirtySecond, reopeningAt: 4)
+
+        XCTAssertEqual(scheduler.advance(toHorizon: 12 * stepNanoseconds), 4..<20)
+    }
 }

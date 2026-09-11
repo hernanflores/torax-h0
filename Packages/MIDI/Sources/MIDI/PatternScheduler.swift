@@ -64,6 +64,11 @@ public final class PatternScheduler {
     /// los dieciséis**, y por eso dos Divisions distintas caen en fase sin
     /// ajustarse entre sí.
     ///
+    /// La promesa vale en Play. Un Track que cambia de Division mientras suena
+    /// —por el knob o por el avance de Cycle— reancla desde su propio corte y
+    /// deja de estar en fase con este origen (`division-hot-grid_20260911`,
+    /// FR8); Play vuelve a construirlos todos contra el mismo.
+    ///
     /// - Parameters:
     ///   - tempo: el tempo compartido; lo fija el transporte.
     ///   - pattern: con qué material se arranca.
