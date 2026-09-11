@@ -1117,7 +1117,7 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: La Division no mueve la rejilla mientras suena** — *planificado el 2026-09-11*
+- [~] **Track: La Division no mueve la rejilla mientras suena** — *planificado el 2026-09-11; en curso desde el 2026-09-11*
   *Link: [conductor/tracks/division-hot-grid_20260911/index.md](./tracks/division-hot-grid_20260911/index.md)*
 
   Encontrado el 2026-09-10. **Girar Division con el transporte corriendo no
