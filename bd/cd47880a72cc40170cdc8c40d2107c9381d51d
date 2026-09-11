@@ -1,0 +1,42 @@
+Task: Implementar el ancla que conserva el instante que suena (Fase 4, division-hot-grid_20260911)
+
+Tarea añadida el 2026-09-11: el usuario decidió arreglar aquí el defecto que
+destaparon los tests de af6bdb7 en vez de aceptarlo como limitación.
+
+Archivos:
+- Packages/Engine/Sources/Engine/MusicalTime.swift: rebased(to:atStep:delayedBy:),
+  con delayedBy = 0 por defecto. Recibe un desplazamiento sobre el instante que
+  la rejilla calcula, nunca el instante.
+- Packages/Engine/Tests/EngineTests/AnchoredTimelineTests.swift: 2 tests.
+- Packages/MIDI/Sources/MIDI/LookAheadScheduler.swift: delayedBy en los dos rebase.
+- Packages/MIDI/Sources/MIDI/TrackScheduler.swift: windowBudgetNanoseconds es el
+  presupuesto con que se decidió la ventana. anchorDelay(adopting:) devuelve
+  max(0, presupuesto nuevo - presupuesto de la ventana). En el avance de Cycle,
+  la reentrada mide con el presupuesto nuevo y un Step del corte que ya no cabe
+  espera a su ventana (guard popFirst() == step).
+- Packages/MIDI/Tests/MIDITests/DelayBudgetDivisionTests.swift: se corrige el
+  montaje de runCycles. Arrancaba ya desfasado y pedía el Step 0 para un
+  presente que el hilo nunca tiene: los 3 fallos de
+  testACycleThatAdvancesLessNeitherRepeatsNorLosesTheCutStep eran del test, no
+  del código. Ahora la primera ventana es la de Play, en el instante 0.
+- conductor/tracks/division-hot-grid_20260911/spec.md: enmienda de FR17, con fecha.
+
+Por qué el presupuesto de la ventana y no solo el cambio que trae la Division:
+la marca de agua se colocó con ese presupuesto, así que es contra él contra lo
+que se mide cuánto puede adelantarse el Step del corte. Así queda cubierto
+también el Cycle entrante con un Delay más negativo que el saliente cuando
+además cambia de Division. Sigue fuera el caso sin reanclaje, girar Delay a
+negativo mientras suena, que es la limitación 2 de la rebanada 6.
+
+Por qué el guard: si el Cycle entrante adelanta menos que el saliente, el
+presupuesto encoge y el Step del corte puede quedar más allá del horizonte
+recalculado. Emitirlo en ese momento lo repetiría en la ventana siguiente.
+
+Verificación:
+- Engine: 935 tests, 0 fallos (swift test --enable-code-coverage).
+- MIDI: 931 tests. Los 7 fallos son los cuatro VirtualLoopbackTests con
+  clientCreationFailed(-50), el flake conocido. Cobertura 92,01% de líneas;
+  TrackScheduler 98,52%, LookAheadScheduler 97,87%. DelayBudgetDivisionTests
+  5/5 en verde.
+- xcodebuild build -scheme ToraxH0 -destination generic/platform=iOS: BUILD SUCCEEDED.
+- Rojo de Engine: el test de delayedBy no compilaba antes de añadir el parámetro.
