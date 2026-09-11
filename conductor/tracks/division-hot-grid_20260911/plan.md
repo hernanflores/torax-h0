@@ -121,7 +121,7 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
         y después en 1/32. La línea cambia de velocidad en el límite de vuelta
         y vuelve en la siguiente, sin golpes repetidos ni perdidos.
 
-## FASE 4: LO QUE SE ARREGLA DE PASO
+## FASE 4: LO QUE SE ARREGLA DE PASO [checkpoint: bdcd478]
 
 - [x] Task: Tests de la ventana de repeticiones — `28948f2`
   - [x] El corte de las repeticiones y el hueco base se miden contra el mismo
@@ -164,11 +164,14 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
   - [x] En el avance de Cycle, la reentrada mide con el presupuesto nuevo, y un
         Step del corte que ya no cabe espera a su ventana sin repetirse.
   - [x] `DelayBudgetDivisionTests` en verde.
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [x] Suite de `MIDI` en verde, cobertura ≥80%. **931 tests; los 7 fallos son
         los cuatro `VirtualLoopbackTests` con `clientCreationFailed(-50)`, el
         flake conocido. Cobertura 92,01%; `TrackScheduler` 98,52%. `Engine`
         935 tests en verde. `xcodebuild build` correcto.**
+  - [x] Verificación manual en iPad (repeticiones, Sustain y Delay negativo tras
+        girar Division): **el usuario respondió «ok» el 2026-09-11**, sin
+        detallar qué pasos ejecutó.
 
 ## FASE 5: EL ANILLO MIDE CON EL MISMO ANCLA
 
