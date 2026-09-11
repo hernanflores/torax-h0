@@ -173,7 +173,7 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
         girar Division): **el usuario respondió «ok» el 2026-09-11**, sin
         detallar qué pasos ejecutó.
 
-## FASE 5: EL ANILLO MIDE CON EL MISMO ANCLA
+## FASE 5: EL ANILLO MIDE CON EL MISMO ANCLA [checkpoint: b35ef92]
 
 - [x] Task: Tests de la publicación del ancla — `7fe0676`
   - [x] El hilo del scheduler publica el ancla vigente de cada Track y el hilo de
@@ -211,7 +211,11 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
   - [x] **Un desfase constante de un Step, de la rebanada 6** (su decisión 9:
         el playhead sigue la rejilla). El usuario decidió mantenerlo. Queda en
         *Known Limitations* del spec.
-- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Verificado en iPad el 2026-09-11. Los casos 1-3 dieron bien a la
+        primera. El caso 4 —Delay −100% y una Division más lenta— encontró el
+        salto del anillo, arreglado en `b35ef92`, y el usuario confirmó con
+        «ok» al repetirlo.
   - [x] Suites de `Engine` y `MIDI` en verde, con sus umbrales. **`Engine` 943
         tests, cobertura 98,74%. `MIDI` 939 tests; los 7 fallos son los cuatro
         `VirtualLoopbackTests` con `clientCreationFailed(-50)`, el flake
