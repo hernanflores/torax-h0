@@ -138,12 +138,31 @@ con la duración nueva. El pasado queda como sonó y el futuro obedece al knob.
   el mismo valor para el mismo Step. Se fija con tests en Sustain 100% —el
   note-off cae justo donde empieza el note-on siguiente— y Sustain 200%, que es
   el solape que el usuario pide a propósito.
-- **FR17.** El `advanceBudgetNanoseconds` de Delay se calcula sobre el
+- **FR17.** *(Enmendado el 2026-09-11, ver la nota de abajo.)* El `advanceBudgetNanoseconds` de Delay se calcula sobre el
   `stepDuration`, así que cambia de valor al cambiar la rejilla. Este track
   **no** rediseña el origen adelantado de `SchedulerThread`; se limita a no
   romperlo: con Delay ≥ 0 el presupuesto sigue siendo cero, y con Delay negativo
   se comprueba que no se pida ningún evento para un instante ya pasado. La
   revisión de fondo queda fuera de alcance y anotada.
+
+> **Enmienda de FR17, 2026-09-11, con `DelayBudgetDivisionTests` delante.**
+> Comprobarlo no bastó: **se rompía**. Con Delay negativo, una Division más
+> lenta hace crecer el presupuesto de adelanto. El ancla conservaba el
+> instante de **rejilla** del Step del corte, así que su instante de
+> **emisión** se adelantaba lo que crecía el presupuesto y caía antes del
+> presente: hasta 110 ms con Delay −100% y 1/16 → 1/8. Era un evento por
+> cambio, por las dos puertas. Lo decidió el usuario: se arregla aquí.
+>
+> **El arreglo:** cuando un reanclaje hace crecer el presupuesto respecto al
+> que decidió la ventana, el ancla se retrasa lo que crece. El Step del corte
+> conserva el instante en que **suena**, que es lo que FR6 protege, y no el
+> de rejilla. Con Delay ≥ 0 el presupuesto no crece y el ancla es la de
+> siempre. Solo se retrasa la rejilla del Track reanclado, y ese desfase ya
+> lo acepta FR8.
+>
+> **Sigue fuera de alcance** el caso sin reanclaje: girar Delay a negativo
+> mientras suena, que es la limitación 2 de la rebanada 6, y el origen
+> adelantado de `SchedulerThread`.
 
 ### Lo que no cambia
 

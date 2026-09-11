@@ -51,6 +51,31 @@ final class AnchoredTimelineTests: XCTestCase {
         XCTAssertEqual(rebased.anchorNanoseconds, instant)
     }
 
+    /// **Un ancla retrasada** mueve el Step del corte exactamente lo pedido, y
+    /// los siguientes se miden desde ahí con la Division nueva. Es lo que usa el
+    /// scheduler cuando un reanclaje hace crecer el presupuesto de Delay
+    /// negativo (enmienda de FR17).
+    func testADelayedAnchorMovesTheCutStepByExactlyTheDelay() {
+        let original = MusicalTimeline(tempo: tempo, division: .sixteenth)
+        let instant = original.nanosecondOffset(forStep: 7)
+
+        let rebased = original.rebased(to: .eighth, atStep: 7, delayedBy: 125_000_000)
+
+        XCTAssertEqual(rebased.anchorNanoseconds, instant + 125_000_000)
+        XCTAssertEqual(rebased.nanosecondOffset(forStep: 7), instant + 125_000_000)
+        XCTAssertEqual(rebased.nanosecondOffset(forStep: 8), instant + 375_000_000)
+    }
+
+    /// Sin retraso es el reanclaje de siempre: el parámetro no cambia nada si
+    /// no se pide.
+    func testAZeroDelayIsTheUsualRebase() {
+        let original = MusicalTimeline(tempo: tempo, division: .sixteenth)
+
+        XCTAssertEqual(
+            original.rebased(to: .eighth, atStep: 7, delayedBy: 0),
+            original.rebased(to: .eighth, atStep: 7))
+    }
+
     /// Y la Division nueva es la que queda, no la vieja.
     func testRebasingAdoptsTheNewDivision() {
         let rebased = MusicalTimeline(tempo: tempo, division: .sixteenth)

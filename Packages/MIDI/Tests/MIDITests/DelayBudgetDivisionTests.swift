@@ -152,15 +152,19 @@ final class DelayBudgetDivisionTests: XCTestCase {
         scheduler.refresh(with: track)
         let startBudget = scheduler.advanceBudgetNanoseconds
 
+        // La primera ventana es la de Play, en el instante 0, como en el hilo;
+        // la fase corre las siguientes. Arrancar ya desfasado pediría el Step 0
+        // para un presente que el hilo nunca tiene, y el test fallaría por su
+        // propio montaje.
         var events: [Event] = []
-        var wall = phase
+        var wall: Int64 = 0
         while wall < until {
             let now = wall - startBudget
             scheduler.advance(toHorizon: now + lookAhead, refreshingFrom: nil) {
                 _, step, _, _, offset in
                 events.append(Event(step: step, offset: offset, now: now))
             }
-            wall += period
+            wall = wall == 0 ? phase + period : wall + period
         }
         return events
     }

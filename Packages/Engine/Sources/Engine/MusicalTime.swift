@@ -197,14 +197,25 @@ public struct MusicalTimeline: Equatable, Sendable {
     /// todas las ventanas: el instante que se guarda es el que el propio cálculo
     /// devolvía. Por eso quien llama puede permitirse no comprobarlo.
     ///
+    /// **`delay` retrasa el ancla respecto a ese instante**, y es cero salvo en
+    /// un caso: con Delay negativo, una Division más lenta hace crecer lo que
+    /// cada Step se adelanta a su rejilla, y el scheduler retrasa el ancla eso
+    /// mismo para que el Step del corte siga sonando cuando sonaba (enmienda
+    /// de FR17 de `division-hot-grid_20260911`). Lo que entra de fuera es un
+    /// desplazamiento sobre el instante que esta rejilla calcula, no el
+    /// instante: quien reancla y quien emite siguen sin poder discrepar sobre
+    /// dónde caía el Step.
+    ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
-    public func rebased(to division: Division, atStep step: Int) -> MusicalTimeline {
+    public func rebased(
+        to division: Division, atStep step: Int, delayedBy delay: Int64 = 0
+    ) -> MusicalTimeline {
         MusicalTimeline(
             tempo: tempo,
             division: division,
             anchorStep: step,
-            anchorNanoseconds: nanosecondOffset(forStep: step)
+            anchorNanoseconds: nanosecondOffset(forStep: step) + delay
         )
     }
 

@@ -269,6 +269,8 @@ public struct TrackScheduler {
         self.lookAhead = LookAheadScheduler(timeline: timeline, startingAtStep: startingStep)
         self.random = SeededRandom(seed: seed)
         self.stepDurationNanoseconds = Int64(timeline.stepDurationNanoseconds)
+        self.windowBudgetNanoseconds = material.groove.advanceBudgetNanoseconds(
+            forStep: Int64(timeline.stepDurationNanoseconds))
         self.turnStartStep = startingStep
         self.playbackClock = nil
     }
@@ -317,8 +319,35 @@ public struct TrackScheduler {
     private mutating func adoptGridOfCurrentMaterial() {
         guard let division = divisionToAdopt else { return }
 
-        lookAhead.rebase(to: division)
+        lookAhead.rebase(to: division, delayedBy: anchorDelay(adopting: division))
         stepDurationNanoseconds = Int64(lookAhead.timeline.stepDurationNanoseconds)
+    }
+
+    /// El presupuesto de adelanto con el que se decidió la ventana en curso, o
+    /// la última: es contra lo que se colocó la marca de agua.
+    private var windowBudgetNanoseconds: Int64
+
+    /// Cuánto retrasar el ancla al adoptar `division`.
+    ///
+    /// **Cero salvo con Delay negativo y un presupuesto que crece**, que es la
+    /// enmienda de FR17. La marca de agua se colocó con el presupuesto de la
+    /// ventana: el Step aún no entregado cae como mucho eso por delante del
+    /// horizonte ya servido. Si la rejilla nueva le pide adelantarse más, su
+    /// instante de emisión caería antes del presente. Retrasar el ancla lo que
+    /// crece el presupuesto deja ese Step sonando cuando sonaba.
+    ///
+    /// Si el presupuesto encoge no se adelanta nada: el Step suena algo más
+    /// tarde, nunca en el pasado.
+    ///
+    /// Realtime: llamado desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await. La conversión de coma flotante
+    /// ocurre solo al reanclar.
+    private func anchorDelay(adopting division: Division) -> Int64 {
+        let step = Int64(
+            MusicalTimeline(tempo: lookAhead.timeline.tempo, division: division)
+                .stepDurationNanoseconds)
+        return max(
+            0, material.groove.advanceBudgetNanoseconds(forStep: step) - windowBudgetNanoseconds)
     }
 
     /// Lo mismo, pero a mitad de ventana: ancla en `step`, que el rango en curso
@@ -332,7 +361,8 @@ public struct TrackScheduler {
     private mutating func adoptGridOfCurrentMaterial(reopeningAt step: Int) -> Bool {
         guard let division = divisionToAdopt else { return false }
 
-        lookAhead.rebase(to: division, reopeningAt: step)
+        lookAhead.rebase(
+            to: division, reopeningAt: step, delayedBy: anchorDelay(adopting: division))
         stepDurationNanoseconds = Int64(lookAhead.timeline.stepDurationNanoseconds)
         return true
     }
@@ -467,7 +497,8 @@ public struct TrackScheduler {
         //
         // Con Delay ≥ 0 el presupuesto es cero y el horizonte es exactamente el
         // de antes de la rebanada 6.
-        let target = horizonNanoseconds + advanceBudgetNanoseconds
+        windowBudgetNanoseconds = advanceBudgetNanoseconds
+        var target = horizonNanoseconds + windowBudgetNanoseconds
 
         var steps = lookAhead.advance(toHorizon: target)
         while let step = steps.popFirst() {
@@ -485,16 +516,30 @@ public struct TrackScheduler {
                 // saldrían en la ventana siguiente para un instante que ya se
                 // entregó. Emitir el resto «ya anclado» tiene los dos defectos.
                 //
-                // Reentrar no los tiene. La rejilla nueva ancla en este Step,
-                // que conserva su instante y por eso vuelve a abrir el rango; el
-                // resto se recalcula contra el mismo horizonte. El Step en curso
-                // sigue su camino con la rejilla nueva y el material nuevo, que
-                // es FR5 de la rebanada de Cycles. `turnStartStep` ya apunta
-                // aquí, así que la reentrada no vuelve a avanzar el cursor.
+                // Reentrar no los tiene. La rejilla nueva ancla en este Step y
+                // el resto se recalcula **con el presupuesto nuevo**, que es el
+                // que la rejilla nueva pide: con Delay negativo, el ancla se
+                // retrasó lo que el presupuesto creció, y medir contra el viejo
+                // dejaría fuera de la ventana al propio Step del corte. El Step
+                // en curso sigue su camino con la rejilla nueva y el material
+                // nuevo, que es FR5 de la rebanada de Cycles. `turnStartStep` ya
+                // apunta aquí, así que la reentrada no vuelve a avanzar el
+                // cursor.
                 //
                 // El coste solo se paga cuando el Cycle entrante declara otra
                 // Division (NFR2): dos enteros de un rango, sin asignar nada.
-                steps = lookAhead.advance(toHorizon: target).dropFirst()
+                windowBudgetNanoseconds = advanceBudgetNanoseconds
+                target = horizonNanoseconds + windowBudgetNanoseconds
+                steps = lookAhead.advance(toHorizon: target)
+
+                // **El Step del corte puede no caber ya en esta ventana**, y
+                // entonces espera a la suya. Pasa cuando el Cycle entrante
+                // adelanta menos que el que sale: el presupuesto encoge y el
+                // horizonte queda por detrás del Step. No se pierde, porque la
+                // marca de agua apunta a él, ni avanza el cursor dos veces,
+                // porque `turnStartStep` también. Emitirlo aquí sí lo repetiría
+                // en la ventana siguiente.
+                guard steps.popFirst() == step else { continue }
             }
             let cycleStep = step - turnStartStep
 

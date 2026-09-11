@@ -52,8 +52,12 @@ public struct LookAheadScheduler {
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
-    public mutating func rebase(to division: Division) {
-        timeline = timeline.rebased(to: division, atStep: nextStep)
+    ///
+    /// **`delay` retrasa el ancla**, y solo lo pide el Delay negativo cuando el
+    /// presupuesto de adelanto crece con la Division nueva. Retrasar no puede
+    /// llevar ningún Step al pasado, así que FR7 se sigue cumpliendo.
+    public mutating func rebase(to division: Division, delayedBy delay: Int64 = 0) {
+        timeline = timeline.rebased(to: division, atStep: nextStep, delayedBy: delay)
     }
 
     /// Cambia la Division anclando en un Step del **último rango devuelto que
@@ -74,8 +78,10 @@ public struct LookAheadScheduler {
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
-    public mutating func rebase(to division: Division, reopeningAt step: Int) {
-        timeline = timeline.rebased(to: division, atStep: step)
+    public mutating func rebase(
+        to division: Division, reopeningAt step: Int, delayedBy delay: Int64 = 0
+    ) {
+        timeline = timeline.rebased(to: division, atStep: step, delayedBy: delay)
         nextStep = step
     }
 
