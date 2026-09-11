@@ -1,0 +1,23 @@
+Task: Tests del overlay de Division, ida y vuelta (Fase 6, division-hot-grid_20260911)
+
+Archivos creados:
+- Packages/MIDI/Tests/MIDITests/DivisionTempOverlayTests.swift (3 tests)
+
+Qué fijan: se publica a mano lo que devuelve ParameterOverlay, que es lo que
+ControlInput publicaría, en instantes elegidos, y se simula el bucle del hilo
+con ventanas de 10 ms.
+- FR12: mantener Temp y girar Division un clic, de 1/16 a 1/32, pone fusas de
+  62,5 ms desde el Step 9, que conserva su instante de 1125 ms.
+- FR14: al soltar, el Step 16 cae a 1562,5 ms, donde lo dejó el fill, y no a
+  los 2000 ms de la rejilla de Play; desde ahí vuelven los 125 ms.
+- Con el Cycle 1 en 1/16 y el Cycle 2 en 1/8, el fill los iguala a 1/32 y al
+  soltar cada uno recupera la suya: el Cycle 2 abre a 1562,5 ms en 1/8 y el
+  Cycle 1 vuelve a 5562,5 ms en 1/16.
+- FR13: en los dos reanclajes, ningún Step se pierde, se repite ni se pide
+  para el pasado.
+
+Verdes desde el primer intento, como el plan anticipaba: el overlay publica un
+Pattern normal por el handoff y el reanclaje de las Fases 2 y 3 ya lo cubre.
+No se corrió contra el código anterior a la Fase 2, pero ahí la rejilla no
+cambia nunca, así que el Step 10 caería a 1250 ms y no a 1187,5: estos tests
+lo detectarían igual que HotDivisionChangeTests.
