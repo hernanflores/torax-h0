@@ -251,7 +251,7 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
         `clientCreationFailed(-50)`, el flake conocido. Cobertura 92,00%.
         `xcodebuild build` correcto.**
 
-## FASE 7: DISPOSITIVO Y CIERRE
+## FASE 7: DISPOSITIVO Y CIERRE [checkpoint: 009077d]
 
 - [x] Task: Suite completa y cobertura
   - [x] `Engine` ≥90%, `MIDI` ≥80%, todo en verde (criterio 13). **`Engine`
@@ -262,16 +262,18 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
   - [x] La vía del arnés sigue midiendo lo mismo (criterio 12).
         **`JitterHarnessTests`, `PatternSchedulerTests` y
         `testTheMeasurementPathNeverRebases` en verde.**
-- [~] Task: Verificación en dispositivo
-  - [ ] **Con una pista rítmica de one-shots y un solo Cycle activo**, que es
+- [x] Task: Verificación en dispositivo — `009077d`
+  - [x] **Con una pista rítmica de one-shots y un solo Cycle activo**, que es
         como se reportó: girar Division mientras suena cambia la velocidad de la
         línea de forma audible e inmediata, sin cortes, sin duplicados y sin que
-        el Track salte al principio (criterio 14).
-  - [ ] El anillo sigue marcando lo que suena después de girar (criterio 10).
-  - [ ] Un Temp de Division como fill, en directo (criterio 11).
-  - [ ] **Escucha larga**: varios minutos con cambios de Division repetidos, para
-        dar la cara donde no hay medición de jitter (NFR4).
-  - [ ] Registrar lo observado en `device-verification.md`, como hizo
+        el Track salte al principio (criterio 14). Verificado en la Fase 2.
+  - [x] El anillo sigue marcando lo que suena después de girar (criterio 10).
+        Falló con Delay −100%; arreglado en `b35ef92` y confirmado al repetirlo.
+  - [x] Un Temp de Division como fill, en directo (criterio 11). Fase 6.
+  - [x] **Escucha larga**: varios minutos con cambios de Division repetidos, para
+        dar la cara donde no hay medición de jitter (NFR4). **El usuario
+        respondió «Validado ok» el 2026-09-11**, sin detallar duración.
+  - [x] Registrar lo observado en `device-verification.md`, como hizo
         `pattern-copy_20260910`.
 - [x] Task: Anotar lo que queda fuera — `11aa1e0`
   - [x] En el registry: el rediseño del origen adelantado de Delay
@@ -281,4 +283,8 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
         varios Cycles activos, y que eso es de `cycle-edit-cursor_20260908`.
   - [x] En el registry, y no estaba en el plan: el desfase del anillo con Delay
         negativo, que es la decisión 9 de la rebanada 6 y el usuario mantuvo.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] Suites en verde con sus umbrales: `Engine` 945 tests y 98,74%; `MIDI`
+        944 tests y 92,00%, con los 7 fallos del flake conocido.
+        `xcodebuild build` correcto.
+  - [x] Verificación en dispositivo registrada, escucha larga incluida.
