@@ -223,23 +223,31 @@ incluye por eso una escucha larga en dispositivo, que es lo único que queda.
 
 ## FASE 6: TEMP Y CTRL ALL SOBRE DIVISION
 
-- [ ] Task: Tests del overlay de Division, ida y vuelta
-  - [ ] Mantener Temp y girar Division cambia la velocidad mientras dura (FR12,
+- [x] Task: Tests del overlay de Division, ida y vuelta — `64a8b31`
+  - [x] Mantener Temp y girar Division cambia la velocidad mientras dura (FR12,
         criterio 11).
-  - [ ] Soltar devuelve la Division anterior, anclada al instante de la soltada y
+  - [x] Soltar devuelve la Division anterior, anclada al instante de la soltada y
         sin rebobinar la fase (FR14).
-  - [ ] Ninguno de los dos reanclajes pierde, duplica ni adelanta un Step (FR13).
-  - [ ] Con Cycles activos de Divisions distintas, el overlay iguala el valor
+  - [x] Ninguno de los dos reanclajes pierde, duplica ni adelanta un Step (FR13).
+  - [x] Con Cycles activos de Divisions distintas, el overlay iguala el valor
         absoluto y al soltar cada Cycle recupera **el suyo**, como ya promete
         `ParameterOverlay`.
-- [ ] Task: Tests de Ctrl All sobre Division
-  - [ ] Dieciséis reanclajes en la misma ventana: ningún Track pierde ni duplica
-        un Step (FR13, criterio 11).
-- [ ] Task: Implementar lo que falte
-  - [ ] Igual que el gate: el overlay ya publica un `Pattern` normal por el
+  - **Verdes a la primera**: el overlay publica un `Pattern` normal y el
+    reanclaje de las Fases 2 y 3 ya lo cubre.
+- [x] Task: Tests de Ctrl All sobre Division — `f02e096`
+  - [x] Dieciséis reanclajes en la misma ventana: ningún Track pierde ni duplica
+        un Step (FR13, criterio 11). **Son doce**: `Pattern.trackCount` es 12
+        desde `ui-declutter_20260902`.
+- [x] Task: Implementar lo que falte — `eef5f63`
+  - [x] Igual que el gate: el overlay ya publica un `Pattern` normal por el
         handoff de siempre, así que puede no hacer falta código. Si los tests
-        pasan, la tarea es dejarlo escrito.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+        pasan, la tarea es dejarlo escrito. **Sin código**; escrito en
+        `ParameterOverlay`.
+- [~] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [x] **`Engine` 945 tests, cobertura 98,74%. `MIDI` 944 tests; los 7
+        fallos son los cuatro `VirtualLoopbackTests` con
+        `clientCreationFailed(-50)`, el flake conocido. Cobertura 92,00%.
+        `xcodebuild build` correcto.**
 
 ## FASE 7: DISPOSITIVO Y CIERRE
 
