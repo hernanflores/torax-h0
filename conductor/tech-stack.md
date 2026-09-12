@@ -164,6 +164,44 @@ Track, como enteros bajo un seqlock, y `Playhead` y `CyclePosition` miden con
 ellas. Las dos rejillas hacen falta porque el ancla publicada puede estar
 todavía en el futuro.
 
+### Enmienda — 2026-09-11: el clock también sale, y sale por el look-ahead
+
+**Qué cambia.** La sincronía deja de ir en un solo sentido. La app emite
+**clock a 24 pulsos por negra, Start y Stop** al destino de salida, además de
+poder seguirlos. La decisión de producto está en la nota del 2026-09-11 de
+`product.md`; aquí va cómo se construye.
+
+**El pulso viaja por el mismo camino que las notas.** Se genera en el hilo del
+scheduler, dentro de la ventana de look-ahead, se sella con un timestamp de
+entrega futuro y sale por `MIDISendEventList`. El instante del tick *n* es
+`origen de rejilla + n × (negra / 24)` en tiempo de rejilla, convertido a tiempo
+de reloj con **el mismo `TempoMap`** que convierte los instantes de las notas.
+
+**Por qué eso y no reenviar el tick entrante.** Es la misma alternativa que la
+enmienda del 2026-09-03 descartó por escrito para la entrada, leída al revés:
+reenviar al vuelo devuelve el jitter al planificador del sistema operativo, que
+es lo que esta sección entera existe para evitar. Generando, el pulso hereda la
+propiedad que hace bueno el timing del proyecto — **no depende de cuándo
+despierta el hilo**— y cae exactamente donde caen las notas, porque lo calcula la
+misma aritmética.
+
+**El borde de la ventana se resuelve como ya estaba resuelto.** El generador
+lleva marca de agua por índice de tick, igual que `LookAheadScheduler` con los
+Steps: dos ventanas consecutivas entregan cada tick exactamente una vez.
+
+**Qué se conserva.** La ventana, la disciplina de ranura del snapshot y la regla
+de tiempo real no se tocan. El generador es un valor trivial y su avance es
+aritmética de enteros sobre un índice: a 174 BPM son unos 1,4 ticks por ventana
+de 20 ms. `Engine` no participa —24 pulsos por negra es una constante del
+protocolo, no del motor— así que el tipo vive en `MIDI`.
+
+**Lo que introduce.** Siguiendo a un maestro externo, el pulso emitido se
+**regenera** desde el tempo estimado en vez de reenviarse, así que un cambio
+brusco del maestro tarda hasta una ventana de look-ahead más una negra en llegar
+a los esclavos. Es el mismo coste que ya paga la app para sonar, trasladado a
+quien la sigue. Registrado como limitación conocida en
+`conductor/tracks/midi-clock-master_20260911/spec.md`.
+
 ## Concurrencia
 
 **Estado inmutable con snapshot publicado atómicamente.** La UI edita el estado en el hilo principal; el scheduler lee un snapshot inmutable. **No hay locks en el camino de timing** — ni esperas, ni riesgo de inversión de prioridad, ni suspensiones por `await`.

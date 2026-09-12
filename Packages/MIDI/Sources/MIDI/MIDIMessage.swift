@@ -165,9 +165,10 @@ public enum MIDIMessage: Equatable, Sendable {
     /// ```
     ///
     /// Los de System Real-Time viajan igual pero como tipo `0x1`, con los dos
-    /// bytes de datos a cero. **Nada del producto los emite** —la app no es
-    /// maestro de clock— pero el empaquetado tiene que ser total y coherente con
-    /// el parseo, que es lo que hace verificable la ida y vuelta.
+    /// bytes de datos a cero. **El producto los emite desde el 2026-09-11**: la
+    /// app es maestro de clock, y el pulso sale por este mismo empaquetado
+    /// (`midi-clock-master_20260911`). Hasta entonces solo se parseaban, y el
+    /// empaquetado existía por ser total y coherente con el parseo.
     ///
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
