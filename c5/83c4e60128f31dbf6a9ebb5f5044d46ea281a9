@@ -2,3 +2,5 @@ Task: Scale o Root conservan Pitch (FASE 3, FR13)
 Cambios: test en FrameChangeTests que gira Pitch +2 por el CC 75, cambia a La menor y comprueba offset conservado y pool que suena dentro de la escala nueva, dos grados sobre el pool reencuadrado.
 Sin código de producción: ControlInput.setFrame ya construye con with(...), que conserva pitchOffset. El test pasó a la primera; queda como regresión.
 Archivos: Packages/MIDI/Tests/MIDITests/FrameChangeTests.swift
+
+Phase Verification FASE 3: Engine 983 tests verdes (98,75%); MIDI 986 tests, 92,35% líneas, fallos solo VirtualLoopbackTests (flake CoreMIDI) y TransportTests.testStopNoteOffIsStampedAheadOfAnythingAlreadyScheduled (también en main 49ecd02); Persistence 64 verdes; xcodebuild iPadOS ok. Manual: knob 14 en iPad con BeatStep Pro, cambio de Scale, pads, relanzar. Usuario confirmó: ok.
