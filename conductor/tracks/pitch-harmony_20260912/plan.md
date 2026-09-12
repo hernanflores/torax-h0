@@ -179,7 +179,7 @@ test de no regresión.
         `ParameterOverlay`.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) — manual diferida a la FASE 8
 
-## FASE 7: LA PANTALLA
+## FASE 7: LA PANTALLA [checkpoint: ad76c2b]
 
 - [x] Task: Card Tonal y valor transitorio (FR19, FR20, FR18) — 258491c
   - [x] Pitch como `±n`. Harmony muestra el pool que suena. Giro bloqueado sin
@@ -189,8 +189,12 @@ test de no regresión.
   - [x] Tests (Red) en `Engine`/`MIDI`: la iluminación sale del pool base. Pasaron a la
         primera (vino con `togglingPitch`): quedan como regresión.
   - [x] `ScaleScreen`: pool base en la rejilla, pool que suena en el readout.
-- [ ] Task: Compilar la app para iPadOS y revisar en simulador
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Compilar la app para iPadOS y revisar en simulador — ad76c2b
+  - [x] `xcodebuild` para iPadOS y para simulador (iPad Air 13" M3, iOS 26.3):
+        exit 0. Captura de la pantalla `track`: el card Tonal pinta `pitch 0` y
+        `harmony c3`. La pantalla `scale` no se abrió sin automatizar toques:
+        se revisa en la FASE 8.
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) — manual diferida a la FASE 8
 
 ## FASE 8: DISPOSITIVO Y CIERRE
 
@@ -224,3 +228,6 @@ test de no regresión.
         vuelve al soltar; Harmony da un paso por Cycle y vuelve al soltar. Con
         [step 14] Pitch desplaza los doce Tracks y Harmony se recalcula desde la
         base (un clic arriba y uno abajo vuelven); soltar devuelve todo.
+  - [ ] FASE 7 — Pantalla: el card Tonal muestra `pitch` y `harmony` con lo que
+        suena; la pantalla `scale` ilumina el pool base y su línea dice
+        `Pitch ±n · Harmony …`; el valor grande anuncia los dos giros.
