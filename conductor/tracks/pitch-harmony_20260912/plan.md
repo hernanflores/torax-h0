@@ -181,8 +181,8 @@ test de no regresión.
 
 ## FASE 7: LA PANTALLA
 
-- [ ] Task: Card Tonal y valor transitorio (FR19, FR20, FR18)
-  - [ ] Pitch como `±n`. Harmony muestra el pool que suena. Giro bloqueado sin
+- [x] Task: Card Tonal y valor transitorio (FR19, FR20, FR18) — 258491c
+  - [x] Pitch como `±n`. Harmony muestra el pool que suena. Giro bloqueado sin
         aviso. La regla de texto vive en `Engine` con tests y la vista solo
         dibuja.
 - [ ] Task: Rejilla `scale` y pads (FR21)
