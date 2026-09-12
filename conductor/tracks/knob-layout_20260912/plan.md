@@ -42,7 +42,7 @@ suspendida desde el 2026-09-02.
 > el knob 8, arriba a la derecha. Los dos commits quedan en la historia; lo que
 > dejaron mal lo corrige la Fase 2.
 
-## FASE 2: El mapeo entero, de una vez
+## FASE 2: El mapeo entero, de una vez [checkpoint: 6a32c08]
 
 > **Era «los trece parámetros» y ahora es todo el bloque.** El plan movía primero
 > el Cycle y después los parámetros. Con los números reales se mueven los
@@ -61,7 +61,7 @@ suspendida desde el 2026-09-02.
   - [ ] Correr y confirmar que fallan
 - [x] Task: Sustituir `assignments` y `editingCycleKnobOffset` (de 15 a 7) `6a32c08`
   - [ ] Confirmar verde
-- [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`)
+- [x] Task: Phase Verification & Checkpoint (ver `workflow.md`) `6a32c08`
 
 ## FASE 3: Preset y documentación
 
