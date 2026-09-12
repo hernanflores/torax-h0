@@ -77,9 +77,9 @@ suspendida desde el 2026-09-02.
   - [ ] Tabla de síntomas: el rango de los knobs es 70–85
 - [x] Task: Nota fechada en `ControlMapping.swift` `6a32c08`
   - [ ] En `beatStepPro` y en `editingCycleKnobOffset`
-- [~] Task: Corregir `Pre Spec Torax H-0.md` donde nombra los CC del Note
-      Repeater
-- [ ] Task: `PresetFileTests` verde sin relajar ninguna aserción (NFR1)
+- [x] Task: Corregir `Pre Spec Torax H-0.md` donde nombra los CC del Note
+      Repeater `3eeb7a5`
+- [x] Task: `PresetFileTests` verde sin relajar ninguna aserción (NFR1) `3eeb7a5`
 - [ ] Task: Phase Verification & Checkpoint
 
 ## FASE 4: Cobertura, dispositivo y cierre
