@@ -115,6 +115,15 @@ public struct CycleRecord: Codable, Equatable, Sendable {
     /// Cycle: guardar los dos sería tener dos fuentes de lo mismo.
     public let pitchOffset: Int?
 
+    /// Harmony, desde el 2026-09-12 (`pitch-harmony_20260912`).
+    ///
+    /// **El estado y no el knob**: Harmony depende del camino, y lo único que
+    /// reproduce lo que sonaba son los offsets y el cursor. **Un offset por pitch
+    /// del pool, en el orden de `pool`**, para que el fichero se lea en paralelo.
+    /// Opcionales al leer y escritos siempre, como las de arriba.
+    public let harmonyOffsets: [Int]?
+    public let harmonyCursor: Int?
+
     public init(_ cycle: Cycle) {
         steps = cycle.shape.steps.count
         pulses = cycle.shape.pulses.count
@@ -138,6 +147,8 @@ public struct CycleRecord: Codable, Equatable, Sendable {
         waveform = Self.key(for: cycle.modulation.waveform)
         accent = cycle.modulation.accent.percent
         pitchOffset = cycle.pitchOffset.degrees
+        harmonyOffsets = (0..<cycle.pool.count).map { cycle.harmony.offset(at: $0) }
+        harmonyCursor = cycle.harmony.cursor
     }
 
     /// El Cycle que describe.
@@ -199,8 +210,29 @@ public struct CycleRecord: Codable, Equatable, Sendable {
             modulation: modulation,
             padOctaveShift: padOctaveShift,
             // Fuera de ±28 cae en el neutro, como el resto de las claves.
-            pitchOffset: pitchOffset.flatMap(PitchOffset.init) ?? .zero
+            pitchOffset: pitchOffset.flatMap(PitchOffset.init) ?? .zero,
+            harmony: Self.harmony(
+                offsets: harmonyOffsets, cursor: harmonyCursor, count: pitches.count)
         )
+    }
+
+    /// El estado de Harmony que describen los offsets y el cursor guardados.
+    ///
+    /// **Un offset imposible o un cursor fuera del pool limpian Harmony entero.**
+    /// Medio estado sonaría a notas que nadie eligió; el limpio es lo que el
+    /// fichero puede prometer. Offsets de más se ignoran y de menos cuentan como
+    /// 0. Sin las claves —un fichero anterior— también es el limpio.
+    static func harmony(offsets: [Int]?, cursor: Int?, count: Int) -> Harmony {
+        guard let offsets, let cursor else { return .clean }
+        guard (0..<PitchPool.capacity).contains(cursor),
+            offsets.allSatisfy({ (-127...127).contains($0) })
+        else { return .clean }
+
+        var harmony = Harmony.clean.with(cursor: cursor)
+        for (index, offset) in offsets.prefix(min(count, PitchPool.capacity)).enumerated() {
+            harmony = harmony.with(offset: offset, at: index)
+        }
+        return harmony
     }
 
     /// La clave con la que cada escala se escribe en disco.

@@ -235,6 +235,8 @@ final class RecordRoundTripTests: XCTestCase {
             "waveform", "accent",
             // Pitch, desde el 2026-09-12.
             "pitchOffset",
+            // Harmony, desde el 2026-09-12.
+            "harmonyOffsets", "harmonyCursor",
         ]
         let cycle = Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!))
         XCTAssertEqual(Set(try dictionary(from: CycleRecord(cycle)).keys), expected)
