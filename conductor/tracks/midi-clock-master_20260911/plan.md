@@ -22,13 +22,13 @@ por la escucha larga de la Fase 6.
 
 ## FASE 1: LA DECISIÓN, ESCRITA ANTES DEL CÓDIGO
 
-- [ ] Task: Nota fechada en `product.md` — la app pasa a ser maestro
-  - [ ] Enmendar la nota del 2026-09-03: «La app no emite clock» deja de ser
+- [x] Task: Nota fechada en `product.md` — la app pasa a ser maestro — `679cd45`
+  - [x] Enmendar la nota del 2026-09-03: «La app no emite clock» deja de ser
         cierto. Decir qué entra —clock, Start y Stop— y qué no —Continue, Song
         Position y Program Change—.
-  - [ ] Dejar escrito que emite **también con `External`**, regenerando el pulso,
+  - [x] Dejar escrito que emite **también con `External`**, regenerando el pulso,
         y por qué: un solo generador para los dos modos.
-- [ ] Task: Nota fechada en `tech-stack.md` — el pulso sale por el look-ahead
+- [~] Task: Nota fechada en `tech-stack.md` — el pulso sale por el look-ahead
   - [ ] El clock de salida se sella hacia el futuro como las notas, con el mismo
         `TempoMap`. La alternativa —reenviar el tick entrante al vuelo— queda
         descartada por escrito, por la misma razón que ya se descartó para la
