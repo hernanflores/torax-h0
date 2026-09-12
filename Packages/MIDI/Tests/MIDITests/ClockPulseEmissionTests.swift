@@ -149,6 +149,36 @@ final class ClockPulseEmissionTests: XCTestCase {
 
     // MARK: - Con maestro externo
 
+    /// Diagnóstico: una corrección de fase publicada en vuelo tiene que
+    /// desplazar los pulsos siguientes.
+    func testPhaseCorrectionShiftsPulsesAtThreadLevel() {
+        let recorder = PulseRecorder()
+        let handoff = ClockHandoff()
+        handoff.publish(quarterNoteNanoseconds: 500_000_000, accumulatedCorrectionNanoseconds: 0)
+
+        let thread = SchedulerThread(
+            configuration: makeConfiguration(),
+            clock: handoff,
+            clockPulseHandler: { recorder.record($0) }
+        ) { _, _, _, _, _, _ in }
+
+        thread.start()
+        wait(for: recorder, until: 8)
+        let before = recorder.count
+        handoff.publish(
+            quarterNoteNanoseconds: 500_000_000, accumulatedCorrectionNanoseconds: 10_000_000)
+        wait(for: recorder, until: before + 12)
+        thread.stop()
+
+        // **Se mide desde antes de la frontera**: el salto está en el hueco entre
+        // el último pulso sellado con el origen viejo y el primero con el nuevo,
+        // así que empezar a medir en el pulso siguiente lo salta entero.
+        let after = intervals(of: Array(recorder.recorded.dropFirst(max(0, before - 2))))
+        XCTAssertTrue(
+            after.contains { $0 > 25_000_000 },
+            "la corrección de fase no llegó al pulso: \(after.map { Int($0 / 1_000) })")
+    }
+
     /// Con un maestro a la mitad de tempo, el pulso emitido se estira en la
     /// misma proporción que los Steps (FR7): lo convierte el mismo `TempoMap`.
     func testPulseFollowsASlowerExternalMaster() {
