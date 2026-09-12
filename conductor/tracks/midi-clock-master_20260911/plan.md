@@ -20,7 +20,7 @@ probado.
 **Sin medición de jitter** (NFR4), por la suspensión del 2026-09-02. Se sustituye
 por la escucha larga de la Fase 6.
 
-## FASE 1: LA DECISIÓN, ESCRITA ANTES DEL CÓDIGO
+## FASE 1: LA DECISIÓN, ESCRITA ANTES DEL CÓDIGO [checkpoint: d8acc52]
 
 - [x] Task: Nota fechada en `product.md` — la app pasa a ser maestro — `679cd45`
   - [x] Enmendar la nota del 2026-09-03: «La app no emite clock» deja de ser
@@ -35,7 +35,7 @@ por la escucha larga de la Fase 6.
         entrada.
   - [x] Corregir la frase de `MIDIMessage`: los tres mensajes de System Real-Time
         pasan a emitirse.
-- [~] Task: Phase Verification & Checkpoint (Refer to `workflow.md`)
+- [x] Task: Phase Verification & Checkpoint (Refer to `workflow.md`)
 
 ## FASE 2: EL GENERADOR DE PULSO
 
