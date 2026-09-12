@@ -51,6 +51,10 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 ## Interaction Model
 
 - **Controlador MIDI = entrada primaria.** Knobs para parámetros continuos; pads para el pool tonal. **Un pad es un grado de la escala, no una altura fija**: los catorce primeros dan dos octavas alineadas de la escala vigente y dos mueven el registro entero, así que qué suena depende de Scale y Root y no del número que envía el controlador. Detalle en la nota del 2026-08-31 de la Pre Spec.
+- **Pitch y Harmony transforman el pool que suena, no el pool.** Los pads
+  editan y muestran el pool base; los knobs 14 y 15 lo transponen en grados de
+  la escala (Pitch) o mueven un pitch por clic (Harmony), y lo que suena se lee
+  en pantalla. Ver la nota del 2026-09-12 en *MVP Scope*.
 - **Pantalla = feedback + edición secundaria.** Muestra estado (pasos activos, pool tonal, Cycle en curso) y expone lo que no cabe en knobs: Scale, guardado, mapeos.
 - **El Note Repeater es una capa sobre el ritmo, no un ritmo.** Añade triggers
   extra detrás de cada Pulse y **no toca Steps, Pulses ni Rotate**: el reparto
@@ -320,7 +324,7 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 
 - Acordes polifónicos simultáneos (Style *Poly*) — explícitamente fuera de scope en la Pre Spec.
 - ~~Patterns, Banks; guardado/Autosave~~; **Backup Project**. *(Múltiples Tracks salieron de aquí el 2026-09-01: la v2 rebanada 1 entregó dieciséis, que el 2026-09-02 pasaron a **doce** por legibilidad de los anillos — ver la nota del Core Model. Patterns, Banks, Autosave y Save/Reload salen el 2026-09-07: los entrega la v2 rebanada 4 — ver la nota de abajo. **Backup Project se queda**: exportar e importar por la app Files es UI de documentos, no modelo.)*
-- ~~Note Repeater (Repeats/Time/Ramp/Pace)~~; Harmony; Voicing/Style; Range/Phrase; ~~LFO~~ y Random Modulation. *(Cycles salió de aquí el 2026-09-02: la v2 rebanada 3 lo entrega — hasta dieciséis por Track, recorridos a cada vuelta del anillo. El Note Repeater sale el 2026-09-07: lo entrega la v2 rebanada 5 — ver la nota de abajo. **Del LFO sale la mitad el 2026-09-08**: la v2 rebanada 6 lo entrega sobre velocity, y solo sobre velocity; **Random Modulation se queda** — ver la nota de abajo.)*
+- ~~Note Repeater (Repeats/Time/Ramp/Pace)~~; ~~Harmony~~; Voicing/Style; Range/Phrase; ~~LFO~~ y Random Modulation. *(Cycles salió de aquí el 2026-09-02: la v2 rebanada 3 lo entrega — hasta dieciséis por Track, recorridos a cada vuelta del anillo. El Note Repeater sale el 2026-09-07: lo entrega la v2 rebanada 5 — ver la nota de abajo. **Del LFO sale la mitad el 2026-09-08**: la v2 rebanada 6 lo entrega sobre velocity, y solo sobre velocity; **Random Modulation se queda** — ver la nota de abajo. **Harmony sale el 2026-09-12**, junto con el giro de Pitch que transpone el pool: los entrega `pitch-harmony_20260912` — ver la nota de abajo.)*
 - Ableton Link, MIDI Program Change, encadenado de Patterns.
 
 > **Nota del 2026-09-07 — Patterns, Banks y guardado salen de «Fuera de v1».**
@@ -438,6 +442,30 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > preset del BeatStep Pro, así que Ctrl All, Temp y la lectura transitoria
 > grande no los alcanzan — el coste está escrito en la Pre Spec y se paga el día
 > que tengan knob.
+
+> **Nota del 2026-09-12 — Pitch y Harmony salen de «Fuera de v1».** Los entrega
+> `pitch-harmony_20260912`, con el algoritmo del PRD
+> `conductor/Pitch_Harmony_PRD.docx` y el vocabulario y el modelo del proyecto.
+> Son los dos primeros `TrackParameter` de la familia Tonal, en los knobs 14 y 15
+> (CC 75 y 76), que `knob-layout_20260912` había dejado libres.
+>
+> **Pitch transpone el pool entero en grados de la escala**, ±28, con freno
+> atómico si alguna altura saldría de 0–127. **Harmony mueve un pitch del pool
+> por clic**, en round robin, sin cruces ni choques y con histéresis. Los dos
+> son de cada Cycle y se guardan con él. La desviación de la Pre Spec —grados y
+> no semitonos— está escrita allí.
+>
+> **No hay Reset Harmony.** Harmony se limpia al editar el pool con un pad y al
+> cambiar Scale o Root; Pitch se conserva.
+>
+> **Dos limitaciones aceptadas.** Bajo **Ctrl All** Harmony reutiliza la mecánica
+> de base + desplazamiento, así que **pierde la histéresis**: un clic arriba y
+> uno abajo vuelven a la base. Bajo **Temp** no: cada clic da un paso en cada
+> Cycle activo con su propio estado. Los dos gestos tratan Harmony distinto, y
+> los dos devuelven el estado exacto al soltar.
+>
+> **Sin medición de jitter**: cambia el *qué* suena, no el *cuándo*, y el pool que
+> suena se calcula en el hilo de control.
 
 ## Success Criteria
 
