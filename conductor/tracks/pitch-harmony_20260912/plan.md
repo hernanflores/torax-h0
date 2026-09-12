@@ -24,13 +24,13 @@ test de no regresión.
 
 ## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
 
-- [ ] Task: Anotar Pitch y Harmony en la Pre Spec
-  - [ ] Nota fechada en `Pre Spec Torax H-0.md`, sección *Tonal*: Pitch transpone
+- [x] Task: Anotar Pitch y Harmony en la Pre Spec — 9ada5fd
+  - [x] Nota fechada en `Pre Spec Torax H-0.md`, sección *Tonal*: Pitch transpone
         en **grados de escala**, no en «semitonos dentro del marco tonal», con la
         razón: dos semitonos cuantizados pueden dar la misma nota.
-  - [ ] Harmony: round robin con histéresis, sin cruces ni choques. **Sin Reset
+  - [x] Harmony: round robin con histéresis, sin cruces ni choques. **Sin Reset
         Harmony**: se limpia al editar el pool o cambiar Scale o Root.
-  - [ ] Fijar vocabulario: pitch del pool, no *voice*. Pitch y Harmony sin
+  - [x] Fijar vocabulario: pitch del pool, no *voice*. Pitch y Harmony sin
         traducir.
 - [ ] Task: Sacar Harmony de «Fuera de v1» en `product.md`
   - [ ] Nota fechada en *MVP Scope* e *Interaction Model*: Pitch y Harmony
@@ -182,7 +182,7 @@ test de no regresión.
         3 y 4 pitches en major, minor y pentatonic, con giros lentos y rápidos y
         cambios de sentido. Registrar casos abruptos o estancados en
         `device-verification.md`.
-  - [ ] Temp y Ctrl All con Pitch y Harmony. Guardar, recargar y comprobar que
+  - [x] Temp y Ctrl All con Pitch y Harmony. Guardar, recargar y comprobar que
         suena igual.
 - [ ] Task: Cobertura y suite completa
 - [ ] Task: Pull Request a `main`
