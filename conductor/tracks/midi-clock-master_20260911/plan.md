@@ -113,7 +113,7 @@ por la escucha larga de la Fase 6.
         transporte solo lo envía.
 - [x] Task: Phase Verification & Checkpoint
 
-## FASE 5: EL PULSO SIGUE AL MAESTRO, Y AL TEMPO QUE CAMBIA
+## FASE 5: EL PULSO SIGUE AL MAESTRO, Y AL TEMPO QUE CAMBIA [checkpoint: f9c3f85]
 
 - [x] Task: Tests de tempo en vuelo — `f9c3f85`
   - [x] Cambiar el tempo interno con el transporte corriendo cambia la separación
@@ -134,7 +134,7 @@ por la escucha larga de la Fase 6.
         `dropFirst` se saltaba. Se discriminó publicando a la vez un tempo
         distinto: el espaciado sí cambiaba, así que el hilo leía el handoff y lo
         sospechoso era la medición. Corregido en el mismo commit.
-- [~] Task: Phase Verification & Checkpoint
+- [x] Task: Phase Verification & Checkpoint
 
 ## FASE 6: COBERTURA, DISPOSITIVO Y CIERRE
 
