@@ -39,18 +39,20 @@ por la escucha larga de la Fase 6.
 
 ## FASE 2: EL GENERADOR DE PULSO
 
-- [ ] Task: Tests de `ClockPulseScheduler` (rojo)
-  - [ ] A 120 BPM los ticks caen cada 20 833 333 ns, y el índice *n* cae en `n ×`
+- [x] Task: Tests de `ClockPulseScheduler` (rojo) — `e046e4b`
+  - [x] A 120 BPM los ticks caen cada 20 833 333 ns, y el índice *n* cae en `n ×`
         esa cantidad desde el origen (FR2).
-  - [ ] Avanzar dos horizontes consecutivos entrega cada tick **exactamente una
+  - [x] Avanzar dos horizontes consecutivos entrega cada tick **exactamente una
         vez**, sin hueco ni repetición en el borde (FR3).
-  - [ ] Un horizonte que no avanza no entrega nada.
-  - [ ] Un horizonte que salta varias negras entrega todos los ticks intermedios,
+  - [x] Un horizonte que no avanza no entrega nada.
+  - [x] Un horizonte que salta varias negras entrega todos los ticks intermedios,
         en orden.
-  - [ ] Con el tempo cambiado a mitad, los ticks anteriores conservan su instante
+  - [x] Con el tempo cambiado a mitad, los ticks anteriores conservan su instante
         y los siguientes se separan según el tempo nuevo (FR10).
-  - [ ] El tipo es trivial y `Sendable`, sin asignaciones en el camino (NFR1).
-- [ ] Task: Implementar `ClockPulseScheduler` en `Packages/MIDI`
+  - [x] El tipo es trivial y `Sendable`, sin asignaciones en el camino (NFR1).
+  - [x] Añadido sobre el plan: 600 negras seguidas sin deriva, que es el fallo
+        propio de este generador y no lo cubre ningún test de ventana.
+- [~] Task: Implementar `ClockPulseScheduler` en `Packages/MIDI`
   - [ ] Marca de agua por índice de tick, igual que `LookAheadScheduler` con los
         Steps.
   - [ ] Trabaja en tiempo de rejilla; la conversión a tiempo de reloj es de quien
