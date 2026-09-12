@@ -38,16 +38,28 @@ Trece de los dieciséis mueven un parámetro del Track.
 | 10 | 79 | Repeats |
 | 11 | 80 | Time |
 | 12 | 81 | Ramp |
-| 13 | 82 | **Cycle en edición** del Track seleccionado |
+| 13 | 82 | **Sin asignar.** Se ignora en silencio |
 | 14 | 83 | Pace |
-| 15–16 | 84–85 | **Sin asignar.** Se ignoran en silencio |
+| 15 | 84 | **Sin asignar.** Se ignora en silencio |
+| 16 | 85 | **Cycle en edición** del Track seleccionado |
 
-El knob 13 mueve el cursor de edición del Track seleccionado. **Cuántos Cycles
+El knob 16 mueve el cursor de edición del Track seleccionado. **Cuántos Cycles
 están activos no se toca aquí**, sino en la pantalla — la nota del 2026-09-02 en
 la Pre Spec explica por qué el gesto de CTRL se partió en dos.
 
-Los dos libres están declarados a propósito, no olvidados: su sitio es de v2
+Los libres están declarados a propósito, no olvidados: su sitio es de v2
 —Accent, Voicing, Range—. Girarlos no hace nada y no es un error.
+
+> **Nota del 2026-09-12 — el Cycle en edición se fue al knob 16.** Estaba en el
+> 13 desde el 2026-09-05, y la nota de aquel día decía que separarlo de los
+> parámetros «dice con la mano lo que el modelo ya decía». Lo decía a medias: el
+> knob de al lado sigue siendo el knob de al lado, y con los cuatro del Note
+> Repeater dentro la fila ya no tenía frontera visible.
+>
+> En la esquina lo separan **dos knobs libres**, un hueco que la mano nota sin
+> mirar. El CC 82 queda libre en este paso; la fase siguiente se lo da a Delay.
+>
+> Track `knob-layout_20260912`.
 
 > **Nota del 2026-09-07 — entran los cuatro del Note Repeater.** Repeats, Time,
 > Ramp y Pace ocupan los CC 79, 80, 81 y 83, saltando el 82 porque ahí está el

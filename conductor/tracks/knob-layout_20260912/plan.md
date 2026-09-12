@@ -8,7 +8,32 @@ cuarta verifica en el aparato.
 **Sin fase de jitter** (NFR4): no se mueve ningún instante, y la medición está
 suspendida desde el 2026-09-02.
 
-## FASE 1: El mapeo por defecto
+> **Nota del 2026-09-12 — las dos primeras fases cambiaron de orden al empezar.**
+> El plan movía primero los trece parámetros y después el knob del Cycle. No se
+> puede: Delay pasa al CC 82, que es donde está hoy el Cycle, y `hasConflict`
+> trata ese solape como un mapeo que significa dos cosas
+> (`ControlMapping.swift:322`). El Cycle se muda primero y el bloque de
+> parámetros aterriza sobre un 82 ya libre.
+
+## FASE 1: El Cycle en edición al knob 16
+
+- [x] Task: Tests rojos del knob del Cycle
+  - [ ] En `ControlMappingTests`: `editingCycleController` devuelve el CC 85
+  - [ ] En `MappingNumbersTests`: `hasConflict` con un parámetro en 85, y sin
+        conflicto con uno en 82
+  - [ ] En `EditingCycleInputTests`: el CC 85 mueve el cursor de edición y el 82
+        mueve Delay
+  - [ ] Correr y confirmar que fallan
+- [x] Task: Mover `editingCycleKnobOffset` de 12 a 15
+  - [ ] Confirmar verde
+- [ ] Task: Temp y Ctrl All acotan los trece knobs de parámetro y excluyen el 85
+  - [ ] Revisar `TempModifierInputTests`, `CtrlAllModifierInputTests` y
+        `EditingCycleTouchPathTests`
+  - [ ] Corregir las referencias a «knob 10», al CC 79 y al CC 82 que queden en
+        código, comentarios y tests
+- [ ] Task: Phase Verification & Checkpoint
+
+## FASE 2: El mapeo de los trece parámetros
 
 - [ ] Task: Tests rojos del nuevo orden de los trece parámetros
   - [ ] En `ControlMappingTests`: cada `TrackParameter` contra su CC nuevo —74
@@ -22,24 +47,6 @@ suspendida desde el 2026-09-02.
   - [ ] Escribir la tabla de FR1 y FR2
   - [ ] Confirmar verde
 - [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`)
-
-## FASE 2: El Cycle en edición al knob 16
-
-- [ ] Task: Tests rojos del knob del Cycle
-  - [ ] En `ControlMappingTests`: `editingCycleController` devuelve el CC 85
-  - [ ] En `MappingNumbersTests`: `hasConflict` con un parámetro en 85, y sin
-        conflicto con uno en 82
-  - [ ] En `EditingCycleInputTests`: el CC 85 mueve el cursor de edición y el 82
-        mueve Delay
-  - [ ] Correr y confirmar que fallan
-- [ ] Task: Mover `editingCycleKnobOffset` de 12 a 15
-  - [ ] Confirmar verde
-- [ ] Task: Temp y Ctrl All acotan los trece knobs de parámetro y excluyen el 85
-  - [ ] Revisar `TempModifierInputTests`, `CtrlAllModifierInputTests` y
-        `EditingCycleTouchPathTests`
-  - [ ] Corregir las referencias a «knob 10», al CC 79 y al CC 82 que queden en
-        código, comentarios y tests
-- [ ] Task: Phase Verification & Checkpoint
 
 ## FASE 3: Preset y documentación
 

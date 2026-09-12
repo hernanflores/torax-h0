@@ -160,13 +160,13 @@ final class MappingAdoptionTests: XCTestCase {
 
     /// El knob del Cycle no está en `assignments` —no es un `TrackParameter`—,
     /// sale del bloque de knobs más un desplazamiento. Así que mover el bloque
-    /// lo mueve, y este test impide que alguien lo deje clavado en el 82.
+    /// lo mueve, y este test impide que alguien lo deje clavado en el 85.
     func testTheCycleKnobFollowsTheKnobBlock() {
         let input = makeInput()
 
         input.adopt(mapping: .init(assignments: [:], knobBlock: MIDIController(20)!))
 
-        XCTAssertEqual(input.mapping.editingCycleController, MIDIController(32)!)
+        XCTAssertEqual(input.mapping.editingCycleController, MIDIController(35)!)
     }
 
     // MARK: -

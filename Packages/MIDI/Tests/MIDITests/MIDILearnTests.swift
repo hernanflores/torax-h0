@@ -241,7 +241,7 @@ final class MIDILearnTests: XCTestCase {
         input.receive(knob(MIDIController(20)!, by: 1))
 
         XCTAssertEqual(input.mapping.knobBlock, MIDIController(20)!)
-        XCTAssertEqual(input.mapping.editingCycleController, MIDIController(32)!)
+        XCTAssertEqual(input.mapping.editingCycleController, MIDIController(35)!)
     }
 
     // MARK: - Un control no puede significar dos cosas

@@ -83,11 +83,14 @@ final class PresetMappingTests: XCTestCase {
         XCTAssertEqual(mapping.parameter(for: try XCTUnwrap(MIDIController(83))), .pace)
     }
 
-    /// Y el 82 sigue siendo el Cycle en edición: la tirada le pasa por encima
-    /// sin tocarlo.
-    func testTheCycleKnobKeptItsControllerWhenTheRepeaterArrived() throws {
-        XCTAssertEqual(mapping.editingCycleController?.number, 82)
-        XCTAssertNil(mapping.parameter(for: try XCTUnwrap(MIDIController(82))))
+    /// **El knob del Cycle no lo toca ningún parámetro**, esté donde esté. Se
+    /// pregunta al mapeo en vez de escribir el número: el 2026-09-07 el test
+    /// decía 82 y el 2026-09-12 dice 85, y lo que se comprueba no ha cambiado
+    /// ninguna de las dos veces.
+    func testNoParameterLandsOnTheCycleKnob() throws {
+        let cycleKnob = try XCTUnwrap(mapping.editingCycleController)
+        XCTAssertNil(mapping.parameter(for: cycleKnob))
+        XCTAssertFalse(mapping.hasConflict)
     }
 
     /// **Las tres familias siguen sin pisarse.** Los knobs van del 70 al 85, los
@@ -116,7 +119,7 @@ final class PresetMappingTests: XCTestCase {
 
         XCTAssertEqual(moved.declaredNumbers.knobs.first, 20)
         XCTAssertEqual(moved.declaredNumbers.knobs.last, 35)
-        XCTAssertEqual(moved.editingCycleController?.number, 32)
+        XCTAssertEqual(moved.editingCycleController?.number, 35)
     }
 
     /// El intercambio del 2026-09-05, escrito aparte porque es lo que se pidió.
@@ -172,15 +175,25 @@ final class PresetMappingTests: XCTestCase {
 
     // MARK: - El knob del Cycle en edición
 
-    /// **El Cycle en edición vive en el knob 13, CC 82** desde el 2026-09-05.
+    /// **El Cycle en edición vive en el knob 16, CC 85** desde el 2026-09-12.
     ///
-    /// Estaba en el knob 10 (CC 79), contiguo a los nueve parámetros. Separarlo
-    /// de la fila dice con la mano lo que ya decía el modelo: los nueve mueven
-    /// un parámetro del Cycle y éste mueve *a cuál* de ellos se apunta, que es
-    /// una operación de otro orden.
-    func testTheEditingCycleKnobIsTheThirteenth() throws {
-        XCTAssertEqual(mapping.editingCycleController?.number, 82)
-        XCTAssertEqual(mapping.declaredNumbers.knobs[12], 82)
+    /// Estaba en el 13 (CC 82) desde el 2026-09-05, y antes en el 10 (CC 79),
+    /// contiguo a los nueve parámetros. Aquella mudanza quería que dejara de
+    /// parecer el décimo parámetro, y estando adyacente sólo lo conseguía a
+    /// medias: seguía siendo el knob de al lado. En la esquina lo separan dos
+    /// knobs libres, que es un hueco que la mano nota sin mirar.
+    ///
+    /// Lo que se comprueba sigue siendo lo de siempre: mueve *a cuál* de los
+    /// parámetros se apunta, no un parámetro.
+    func testTheEditingCycleKnobIsTheSixteenth() throws {
+        XCTAssertEqual(mapping.editingCycleController?.number, 85)
+        XCTAssertEqual(mapping.declaredNumbers.knobs[15], 85)
+    }
+
+    /// **El CC 82 deja de ser el knob del Cycle**, y en la Fase 2 pasa a ser
+    /// Delay. Aquí sólo se comprueba que ya no apunta al cursor de edición.
+    func testTheThirteenthKnobIsNoLongerTheCycleKnob() throws {
+        XCTAssertNotEqual(mapping.editingCycleController?.number, 82)
     }
 
     /// **El CC 79 dejó de ser el knob del Cycle, y desde el 2026-09-07 es
@@ -209,7 +222,7 @@ final class PresetMappingTests: XCTestCase {
             assignments: [.steps: 20],
             knobBlock: try XCTUnwrap(MIDIController(20))
         )
-        XCTAssertEqual(moved.editingCycleController?.number, 32)
+        XCTAssertEqual(moved.editingCycleController?.number, 35)
     }
 
     // MARK: - Los step buttons

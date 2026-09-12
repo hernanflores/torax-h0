@@ -1,8 +1,8 @@
 {
   "name": "Torax H-0",
   "device": "Arturia BeatStep Pro",
-  "version": 4,
-  "updated": "2026-09-07",
+  "version": 5,
+  "updated": "2026-09-12",
   "channel": "cualquiera; la app no filtra por canal",
   "encoders": {
     "mode": "Relative #2",
@@ -80,27 +80,27 @@
         "note": "Curva de velocity a traves de las repeticiones. Es knob propio y no secundario de CTRL: el BeatStep Pro no tiene CTRL."
       },
       {
-        "knob": 13,
-        "cc": 82,
-        "parameter": "Cycle en edicion",
-        "note": "Mueve el cursor de edicion del Track seleccionado (cycles_20260901). Cuantos Cycles estan activos se ajusta en pantalla. Estaba en el knob 10 (CC 79) hasta el 2026-09-05: separado de los nueve parametros porque no mueve un parametro sino a cual de ellos se apunta."
-      },
-      {
         "knob": 14,
         "cc": 83,
         "parameter": "Pace",
         "note": "Curva de espaciado a lo largo de la tirada. Salta el knob 13, que es el Cycle en edicion."
-      }
-    ],
-    "free": [
-      {
-        "knob": 15,
-        "cc": 84,
-        "parameter": null
       },
       {
         "knob": 16,
         "cc": 85,
+        "parameter": "Cycle en edicion",
+        "note": "Mueve el cursor de edicion del Track seleccionado (cycles_20260901). Cuantos Cycles estan activos se ajusta en pantalla. Estuvo en el knob 10 (CC 79) hasta el 2026-09-05 y en el 13 (CC 82) hasta el 2026-09-12: se va a la esquina del bloque, separado de los parametros por dos knobs libres, porque estar al lado de ellos seguia pareciendo uno mas."
+      }
+    ],
+    "free": [
+      {
+        "knob": 13,
+        "cc": 82,
+        "parameter": null
+      },
+      {
+        "knob": 15,
+        "cc": 84,
         "parameter": null
       }
     ],

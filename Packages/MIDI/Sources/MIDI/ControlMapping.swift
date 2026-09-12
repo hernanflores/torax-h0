@@ -141,21 +141,33 @@ public struct ControlMapping: Equatable, Sendable {
     }
 
     /// Posición del knob del Cycle en edición dentro del bloque, contando desde
-    /// cero: el decimotercero.
+    /// cero: el decimosexto.
     ///
     /// **Es un dato del mapeo y no un desplazamiento escondido en el código.**
     /// Hasta el 2026-09-05 el CC se calculaba como `knobBlock.number + 9` dentro
     /// de la propiedad de abajo, y eso hacía que mover un knob fuera un cambio de
     /// aritmética en vez de un cambio de tabla — que es exactamente lo que un
     /// mapeo existe para evitar.
-    public static let editingCycleKnobOffset = 12
+    public static let editingCycleKnobOffset = 15
 
-    /// CC del knob que mueve el Cycle en edición: el decimotercero del bloque.
+    /// CC del knob que mueve el Cycle en edición: el último del bloque.
     ///
     /// **No es un `TrackParameter`, y por eso no está en `assignments`.** Los
-    /// nueve primeros knobs mueven parámetros del Cycle; este mueve *a cuál* de
+    /// trece primeros knobs mueven parámetros del Cycle; este mueve *a cuál* de
     /// ellos se está apuntando, que es una operación de otro orden. Meterlo en
     /// la tabla obligaría a inventarle un caso al enum que el modelo no tiene.
+    ///
+    /// > **Nota del 2026-09-12 — se fue al knob 16, CC 85.** Estaba en el 13
+    /// > desde el 2026-09-05, pegado a los parámetros, y la nota de aquel día
+    /// > decía que separarlo «dice con la mano lo que el modelo ya decía». Lo
+    /// > decía a medias: el knob de al lado sigue siendo el knob de al lado, y
+    /// > con los cuatro del Note Repeater dentro la fila ya no tenía frontera
+    /// > visible donde acababan los parámetros.
+    /// >
+    /// > En la esquina del bloque lo separan **dos knobs libres**, que es un
+    /// > hueco que la mano nota sin mirar, y el CC 82 queda para Delay — que es
+    /// > lo que el reordenamiento de `knob-layout_20260912` necesitaba: la fila
+    /// > de abajo entera para el card Groove.
     ///
     /// > **Nota del 2026-09-05 — se movió del knob 10 al 13.** Estaba en el 79,
     /// > pegado a los nueve parámetros, y este comentario decía que «el sitio
