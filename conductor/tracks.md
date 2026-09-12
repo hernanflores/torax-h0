@@ -1295,7 +1295,7 @@ en cualquier momento.
 
 ---
 
-- [~] **Track: Pitch y Harmony — transformar el pool dentro de la Scale**
+- [x] **Track: Pitch y Harmony — transformar el pool dentro de la Scale** — *entregado y verificado en iPad el 2026-09-12*; **sin medición de jitter**. [PR #59](https://github.com/hernanflores/torax-h0/pull/59)
   *Link: [conductor/tracks/pitch-harmony_20260912/index.md](./tracks/pitch-harmony_20260912/index.md)*
 
   **Los dos controles Tonal que la Pre Spec nombra y la v1 dejó fuera.** Pitch
@@ -1307,6 +1307,21 @@ en cualquier momento.
   vocabulario ni el modelo.** Nada de *voice*, *lattice* ni `TonalState`: el
   estado vive en `Cycle`, los pads siguen editando el pool base y Reset Harmony
   queda descartado.
+
+  **Bajo Ctrl All Harmony no depende del camino**: se recalcula como estado base
+  más el neto de clics, que es lo que hace exacta la vuelta. Bajo Temp sí: da un
+  paso en cada Cycle con su propio estado. Los dos gestos devuelven Pitch literal
+  al soltar, porque su freno depende de Harmony, que puede moverse durante el
+  hold.
+
+  **El mapeo guardado anota qué parámetros conocía la app.** Sin esa lista no se
+  distingue un parámetro que el usuario dejó sin control de uno que el fichero
+  no tenía; solo el segundo recibe su CC de fábrica al abrir.
+
+  **Cobertura `Engine` 98,77%, `MIDI` 92,41%, `Persistence` 97,60%.** En `MIDI`
+  falla también en `main` `TransportTests.testStopNoteOffIsStampedAheadOfAnythingAlreadyScheduled`,
+  ajeno al track. Verificación en dispositivo en una sola pasada al final:
+  [`device-verification.md`](./tracks/pitch-harmony_20260912/device-verification.md).
 
 ---
 

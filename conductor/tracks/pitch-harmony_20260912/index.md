@@ -1,6 +1,6 @@
 # Track: Pitch y Harmony — transformar el pool dentro de la Scale
 
-**ID:** `pitch-harmony_20260912` · **Type:** Feature · **Status:** new
+**ID:** `pitch-harmony_20260912` · **Type:** Feature · **Status:** complete
 
 **Los dos controles Tonal que la Pre Spec nombra y la v1 dejó fuera.** Pitch
 transpone el pool entero en grados de la escala del Cycle; Harmony mueve un pitch
@@ -20,6 +20,7 @@ cambiar Scale o Root; Pitch se conserva.
 -   [Specification](./spec.md)
 -   [Implementation Plan](./plan.md)
 -   [Metadata](./metadata.json)
+-   [Verificación en dispositivo](./device-verification.md)
 
 ## Project Context
 

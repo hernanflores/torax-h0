@@ -196,7 +196,7 @@ test de no regresión.
         se revisa en la FASE 8.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) — manual diferida a la FASE 8
 
-## FASE 8: DISPOSITIVO Y CIERRE
+## FASE 8: DISPOSITIVO Y CIERRE [checkpoint: d6f1b6b]
 
 > **Enmienda del 2026-09-12 — las verificaciones manuales se juntan aquí.** El
 > usuario no tiene el iPad disponible por el momento. Desde la FASE 5 los
@@ -230,6 +230,6 @@ test de no regresión.
         `TransportTests.testStopNoteOffIsStampedAheadOfAnythingAlreadyScheduled`,
         que falla igual en `main` (`49ecd02`). `Persistence` 64 tests, 97,60%.
         App compila para iPadOS y simulador.
-- [ ] Task: Pull Request a `main`
-- [ ] Task: Actualizar el registro y cerrar el track
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Pull Request a `main` — #59
+- [x] Task: Actualizar el registro y cerrar el track
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
