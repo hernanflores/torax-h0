@@ -75,12 +75,12 @@ test de no regresión.
   - [x] Refinamiento en curso: `ParameterChange` anuncia Pitch, y el CC 75 de
         fábrica con su fila en `preset/` se adelantan desde la FASE 5 — un caso
         nuevo de `TrackParameter` rompe los tests del preset si no.
-- [ ] Task: Pitch sobrevive al disco (FR22, FR23)
-  - [ ] Tests (Red): ida y vuelta de `CycleRecord` con `pitch`. Un JSON anterior
+- [x] Task: Pitch sobrevive al disco (FR22, FR23) — 8988d76
+  - [x] Tests (Red): ida y vuelta de `CycleRecord` con `pitch`. Un JSON anterior
         sin el campo decodifica con 0. La lista de claves de
         `RecordRoundTripTests` incluye la nueva.
-  - [ ] Tests (Red): copiar Pattern o Cycle conserva `pitch`.
-  - [ ] Implementación (Green): `ProjectRecord`.
+  - [x] Tests (Red): copiar Pattern o Cycle conserva `pitch`.
+  - [x] Implementación (Green): `ProjectRecord`.
 - [ ] Task: Scale o Root conservan Pitch (FR13)
   - [ ] Tests (Red): cambiar el marco (`ControlInput`, reencuadre) deja `pitch`
         intacto y el pool que suena en la escala nueva.
