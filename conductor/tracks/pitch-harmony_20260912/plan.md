@@ -53,15 +53,15 @@ test de no regresión.
 
 ## FASE 3: PITCH
 
-- [ ] Task: `pitch` dentro del `Cycle` y el pool que suena (FR1, FR2, FR4, FR7, NFR1)
-  - [ ] Tests (Red): AC 1 (C4 E4 G4 con +1 dan D4 F4 A4, con −1 dan B3 D4 F4).
+- [x] Task: `pitch` dentro del `Cycle` y el pool que suena (FR1, FR2, FR4, FR7, NFR1) — 1985664
+  - [x] Tests (Red): AC 1 (C4 E4 G4 con +1 dan D4 F4 A4, con −1 dan B3 D4 F4).
         `pitch(atStep:)` recorre el pool que suena.
-  - [ ] Tests (Red): AC 7, intervalos en grados conservados (propiedad).
-  - [ ] Tests (Red): AC 11, con `pitch` 0 la salida es idéntica al pool base.
-  - [ ] Tests (Red): `_isPOD(Cycle.self)` sigue siendo cierto. `with(...)`
+  - [x] Tests (Red): AC 7, intervalos en grados conservados (propiedad).
+  - [x] Tests (Red): AC 11, con `pitch` 0 la salida es idéntica al pool base.
+  - [x] Tests (Red): `_isPOD(Cycle.self)` sigue siendo cierto. `with(...)`
         conserva `pitch` (se extienden `CycleEditsKeepEverythingElseTests` y
         similares).
-  - [ ] Implementación (Green): campo en `Cycle`, pool que suena derivado en
+  - [x] Implementación (Green): campo en `Cycle`, pool que suena derivado en
         `init`, `with(pitch:)`.
 - [ ] Task: `TrackParameter.pitch` (FR4, FR5, FR6, FR19)
   - [ ] Tests (Red): rango −28…+28, freno en extremos. Freno atómico si algún
