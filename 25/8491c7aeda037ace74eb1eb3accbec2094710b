@@ -1,0 +1,3 @@
+Task: Card Tonal y valor transitorio (FASE 7, FR18, FR19, FR20)
+Cambios: FamilyReadout .tonal escribe secondaryDetail 'Pitch +1 · Harmony E4 F4 A4' con TrackParameter.value(in:). TonalCard recibe una fila de parameters (rows(for: .tonal)) bajo el pool base. El valor transitorio (ParameterChange) ya anunciaba Pitch y Harmony desde las FASES 3 y 4; un giro bloqueado devuelve el mismo Cycle y no se anuncia.
+Tests: FamilyReadoutTests (segunda línea Tonal; Groove sigue sin ella). App compila (xcodebuild exit 0); la vista no se mide, se revisa en la FASE 8.
