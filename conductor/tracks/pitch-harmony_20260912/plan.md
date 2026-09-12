@@ -185,9 +185,10 @@ test de no regresión.
   - [x] Pitch como `±n`. Harmony muestra el pool que suena. Giro bloqueado sin
         aviso. La regla de texto vive en `Engine` con tests y la vista solo
         dibuja.
-- [ ] Task: Rejilla `scale` y pads (FR21)
-  - [ ] Tests (Red) en `Engine`/`MIDI`: la iluminación sale del pool base.
-  - [ ] `ScaleScreen`: pool base en la rejilla, pool que suena en el readout.
+- [x] Task: Rejilla `scale` y pads (FR21) — ad76c2b
+  - [x] Tests (Red) en `Engine`/`MIDI`: la iluminación sale del pool base. Pasaron a la
+        primera (vino con `togglingPitch`): quedan como regresión.
+  - [x] `ScaleScreen`: pool base en la rejilla, pool que suena en el readout.
 - [ ] Task: Compilar la app para iPadOS y revisar en simulador
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
