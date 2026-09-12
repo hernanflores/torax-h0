@@ -1,0 +1,4 @@
+Task: Estado de Harmony en el Cycle (FASE 4, FR1, NFR1)
+Cambios: tipo Harmony (8 offsets Int8 en UInt64 + cursor UInt8, 9 bytes, POD); Cycle.harmony; pool que suena = grado + harmony[i] + Pitch (PitchPool.sounding); freno de Pitch cuenta con Harmony; TonalFrame.midiDegrees y PitchPool.degree(at:in:) como helpers.
+Archivos: Sources/Engine/Harmony.swift, PitchOffset.swift, Shape.swift; Tests/EngineTests/HarmonyInCycleTests.swift
+Engine 994 tests verdes.
