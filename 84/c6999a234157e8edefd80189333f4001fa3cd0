@@ -1,0 +1,28 @@
+Task: Emitir start y stop en las puertas del transporte (Fase 4, midi-clock-master_20260911)
+
+Qué cambia
+- startPlaying captura el instante de arranque una sola vez, lo usa para el
+  gridOrigin y manda .start sellado ahí (FR4).
+- El SchedulerThread recibe ya el clockPulseHandler: el hilo sella el tick y el
+  cierre solo lo envía como .timingClock (FR1).
+- stop() captura silenceHostTime una sola vez y manda .stop con ese mismo
+  instante, el que lleva el barrido de apagado (FR5).
+
+Las tres decisiones que quedan escritas en el código
+- start va en el instante de arranque y no más tarde: el hilo cuenta sus ticks
+  desde ahí o desde más tarde —el presupuesto de adelanto solo empuja el origen
+  hacia el futuro— así que el Start no puede quedar detrás del primer tick. Un
+  esclavo que recibe clock antes del Start lo descarta y pierde la primera negra.
+- start sale también con reloj externo, y es deliberado (FR8): lo que se anuncia
+  es que esta app arranca, disparada por quien sea.
+- stop y el apagado comparten un solo instante. silenceHostTime se recalcula en
+  cada lectura, y sellar el stop en «ahora» lo pondría por delante de los note-on
+  ya programados: el esclavo pararía mientras la app todavía suena.
+
+Verificación
+- swift test --package-path Packages/MIDI --filter ClockMasterTransportTests
+  -> Executed 8 tests, with 0 failures.
+- Suite completa: 21 + 954 tests, 0 fallos.
+
+Ficheros modificados
+- Packages/MIDI/Sources/MIDI/Transport.swift
