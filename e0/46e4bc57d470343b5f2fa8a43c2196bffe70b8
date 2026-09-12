@@ -1,0 +1,31 @@
+Task: Tests de ClockPulseScheduler (rojo) (Fase 2, midi-clock-master_20260911)
+
+Qué añade
+- Packages/MIDI/Tests/MIDITests/ClockPulseSchedulerTests.swift, 16 casos sobre un
+  tipo que todavía no existe. Fallan al compilar: «cannot find type
+  'ClockPulseScheduler' in scope».
+
+Qué fija cada bloque
+- La rejilla del pulso: 24 ticks son exactamente una negra, el tick 0 cae en el
+  origen y a 120 BPM el tick 1 cae en 20 833 333 ns (FR1, FR2).
+- La deriva, que es el fallo propio de este generador y no lo cubre ningún test
+  de ventana: 600 negras seguidas tienen que caer en múltiplos exactos de
+  500 ms. Un tick dura 20,83 ms, así que acumular sumando separaría el pulso del
+  maestro en silencio.
+- El solape entre ventanas, copiado del contrato de LookAheadSchedulerTests:
+  límite superior exclusivo, dos ventanas consecutivas entregan cada tick una
+  sola vez, y un horizonte repetido, hacia atrás o negativo no entrega nada. El
+  negativo es el caso del presupuesto de adelanto de Delay.
+- El tempo cambiando en vuelo (FR10): reanclar conserva la marca de agua y el
+  instante del tick aún no entregado, el tempo nuevo separa solo los siguientes,
+  reanclar al mismo tempo no mueve nada, y tres reanclajes seguidos no acumulan
+  error.
+- NFR1: _isPOD sobre el tipo, porque se copia en el hilo del scheduler.
+
+El porqué
+- El paso 3 del Task Workflow exige tests en rojo antes de implementar. El
+  contrato se escribe aquí, sobre el patrón ya probado de LookAheadScheduler, y
+  la implementación se limita a cumplirlo.
+
+Ficheros creados
+- Packages/MIDI/Tests/MIDITests/ClockPulseSchedulerTests.swift
