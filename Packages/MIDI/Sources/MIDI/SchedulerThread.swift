@@ -81,6 +81,17 @@ public final class SchedulerThread: @unchecked Sendable {
             _ gateNanoseconds: Int64, _ hostTime: UInt64
         ) -> Void
 
+    /// Se invoca por cada pulso de clock, desde el hilo del scheduler.
+    ///
+    /// **Solo lleva el instante**, porque un tick de System Real-Time no lleva
+    /// canal ni datos: el mensaje es el status y nada más. Quien lo implemente
+    /// hereda las reglas de tiempo real.
+    ///
+    /// **`nil` es la vía del arnés de medición**, que mide la rejilla y no el
+    /// producto: sin handler no se genera ni un pulso, así que el arnés no puede
+    /// ponerse a hacer de maestro por su cuenta.
+    public typealias ClockPulseHandler = @Sendable (_ hostTime: UInt64) -> Void
+
     private let configuration: SchedulerConfiguration
     private let material: SchedulerMaterial
 
@@ -98,6 +109,10 @@ public final class SchedulerThread: @unchecked Sendable {
     private let mutes: MuteMask?
     private let handler: StepHandler
     private let repetitionHandler: RepetitionHandler?
+
+    /// Quién recibe el pulso de clock, o `nil` si la app no lo emite por esta
+    /// vía.
+    private let clockPulseHandler: ClockPulseHandler?
 
     /// Lo que se sabe del maestro externo, o `nil` si nadie sigue a ninguno.
     ///
@@ -128,6 +143,7 @@ public final class SchedulerThread: @unchecked Sendable {
         pattern: Pattern? = nil,
         mutes: MuteMask? = nil,
         clock: ClockHandoff? = nil,
+        clockPulseHandler: ClockPulseHandler? = nil,
         repetitionHandler: RepetitionHandler? = nil,
         handler: @escaping StepHandler
     ) {
@@ -140,6 +156,7 @@ public final class SchedulerThread: @unchecked Sendable {
             pattern: pattern,
             mutes: mutes,
             clock: clock,
+            clockPulseHandler: clockPulseHandler,
             repetitionHandler: repetitionHandler,
             handler: handler)
     }
@@ -153,9 +170,11 @@ public final class SchedulerThread: @unchecked Sendable {
         pattern: Pattern? = nil,
         mutes: MuteMask? = nil,
         clock: ClockHandoff? = nil,
+        clockPulseHandler: ClockPulseHandler? = nil,
         repetitionHandler: RepetitionHandler? = nil,
         handler: @escaping StepHandler
     ) {
+        self.clockPulseHandler = clockPulseHandler
         self.repetitionHandler = repetitionHandler
         self.clock = clock
         self.pattern = pattern
@@ -186,7 +205,7 @@ public final class SchedulerThread: @unchecked Sendable {
         let thread = Thread {
             [
                 configuration, material, pattern, handoff, playhead, cyclePlaybackClock,
-                mutes, clock, handler, repetitionHandler, running,
+                mutes, clock, clockPulseHandler, handler, repetitionHandler, running,
             ] in
             SchedulerThread.run(
                 configuration: configuration,
@@ -197,6 +216,7 @@ public final class SchedulerThread: @unchecked Sendable {
                 cyclePlaybackClock: cyclePlaybackClock,
                 mutes: mutes,
                 clock: clock,
+                clockPulseHandler: clockPulseHandler,
                 handler: handler,
                 repetitionHandler: repetitionHandler,
                 running: running,
@@ -263,6 +283,7 @@ public final class SchedulerThread: @unchecked Sendable {
         cyclePlaybackClock: CyclePlaybackClock?,
         mutes: MuteMask?,
         clock: ClockHandoff?,
+        clockPulseHandler: ClockPulseHandler?,
         handler: StepHandler,
         repetitionHandler: RepetitionHandler?,
         running: AtomicFlag,
@@ -308,6 +329,12 @@ public final class SchedulerThread: @unchecked Sendable {
         var followedQuarterNote: UInt32 = 0
         var appliedCorrection: Int32 = 0
 
+        // **El pulso de clock, cuando la app hace de maestro.** Mide en tiempo de
+        // rejilla, como los Steps, y se convierte a tiempo de reloj con el mismo
+        // `tempoMap`: por eso seguir a un maestro externo estira también el pulso
+        // que sale, sin nada que sincronizar entre los dos.
+        var pulses = ClockPulseScheduler(tempo: configuration.timeline.tempo)
+
         while running.value {
             let wallNanoseconds = Int64(
                 HostClock.nanoseconds(fromHostTicks: HostClock.now() &- startHostTicks))
@@ -341,6 +368,25 @@ public final class SchedulerThread: @unchecked Sendable {
             let elapsedNanoseconds =
                 tempoMap.gridNanoseconds(atWallNanoseconds: wallNanoseconds) - budgetNanoseconds
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
+
+            // **Los pulsos van con el mismo horizonte que los Steps**, así que
+            // el clock y las notas de una misma ventana salen sellados contra la
+            // misma cuenta. Sin handler no se genera ninguno: es la vía del
+            // arnés de medición.
+            if let clockPulseHandler {
+                for tick in pulses.advance(toHorizon: horizon) {
+                    // El offset del tick es relativo al origen de la rejilla, y
+                    // el presupuesto es lo que separa ese origen del arranque —
+                    // la misma cuenta que hace el Step de abajo.
+                    let wallNanoseconds = tempoMap.wallNanoseconds(
+                        forGridNanoseconds: budgetNanoseconds
+                            + pulses.nanosecondOffset(forTick: tick))
+                    clockPulseHandler(
+                        startHostTicks
+                            &+ HostClock.hostTicks(
+                                fromNanoseconds: UInt64(max(0, wallNanoseconds))))
+                }
+            }
 
             scheduler.advance(
                 toHorizon: horizon,
