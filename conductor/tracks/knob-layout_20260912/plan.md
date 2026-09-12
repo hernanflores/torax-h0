@@ -65,18 +65,19 @@ suspendida desde el 2026-09-02.
 
 ## FASE 3: Preset y documentación
 
-- [ ] Task: Actualizar `preset/torax-h0.beatstep-pro.json`
+- [x] Task: Actualizar `preset/torax-h0.beatstep-pro.json` `6a32c08` — adelantada
+      a la Fase 2 para no dejar `PresetFileTests` roja entre fases
   - [ ] Tabla nueva de knobs, `version` 5 y `updated` 2026-09-12
   - [ ] Nota por knob en los que se mueven, y la nota de bloque que sustituye a
         la del 2026-09-05
-- [ ] Task: Actualizar `preset/README.md`
+- [x] Task: Actualizar `preset/README.md` `6a32c08` — adelantada, por lo mismo
   - [ ] Tabla de los dieciséis knobs
   - [ ] Nota fechada del 2026-09-12 que revierte la del 2026-09-05, con la regla
         nueva escrita: una fila de knobs por card (NFR2)
   - [ ] Tabla de síntomas: el rango de los knobs es 70–85
-- [ ] Task: Nota fechada en `ControlMapping.swift`
+- [x] Task: Nota fechada en `ControlMapping.swift` `6a32c08`
   - [ ] En `beatStepPro` y en `editingCycleKnobOffset`
-- [ ] Task: Corregir `Pre Spec Torax H-0.md` donde nombra los CC del Note
+- [~] Task: Corregir `Pre Spec Torax H-0.md` donde nombra los CC del Note
       Repeater
 - [ ] Task: `PresetFileTests` verde sin relajar ninguna aserción (NFR1)
 - [ ] Task: Phase Verification & Checkpoint
