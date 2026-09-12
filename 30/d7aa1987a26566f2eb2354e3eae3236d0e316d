@@ -1,0 +1,4 @@
+Task: Harmony se limpia (FASE 4, FR13, AC 9)
+Cambios: Cycle.togglingPitch(_:) y Cycle.reframed(to:) limpian Harmony si el pool o el marco cambian, y conservan Pitch; ControlInput.press(padAt:) y setFrame los usan. with(...) sigue copiando literal (persistencia, copias, restauración). Pads de octava no limpian.
+Tests: HarmonyClearingTests (Engine, Red primero) y HarmonyClearingInputTests (MIDI, de punta a punta).
+Engine 1022 verdes; MIDI 988, solo fallos conocidos (VirtualLoopbackTests, TransportTests).
