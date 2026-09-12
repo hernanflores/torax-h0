@@ -1,0 +1,5 @@
+Task: TrackParameter.harmony (FASE 4, FR8, FR20)
+Cambios: case .harmony en Tonal; applying da pasos (harmonyMoved); valor = pool que suena con octava ('D4 F4 A4'), 'empty' sin pool; displacementRange nil y value(of:) 0 (sin posición; Temp y Ctrl All se ajustan en FASE 6); ParameterChange anuncia Harmony solo si el pool no cambió; clave 'harmony' para MIDI Learn.
+Refinamiento en curso (como con Pitch): CC 76 de fábrica, fila en preset/README.md y en el JSON; ya no quedan knobs libres (se retira testTurningAFreeKnobPublishesNothing, que no tiene sobre qué iterar).
+Tests actualizados: fixtures con dos pitches en ControlInputTests, CtrlAllTakesOverInputTests, SelectedTrackEditingTests, TrackParameterTests, ParameterChangeTests (Harmony no mueve nada con menos de dos, FR12).
+Engine 1013 verdes. MIDI: solo VirtualLoopbackTests (flake) y TransportTests (falla también en main).
