@@ -1,0 +1,26 @@
+Task: Nota fechada en product.md — la app pasa a ser maestro (Fase 1, midi-clock-master_20260911)
+
+Qué cambia
+- La nota del 2026-09-03 decía «La app no emite clock. La sincronía va en un solo
+  sentido: nada externo puede seguir a Torax H-0. Ser maestro es otra decisión y
+  no está tomada». Queda tachada, no borrada: registró un estado real del
+  producto y la enmienda tiene que poder leerse contra ella.
+- Se añade la nota del 2026-09-11 con la decisión tomada y su alcance: clock a 24
+  ppqn, Start y Stop, al mismo destino que las notas.
+
+El porqué
+- El paso 8 del Task Workflow exige escribir la desviación antes de implementar.
+  Este track entrega literalmente lo contrario de lo que product.md promete, así
+  que sin esta nota el documento mentiría durante todo el desarrollo.
+- Quedan escritas las tres decisiones que no son obvias y que el código no puede
+  explicar por sí mismo: el pulso se genera en vez de reenviarse (mismo criterio
+  que tech-stack.md tomó para la entrada), con External se retransmite
+  regenerando (un solo generador para los dos modos, con su coste de latencia
+  delante), y no hay interruptor (emitir no puede interrumpir nada de lo que la
+  app hace).
+- El alcance excluido se escribe aquí y no solo en el spec: Continue, Song
+  Position, Program Change, destino de clock separado y filtrar el aparato de
+  origen del pulso.
+
+Ficheros modificados
+- conductor/product.md
