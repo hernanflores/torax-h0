@@ -1,0 +1,26 @@
+Task: Mover el knob del Cycle en edición al 16 (CC 85)
+
+Fase 1 del track knob-layout_20260912.
+
+Qué cambió:
+- ControlMapping.editingCycleKnobOffset: 12 -> 15, con nota fechada del
+  2026-09-12 explicando qué sustituye a la del 2026-09-05.
+- preset/torax-h0.beatstep-pro.json: version 5, updated 2026-09-12, el Cycle
+  pasa a knob 16 / CC 85 y los libres quedan en 82 y 84 (estado intermedio: el
+  83 lo suelta Pace en la Fase 2).
+- preset/README.md: tabla de knobs y nota del 2026-09-12.
+- Tests: PresetMappingTests, MappingNumbersTests, MIDILearnTests y
+  MappingAdoptionTests.
+
+El porqué: el Cycle no mueve un parámetro sino a cuál de ellos se apunta. El
+2026-09-05 se separó de la fila para decirlo con la mano, pero el knob de al
+lado sigue siendo el knob de al lado. Dos knobs libres de por medio es un hueco
+que se nota sin mirar, y libera el CC 82 para Delay.
+
+Decisión de método: los tests preguntan el número al mapeo en vez de escribirlo.
+El que escribía 82 habría pasado a comprobar un CC cualquiera sin avisar.
+
+Verificación: swift test en Packages/MIDI, 984 tests. Fallan sólo
+VirtualLoopbackTests (flake conocido clientCreationFailed(-50), issue #44) y
+TransportTests.testStopNoteOffIsStampedAheadOfAnythingAlreadyScheduled, que
+falla igual en main sin estos cambios (3 de 3 ejecuciones).
