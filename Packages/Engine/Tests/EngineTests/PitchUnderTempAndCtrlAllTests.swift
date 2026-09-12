@@ -36,6 +36,14 @@ final class PitchUnderTempAndCtrlAllTests: XCTestCase {
         (0..<track.activeCount).compactMap { track.cycle(at: $0)?.pitchOffset.degrees }
     }
 
+    private func pattern(repeating cycle: Cycle) -> Pattern {
+        var pattern = Pattern()
+        for index in 0..<Pattern.trackCount {
+            pattern = pattern.replacing(Track(cycle), at: index)
+        }
+        return pattern
+    }
+
     // MARK: - Temp
 
     /// Temp iguala Pitch en los Cycles activos y devuelve cada uno al soltar.
@@ -107,6 +115,21 @@ final class PitchUnderTempAndCtrlAllTests: XCTestCase {
         let back = offset.apply(-1, to: .pitch, in: pattern)
         XCTAssertEqual(back.track(at: 1).map(offsets), [27], "el clic de vuelta no movió nada")
         XCTAssertEqual(back.track(at: 0).map(offsets), [28])
+    }
+
+    /// Un giro bloqueado en todos los Cycles no consume el giro inverso.
+    func testCtrlAllReversesImmediatelyAfterPitchIsBlockedEverywhere() {
+        let start = pattern(repeating: cycle([124], offset: 2))  // G9 al sonar
+        var offset = CtrlAllOffset()
+
+        let blocked = offset.apply(1, to: .pitch, in: start)
+        XCTAssertEqual(blocked, start)
+        XCTAssertTrue(offset.isEmpty)
+
+        let reversed = offset.apply(-1, to: .pitch, in: blocked)
+        for index in 0..<Pattern.trackCount {
+            XCTAssertEqual(reversed.track(at: index).map(offsets), [1], "Track \(index + 1)")
+        }
     }
 
     /// Ctrl All también restaura literal.

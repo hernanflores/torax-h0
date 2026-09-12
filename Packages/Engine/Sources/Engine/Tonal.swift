@@ -303,12 +303,18 @@ public struct TonalFrame: Equatable, Sendable {
         let count = mask.nonzeroBitCount
         let remainder = degree % count
         let index = remainder < 0 ? remainder + count : remainder
-        let octave = (degree - index) / count
+        let (indexedDegree, subtractionOverflow) = degree.subtractingReportingOverflow(index)
+        guard !subtractionOverflow else { return nil }
+        let octave = indexedDegree / count
 
         var seen = 0
         for pitchClass in 0..<12 where (mask >> UInt16(pitchClass)) & 1 == 1 {
             if seen == index {
-                let value = octave * 12 + pitchClass
+                let (octaveBase, multiplicationOverflow) = octave.multipliedReportingOverflow(
+                    by: 12)
+                guard !multiplicationOverflow else { return nil }
+                let (value, additionOverflow) = octaveBase.addingReportingOverflow(pitchClass)
+                guard !additionOverflow else { return nil }
                 return Pitch.validRange.contains(value) ? Pitch(unchecked: value) : nil
             }
             seen += 1

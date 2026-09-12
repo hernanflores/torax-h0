@@ -62,6 +62,11 @@ final class TonalFrameDegreeTests: XCTestCase {
         XCTAssertNil(cMajor.pitch(atDegree: bottom - 1))
     }
 
+    /// El grado entero mas bajo cae fuera de MIDI sin desbordar la resta.
+    func testTheLowestDegreeHasNoPitch() {
+        XCTAssertNil(cMajor.pitch(atDegree: Int.min))
+    }
+
     /// **Con Root distinto de Do, las alturas graves bajo el Root siguen
     /// contando.** En Re mayor, C#-1 (1) pertenece a la octava anterior a la del
     /// primer Re y es el grado justo debajo de D-1 (2).

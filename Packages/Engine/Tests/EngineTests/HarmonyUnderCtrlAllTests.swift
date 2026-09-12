@@ -40,6 +40,14 @@ final class HarmonyUnderCtrlAllTests: XCTestCase {
         pattern.track(at: track)?.cycle(at: 0)?.harmony
     }
 
+    private func pattern(repeating cycle: Cycle) -> Pattern {
+        var pattern = Pattern()
+        for index in 0..<Pattern.trackCount {
+            pattern = pattern.replacing(Track(cycle), at: index)
+        }
+        return pattern
+    }
+
     // MARK: - Desplazar
 
     /// Cada Track da los pasos desde su propia base.
@@ -88,6 +96,24 @@ final class HarmonyUnderCtrlAllTests: XCTestCase {
         var offset = CtrlAllOffset()
         _ = offset.apply(40, to: .harmony, in: pattern)
         XCTAssertEqual(offset.amount(of: .harmony), 40)
+    }
+
+    /// Un giro bloqueado en todos los Cycles no consume el giro inverso.
+    func testCtrlAllReversesImmediatelyAfterHarmonyIsBlockedEverywhere() {
+        let edge = cycle([125, 127])
+        let start = pattern(repeating: edge)
+        var offset = CtrlAllOffset()
+
+        let blocked = offset.apply(1, to: .harmony, in: start)
+        XCTAssertEqual(blocked, start)
+        XCTAssertTrue(offset.isEmpty)
+
+        let reversed = offset.apply(-1, to: .harmony, in: blocked)
+        for index in 0..<Pattern.trackCount {
+            XCTAssertEqual(
+                harmony(reversed, track: index), edge.harmonyMoved(by: -1),
+                "Track \(index + 1)")
+        }
     }
 
     // MARK: - Soltar

@@ -234,6 +234,7 @@ public struct CtrlAllOffset: Equatable, Sendable {
     {
         guard delta != 0 else { return pattern }
 
+        let previous = self
         self = capturing(parameter, from: pattern).advancing(parameter, by: delta)
         let amount = amount(of: parameter)
 
@@ -251,6 +252,7 @@ public struct CtrlAllOffset: Equatable, Sendable {
             }
             moved = moved.replacing(updated, at: trackIndex)
         }
+        if moved == pattern { self = previous }
         return moved
     }
 
