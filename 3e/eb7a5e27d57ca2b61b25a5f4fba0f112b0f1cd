@@ -16,3 +16,14 @@ preset del repositorio con el mapeo, asi que dejarlas para despues habria dejado
 esa suite roja entre dos fases.
 
 Verificacion: swift test --filter PresetFileTests, 6 tests, 0 fallos.
+
+--- Verificación de fase (Fase 3), 2026-09-12 ---
+
+Comando: swift test --filter PresetFileTests (6 tests, 0 fallos), que es lo que
+fija que el JSON, el README y ControlMapping digan los mismos números.
+
+Verificación manual: lectura de las dos tablas de preset/README.md con el
+controlador delante, contrastadas con los giros ya verificados en la Fase 2, y
+de la corrección fechada de la Pre Spec.
+
+Confirmación del usuario: «ok».
