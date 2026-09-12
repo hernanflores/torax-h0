@@ -1,0 +1,27 @@
+Task: Tests de start y stop en Transport (rojo) (Fase 4, midi-clock-master_20260911)
+
+Qué añade
+- Packages/MIDI/Tests/MIDITests/ClockMasterTransportTests.swift, 8 casos. Seis
+  fallan —no sale ni un start, ni un stop, ni un pulso— y los dos negativos pasan
+  por construcción, que es lo que se espera de ellos.
+
+Qué fija
+- Play emite start una sola vez y el transporte emite pulso mientras suena
+  (FR4, FR1).
+- start no puede quedar sellado detrás del primer pulso (FR4): un esclavo que
+  recibe clock antes del arranque lo descarta y se pierde la primera negra.
+- Stop emite stop una sola vez (FR5), y va sellado en el MISMO instante que el
+  all notes off del apagado — no en «ahora», que lo pondría por delante de los
+  note-on ya programados y pararía al esclavo mientras la app todavía suena.
+- Parar lo ya parado no manda nada, y parado no queda clock en vacío (FR6).
+- Con External, el start lo anuncia la app cuando arranca de verdad, disparada
+  por el maestro (FR8).
+
+Por qué a 300 BPM
+- El pulso cae cada 8,3 ms, así que los casos que esperan 24 pulsos no alargan la
+  suite. Mismo criterio que ExternalStartTests, y por la misma razón se agrupan
+  en una sola clase: cada reproducción crea un hilo de prioridad máxima y
+  acumularlos empeora el flake de CoreMIDI.
+
+Ficheros creados
+- Packages/MIDI/Tests/MIDITests/ClockMasterTransportTests.swift
