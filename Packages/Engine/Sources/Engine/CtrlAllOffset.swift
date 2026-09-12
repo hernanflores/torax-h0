@@ -40,6 +40,15 @@ public struct CtrlAllOffset: Equatable, Sendable {
     /// Por parámetro tocado, cuánto se lleva desplazado.
     private var amounts: [TrackParameter: Int]
 
+    /// El estado de Harmony capturado de cada Cycle, desde el 2026-09-12
+    /// (`pitch-harmony_20260912`, FR16).
+    ///
+    /// **Aparte de `bases` porque no es un número.** Harmony no tiene posición:
+    /// su base son los offsets y el cursor, y lo único que devuelve lo que sonaba
+    /// es el estado entero. `bases[.harmony]` sigue existiendo, con ceros, para que
+    /// Harmony cuente como capturado igual que los demás.
+    private var harmonyBases: [Position: Harmony]
+
     /// Dónde vive un Cycle: en qué Track y en qué hueco.
     ///
     /// **Un par y no dos diccionarios anidados.** Lo que se guarda es plano
@@ -55,6 +64,7 @@ public struct CtrlAllOffset: Equatable, Sendable {
     public init() {
         bases = [:]
         amounts = [:]
+        harmonyBases = [:]
     }
 
     /// Si no hay nada desplazado.
@@ -110,17 +120,22 @@ public struct CtrlAllOffset: Equatable, Sendable {
         guard bases[parameter] == nil else { return self }
 
         var captured: [Position: Int] = [:]
+        var harmonies: [Position: Harmony] = [:]
         for trackIndex in 0..<Pattern.trackCount {
             guard let track = pattern.track(at: trackIndex) else { continue }
             for cycleIndex in 0..<track.activeCount {
                 guard let cycle = track.cycle(at: cycleIndex) else { continue }
                 captured[Position(track: trackIndex, cycle: cycleIndex)] = cycle.value(
                     of: parameter)
+                if parameter == .harmony {
+                    harmonies[Position(track: trackIndex, cycle: cycleIndex)] = cycle.harmony
+                }
             }
         }
 
         var updated = self
         updated.bases[parameter] = captured
+        if parameter == .harmony { updated.harmonyBases = harmonies }
         return updated
     }
 
@@ -231,7 +246,8 @@ public struct CtrlAllOffset: Equatable, Sendable {
                     let base = base(of: parameter, track: trackIndex, cycle: cycleIndex)
                 else { continue }
                 updated = updated.replacing(
-                    cycle.setting(parameter, to: base + amount), at: cycleIndex)
+                    displaced(cycle, parameter, base: base, at: position(trackIndex, cycleIndex)),
+                    at: cycleIndex)
             }
             moved = moved.replacing(updated, at: trackIndex)
         }
@@ -258,11 +274,36 @@ public struct CtrlAllOffset: Equatable, Sendable {
                 guard let track = restored.track(at: position.track),
                     let cycle = track.cycle(at: position.cycle)
                 else { continue }
+                // Harmony vuelve a su estado capturado; el resto, a su número.
+                let returned =
+                    parameter == .harmony
+                    ? cycle.with(harmony: harmonyBases[position] ?? cycle.harmony)
+                    : cycle.restoring(parameter, to: value)
                 restored = restored.replacing(
-                    track.replacing(cycle.restoring(parameter, to: value), at: position.cycle),
-                    at: position.track)
+                    track.replacing(returned, at: position.cycle), at: position.track)
             }
         }
         return restored
+    }
+
+    /// El Cycle con el desplazamiento acumulado aplicado **desde su base**.
+    ///
+    /// Para casi todos es `setting(_:to:)` con base + desplazamiento. **Harmony
+    /// da pasos desde su estado capturado**: tantos como el neto, en su sentido.
+    /// Es la misma exactitud de ida y vuelta, y el precio aceptado es que bajo
+    /// Ctrl All Harmony no depende del camino (FR16).
+    private func displaced(
+        _ cycle: Cycle, _ parameter: TrackParameter, base: Int, at position: Position
+    )
+        -> Cycle
+    {
+        let amount = amount(of: parameter)
+        guard parameter == .harmony else { return cycle.setting(parameter, to: base + amount) }
+        let captured = cycle.with(harmony: harmonyBases[position] ?? cycle.harmony)
+        return captured.with(harmony: captured.harmonyMoved(by: amount))
+    }
+
+    private func position(_ track: Int, _ cycle: Int) -> Position {
+        Position(track: track, cycle: cycle)
     }
 }
