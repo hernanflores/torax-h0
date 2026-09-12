@@ -412,6 +412,7 @@ struct ContentView: View {
             TonalCard(
                 frame: model.frame,
                 pool: model.poolNames,
+                parameters: rows(for: .tonal).first ?? [],
                 isActive: family == .tonal
             )
 

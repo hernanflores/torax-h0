@@ -174,7 +174,12 @@ public struct FamilyReadout: Equatable, Sendable {
             value = "\(track.frame.root) \(track.frame.scale.name)"
             headline = "\(track.frame.root) \(track.frame.scale.name)"
             detail = "Pool · \(track.pool.countDescription)"
-            secondaryDetail = nil
+            // **Pitch y Harmony, en su propia línea** (`pitch-harmony_20260912`).
+            // Con la misma regla que su valor transitorio: Pitch con signo, Harmony
+            // con lo que suena. El pool de arriba sigue siendo el base.
+            secondaryDetail =
+                "Pitch \(TrackParameter.pitch.value(in: track)) "
+                + "· Harmony \(TrackParameter.harmony.value(in: track))"
         }
     }
 }
