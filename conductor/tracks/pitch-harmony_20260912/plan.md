@@ -108,13 +108,16 @@ test de no regresión.
         pitch que suena; toda altura en el marco y en 0–127; mismo estado y
         mismos deltas dan misma salida.
   - [x] Implementación (Green): paso en `Engine`, sin UI ni MIDI.
-- [ ] Task: `TrackParameter.harmony` (FR8, FR20)
-  - [ ] Tests (Red): familia `.tonal`, `description` «Harmony». El valor escrito
+- [x] Task: `TrackParameter.harmony` (FR8, FR20) — 2705df3
+  - [x] Tests (Red): familia `.tonal`, `description` «Harmony». El valor escrito
         es el pool que suena (`D4 F4 A4`), y con pool vacío `empty`.
-  - [ ] Tests (Red): Pitch mantiene freno atómico con offsets de Harmony activos.
-  - [ ] Implementación (Green): caso en `applying(_:to:)` y `value(in:)`. Decidir
+  - [x] Tests (Red): Pitch mantiene freno atómico con offsets de Harmony activos.
+  - [x] Implementación (Green): caso en `applying(_:to:)` y `value(in:)`. Decidir
         y documentar `displacementRange` y `value(of:)` para Harmony según
         FASE 6.
+  - [x] Refinamiento en curso: CC 76 de fábrica y su fila en `preset/`
+        adelantados desde la FASE 5, como con Pitch. Decidido: `displacementRange`
+        `nil` y `value(of:)` 0 — Harmony no tiene posición; la FASE 6 lo trata.
 - [ ] Task: Harmony se limpia (FR13, AC 9)
   - [ ] Tests (Red): insertar o quitar un pitch con pad limpia offsets y cursor y
         conserva `pitch`. Cambiar Scale o Root igual. Mover el registro de pads
