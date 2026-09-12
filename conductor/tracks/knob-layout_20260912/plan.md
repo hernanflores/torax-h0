@@ -91,5 +91,5 @@ suspendida desde el 2026-09-02.
   - [x] Los knobs 14 y 15 no hacen nada; el 16 mueve el Cycle en edición
   - [x] Temp y Ctrl All sobre un knob de cada fila
   - [x] Escribir `device-verification.md`
-- [~] Task: Pull Request a `main`
+- [x] Task: Pull Request a `main` — [PR #57](https://github.com/hernanflores/torax-h0/pull/57)
 - [ ] Task: Phase Verification & Checkpoint
