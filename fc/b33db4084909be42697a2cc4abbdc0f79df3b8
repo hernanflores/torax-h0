@@ -1,0 +1,4 @@
+Task: Harmony bajo Ctrl All — base + neto (FASE 6, FR16)
+Cambios: CtrlAllOffset captura el estado de Harmony por Cycle (harmonyBases) al capturar .harmony; cada clic recalcula cada Cycle como estado capturado + |neto| pasos; soltar devuelve el estado capturado. displaced(_:_:base:at:) concentra el caso.
+Hallazgo: los primeros tests pasaban por accidente al pasar siempre el Pattern original; se encadenan como en ControlInput, que pasa el Pattern ya movido.
+Tests: HarmonyUnderCtrlAllTests (sin histéresis explícito, +1−1 vuelve a la base, neto libre, restauración). Engine 1046 verdes.
