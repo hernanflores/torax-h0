@@ -90,11 +90,11 @@ test de no regresión.
 
 ## FASE 4: HARMONY — EL PASO
 
-- [ ] Task: Estado de Harmony en el `Cycle` (FR1, NFR1)
-  - [ ] Tests (Red): 8 offsets con signo y cursor, inline. `_isPOD(Cycle.self)`.
+- [x] Task: Estado de Harmony en el `Cycle` (FR1, NFR1) — 0a1d879
+  - [x] Tests (Red): 8 offsets con signo y cursor, inline. `_isPOD(Cycle.self)`.
         Defaults a 0. `with(...)` los conserva.
-  - [ ] Tests (Red): el pool que suena suma los offsets. AC 11 con estado limpio.
-  - [ ] Implementación (Green): valor `Harmony` inline (en el idioma de
+  - [x] Tests (Red): el pool que suena suma los offsets. AC 11 con estado limpio.
+  - [x] Implementación (Green): valor `Harmony` inline (en el idioma de
         `PitchPool`, huecos en un entero), campo en `Cycle`.
 - [ ] Task: Un paso de Harmony (FR8–FR12, NFR2)
   - [ ] Tests (Red): AC 4 literal (D4 E4 G4 → D4 F4 G4 → D4 F4 A4 → C4 F4 A4).
