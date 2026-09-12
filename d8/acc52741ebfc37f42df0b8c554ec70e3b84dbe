@@ -30,3 +30,26 @@ Ficheros modificados
 
 Verificación
 - swift build --package-path Packages/MIDI: Build complete.
+
+--- Phase Verification & Checkpoint — FASE 1: LA DECISIÓN, ESCRITA ANTES DEL CÓDIGO ---
+
+Tests automáticos (partición de CI, como manda workflow.md):
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    -> Executed 21 tests, with 1 test skipped and 0 failures
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    -> Executed 923 tests, with 0 failures
+  Sin aparición del flake clientCreationFailed(-50) en esta pasada.
+  swift build --package-path Packages/MIDI -> Build complete.
+
+Verificación manual (la fase es documental, así que es una lectura):
+  1. conductor/product.md: la nota del 2026-09-03 tachada y no borrada, con la
+     del 2026-09-11 debajo — alcance, retransmisión con External y su coste,
+     ausencia de interruptor, y lo que queda fuera.
+  2. conductor/tech-stack.md: enmienda «el clock también sale, y sale por el
+     look-ahead» — fórmula del tick, mismo TempoMap, descarte del reenvío al
+     vuelo, marca de agua, coste en el hilo de tiempo real y por qué el
+     generador va en MIDI.
+  3. Packages/MIDI/Sources/MIDI/MIDIMessage.swift: el comentario de
+     universalPacketWord ya no afirma que nada del producto los emite.
+
+Confirmación del usuario: «ok» (2026-09-11).
