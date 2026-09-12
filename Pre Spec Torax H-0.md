@@ -185,6 +185,40 @@ No cambia la estructura base: sobre cada Pulse añade triggers adicionales. Sirv
 - **Range + Phrase:** Range define cuánto varía la altura; Phrase elige una forma repetible de recorrer ese material. Es el LFO de pitch, no reemplaza el pool de notas.
 - **Voicing + Style:** Voicing define la cantidad de movimiento de voces; Style define el patrón temporal (polifónico o monofónico). El principio: subir una octava la voz más grave o bajar una la más aguda; los estilos deciden cómo alternar entre voicing original y desplazado.
 
+> **Nota del 2026-09-12 — Pitch y Harmony entran como knobs, y Pitch transpone
+> en grados, no en semitonos.** El track `pitch-harmony_20260912` implementa las
+> dos líneas de arriba. Toma el algoritmo del PRD
+> `conductor/Pitch_Harmony_PRD.docx` y deja fuera su vocabulario y su modelo de
+> datos.
+>
+> **Pitch transpone el pool entero un grado de la escala por clic**, no un
+> semitono. «Semitonos dentro del marco tonal» se contradice consigo mismo: un
+> semitono llevado a la nota permitida más cercana puede caer en la misma nota
+> que el anterior, así que el knob tendría pasos muertos y el pool podría
+> encoger. Contar en grados cumple la intención —«sigue en tonalidad»— sin ese
+> coste, conserva los intervalos entre pitches y coincide con los pads, donde
+> cada pad ya es un grado. El rango es ±28 grados, con freno atómico si alguna
+> altura saldría de 0–127.
+>
+> **Harmony mueve un pitch del pool por clic, en round robin.** Un cursor dice
+> cuál se intenta primero. Si ese pitch no puede moverse un grado en el sentido
+> del giro, se prueba el siguiente; el que se mueve deja el cursor en el de
+> después. **Sin cruces ni choques**: cada pitch queda estrictamente entre sus
+> vecinos, así que el pool sigue ordenado y el pitch *i* sigue siendo el
+> *i*-ésimo. **Con histéresis**: invertir el sentido no deshace el paso anterior.
+>
+> **No hay Reset Harmony.** El estado de Harmony se limpia al insertar o quitar
+> un pitch con un pad y al cambiar Scale o Root; Pitch se conserva en los dos
+> casos. **Los pads siguen editando el pool base**; Pitch y Harmony transforman
+> el pool que suena.
+>
+> **Pitch y el estado de Harmony son de cada Cycle**, como el resto de
+> parámetros, y se guardan con él.
+>
+> **El vocabulario queda fijado:** `Pitch`, `Harmony`, *pitch del pool*.
+> *Voice*, *voz* (que en el proyecto nombra al Track), *degree offset* y
+> *lattice* no se usan en código, en pantalla ni en los documentos.
+
 ### Control de Pitch: pool, no piano-roll
 
 El control **PITCH** determina el *pool* de notas que un Track puede usar; no escribe una melodía fija. Al pulsarlo, los 16 Value Buttons se comportan como teclado cromático, pero sólo están disponibles las notas permitidas por la Scale actual. Una nota activada entra al pool; una desactivada se excluye.
@@ -394,6 +428,10 @@ En la práctica: Steps largos contra una Phrase de 16 posiciones generan desfase
 | Harmony | Mueve una voz del acorde a la vez. |
 | Scale | Set de notas permitido (presets o escala de usuario). |
 | Root | Fundamental que transpone la Scale. |
+
+> **Nota del 2026-09-12 — «transponer semitonos» es transponer grados.** Ver la
+> nota del mismo día en *Tonal: pool, escala y movimiento*. Pitch y Harmony se
+> mueven con los knobs 14 y 15 (CC 75 y 76).
 
 > **Nota del 2026-09-04 — Temp: los parámetros se pueden mover sin escribirlos.**
 > La Pre Spec no lo tiene en absoluto: todo giro de knob de esta sección escribe
