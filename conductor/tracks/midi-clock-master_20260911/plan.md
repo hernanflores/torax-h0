@@ -89,18 +89,20 @@ por la escucha larga de la Fase 6.
 
 ## FASE 4: START Y STOP
 
-- [ ] Task: Tests de `start` y `stop` en `Transport` (rojo)
-  - [ ] `play()` emite `start` sellado en el origen de rejilla, y ningún tick
+- [x] Task: Tests de `start` y `stop` en `Transport` (rojo) — `55e9517`
+  - [x] `play()` emite `start` sellado en el instante de arranque, y ningún tick
         lleva timestamp anterior (FR4).
-  - [ ] `stop()` emite `stop` con el mismo `silenceHostTime` que el barrido de
+  - [x] `stop()` emite `stop` con el mismo `silenceHostTime` que el barrido de
         apagado, así que no adelanta a ningún note-on ya programado (FR5).
-  - [ ] Parar lo ya parado no emite nada, con el mismo criterio que la guarda de
+  - [x] Parar lo ya parado no emite nada, con el mismo criterio que la guarda de
         `stop()`.
-  - [ ] Con el transporte parado no sale ni un tick (FR6).
-  - [ ] Con `External`, `start` sale cuando arranca el transporte de verdad
+  - [x] Con el transporte parado no sale ni un tick (FR6).
+  - [x] Con `External`, `start` sale cuando arranca el transporte de verdad
         —disparado por el maestro— y no al recibir el `start` entrante (FR8).
-  - [ ] Sin destino seleccionado no se emite nada y nada falla (FR9).
-- [ ] Task: Emitir `start` y `stop` en las puertas del transporte
+  - [x] FR9 no lleva test propio: el envío se inyecta como cierre, así que «sin
+        destino» es el cierre que no hace nada, y eso es literalmente el `send`
+        de todos estos tests. Cubrirlo aparte sería probar el inyector.
+- [~] Task: Emitir `start` y `stop` en las puertas del transporte
   - [ ] Un solo sitio por mensaje: `startPlaying` y `stop()`, que ya son los
         caminos únicos.
   - [ ] El orden queda escrito en el código: `start` antes de que el hilo
