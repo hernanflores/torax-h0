@@ -60,3 +60,59 @@ public struct Harmony: Equatable, Sendable {
         Harmony(slots: slots, storedCursor: UInt8(clamping: cursor))
     }
 }
+
+extension Cycle {
+
+    /// El estado de Harmony tras `delta` clics: **un paso por clic**, en el
+    /// sentido del signo (FR8).
+    ///
+    /// Cada paso intenta primero el pitch del cursor y después los siguientes en
+    /// orden circular (FR9). El primero que puede moverse un grado se mueve, y
+    /// el cursor queda en el de detrás. Si ninguno puede, ese paso no cambia
+    /// nada — ni el cursor.
+    ///
+    /// **Un movimiento vale si lo que suena después, con Pitch aplicado, cae en
+    /// 0–127 y estrictamente entre sus dos vecinos** (FR10). Estrictamente
+    /// excluye a la vez el choque y el cruce, y es lo que mantiene el pool
+    /// ordenado: el pitch *i* sigue siendo el *i*-ésimo.
+    ///
+    /// **Con histéresis** (FR11): invertir el sentido es un paso más sobre el
+    /// cursor que haya, no deshacer el anterior. Con menos de dos pitches no
+    /// hay nada que mover (FR12).
+    ///
+    /// Se mide en grados y sin acotar al borde de MIDI, que es lo que decide si
+    /// un movimiento cabe. No es código de tiempo real.
+    func harmonyMoved(by delta: Int) -> Harmony {
+        let count = pool.count
+        guard count >= 2, delta != 0 else { return harmony }
+
+        let direction = delta > 0 ? 1 : -1
+        let edges = frame.midiDegrees
+        var state = harmony
+
+        func degree(_ index: Int) -> Int? {
+            pool.degree(at: index, in: frame).map {
+                $0 + state.offset(at: index) + pitchOffset.degrees
+            }
+        }
+
+        for _ in 0..<abs(delta) {
+            steps: for attempt in 0..<count {
+                let index = (state.cursor + attempt) % count
+                guard let current = degree(index) else { continue }
+                let candidate = current + direction
+
+                guard edges.contains(candidate) else { continue }
+                if index > 0, let below = degree(index - 1), candidate <= below { continue }
+                if index < count - 1, let above = degree(index + 1), candidate >= above {
+                    continue
+                }
+
+                state = state.with(offset: state.offset(at: index) + direction, at: index)
+                    .with(cursor: (index + 1) % count)
+                break steps
+            }
+        }
+        return state
+    }
+}
