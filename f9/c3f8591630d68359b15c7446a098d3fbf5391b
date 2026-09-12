@@ -35,3 +35,22 @@ Verificación
 Ficheros
 - Packages/MIDI/Tests/MIDITests/ClockMasterTempoTests.swift (nuevo)
 - Packages/MIDI/Tests/MIDITests/ClockPulseEmissionTests.swift (modificado)
+
+--- Phase Verification & Checkpoint — FASE 5: EL PULSO SIGUE AL MAESTRO, Y AL TEMPO QUE CAMBIA ---
+
+Tests automáticos (partición de CI):
+  Parte 1 -> Executed 21 tests, with 1 test skipped and 0 failures
+  Parte 2 -> Executed 960 tests, with 0 failures  (954 antes de la fase + 6 nuevos)
+  Sin aparición del flake clientCreationFailed(-50) en esta pasada.
+
+Verificación manual: la fase no cambia comportamiento —no hubo cambios de
+producción— así que se revisa el hallazgo y su discriminación:
+  1. El caso de la corrección de fase falló por cómo medía el test, no por el
+     código: dropFirst(before) se saltaba justo el intervalo que contiene el
+     salto.
+  2. Se discriminó publicando a la vez un tempo distinto: el espaciado sí
+     cambiaba (20,8 -> 16,6 ms), así que el hilo leía el handoff.
+  3. Queda cubierto que el knob, el Bank, el tempo del maestro y sus correcciones
+     llegan al pulso, y que el pulso nunca retrocede al cambiar de tempo.
+
+Confirmación del usuario: «Go» (2026-09-11).
