@@ -15,6 +15,8 @@ final class ParameterChangeTests: XCTestCase {
     /// de los siete tenga sitio donde moverse.
     private let track = Cycle(
         shape: Shape(steps: Steps(8)!, pulses: Pulses(4)!, division: .quarter),
+        // Un pool con sitio: Harmony no mueve nada con menos de dos pitches.
+        pool: PitchPool().inserting(Pitch(60)!).inserting(Pitch(67)!),
         groove: Groove(
             velocity: Velocity(64)!,
             sustain: Sustain(percent: 100)!,

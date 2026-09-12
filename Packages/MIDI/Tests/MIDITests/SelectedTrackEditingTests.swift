@@ -93,7 +93,8 @@ final class SelectedTrackEditingTests: XCTestCase {
         // defecto del 2026-08-31—.
         let midRange = Cycle(
             shape: Shape(steps: Steps(8)!, pulses: Pulses(4)!),
-            pool: PitchPool().inserting(Pitch(60)!),
+            // Dos pitches: con uno, Harmony no tiene nada que mover.
+            pool: PitchPool().inserting(Pitch(60)!).inserting(Pitch(67)!),
             groove: Groove(
                 velocity: Velocity(64)!,
                 sustain: Sustain(percent: 100)!,

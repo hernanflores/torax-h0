@@ -72,7 +72,7 @@ public struct ControlMapping: Equatable, Sendable {
         .ramp: 84,
         .pace: 85,
         // La fila de abajo, CC 70-77: el card Groove, en el orden del dominio.
-        // El 76 queda libre para Harmony y el 77 es el knob del Cycle en edición.
+        // El 77 es el knob del Cycle en edición.
         .velocity: 70,
         .sustain: 71,
         .probability: 72,
@@ -81,6 +81,7 @@ public struct ControlMapping: Equatable, Sendable {
         // Tonal cierra la fila detrás de Groove, en los dos knobs que
         // `knob-layout_20260912` dejó libres (`pitch-harmony_20260912`, FR14).
         .pitch: 75,
+        .harmony: 76,
     ])
 
     /// CC por defecto del primer knob; los dieciséis van seguidos desde ahí.

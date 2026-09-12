@@ -516,6 +516,7 @@ public struct ControlNumbersRecord: Codable, Equatable, Sendable {
         case .timing: "timing"
         case .delay: "delay"
         case .pitch: "pitch"
+        case .harmony: "harmony"
         }
     }
 

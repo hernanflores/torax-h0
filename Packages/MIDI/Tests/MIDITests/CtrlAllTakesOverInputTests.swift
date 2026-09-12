@@ -158,7 +158,9 @@ final class CtrlAllTakesOverInputTests: XCTestCase {
         let input = ControlInput(
             track: Cycle(
                 shape: Shape(steps: Steps(8)!, pulses: Pulses(4)!),
-                pool: PitchPool().inserting(Pitch(48)!),
+                pool: PitchPool().inserting(Pitch(48)!)
+                    // Dos pitches: con uno, Harmony no tiene nada que mover.
+                    .inserting(Pitch(55)!),
                 groove: Groove(
                     velocity: Velocity(64)!,
                     sustain: Sustain(percent: 100)!,

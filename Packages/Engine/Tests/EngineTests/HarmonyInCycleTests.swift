@@ -108,7 +108,7 @@ final class HarmonyInCycleTests: XCTestCase {
         XCTAssertEqual(edited.frame, base.frame)
         XCTAssertEqual(edited.with(channel: Channel(4)!).harmony, harmony)
         XCTAssertEqual(edited.with(pitchOffset: .zero).harmony, harmony)
-        for parameter in TrackParameter.allCases {
+        for parameter in TrackParameter.allCases where parameter != .harmony {
             XCTAssertEqual(edited.applying(1, to: parameter).harmony, harmony, "\(parameter)")
         }
     }

@@ -19,7 +19,7 @@ final class TrackParameterTests: XCTestCase {
                 "Steps", "Pulses", "Rotate", "Division",
                 "Repeats", "Time", "Ramp", "Pace",
                 "Velocity", "Sustain", "Probability", "Timing", "Delay",
-                "Pitch",
+                "Pitch", "Harmony",
             ]
         )
     }
@@ -64,6 +64,8 @@ final class TrackParameterTests: XCTestCase {
         // cualquiera de los nueve tenga sitio donde moverse.
         let track = Cycle(
             shape: Shape(steps: Steps(8)!, pulses: Pulses(4)!, division: .quarter),
+            // Un pool con sitio: Harmony no mueve nada con menos de dos pitches.
+            pool: PitchPool().inserting(Pitch(60)!).inserting(Pitch(67)!),
             groove: Groove(
                 velocity: Velocity(64)!,
                 sustain: Sustain(percent: 100)!,
@@ -145,15 +147,17 @@ final class ParameterFamilyTests: XCTestCase {
         XCTAssertEqual(ParameterFamily.allCases, [.shape, .groove, .tonal])
     }
 
-    /// **Solo Pitch es Tonal.** Scale y Root siguen siendo táctiles y el pool se
-    /// sigue editando con pads, así que ninguno de los tres es un
-    /// `TrackParameter`. Pitch sí lo es: transpone el pool con un delta.
+    /// **Solo Pitch y Harmony son Tonal.** Scale y Root siguen siendo táctiles y
+    /// el pool se sigue editando con pads, así que ninguno de los tres es un
+    /// `TrackParameter`. Pitch y Harmony sí lo son: transforman el pool con un
+    /// delta.
     ///
     /// > **Hasta el 2026-09-12 este test fijaba que ningún parámetro de knob era
     /// > Tonal**, y avisaba de que fallaría el día que el modelo de entrada
     /// > cambiara. Ese día es `pitch-harmony_20260912`.
-    func testOnlyPitchIsTonal() {
-        XCTAssertEqual(TrackParameter.allCases.filter { $0.family == .tonal }, [.pitch])
+    func testOnlyPitchAndHarmonyAreTonal() {
+        XCTAssertEqual(
+            TrackParameter.allCases.filter { $0.family == .tonal }, [.pitch, .harmony])
     }
 
     /// La clasificación no se movió al añadir casos.
@@ -161,7 +165,7 @@ final class ParameterFamilyTests: XCTestCase {
     /// **Trece desde el 2026-09-07**: los cuatro del Note Repeater entran en la
     /// familia Shape, detrás de Division, porque son una capa sobre el ritmo y
     /// no una familia nueva. **Catorce desde el 2026-09-12**: Pitch cierra la
-    /// lista en Tonal.
+    /// lista en Tonal. **Quince** con Harmony, detrás.
     ///
     /// Los otros dos tests miran cada familia por separado; éste fija la lista
     /// entera de una vez, que es lo que se rompería si alguien reordenara los
@@ -173,7 +177,7 @@ final class ParameterFamilyTests: XCTestCase {
                 .shape, .shape, .shape, .shape,
                 .shape, .shape, .shape, .shape,
                 .groove, .groove, .groove, .groove, .groove,
-                .tonal,
+                .tonal, .tonal,
             ]
         )
     }

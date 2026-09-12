@@ -412,7 +412,7 @@ extension Shape {
     public func applying(_ delta: Int, to parameter: TrackParameter) -> Shape {
         switch parameter {
         case .velocity, .sustain, .probability, .timing, .delay,
-            .repeats, .repeatTime, .ramp, .pace, .pitch:
+            .repeats, .repeatTime, .ramp, .pace, .pitch, .harmony:
             // No son suyos: los ajusta `Cycle.applying(_:to:)`, que es quien
             // conoce las familias. Los cuatro del Note Repeater están en la
             // familia Shape y aun así no viven en `Shape`: son una capa sobre el

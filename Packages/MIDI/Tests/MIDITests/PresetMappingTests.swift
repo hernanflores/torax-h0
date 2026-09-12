@@ -70,7 +70,7 @@ final class PresetMappingTests: XCTestCase {
             // La de abajo, que son los CC 70-77: el card Groove.
             70: .velocity, 71: .sustain, 72: .probability, 73: .timing, 74: .delay,
             // Tonal cierra la fila de abajo (`pitch-harmony_20260912`).
-            75: .pitch,
+            75: .pitch, 76: .harmony,
         ]
         for (number, parameter) in expected {
             XCTAssertEqual(mapping.controller(for: parameter)?.number, number, "\(parameter)")
@@ -124,7 +124,7 @@ final class PresetMappingTests: XCTestCase {
             bottom.filter { $0.family == .groove }.count, 5,
             "la fila de abajo no lleva los cinco de Groove")
         XCTAssertEqual(
-            bottom.map(\.family), [.groove, .groove, .groove, .groove, .groove, .tonal],
+            bottom.map(\.family), [.groove, .groove, .groove, .groove, .groove, .tonal, .tonal],
             "Tonal no va detrás de Groove")
     }
 
@@ -212,28 +212,10 @@ final class PresetMappingTests: XCTestCase {
         }
     }
 
-    /// **Uno desde el 2026-09-12**: Pitch ocupa el 75 y el 76 espera a Harmony.
-    func testOneKnobCarriesNoParameter() throws {
-        XCTAssertEqual(freeKnobs, [76])
-        for number in freeKnobs {
-            let controller = try XCTUnwrap(MIDIController(number))
-            XCTAssertNil(mapping.parameter(for: controller), "CC \(number)")
-        }
-    }
-
-    /// Y girarlos no publica: el mapeo y la entrada dicen lo mismo.
-    func testTurningAFreeKnobPublishesNothing() throws {
-        let input = ControlInput(
-            track: Cycle(shape: Shape(steps: Steps(8)!, pulses: Pulses(3)!)),
-            publish: { _ in }
-        )
-        for number in freeKnobs {
-            let controller = try XCTUnwrap(MIDIController(number))
-            XCTAssertFalse(
-                input.receive(
-                    .controlChange(channel: MIDIChannel(1)!, controller: controller, value: 1)),
-                "CC \(number)")
-        }
+    /// **Ninguno desde el 2026-09-12**: Pitch ocupa el 75 y Harmony el 76
+    /// (`pitch-harmony_20260912`). Los dieciséis knobs tienen dueño.
+    func testNoKnobIsLeftFree() {
+        XCTAssertEqual(freeKnobs, [])
     }
 
     // MARK: - El knob del Cycle en edición
@@ -253,16 +235,13 @@ final class PresetMappingTests: XCTestCase {
     }
 
     /// **Los knobs 14 y 15, CC 75 y 76, son de Tonal.** Estaban libres entre
-    /// Delay y la esquina desde `knob-layout_20260912`; Pitch ocupa el 75
-    /// (`pitch-harmony_20260912`) y el 76 sigue libre hasta que entre Harmony.
-    /// Ninguno es el knob del Cycle.
+    /// Delay y la esquina desde `knob-layout_20260912`; los ocupan Pitch y
+    /// Harmony (`pitch-harmony_20260912`). Ninguno es el knob del Cycle.
     func testTheKnobsBetweenGrooveAndTheCornerAreTonal() throws {
         let seventyFive = try XCTUnwrap(MIDIController(75))
-        XCTAssertEqual(mapping.parameter(for: seventyFive), .pitch)
-
         let seventySix = try XCTUnwrap(MIDIController(76))
-        XCTAssertNil(mapping.parameter(for: seventySix))
-
+        XCTAssertEqual(mapping.parameter(for: seventyFive), .pitch)
+        XCTAssertEqual(mapping.parameter(for: seventySix), .harmony)
         for controller in [seventyFive, seventySix] {
             XCTAssertNotEqual(mapping.editingCycleController, controller)
         }

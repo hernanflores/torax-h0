@@ -192,6 +192,8 @@ extension Cycle {
         case .timing: groove.timing.percent
         case .delay: groove.delay.percent
         case .pitch: pitchOffset.degrees
+        // Sin posición: Harmony es estado. Temp y Ctrl All lo tratan aparte.
+        case .harmony: 0
         }
     }
 

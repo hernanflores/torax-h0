@@ -70,7 +70,10 @@ final class ControlInputTests: XCTestCase {
                 sustain: Sustain(percent: 100)!,
                 probability: Probability(percent: 50)!
             )
-            let track = Cycle(shape: roomy, groove: roomyGroove)
+            // **Y el pool tiene dos pitches**: con menos, Harmony no tiene nada que
+            // mover (`pitch-harmony_20260912`, FR12).
+            let twoPitches = PitchPool().inserting(Pitch(48)!).inserting(Pitch(55)!)
+            let track = Cycle(shape: roomy, pool: twoPitches, groove: roomyGroove)
             let handoff = PatternHandoff(track)
             let input = ControlInput(track: track, publishingTo: handoff)
 
