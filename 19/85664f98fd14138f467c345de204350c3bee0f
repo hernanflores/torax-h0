@@ -1,0 +1,4 @@
+Task: pitch dentro del Cycle y el pool que suena (FASE 3, FR1, FR2, FR4, FR7, NFR1)
+Cambios: tipo PitchOffset (Int8, ±28); Cycle.pitchOffset y Cycle.soundingPool derivado en init con PitchPool.transposed(by:in:); pitch(atStep:) recorre soundingPool. Offset 0 = pool byte a byte; alturas fuera del marco parten de nearest; lo que no cabe en MIDI se queda en la última altura del marco.
+Archivos: Sources/Engine/PitchOffset.swift, Sources/Engine/Shape.swift, Tests/EngineTests/PitchOffsetInCycleTests.swift
+Por qué: el scheduler sigue leyendo un PitchPool inline sin aritmética de grados. Engine 967 tests.
