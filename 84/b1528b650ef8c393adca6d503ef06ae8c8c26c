@@ -1,0 +1,3 @@
+Task: Harmony bajo Temp — un paso por Cycle (FASE 6, FR17)
+Cambios: ParameterOverlay no iguala Harmony: cada clic da un paso en cada Cycle activo desde su propio estado (con histéresis); captura el estado de Harmony por Cycle antes del primer paso que mueve algo; soltar lo devuelve. Un giro bloqueado en todos no captura nada.
+Tests: HarmonyUnderTempTests. Engine 1051 verdes; MIDI sin fallos nuevos (VirtualLoopbackTests flake, TransportTests falla en main).
