@@ -157,11 +157,13 @@ test de no regresión.
 
 ## FASE 6: TEMP Y CTRL ALL
 
-- [ ] Task: Pitch bajo Temp y Ctrl All (FR16, FR17)
-  - [ ] Tests (Red): Temp iguala Pitch en los Cycles activos y restaura al
+- [x] Task: Pitch bajo Temp y Ctrl All (FR16, FR17) — b3305f7
+  - [x] Tests (Red): Temp iguala Pitch en los Cycles activos y restaura al
         soltar. Ctrl All desplaza con base + offset, tope ±28, freno atómico por
         Cycle, y restaura exacto (AC 12).
-  - [ ] Implementación (Green) si hace falta más allá de los casos genéricos.
+  - [x] Implementación (Green): igualar y desplazar ya funcionaban por la vía
+        genérica. Hizo falta restaurar Pitch **literal** (`Cycle.restoring`): su
+        freno depende de Harmony, que puede moverse durante el hold.
 - [ ] Task: Harmony bajo Ctrl All — base + neto (FR16)
   - [ ] Tests (Red): cada Cycle se recalcula como estado base + |neto| pasos. +1
         luego −1 vuelve a la base (sin histéresis, decisión explícita). Al soltar
