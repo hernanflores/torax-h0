@@ -237,10 +237,45 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > **Quién manda lo decide el usuario, no el cable**: un selector
 > `Internal / External`. Con `Internal`, un Start entrante no interrumpe nada.
 >
-> **La app no emite clock.** La sincronía va en un solo sentido: nada externo
-> puede seguir a Torax H-0. Ser maestro es otra decisión y no está tomada.
+> ~~**La app no emite clock.** La sincronía va en un solo sentido: nada externo
+> puede seguir a Torax H-0. Ser maestro es otra decisión y no está tomada.~~
 >
 > Track `external-clock_20260903`.
+
+> **Nota del 2026-09-11 — la decisión está tomada: la app es maestro.** La línea
+> tachada de arriba dejó abierta la otra mitad de la sincronía, y
+> `midi-clock-master_20260911` la cierra. **Play y Stop arrastran a los aparatos
+> conectados, y el tempo de Torax pasa a ser el tempo de la cadena.**
+>
+> **Entran tres mensajes y ninguno más:** el clock a 24 pulsos por negra, el
+> Start y el Stop. Salen al mismo destino que las notas, el que ya se elige en la
+> pantalla `midi`.
+>
+> **El pulso se genera, no se reenvía.** Sale del hilo del scheduler sellado
+> hacia el futuro, con el mismo origen de rejilla y el mismo mapa de tempo que
+> las notas, así que el tick cae donde cae la nota. Es la misma decisión que
+> `tech-stack.md` tomó para la entrada, leída al revés.
+>
+> **Emite también siguiendo a un maestro externo, y eso es una retransmisión.**
+> Con `External` la app no reenvía el tick que recibe: regenera el suyo desde el
+> tempo que ya estima para sonar. Hay **un solo generador de pulso** para los dos
+> modos, en vez de dos caminos que habría que mantener iguales. El coste está
+> escrito: un cambio brusco de tempo del maestro tarda hasta una ventana de
+> look-ahead más una negra en llegar a los esclavos.
+>
+> **No hay interruptor.** La app emite siempre que el transporte suena. A
+> diferencia de seguir —donde quién manda lo decide el usuario con el selector
+> `Internal / External`— emitir no puede interrumpir nada de lo que la app hace:
+> lo peor que produce es un aparato que recibe un pulso que no esperaba.
+>
+> **Lo que se queda fuera.** **Continue** y **Song Position Pointer**, así que un
+> esclavo siempre arranca desde cero — coherente con que la app arranque siempre
+> en el paso 0. **Program Change** al cambiar de Pattern, que sigue en la línea de
+> «Fuera de v1». Un **destino de clock propio**, separado del de las notas. Y
+> **filtrar el aparato del que viene el clock**: si el destino elegido es la
+> misma máquina que manda el pulso, recibe el suyo de vuelta.
+>
+> Track `midi-clock-master_20260911`.
 
 > **Nota del 2026-08-31 — «Mapeo del controlador + MIDI Learn» es una línea y
 > son dos rebanadas.** Escrito como una sola entrega, el alcance mezcla dos
