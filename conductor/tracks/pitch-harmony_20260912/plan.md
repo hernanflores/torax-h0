@@ -141,11 +141,15 @@ test de no regresión.
   - [x] Implementación (Green): asignaciones de fábrica. Adelantada a la FASE 3
         (Pitch) y la FASE 4 (Harmony); la cubren `PresetMappingTests`,
         `ControlInputTests` y `SelectedTrackEditingTests`.
-- [~] Task: MIDI Learn y proyectos guardados (FR15)
-  - [ ] Tests (Red): Pitch y Harmony se aprenden. Un `ControlNumbers` guardado
+- [x] Task: MIDI Learn y proyectos guardados (FR15) — 9e11301
+  - [x] Tests (Red): Pitch y Harmony se aprenden. Un `ControlNumbers` guardado
         sin ellos se completa con 75 y 76 solo si están libres; si uno está
         ocupado, ese parámetro queda sin control y nada aprendido se pisa.
-  - [ ] Implementación (Green).
+  - [x] Implementación (Green).
+  - [x] Refinamiento en curso: el registro guarda la lista de parámetros
+        conocidos (`parameters`). Sin ella no se distingue un parámetro que el
+        usuario dejó sin control de uno que el fichero no conocía; solo se
+        completa el segundo.
 - [x] Task: Tabla del preset — 6dd6f2f, 2705df3
   - [x] Actualizar `preset/README.md`. Confirmar que `Torax.beatsteppro` no cambia
         (sin diff contra `main`).
