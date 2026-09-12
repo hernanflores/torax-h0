@@ -37,7 +37,7 @@ por la escucha larga de la Fase 6.
         pasan a emitirse.
 - [x] Task: Phase Verification & Checkpoint (Refer to `workflow.md`)
 
-## FASE 2: EL GENERADOR DE PULSO
+## FASE 2: EL GENERADOR DE PULSO [checkpoint: 931e48e]
 
 - [x] Task: Tests de `ClockPulseScheduler` (rojo) — `e046e4b`
   - [x] A 120 BPM los ticks caen cada 20 833 333 ns, y el índice *n* cae en `n ×`
@@ -52,12 +52,14 @@ por la escucha larga de la Fase 6.
   - [x] El tipo es trivial y `Sendable`, sin asignaciones en el camino (NFR1).
   - [x] Añadido sobre el plan: 600 negras seguidas sin deriva, que es el fallo
         propio de este generador y no lo cubre ningún test de ventana.
-- [~] Task: Implementar `ClockPulseScheduler` en `Packages/MIDI`
-  - [ ] Marca de agua por índice de tick, igual que `LookAheadScheduler` con los
+- [x] Task: Implementar `ClockPulseScheduler` en `Packages/MIDI` — `931e48e`
+  - [x] Marca de agua por índice de tick, igual que `LookAheadScheduler` con los
         Steps.
-  - [ ] Trabaja en tiempo de rejilla; la conversión a tiempo de reloj es de quien
+  - [x] Trabaja en tiempo de rejilla; la conversión a tiempo de reloj es de quien
         lo llama.
-- [ ] Task: Phase Verification & Checkpoint
+  - [x] `rebase(to: Tempo)` ancla en el tick aún no entregado, con el mismo
+        criterio que `LookAheadScheduler.rebase(to:)`.
+- [x] Task: Phase Verification & Checkpoint
 
 ## FASE 3: EL PULSO SALE POR EL HILO DEL SCHEDULER
 
