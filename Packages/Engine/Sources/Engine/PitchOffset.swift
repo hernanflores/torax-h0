@@ -38,44 +38,60 @@ public struct PitchOffset: Equatable, Sendable {
     }
 }
 
+extension TonalFrame {
+
+    /// Los grados del marco que tienen altura en 0–127.
+    ///
+    /// Es el borde contra el que frenan Pitch y Harmony, y contra el que se
+    /// acota lo que suena.
+    var midiDegrees: ClosedRange<Int> {
+        degree(of: nearest(to: Pitch(unchecked: Pitch.validRange.lowerBound)))!...degree(
+            of: nearest(to: Pitch(unchecked: Pitch.validRange.upperBound)))!
+    }
+}
+
 extension PitchPool {
 
-    /// El pool con cada altura movida `offset` grados dentro del marco.
+    /// El grado del pitch en esa posición, contando desde la altura del marco
+    /// más cercana, o `nil` fuera del pool.
     ///
-    /// **Con offset 0 devuelve el pool tal cual**, también si trae alturas fuera
-    /// del marco: el camino nuevo no reencuadra nada que antes no se
-    /// reencuadrara, y un Cycle sin transponer suena byte a byte como antes.
+    /// **Una altura fuera del marco cuenta desde la más cercana**, con el
+    /// desempate de `TonalFrame.nearest(to:)`. Los pads no pueden meterla, pero
+    /// un proyecto guardado sí puede traerla.
+    func degree(at index: Int, in frame: TonalFrame) -> Int? {
+        pitch(at: index).flatMap { frame.degree(of: frame.nearest(to: $0)) }
+    }
+
+    /// Lo que suena: cada altura movida su offset de Harmony más el de Pitch,
+    /// en grados del marco.
     ///
-    /// **Una altura fuera del marco se transpone desde la más cercana**, con el
-    /// desempate de `TonalFrame.nearest(to:)`. Los pads no pueden meterla, pero un
-    /// proyecto guardado sí puede traerla.
+    /// **Sin Pitch ni Harmony devuelve el pool tal cual**, también si trae
+    /// alturas fuera del marco: el camino nuevo no reencuadra nada que antes no
+    /// se reencuadrara, y un Cycle sin transformar suena byte a byte como antes.
     ///
     /// **Lo que no cabe en MIDI se queda en la última altura del marco dentro de
-    /// 0–127.** El knob se frena antes (FR6), pero cambiar Scale conservando
-    /// Pitch puede llevar ahí, y el pool que suena no emite nunca fuera de rango
-    /// (FR3). Si dos alturas acaban en la misma el pool encoge, igual que en el
-    /// reencuadre.
+    /// 0–127.** Los knobs se frenan antes (FR6, FR10), pero cambiar Scale
+    /// conservando Pitch puede llevar ahí, y el pool que suena no emite nunca
+    /// fuera de rango (FR3). Si dos alturas acaban en la misma el pool encoge,
+    /// igual que en el reencuadre.
     ///
     /// No es código de tiempo real: se llama al construir un `Cycle`, en el hilo
     /// de control.
-    func transposed(by offset: PitchOffset, in frame: TonalFrame) -> PitchPool {
-        guard offset != .zero, !isEmpty,
-            let lowest = frame.degree(
-                of: frame.nearest(to: Pitch(unchecked: Pitch.validRange.lowerBound))),
-            let highest = frame.degree(
-                of: frame.nearest(to: Pitch(unchecked: Pitch.validRange.upperBound)))
-        else { return self }
+    func sounding(pitchOffset: PitchOffset, harmony: Harmony, in frame: TonalFrame) -> PitchPool {
+        guard pitchOffset != .zero || !harmony.isClean, !isEmpty else { return self }
+        let edges = frame.midiDegrees
 
-        var transposed = PitchPool()
+        var sounding = PitchPool()
         for index in 0..<count {
-            guard let pitch = pitch(at: index),
-                let degree = frame.degree(of: frame.nearest(to: pitch)),
-                let moved = frame.pitch(
-                    atDegree: min(max(degree + offset.degrees, lowest), highest))
+            guard let degree = degree(at: index, in: frame) else { continue }
+            let moved = degree + harmony.offset(at: index) + pitchOffset.degrees
+            guard
+                let pitch = frame.pitch(
+                    atDegree: min(max(moved, edges.lowerBound), edges.upperBound))
             else { continue }
-            transposed = transposed.inserting(moved)
+            sounding = sounding.inserting(pitch)
         }
-        return transposed
+        return sounding
     }
 }
 
@@ -84,9 +100,9 @@ extension Cycle {
     /// El offset que deja un giro de Pitch de `delta` clics, **frenado**.
     ///
     /// Dos frenos, y los dos atómicos (FR5, FR6): el rango de ±28 y que ninguna
-    /// altura del pool que suena salga de 0–127. El giro se aplica hasta el
-    /// último valor en el que caben todas, nunca a medias ni acotando nota a
-    /// nota — así los intervalos se conservan siempre.
+    /// altura del pool que suena —con Harmony incluido— salga de 0–127. El giro
+    /// se aplica hasta el último valor en el que caben todas, nunca a medias ni
+    /// acotando nota a nota — así los intervalos se conservan siempre.
     ///
     /// **Desde fuera de los límites solo se puede volver.** Un cambio de Scale
     /// que conserva Pitch puede dejar el offset donde ya no cabe. Girar hacia
@@ -97,7 +113,7 @@ extension Cycle {
     func pitchOffset(movedBy delta: Int) -> PitchOffset {
         let current = pitchOffset.degrees
         var limits = PitchOffset.validRange
-        if let fit = pool.pitchOffsetLimits(in: frame) {
+        if let fit = pool.pitchOffsetLimits(harmony: harmony, in: frame) {
             limits = max(limits.lowerBound, fit.lowerBound)...min(limits.upperBound, fit.upperBound)
         }
 
@@ -109,21 +125,18 @@ extension Cycle {
 
 extension PitchPool {
 
-    /// Entre qué offsets caben todas las alturas del pool en 0–127, o `nil` con
-    /// el pool vacío.
-    ///
-    /// Una altura fuera del marco cuenta desde la más cercana, igual que en
-    /// `transposed(by:in:)`.
-    func pitchOffsetLimits(in frame: TonalFrame) -> ClosedRange<Int>? {
-        guard !isEmpty,
-            let lowest = frame.degree(
-                of: frame.nearest(to: Pitch(unchecked: Pitch.validRange.lowerBound))),
-            let highest = frame.degree(
-                of: frame.nearest(to: Pitch(unchecked: Pitch.validRange.upperBound))),
-            let first = pitch(at: 0), let last = pitch(at: count - 1),
-            let bottom = frame.degree(of: frame.nearest(to: first)),
-            let top = frame.degree(of: frame.nearest(to: last))
-        else { return nil }
-        return (lowest - bottom)...(highest - top)
+    /// Entre qué offsets de Pitch caben todas las alturas del pool, ya movidas
+    /// por Harmony, en 0–127. `nil` con el pool vacío.
+    func pitchOffsetLimits(harmony: Harmony, in frame: TonalFrame) -> ClosedRange<Int>? {
+        guard !isEmpty else { return nil }
+        var bottom = Int.max
+        var top = Int.min
+        for index in 0..<count {
+            guard let degree = degree(at: index, in: frame) else { continue }
+            bottom = min(bottom, degree + harmony.offset(at: index))
+            top = max(top, degree + harmony.offset(at: index))
+        }
+        let edges = frame.midiDegrees
+        return (edges.lowerBound - bottom)...(edges.upperBound - top)
     }
 }

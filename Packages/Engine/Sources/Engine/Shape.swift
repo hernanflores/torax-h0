@@ -250,7 +250,7 @@ public struct Cycle: Equatable, Sendable {
     /// FR1). Cuesta un byte.
     public let pitchOffset: PitchOffset
 
-    /// Lo que suena: el pool transpuesto por Pitch.
+    /// Lo que suena: el pool movido por Harmony y transpuesto por Pitch.
     ///
     /// **Se deriva al construir el Cycle, no al emitir.** Es lo único del pool
     /// que lee el hilo del scheduler, y así sigue leyendo un `PitchPool` inline
@@ -258,6 +258,12 @@ public struct Cycle: Equatable, Sendable {
     /// y muestran los pads.
     ///
     /// Con `pitchOffset` en cero es `pool` byte a byte.
+    /// Cuánto se ha movido cada pitch del pool con Harmony, y cuál se mueve
+    /// primero en el siguiente clic.
+    ///
+    /// **Es de cada Cycle**, como Pitch, y cuesta nueve bytes. Ver `Harmony`.
+    public let harmony: Harmony
+
     public let soundingPool: PitchPool
 
     public init(
@@ -269,7 +275,8 @@ public struct Cycle: Equatable, Sendable {
         noteRepeater: NoteRepeater = .default,
         modulation: Modulation = .default,
         padOctaveShift: Int = 0,
-        pitchOffset: PitchOffset = .zero
+        pitchOffset: PitchOffset = .zero,
+        harmony: Harmony = .clean
     ) {
         self.shape = shape
         self.pool = pool
@@ -280,7 +287,8 @@ public struct Cycle: Equatable, Sendable {
         self.modulation = modulation
         self.padOctaveShift = padOctaveShift
         self.pitchOffset = pitchOffset
-        self.soundingPool = pool.transposed(by: pitchOffset, in: frame)
+        self.harmony = harmony
+        self.soundingPool = pool.sounding(pitchOffset: pitchOffset, harmony: harmony, in: frame)
     }
 
     /// El mismo Cycle con lo que se le cambie, y **todo lo demás intacto**.
@@ -306,7 +314,8 @@ public struct Cycle: Equatable, Sendable {
         noteRepeater: NoteRepeater? = nil,
         modulation: Modulation? = nil,
         padOctaveShift: Int? = nil,
-        pitchOffset: PitchOffset? = nil
+        pitchOffset: PitchOffset? = nil,
+        harmony: Harmony? = nil
     ) -> Cycle {
         Cycle(
             shape: shape ?? self.shape,
@@ -317,7 +326,8 @@ public struct Cycle: Equatable, Sendable {
             noteRepeater: noteRepeater ?? self.noteRepeater,
             modulation: modulation ?? self.modulation,
             padOctaveShift: padOctaveShift ?? self.padOctaveShift,
-            pitchOffset: pitchOffset ?? self.pitchOffset
+            pitchOffset: pitchOffset ?? self.pitchOffset,
+            harmony: harmony ?? self.harmony
         )
     }
 
