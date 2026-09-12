@@ -1248,7 +1248,7 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: Reordenar los knobs del preset del BeatStep Pro** — *planificado el 2026-09-12*
+- [~] **Track: Reordenar los knobs del preset del BeatStep Pro** — *planificado el 2026-09-12*
   *Link: [conductor/tracks/knob-layout_20260912/index.md](./tracks/knob-layout_20260912/index.md)*
 
   **La pantalla y la mano vuelven a decir lo mismo.** Desde el 2026-09-05 llevan
