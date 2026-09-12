@@ -87,7 +87,7 @@ por la escucha larga de la Fase 6.
   - [x] Sin asignaciones, sin locks y sin logging (NFR1).
 - [x] Task: Phase Verification & Checkpoint
 
-## FASE 4: START Y STOP
+## FASE 4: START Y STOP [checkpoint: 84c6999]
 
 - [x] Task: Tests de `start` y `stop` en `Transport` (rojo) — `55e9517`
   - [x] `play()` emite `start` sellado en el instante de arranque, y ningún tick
@@ -102,12 +102,16 @@ por la escucha larga de la Fase 6.
   - [x] FR9 no lleva test propio: el envío se inyecta como cierre, así que «sin
         destino» es el cierre que no hace nada, y eso es literalmente el `send`
         de todos estos tests. Cubrirlo aparte sería probar el inyector.
-- [~] Task: Emitir `start` y `stop` en las puertas del transporte
-  - [ ] Un solo sitio por mensaje: `startPlaying` y `stop()`, que ya son los
+- [x] Task: Emitir `start` y `stop` en las puertas del transporte — `84c6999`
+  - [x] Un solo sitio por mensaje: `startPlaying` y `stop()`, que ya son los
         caminos únicos.
-  - [ ] El orden queda escrito en el código: `start` antes de que el hilo
+  - [x] El orden queda escrito en el código: `start` antes de que el hilo
         arranque, `stop` junto al barrido.
-- [ ] Task: Phase Verification & Checkpoint
+  - [x] `stop` y el apagado comparten **un solo instante**: `silenceHostTime` se
+        recalcula en cada lectura, así que leerlo dos veces los separaría.
+  - [x] El `clockPulseHandler` queda cableado: el hilo sella el tick y el
+        transporte solo lo envía.
+- [x] Task: Phase Verification & Checkpoint
 
 ## FASE 5: EL PULSO SIGUE AL MAESTRO, Y AL TEMPO QUE CAMBIA
 
