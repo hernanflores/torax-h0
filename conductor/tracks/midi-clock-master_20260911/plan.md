@@ -147,13 +147,16 @@ por la escucha larga de la Fase 6.
         fallos de la pasada en un proceso son **solo** los cuatro de
         `VirtualLoopbackTests`, que es la firma que `workflow.md` describe.
         Ningún test de clock falla ahí.
-- [~] Task: Verificación en dispositivo (`device-verification.md`)
-  - [ ] Los ocho criterios de aceptación con el iPad, el BeatStep Pro y un
+- [x] Task: Verificación en dispositivo (`device-verification.md`) — **los ocho bloques OK**
+  - [x] Los ocho criterios de aceptación con el iPad, el BeatStep Pro y un
         esclavo en sync externo.
-  - [ ] **Escucha larga**, que es lo que sustituye al arnés (NFR4): varios
-        minutos con el esclavo, comprobando que no se separa.
-  - [ ] Monitor MIDI para el criterio 4: con el transporte parado, cero mensajes.
-- [ ] Task: Sincronizar documentación y abrir PR
+  - [x] **Escucha larga**, que es lo que sustituye al arnés (NFR4): varios
+        minutos con el esclavo, sin separarse.
+  - [x] Monitor MIDI para el criterio 4: con el transporte parado, cero mensajes.
+  - [x] Queda anotado en el guion que **el usuario confirmó en bloque** —«todo
+        ok»— así que no hay observaciones por bloque. Se escribe tal cual en vez
+        de inventar detalle.
+- [~] Task: Sincronizar documentación y abrir PR
   - [ ] `product.md`, `tracks.md` y el `index.md` del track con lo entregado y lo
         que queda fuera.
   - [ ] Cuerpo de PR corto: qué cambia, cómo se verificó, qué queda pendiente.

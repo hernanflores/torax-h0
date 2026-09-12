@@ -1,9 +1,17 @@
 # Verificación en dispositivo — Torax H-0 como maestro de MIDI clock
 
-**Fecha:** (pendiente)
-**Dispositivo:** (pendiente)
-**Hardware:** iPad + BeatStep Pro + un esclavo con sync externo (caja de ritmos,
-groovebox o una app con MIDI in)
+**Fecha:** 2026-09-11
+**Dispositivo:** iPad (modelo no anotado)
+**Hardware:** iPad + BeatStep Pro + un esclavo con sync externo (modelo no
+anotado)
+**Resultado:** los ocho bloques **OK**, confirmados por el usuario.
+
+> **Lo que este documento registra y lo que no.** Registra que los ocho bloques
+> se ejecutaron y salieron bien. **No registra observaciones por bloque** —el
+> usuario confirmó en bloque, «todo ok»— así que no hay aquí notas de lo que se
+> oyó en cada uno. Se anota tal cual en vez de inventar detalle: lo que vale de
+> una verificación en dispositivo es que ocurrió, y lo que no se escribió no se
+> puede citar después.
 
 ## Por qué este guion sustituye a un número
 
@@ -25,14 +33,14 @@ de un compás.
 
 - Pulsar Play en la app.
 - **Esperado:** el esclavo arranca solo, sin tocarlo.
-- Resultado: (pendiente)
+- **Resultado: OK.**
 
 ### 2 · Stop lo para (criterio 1)
 
 - Pulsar Stop.
 - **Esperado:** el esclavo para. Ninguna nota queda colgada, ni en el sinte ni en
   el esclavo.
-- Resultado: (pendiente)
+- **Resultado: OK.**
 
 ### 3 · El tempo es el mismo, y se sigue al girarlo (criterio 2)
 
@@ -41,13 +49,13 @@ de un compás.
 - Girar el tempo de la app arriba y abajo.
 - **Esperado:** el esclavo lo sigue. No hay salto ni corte del pulso; el cambio
   entra de forma continua.
-- Resultado: (pendiente)
+- **Resultado: OK.**
 
 ### 4 · Cambiar de Bank lleva su tempo (criterio 6)
 
 - Con el transporte corriendo, cambiar a un Bank con otro tempo.
 - **Esperado:** el esclavo adopta el tempo del Bank y el pulso no se corta.
-- Resultado: (pendiente)
+- **Resultado: OK.**
 
 ### 5 · Parado no hay clock (criterio 4)
 
@@ -55,7 +63,7 @@ de un compás.
   esclavo—.
 - **Esperado:** **cero mensajes**. El esclavo no muestra clock entrante y no
   arranca solo.
-- Resultado: (pendiente)
+- **Resultado: OK.**
 
 ### 6 · Con reloj externo, los tres van juntos (criterio 3)
 
@@ -66,20 +74,20 @@ de un compás.
   hasta una ventana más una negra cuando el tempo cambia de golpe — el pulso se
   regenera desde la estimación (limitación 1 del `spec.md`). Lo que **no** se
   acepta es que se separe y no vuelva.
-- Resultado: (pendiente)
+- **Resultado: OK.**
 
 ### 7 · Escucha larga (lo que sustituye al arnés)
 
 - Dejar sonando varios minutos con el esclavo, con reloj interno.
 - **Esperado:** no se separan. Al final de la escucha siguen en fase, sin deriva
   acumulada.
-- Resultado: (pendiente)
+- **Resultado: OK.**
 
 ### 8 · Carga: Repeats 8 y doce Tracks (criterio 7)
 
 - Poner Repeats en 8 con varios Tracks sonando.
 - **Esperado:** el pulso no se arrastra ni se atraganta; el esclavo no titubea.
-- Resultado: (pendiente)
+- **Resultado: OK.**
 
 ## Lo que este guion no comprueba
 

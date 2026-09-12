@@ -1,6 +1,11 @@
 # Track: Torax H-0 como maestro de MIDI clock
 
-**ID:** `midi-clock-master_20260911` · **Type:** Feature · **Status:** new
+**ID:** `midi-clock-master_20260911` · **Type:** Feature · **Status:** complete
+
+**Entregado y verificado en iPad el 2026-09-11.** `MIDI` 981 tests con cobertura
+del 92,25% de líneas, y los ocho bloques del guion con un esclavo en sync
+externo, escucha larga incluida. Ver
+[`device-verification.md`](./device-verification.md).
 
 **La app pasa a mandar.** Hoy `product.md` promete lo contrario —«La app no emite
 clock. La sincronía va en un solo sentido»—: este track toma la decisión que
