@@ -81,10 +81,11 @@ test de no regresión.
         `RecordRoundTripTests` incluye la nueva.
   - [x] Tests (Red): copiar Pattern o Cycle conserva `pitch`.
   - [x] Implementación (Green): `ProjectRecord`.
-- [ ] Task: Scale o Root conservan Pitch (FR13)
-  - [ ] Tests (Red): cambiar el marco (`ControlInput`, reencuadre) deja `pitch`
+- [x] Task: Scale o Root conservan Pitch (FR13) — c583c4e
+  - [x] Tests (Red): cambiar el marco (`ControlInput`, reencuadre) deja `pitch`
         intacto y el pool que suena en la escala nueva.
-  - [ ] Implementación (Green) si hace falta.
+  - [x] Implementación (Green): no hizo falta — `setFrame` ya construye con
+        `with(...)`. El test queda como regresión.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: HARMONY — EL PASO
