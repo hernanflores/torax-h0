@@ -1191,6 +1191,45 @@ en cualquier momento.
     −100%, y más milisegundos en Divisions lentas. Es la decisión 9 de la
     rebanada 6 y el usuario decidió mantenerla; revisarla sería un track propio.
 
+---
+
+- [ ] **Track: Torax H-0 como maestro de MIDI clock**
+  *Link: [conductor/tracks/midi-clock-master_20260911/index.md](./tracks/midi-clock-master_20260911/index.md)*
+
+  **Planificado el 2026-09-11**, en seis fases. Toma la decisión que la nota del
+  2026-09-03 de `product.md` dejó abierta: «La app no emite clock… Ser maestro es
+  otra decisión y no está tomada». Play y Stop pasan a arrastrar a los aparatos
+  conectados y el tempo de Torax pasa a ser el de la cadena.
+
+  **El pulso se genera, no se reenvía.** Los 24 pulsos por negra salen del hilo
+  del scheduler sellados hacia el futuro, con el mismo origen de rejilla y el
+  mismo `TempoMap` que las notas. Reenviar el tick entrante al vuelo devolvería
+  el jitter al planificador del sistema operativo — la alternativa que
+  `tech-stack.md` ya descartó por escrito para la entrada.
+
+  **Con `External` retransmite regenerando**, no reenviando: el `TempoMap` ya
+  sigue al maestro, así que los esclavos comparten la misma estimación que la
+  app. Un solo generador para los dos modos.
+
+  **No añade interfaz, ni modelo, ni fichero.** Sin interruptor `send clock`, sin
+  destino de clock propio y sin clave nueva en el esquema: emite siempre que el
+  transporte suena, al mismo destino único que eligen las notas.
+
+  **El riesgo va solo en la Fase 4:** `start` y `stop` se sellan desde el hilo de
+  control mientras el hilo del scheduler sella ticks, y un orden mal elegido deja
+  al esclavo corriendo después de Stop.
+
+  **Deja fuera** Continue y Song Position Pointer, Program Change al cambiar de
+  Pattern, el interruptor, el destino separado y filtrar el endpoint emparejado
+  con la fuente — si el destino es el mismo aparato que manda el clock, recibe su
+  propio pulso de vuelta, y está decidido así.
+
+  **Sin medición de jitter**, por la suspensión del 2026-09-02: los ticks no
+  desplazan ningún instante de nota. Se sustituye por una escucha larga en
+  dispositivo.
+
+---
+
 ## Archivados
 
 - [x] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay** — swing y Delay suenan; jitter recto máx 0,151 ms · σ 0,009–0,013 ms. **Cerrado con deuda: fase *Review Fixes* abierta**
