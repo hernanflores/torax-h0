@@ -2,3 +2,5 @@ Task: Sacar Harmony de «Fuera de v1» en product.md (FASE 1)
 Cambios: Harmony tachado en Fuera de v1, nota fechada 2026-09-12 en MVP Scope con limitaciones (Ctrl All sin histéresis, Temp distinto), bullet en Interaction Model.
 Archivos: conductor/product.md
 Por qué: la lista dejaría de describir lo que la app hace; mismo camino que Note Repeater y LFO.
+
+Phase Verification FASE 1: swift test --package-path Packages/Engine (945 tests, 0 failures). Manual: revisar notas 2026-09-12 en Pre Spec (Tonal y tabla) y product.md (Fuera de v1, MVP Scope, Interaction Model). Usuario confirmó: ok.
