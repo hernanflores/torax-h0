@@ -63,17 +63,23 @@ por la escucha larga de la Fase 6.
 
 ## FASE 3: EL PULSO SALE POR EL HILO DEL SCHEDULER
 
-- [ ] Task: Tests de emisión de ticks desde `SchedulerThread` (rojo)
-  - [ ] Con un `send` de prueba, una pasada del bucle entrega `timingClock` con
-        timestamps crecientes y separación de negra/24 (FR1).
-  - [ ] Los ticks se cuentan desde el **origen de rejilla** y no desde el
-        arranque del hilo: con Delay negativo el presupuesto de adelanto los
-        desplaza igual que a los Steps (FR2).
-  - [ ] Con `ClockHandoff` publicando un maestro más lento, la separación de los
+- [x] Task: Tests de emisión de ticks desde `SchedulerThread` (rojo) — `df7155b`
+  - [x] Con un recolector de prueba, el bucle entrega pulsos con timestamps
+        crecientes y separación de negra/24 (FR1, FR3).
+  - [x] Ningún pulso se sella antes del origen de rejilla (FR2, FR4).
+  - [x] Con `ClockHandoff` publicando un maestro más lento, la separación de los
         ticks siguientes crece en la misma proporción que la de los Steps (FR7).
-  - [ ] La vía del arnés de medición —sin `Pattern`— no emite clock: mide la
-        rejilla, no el producto.
-- [ ] Task: Emitir el pulso en el bucle de `SchedulerThread`
+  - [x] La vía del arnés de medición no emite clock: **la condición resultó ser
+        el handler, no el `Pattern`**. Sin `clockPulseHandler` no se genera un
+        solo pulso, y el arnés no lo pasa; el test fija que los Steps siguen
+        saliendo igual por esa vía.
+  - [x] Enmienda sobre el plan: **no se escribe test del presupuesto de adelanto
+        de Delay**. El pulso usa literalmente la misma expresión que el Step
+        —`budgetNanoseconds + offset`, en la misma función— así que un test ahí
+        mediría el desplazamiento que `DelayBudgetDivisionTests` ya cubre, no
+        nada propio del clock. Lo que sí queda fijado es que ningún pulso se
+        selle en el pasado.
+- [~] Task: Emitir el pulso en el bucle de `SchedulerThread`
   - [ ] El generador se lee y avanza **una vez por ventana**, junto al snapshot y
         al `ClockHandoff`.
   - [ ] El instante se convierte con `tempoMap.wallNanoseconds(forGridNanoseconds:)`,
