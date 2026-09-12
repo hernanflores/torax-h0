@@ -41,13 +41,13 @@ test de no regresión.
 
 ## FASE 2: LOS GRADOS — MATEMÁTICA PURA EN `Engine`
 
-- [ ] Task: Altura ↔ grado en `TonalFrame` (FR2, FR3)
-  - [ ] Tests (Red): en Do mayor, C4 es un grado y B3 el anterior. Grado +1 desde
+- [x] Task: Altura ↔ grado en `TonalFrame` (FR2, FR3) — fd87d17
+  - [x] Tests (Red): en Do mayor, C4 es un grado y B3 el anterior. Grado +1 desde
         B3 da C4. La ida y vuelta altura→grado→altura es exacta para toda altura
         del marco en 0–127, en las ocho escalas y los doce Roots.
-  - [ ] Tests (Red): un grado cuya altura cae fuera de 0–127 devuelve `nil`.
-  - [ ] Tests (Red): pentatonic y hirajoshi (5 grados) cruzan la octava bien.
-  - [ ] Implementación (Green): conversión sin asignaciones, derivada de
+  - [x] Tests (Red): un grado cuya altura cae fuera de 0–127 devuelve `nil`.
+  - [x] Tests (Red): pentatonic y hirajoshi (5 grados) cruzan la octava bien.
+  - [x] Implementación (Green): conversión sin asignaciones, derivada de
         `pitchClassMask`, sin escribir intervalos en un segundo sitio.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
