@@ -164,11 +164,11 @@ test de no regresión.
   - [x] Implementación (Green): igualar y desplazar ya funcionaban por la vía
         genérica. Hizo falta restaurar Pitch **literal** (`Cycle.restoring`): su
         freno depende de Harmony, que puede moverse durante el hold.
-- [ ] Task: Harmony bajo Ctrl All — base + neto (FR16)
-  - [ ] Tests (Red): cada Cycle se recalcula como estado base + |neto| pasos. +1
+- [x] Task: Harmony bajo Ctrl All — base + neto (FR16) — fcb33db
+  - [x] Tests (Red): cada Cycle se recalcula como estado base + |neto| pasos. +1
         luego −1 vuelve a la base (sin histéresis, decisión explícita). Al soltar
         vuelve el estado capturado.
-  - [ ] Implementación (Green): la base de Harmony no es un `Int`. Ampliar la
+  - [x] Implementación (Green): la base de Harmony no es un `Int`. Ampliar la
         captura de `CtrlAllOffset` para guardar el estado de Harmony por Cycle,
         sin romper la de los `Int`.
 - [ ] Task: Harmony bajo Temp — un paso por Cycle (FR17)
