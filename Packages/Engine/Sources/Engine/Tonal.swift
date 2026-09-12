@@ -267,6 +267,54 @@ public struct TonalFrame: Equatable, Sendable {
         }
         return pitch
     }
+
+    // MARK: - Grados
+
+    /// En qué grado del marco cae la altura, contando a través de las octavas, o
+    /// `nil` si no pertenece.
+    ///
+    /// **Es la unidad de Pitch y de Harmony** (`pitch-harmony_20260912`). Sumar
+    /// uno a un grado da siempre la siguiente altura permitida, crucen o no una
+    /// octava: en Do mayor, el grado de B3 más uno es C4.
+    ///
+    /// **El número en sí no significa nada fuera del marco.** La cuenta arranca
+    /// en la clase de altura permitida más baja de la octava MIDI −1, no en el
+    /// Root: así cualquier altura de 0–127 tiene un grado no negativo sin
+    /// divisiones con signo. Lo que se promete es la vecindad, no dónde está el
+    /// cero, y dos marcos distintos no comparten grados.
+    ///
+    /// Realtime: consultable desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func degree(of pitch: Pitch) -> Int? {
+        guard allows(pitch) else { return nil }
+        let below = mask & ((1 << UInt16(pitch.pitchClass)) - 1)
+        return (pitch.value / 12) * mask.nonzeroBitCount + below.nonzeroBitCount
+    }
+
+    /// La altura del grado dado, o `nil` si cae fuera de 0–127.
+    ///
+    /// Es `degree(of:)` al revés, con el mismo cero. Un grado negativo es válido
+    /// como número —queda por debajo de la octava MIDI −1— y simplemente no
+    /// tiene altura.
+    ///
+    /// Realtime: consultable desde el hilo del scheduler.
+    /// Sin asignaciones, sin locks, sin await.
+    public func pitch(atDegree degree: Int) -> Pitch? {
+        let count = mask.nonzeroBitCount
+        let remainder = degree % count
+        let index = remainder < 0 ? remainder + count : remainder
+        let octave = (degree - index) / count
+
+        var seen = 0
+        for pitchClass in 0..<12 where (mask >> UInt16(pitchClass)) & 1 == 1 {
+            if seen == index {
+                let value = octave * 12 + pitchClass
+                return Pitch.validRange.contains(value) ? Pitch(unchecked: value) : nil
+            }
+            seen += 1
+        }
+        return nil
+    }
 }
 
 extension Scale: CustomStringConvertible {
