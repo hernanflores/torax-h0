@@ -1,0 +1,33 @@
+Task: Sustituir el bloque de knobs entero
+
+Fase 2 del track knob-layout_20260912.
+
+Tabla nueva:
+  Fila de arriba, CC 78-85: Steps Pulses Rotate Division Repeats Time Ramp Pace
+  Fila de abajo,  CC 70-77: Velocity Sustain Probability Timing Delay - - Cycle
+
+Ficheros: ControlMapping.swift (assignments y editingCycleKnobOffset 15 -> 7),
+preset/torax-h0.beatstep-pro.json (version 6, con un bloque 'rows' nuevo que
+escribe que CC lleva cada fila), preset/README.md (las dos tablas por fila),
+y los tests de PresetMappingTests, ControlMappingTests, MIDILearnTests y
+MappingAdoptionTests.
+
+El porque: una fila de knobs por card de la pantalla. Desde el 2026-09-05 los
+dos ordenes eran distintos a proposito y la correspondencia solo estaba en el
+README; el Note Repeater lo empeoro intercalando familias en la misma fila.
+
+Lo que costo una verificacion en dispositivo: el bloque de CC empieza en la fila
+de ABAJO. La Fase 1 dio por hecho que el encoder N manda el CC 69+N y dejo el
+knob del Cycle en el CC 85, que es arriba a la derecha. Torax.beatsteppro asigna
+los controlId 32-39 al 78-85 y los 40-47 al 70-77. Ahora esta escrito en el JSON
+y en el README, que es donde faltaba.
+
+Decision de metodo, repetida: ningun test escribe un numero de CC que pueda
+preguntar al preset. Cuatro fallaron en esta fase por tenerlo escrito, y dos de
+ellos habrian pasado a comprobar otro parametro en silencio.
+
+Verificacion: swift test en Packages/MIDI, 984 tests. Cobertura de lineas 91,90%
+(umbral 80%). Fallan solo VirtualLoopbackTests (flake conocido
+clientCreationFailed(-50), issue #44) y
+TransportTests.testStopNoteOffIsStampedAheadOfAnythingAlreadyScheduled, que
+falla igual en main sin estos cambios (3 de 3 ejecuciones).
