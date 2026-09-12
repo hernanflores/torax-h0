@@ -171,11 +171,11 @@ test de no regresión.
   - [x] Implementación (Green): la base de Harmony no es un `Int`. Ampliar la
         captura de `CtrlAllOffset` para guardar el estado de Harmony por Cycle,
         sin romper la de los `Int`.
-- [ ] Task: Harmony bajo Temp — un paso por Cycle (FR17)
-  - [ ] Tests (Red): cada clic da un paso en cada Cycle activo con su propio
+- [x] Task: Harmony bajo Temp — un paso por Cycle (FR17) — 84b1528
+  - [x] Tests (Red): cada clic da un paso en cada Cycle activo con su propio
         estado (sin igualar). Al soltar vuelve el estado capturado de cada Cycle.
         Cursores de reproducción intactos.
-  - [ ] Implementación (Green): captura del estado de Harmony en
+  - [x] Implementación (Green): captura del estado de Harmony en
         `ParameterOverlay`.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
