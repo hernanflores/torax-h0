@@ -136,7 +136,7 @@ por la escucha larga de la Fase 6.
         sospechoso era la medición. Corregido en el mismo commit.
 - [x] Task: Phase Verification & Checkpoint
 
-## FASE 6: COBERTURA, DISPOSITIVO Y CIERRE
+## FASE 6: COBERTURA, DISPOSITIVO Y CIERRE [checkpoint: 8b574bf]
 
 - [x] Task: Cobertura de `MIDI` por encima del umbral — **92,25% de líneas**
   - [x] Medida en un proceso, fusionando el `.profdata` a mano y filtrando
@@ -156,8 +156,10 @@ por la escucha larga de la Fase 6.
   - [x] Queda anotado en el guion que **el usuario confirmó en bloque** —«todo
         ok»— así que no hay observaciones por bloque. Se escribe tal cual en vez
         de inventar detalle.
-- [~] Task: Sincronizar documentación y abrir PR
-  - [ ] `product.md`, `tracks.md` y el `index.md` del track con lo entregado y lo
-        que queda fuera.
-  - [ ] Cuerpo de PR corto: qué cambia, cómo se verificó, qué queda pendiente.
-- [ ] Task: Phase Verification & Checkpoint
+- [x] Task: Sincronizar documentación y abrir PR — `8b574bf`, PR [#56](https://github.com/hernanflores/torax-h0/pull/56)
+  - [x] `tracks.md`, `metadata.json` y el `index.md` del track con lo entregado y
+        lo que queda fuera. `product.md` ya lo decía desde la Fase 1, que es
+        donde manda escribirlo el paso 8 del *Task Workflow*.
+  - [x] Cuerpo de PR corto: qué cambia, cómo se verificó, qué queda pendiente.
+  - [x] Git notes empujadas a `refs/notes/commits`.
+- [x] Task: Phase Verification & Checkpoint
