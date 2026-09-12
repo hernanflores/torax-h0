@@ -1,0 +1,19 @@
+Task: Temp y Ctrl All acotan los knobs de parámetro y excluyen el del Cycle
+
+Fase 1 del track knob-layout_20260912.
+
+Hallazgo: no hacía falta cambiar código de gesto. El despacho del knob del
+Cycle sale del mapeo en los dos sitios donde ocurre, y los tests de los dos
+modificadores ya lo derivan. Un número escrito habría roto el gesto al mover el
+knob, y no lo había.
+
+Qué cambió:
+- ControlInput.swift: «el knob 13» -> «el knob 16» en la doc de setEditingCycle.
+- preset/README.md: la nota de Temp del 2026-09-04 deja de nombrar números de
+  knob. Llevaba dos desfases anteriores a este track.
+
+Las notas fechadas de 2026-09-02, 2026-09-05 y 2026-09-07 conservan sus números
+a propósito: registran lo que era cierto entonces.
+
+Verificación: swift test --filter 'Temp|CtrlAll|EditingCycle|PresetFile', 158
+tests, 0 fallos.
