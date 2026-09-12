@@ -1295,6 +1295,21 @@ en cualquier momento.
 
 ---
 
+- [ ] **Track: Pitch y Harmony — transformar el pool dentro de la Scale**
+  *Link: [conductor/tracks/pitch-harmony_20260912/index.md](./tracks/pitch-harmony_20260912/index.md)*
+
+  **Los dos controles Tonal que la Pre Spec nombra y la v1 dejó fuera.** Pitch
+  transpone el pool entero en grados de la escala; Harmony mueve un pitch del
+  pool por clic, en round robin y con histéresis. Ocupan los knobs 14 y 15
+  (CC 75 y 76), que `knob-layout_20260912` dejó libres.
+
+  **Del PRD `conductor/Pitch_Harmony_PRD.docx` se toma el algoritmo, no el
+  vocabulario ni el modelo.** Nada de *voice*, *lattice* ni `TonalState`: el
+  estado vive en `Cycle`, los pads siguen editando el pool base y Reset Harmony
+  queda descartado.
+
+---
+
 ## Archivados
 
 - [x] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay** — swing y Delay suenan; jitter recto máx 0,151 ms · σ 0,009–0,013 ms. **Cerrado con deuda: fase *Review Fixes* abierta**
