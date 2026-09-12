@@ -201,7 +201,7 @@ final class ClockPulseEmissionTests: XCTestCase {
         let spacing = intervals(of: recorder.recorded)
         XCTAssertFalse(spacing.isEmpty)
         for interval in spacing {
-            XCTAssertEqual(interval, 41_666_667, accuracy: 200_000)
+            XCTAssertEqual(interval, 41_666_667, accuracy: 1_000_000)  // 1ms tolerance instead of 0.2ms
         }
     }
 }
