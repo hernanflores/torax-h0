@@ -29,3 +29,22 @@ Verificación
 
 Ficheros modificados
 - Packages/MIDI/Sources/MIDI/SchedulerThread.swift
+
+--- Phase Verification & Checkpoint — FASE 3: EL PULSO SALE POR EL HILO DEL SCHEDULER ---
+
+Tests automáticos (partición de CI):
+  Parte 1 -> Executed 21 tests, with 1 test skipped and 0 failures
+  Parte 2 -> Executed 946 tests, with 0 failures  (940 antes de la fase + 6 nuevos)
+  Sin aparición del flake clientCreationFailed(-50) en esta pasada.
+
+Verificación manual: nada sale todavía por el cable —Transport no pasa el handler
+hasta la Fase 4— así que se revisa el código:
+  1. ClockPulseHandler lleva solo el instante, y el bucle entrega los ticks
+     contra el mismo horizonte que los Steps.
+  2. La conversión del pulso es la misma expresión que la del Step,
+     budgetNanoseconds + offset con el mismo tempoMap, en la misma función.
+  3. Sin handler no hay pulso: es lo que protege a la vía del arnés.
+  4. Enmienda anotada en el plan: no se escribe test del presupuesto de Delay
+     negativo, porque mediría lo que DelayBudgetDivisionTests ya cubre.
+
+Confirmación del usuario: «ok» (2026-09-11).
