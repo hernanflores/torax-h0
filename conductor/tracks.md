@@ -1295,7 +1295,7 @@ en cualquier momento.
 
 ---
 
-- [ ] **Track: Pitch y Harmony — transformar el pool dentro de la Scale**
+- [~] **Track: Pitch y Harmony — transformar el pool dentro de la Scale**
   *Link: [conductor/tracks/pitch-harmony_20260912/index.md](./tracks/pitch-harmony_20260912/index.md)*
 
   **Los dos controles Tonal que la Pre Spec nombra y la v1 dejó fuera.** Pitch
