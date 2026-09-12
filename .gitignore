@@ -17,3 +17,9 @@ xcuserdata/
 .build/
 .swiftpm/
 Package.resolved
+
+# Planificación y documentación interna (solo local)
+conductor/
+torax-h0-ipados-handoff/
+Pre Spec Torax H-0.md
+.playwright-mcp/
