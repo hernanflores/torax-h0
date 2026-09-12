@@ -1248,6 +1248,38 @@ en cualquier momento.
 
 ---
 
+- [ ] **Track: Reordenar los knobs del preset del BeatStep Pro** — *planificado el 2026-09-12*
+  *Link: [conductor/tracks/knob-layout_20260912/index.md](./tracks/knob-layout_20260912/index.md)*
+
+  **La pantalla y la mano vuelven a decir lo mismo.** Desde el 2026-09-05 llevan
+  órdenes distintos a propósito, y la correspondencia sólo existe en la tabla de
+  `preset/README.md`: no se deduce mirando el iPad. Con el Note Repeater dentro
+  (2026-09-07) la fila física además intercala familias —Shape en los knobs 1–4,
+  Groove en los 5–9, Shape otra vez en los 10–12—, así que recorrer una fila
+  cruza de card tres veces.
+
+  **La regla nueva es una fila de knobs por card.** Arriba, el card Shape entero:
+  el ritmo y los cuatro del Note Repeater, en el orden de sus dos líneas. Abajo,
+  el card Groove en el orden del dominio, que revierte el intercambio de Delay y
+  Probability.
+
+  **El Cycle en edición se va al knob 16**, a la esquina. Es lo que la nota del
+  2026-09-05 quería —que no parezca el décimo parámetro— y que estando pegado a
+  ellos sólo conseguía a medias. Los knobs 14 y 15 quedan libres, reservados para
+  v2.
+
+  **El archivo del controlador no cambia:** `Torax.beatsteppro` declara dieciséis
+  encoders contiguos desde el CC 70 en `Relative #2`, y sigue siendo cierto. Es
+  un cambio de `ControlMapping` y de documentación.
+
+  **Los mapeos de MIDI Learn no se migran.** Un proyecto guardado con el orden
+  anterior se restaura tal cual; cambia el default de fábrica.
+
+  **Sin medición de jitter**, por la suspensión del 2026-09-02 y porque no
+  desplaza ningún instante.
+
+---
+
 ## Archivados
 
 - [x] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay** — swing y Delay suenan; jitter recto máx 0,151 ms · σ 0,009–0,013 ms. **Cerrado con deuda: fase *Review Fixes* abierta**
