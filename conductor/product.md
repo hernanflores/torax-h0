@@ -196,8 +196,8 @@ El motor por capas: **Shape** decide *cuándo* y con qué densidad ocurren event
 > sobre la celda de Cycle en dos: pulsar elige **cuál** se edita y mantener
 > cambia **cuántos** se recorren. Elegir a quién apuntan los knobs no es editar
 > con el dedo, igual que la pastilla de Track no lo era: lo que se escribe es un
-> cursor, no material. Sin ella, el cursor solo se movía con el knob 13 y sin
-> controlador todo giro caía en el Cycle 1.
+> cursor, no material. Sin ella, el cursor solo se movía con el knob del Cycle
+> y sin controlador todo giro caía en el Cycle 1.
 >
 > **Enmienda del 2026-09-07 — `banks` deja de ser cáscara, y la frontera se
 > mueve un poco.** La rebanada 4 de la v2 le pone detrás lo que le faltaba: el
