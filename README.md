@@ -128,7 +128,8 @@ Packages/Engine/              Motor generativo y tests
 Packages/MIDI/                MIDI, scheduler y tests
 ToraxH0.xcodeproj/            Proyecto Xcode de iPadOS
 .github/workflows/swift.yml   CI para build y tests de paquetes
-conductor/                    Especificaciones y documentación interna
+docs/                         Landing estática (GitHub Pages)
+preset/                       Preset de BeatStep Pro para el flujo de control
 ```
 
 ## Alcance de v1
@@ -144,15 +145,11 @@ El MVP está orientado a validar el timing y el flujo de un único `Track`. Qued
 - Ableton Link, MIDI Program Change y encadenado de Patterns.
 - Puertos MIDI virtuales como funcionalidad de producto.
 
-La definición funcional completa se encuentra en [`conductor/product.md`](conductor/product.md) y el diseño original en [`Pre Spec Torax H-0.md`](Pre%20Spec%20Torax%20H-0.md).
+La definición funcional completa y el diseño original se mantienen fuera del repositorio, en la documentación interna del proyecto.
 
 ## Desarrollo
 
-Las decisiones de arquitectura, las restricciones del camino de timing y el flujo de trabajo están documentados en:
-
-- [`conductor/tech-stack.md`](conductor/tech-stack.md)
-- [`conductor/workflow.md`](conductor/workflow.md)
-- [`conductor/product-guidelines.md`](conductor/product-guidelines.md)
+Las decisiones de arquitectura, las restricciones del camino de timing y el flujo de trabajo están documentados en el material interno del proyecto, que no se versiona en este repositorio.
 
 Los cambios que afectan al scheduler o a la entrega MIDI deben verificarse con el arnés de jitter y probarse en un dispositivo real.
 
