@@ -782,7 +782,7 @@ public final class ControlInput: @unchecked Sendable {
     /// Fija el Cycle en edición del Track seleccionado (FR1).
     ///
     /// **Se elige en pantalla y no con un knob**: pulsar la celda del
-    /// `CycleStrip` es el gesto frecuente, y el knob 13 sigue siendo la vía del
+    /// `CycleStrip` es el gesto frecuente, y el knob 16 sigue siendo la vía del
     /// hardware. Las dos llevan al mismo cursor, que es lo que impide que la
     /// pantalla mienta sobre lo que el controlador acaba de hacer (FR10).
     ///

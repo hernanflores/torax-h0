@@ -163,9 +163,14 @@ el controlador.
 > `temp-parameters_20260904`). Es lo que hace un fill sin gastar un Cycle.
 >
 > **Con el 13 hundido, Temp manda.** Los step buttons 1–12 no cambian de Track,
-> el 15 y el 16 no publican mute ni solo, el knob 10 no mueve el Cycle en edición
-> y los pads no tocan el pool. Solo responden los nueve knobs de parámetro: el
-> hold acota qué está vivo para que un roce no deshaga el fill.
+> el 15 y el 16 no publican mute ni solo, el knob del Cycle en edición no mueve
+> el cursor y los pads no tocan el pool. Solo responden los knobs de parámetro:
+> el hold acota qué está vivo para que un roce no deshaga el fill.
+>
+> **Los números de esta nota se quedaron atrás dos veces**, así que ya no los
+> lleva: eran nueve knobs de parámetro y el del Cycle era el 10. Son trece desde
+> el 2026-09-07 y el del Cycle es el 16 desde el 2026-09-12. Qué knob es cada
+> cosa lo dice la tabla de arriba, que es el único sitio donde está escrito.
 >
 > Con varios Cycles activos, el parámetro girado **suena igual en todos** durante
 > el hold —para que el fill se oiga aunque el cursor cruce de Cycle— y al soltar
