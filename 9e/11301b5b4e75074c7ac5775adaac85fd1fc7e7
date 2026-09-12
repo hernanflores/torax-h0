@@ -1,0 +1,5 @@
+Task: MIDI Learn y proyectos guardados (FASE 5, FR15)
+Cambios: ControlNumbers.knownParameters (por defecto todos); ControlNumbersRecord escribe 'parameters' con las claves conocidas y, sin lista, lee todo menos Pitch y Harmony. ControlMapping.init(numbers) completa con el número de fábrica solo lo que el fichero no conocía, si ese número está libre y no crea conflicto.
+Por qué la lista: sin ella no se distingue un parámetro que el usuario dejó sin control a propósito de uno que la app que guardó no tenía; completar el primero desharía una decisión del usuario.
+Tests: KnownParametersRecordTests (Engine), TonalLearnCompletionTests (MIDI).
+Engine 1035 verdes; MIDI 994, solo VirtualLoopbackTests (flake) y TransportTests (falla en main); Persistence 64 verdes.
