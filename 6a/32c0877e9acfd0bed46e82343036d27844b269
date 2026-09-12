@@ -31,3 +31,17 @@ Verificacion: swift test en Packages/MIDI, 984 tests. Cobertura de lineas 91,90%
 clientCreationFailed(-50), issue #44) y
 TransportTests.testStopNoteOffIsStampedAheadOfAnythingAlreadyScheduled, que
 falla igual en main sin estos cambios (3 de 3 ejecuciones).
+
+--- Verificación de fase (Fase 2), 2026-09-12 ---
+
+Comando: swift test en Packages/MIDI (984 tests) y llvm-cov report.
+Resultado: verde salvo el flake conocido de VirtualLoopbackTests (issue #44) y
+TransportTests.testStopNoteOffIsStampedAheadOfAnythingAlreadyScheduled, que
+falla igual en main sin estos cambios. Cobertura de líneas 91,90%.
+
+Verificación manual en iPad con BeatStep Pro, siete pasos: las dos filas
+recorridas contra los cards de la pantalla, los knobs 14 y 15 mudos, el 16
+moviendo el cursor de Cycle, y Temp y Ctrl All callando ese knob y devolviendo
+los valores al soltar.
+
+Confirmación del usuario: «OK».
