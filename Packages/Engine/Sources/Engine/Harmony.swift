@@ -116,3 +116,36 @@ extension Cycle {
         return state
     }
 }
+
+extension Cycle {
+
+    /// El Cycle con esa altura metida en el pool o sacada de él, y **Harmony
+    /// limpio** si el pool cambió (FR13).
+    ///
+    /// Es lo que hace un pad. Harmony se limpia porque sus offsets son de los
+    /// pitches que había: con uno más o uno menos, el índice *i* ya no es el
+    /// mismo pitch. Pitch se conserva, porque transpone el pool entero y no
+    /// depende de quién esté.
+    ///
+    /// **Un toque que no cambia el pool no limpia nada**: el pool lleno rechaza
+    /// la novena, y eso no es editar material.
+    public func togglingPitch(_ pitch: Pitch) -> Cycle {
+        let toggled = pool.toggling(pitch)
+        guard toggled != pool else { return self }
+        return with(pool: toggled, harmony: .clean)
+    }
+
+    /// El Cycle en otro marco tonal, con el pool reencuadrado y **Harmony
+    /// limpio** si el marco cambió (FR13).
+    ///
+    /// Harmony se limpia porque sus offsets son grados de la escala anterior, y
+    /// arrastrarlos a otra daría notas que nadie eligió. Pitch se conserva: «dos
+    /// grados arriba» sigue significando lo mismo en la escala nueva.
+    ///
+    /// **Reencuadra, no vacía** (`product-guidelines.md`), como hacía
+    /// `ControlInput.setFrame` antes de este track.
+    public func reframed(to frame: TonalFrame) -> Cycle {
+        guard frame != self.frame else { return self }
+        return with(pool: pool.reframed(to: frame), frame: frame, harmony: .clean)
+    }
+}
