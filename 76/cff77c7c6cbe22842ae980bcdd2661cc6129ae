@@ -2,3 +2,5 @@ Task: Harmony sobrevive al disco (FASE 4, FR22, FR23, AC 10)
 Cambios: claves opcionales harmonyOffsets (una por pitch, en el orden de pool) y harmonyCursor, escritas siempre. Offset fuera de ±127 o cursor fuera de 0..<8 limpian el estado entero; offsets de más se ignoran, de menos valen 0; sin claves, limpio. schemaVersion sigue en 1.
 Tests: HarmonyRecordTests (ida y vuelta incluido el siguiente clic, ficheros anteriores y malos, copia de Pattern); RecordRoundTripTests con las dos claves.
 Engine 1030 verdes; Persistence 64 verdes.
+
+Phase Verification FASE 4: Engine 1030 verdes (98,89%, Harmony.swift 100%); MIDI 988, 92,36% líneas, solo VirtualLoopbackTests (flake) y TransportTests (falla en main); Persistence 64 verdes; xcodebuild iPadOS ok. Manual: knob 15 en iPad, ejemplos del PRD, limpieza por pad y Scale, relanzar. Usuario confirmó: Avancemos.
