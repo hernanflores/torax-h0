@@ -1,0 +1,28 @@
+Task: Sincronizar documentación y abrir PR (Fase 6, midi-clock-master_20260911)
+
+Qué cambia
+- device-verification.md queda con los ocho bloques en OK, la fecha y el montaje.
+- tracks.md cierra la entrada del track con lo entregado, los números y el
+  hallazgo de diagnóstico.
+- metadata.json pasa a complete con verified_on_device, e index.md lo dice en su
+  cabecera.
+- plan.md marca la cobertura y la verificación en dispositivo.
+
+Lo que se anota y por qué
+- El guion deja escrito que el usuario confirmó EN BLOQUE —«todo ok»— y que por
+  eso no hay observaciones por bloque. Se escribe tal cual en vez de inventar
+  detalle: lo que vale de una verificación en dispositivo es que ocurrió, y lo
+  que no se escribió no se puede citar después.
+- El modelo del iPad y del esclavo no se anotaron, y también se dice.
+
+Números
+- MIDI: 981 tests, cobertura 92,25% de líneas. ClockPulseScheduler 97,83%,
+  SchedulerThread 93,97%, Transport 90,34%.
+- El único fallo de la pasada en un proceso es el flake conocido de
+  VirtualLoopbackTests, con su firma exacta.
+- Sin medición de jitter (NFR4).
+
+Ficheros modificados
+- conductor/tracks/midi-clock-master_20260911/{device-verification,index,plan}.md
+- conductor/tracks/midi-clock-master_20260911/metadata.json
+- conductor/tracks.md
