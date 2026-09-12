@@ -155,6 +155,12 @@ No cambia la estructura base: sobre cada Pulse añade triggers adicionales. Sirv
 > hacía barato, no porque sean la misma cosa. Los cuatro van a los knobs 10, 11,
 > 12 y 14 — CC 79, 80, 81 y 83.
 >
+> > **Corregido el 2026-09-12.** Los cuatro están ahora en los **knobs 5 a 8**
+> > —CC 82 a 85—, cerrando la fila de arriba detrás de los cuatro del ritmo:
+> > `knob-layout_20260912` dio una fila de knobs a cada card de la pantalla. La
+> > tabla viva está en `preset/README.md`; esta línea registra dónde estaban al
+> > entrar.
+>
 > **Los modos Choke y Tail quedan fuera.** Cada repetición emite su note-on y su
 > note-off, y **el solape no se vigila**: con Sustain alto una repetición se pisa
 > con la siguiente y el note-off de la primera apaga a la segunda. Es la

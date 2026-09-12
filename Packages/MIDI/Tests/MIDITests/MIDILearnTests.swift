@@ -241,7 +241,7 @@ final class MIDILearnTests: XCTestCase {
         input.receive(knob(MIDIController(20)!, by: 1))
 
         XCTAssertEqual(input.mapping.knobBlock, MIDIController(20)!)
-        XCTAssertEqual(input.mapping.editingCycleController, MIDIController(32)!)
+        XCTAssertEqual(input.mapping.editingCycleController, MIDIController(27)!)
     }
 
     // MARK: - Un control no puede significar dos cosas
@@ -338,7 +338,9 @@ final class MIDILearnTests: XCTestCase {
         input.receive(pad(MIDINote(60)!))
 
         XCTAssertEqual(input.learning, .parameter(.steps))
-        XCTAssertEqual(input.mapping.controller(for: .steps), MIDIController(70)!)
+        XCTAssertEqual(
+            input.mapping.controller(for: .steps),
+            ControlMapping.beatStepPro.controller(for: .steps))
     }
 
     func testAControlChangeDoesNotAssignThePadBlock() {

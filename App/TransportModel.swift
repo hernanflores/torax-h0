@@ -909,7 +909,8 @@ final class TransportModel {
     /// Fija cuál de los Cycles se edita, por índice de cero a quince.
     ///
     /// **Es el gesto que faltaba**: hasta hoy el cursor de edición solo se movía
-    /// con el knob 13, así que sin controlador todo giro caía en el Cycle 1. La
+    /// con el knob del Cycle, así que sin controlador todo giro caía en el
+    /// Cycle 1. La
     /// celda del `CycleStrip` entra por aquí y el knob por la misma vía de
     /// `ControlInput`, de modo que los dos mueven el mismo contorno.
     ///

@@ -24,30 +24,78 @@ Se configura en MIDI Control Center, por encoder o para todos a la vez.
 
 Trece de los dieciséis mueven un parámetro del Track.
 
+**Una fila de knobs por card de la pantalla.** La de arriba es el card Shape
+entero; la de abajo, el card Groove. Quien mira la pantalla sabe dónde está el
+knob sin bajar a esta tabla, que es lo que estas tablas dejaron de permitir entre
+el 2026-09-05 y el 2026-09-12.
+
+> **Los CC no siguen a la numeración de los knobs, y es lo primero que hay que
+> saber.** La fila de **arriba** manda los **CC 78–85** y la de **abajo** los
+> **70–77**. Lo decide el controlador, no la app: `Torax.beatsteppro` asigna los
+> controlId 32–39 al bloque alto y los 40–47 al bajo. Está verificado en
+> dispositivo.
+
+### La fila de arriba — Shape
+
 | Knob | CC | Parámetro |
 |---|---|---|
-| 1 | 70 | Steps |
-| 2 | 71 | Pulses |
-| 3 | 72 | Rotate |
-| 4 | 73 | Division |
-| 5 | 74 | Velocity |
-| 6 | 75 | Sustain |
-| 7 | 76 | Delay |
-| 8 | 77 | Timing |
-| 9 | 78 | Probability |
-| 10 | 79 | Repeats |
-| 11 | 80 | Time |
-| 12 | 81 | Ramp |
-| 13 | 82 | **Cycle en edición** del Track seleccionado |
-| 14 | 83 | Pace |
-| 15–16 | 84–85 | **Sin asignar.** Se ignoran en silencio |
+| 1 | 78 | Steps |
+| 2 | 79 | Pulses |
+| 3 | 80 | Rotate |
+| 4 | 81 | Division |
+| 5 | 82 | Repeats |
+| 6 | 83 | Time |
+| 7 | 84 | Ramp |
+| 8 | 85 | Pace |
 
-El knob 13 mueve el cursor de edición del Track seleccionado. **Cuántos Cycles
+Los cuatro primeros son el ritmo y los cuatro siguientes el Note Repeater, que es
+la segunda línea del card: una capa sobre el ritmo, no el ritmo.
+
+### La fila de abajo — Groove, y el Cycle en la esquina
+
+| Knob | CC | Parámetro |
+|---|---|---|
+| 9 | 70 | Velocity |
+| 10 | 71 | Sustain |
+| 11 | 72 | Probability |
+| 12 | 73 | Timing |
+| 13 | 74 | Delay |
+| 14 | 75 | **Sin asignar.** Se ignora en silencio |
+| 15 | 76 | **Sin asignar.** Se ignora en silencio |
+| 16 | 77 | **Cycle en edición** del Track seleccionado |
+
+Groove va en el orden del dominio, que es el que la pantalla enseña.
+
+El knob 16 mueve el cursor de edición del Track seleccionado. **Cuántos Cycles
 están activos no se toca aquí**, sino en la pantalla — la nota del 2026-09-02 en
-la Pre Spec explica por qué el gesto de CTRL se partió en dos.
+la Pre Spec explica por qué el gesto de CTRL se partió en dos. Está en la esquina
+y con dos knobs libres de por medio a propósito: no es un parámetro más, mueve
+*a cuál* de ellos se apunta.
 
-Los dos libres están declarados a propósito, no olvidados: su sitio es de v2
+Los libres están declarados a propósito, no olvidados: su sitio es de v2
 —Accent, Voicing, Range—. Girarlos no hace nada y no es un error.
+
+> **Nota del 2026-09-12 — una fila de knobs por card, y los CC no eran los que
+> parecían.** Track `knob-layout_20260912`.
+>
+> **Qué cambia.** Los dieciséis knobs se reordenan para que la fila de arriba sea
+> el card Shape y la de abajo el card Groove. Se deshace el cruce de Delay y
+> Probability del 2026-09-05, y el Cycle en edición se va a la esquina inferior
+> derecha. Los libres pasan a ser los knobs 14 y 15.
+>
+> **Por qué.** Desde el 2026-09-05 la pantalla y los knobs llevaban órdenes
+> distintos a propósito, y la correspondencia sólo existía en esta página. El
+> Note Repeater lo empeoró el 2026-09-07 intercalando familias en la misma fila:
+> Shape, Groove, Shape. Recorrer una fila cruzaba de card tres veces.
+>
+> **Y el aviso que costó una verificación en dispositivo:** el bloque de CC
+> **empieza en la fila de abajo**. La primera versión de esta rebanada dio por
+> hecho que el encoder N manda el CC 69+N y dejó el knob del Cycle en el CC 85,
+> que es arriba a la derecha. El archivo del controlador nunca dijo eso: dice
+> qué CC manda cada controlId, y esa es la única fuente.
+>
+> **El `.beatsteppro` no cambió**, ni aquí ni en las veces anteriores. Lo que
+> cambia es qué significa cada CC para la app.
 
 > **Nota del 2026-09-07 — entran los cuatro del Note Repeater.** Repeats, Time,
 > Ramp y Pace ocupan los CC 79, 80, 81 y 83, saltando el 82 porque ahí está el
@@ -61,7 +109,8 @@ Los dos libres están declarados a propósito, no olvidados: su sitio es de v2
 
 > **Nota del 2026-09-05 — tres knobs cambiaron de sitio.** Delay pasó del 78 al
 > **76** y Probability del 76 al **78**; el Cycle en edición se fue del knob 10
-> (CC 79) al **13** (CC 82), y el 79 quedó libre.
+> (CC 79) al **13** (CC 82), y el 79 quedó libre. **Revertido el 2026-09-12**: la
+> fila de knobs vuelve a seguir a la pantalla.
 >
 > **Esta tabla decía «los nueve primeros son los nueve parámetros, en el mismo
 > orden en que aparecen en la pantalla», y ya no es cierto.** La pantalla
@@ -151,9 +200,14 @@ el controlador.
 > `temp-parameters_20260904`). Es lo que hace un fill sin gastar un Cycle.
 >
 > **Con el 13 hundido, Temp manda.** Los step buttons 1–12 no cambian de Track,
-> el 15 y el 16 no publican mute ni solo, el knob 10 no mueve el Cycle en edición
-> y los pads no tocan el pool. Solo responden los nueve knobs de parámetro: el
-> hold acota qué está vivo para que un roce no deshaga el fill.
+> el 15 y el 16 no publican mute ni solo, el knob del Cycle en edición no mueve
+> el cursor y los pads no tocan el pool. Solo responden los knobs de parámetro:
+> el hold acota qué está vivo para que un roce no deshaga el fill.
+>
+> **Los números de esta nota se quedaron atrás dos veces**, así que ya no los
+> lleva: eran nueve knobs de parámetro y el del Cycle era el 10. Son trece desde
+> el 2026-09-07 y el del Cycle es el 16 desde el 2026-09-12. Qué knob es cada
+> cosa lo dice la tabla de arriba, que es el único sitio donde está escrito.
 >
 > Con varios Cycles activos, el parámetro girado **suena igual en todos** durante
 > el hold —para que el fill se oiga aunque el cursor cruce de Cycle— y al soltar
@@ -175,7 +229,7 @@ Qué se rompe, y cómo se reconoce:
 | Síntoma | Causa |
 |---|---|
 | Un clic de knob clava el parámetro en su extremo | Los encoders no están en `Relative #2` |
-| Los knobs no hacen nada | Envían otros CC; el preset los pone en 70–78 |
+| Los knobs no hacen nada | Envían otros CC; el preset los pone en 70–85 |
 | Los pads no meten notas, o meten las que no son | El bloque de pads no empieza en la nota 36 |
 | Los step buttons mueven un parámetro | Sus CC caen dentro de 70–85 en vez de 102–117 |
 

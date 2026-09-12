@@ -1,0 +1,21 @@
+{
+  "id": "knob-layout_20260912",
+  "title": "Reordenar los knobs del preset del BeatStep Pro",
+  "type": "Chore",
+  "status": "complete",
+  "created": "2026-09-12",
+  "updated": "2026-09-12",
+  "phases": 4,
+  "depends_on": [
+    "mvp-beatstep-mapping_20260830",
+    "ctrl-all_20260905",
+    "note-repeater_20260906",
+    "midi-learn_20260908"
+  ],
+  "requires_device": true,
+  "jitter_measurement": "no se mide: no desplaza ningun instante, y la medicion esta suspendida desde el 2026-09-02 (NFR4)",
+  "branch": "chore/knob-layout",
+  "preset_file_unchanged": true,
+  "pull_request": "https://github.com/hernanflores/torax-h0/pull/57",
+  "device_verified": true
+}

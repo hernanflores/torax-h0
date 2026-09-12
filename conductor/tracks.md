@@ -1248,6 +1248,53 @@ en cualquier momento.
 
 ---
 
+- [x] **Track: Reordenar los knobs del preset del BeatStep Pro** — *entregado y verificado en iPad el 2026-09-12*; **sin medición de jitter**. [PR #57](https://github.com/hernanflores/torax-h0/pull/57)
+  *Link: [conductor/tracks/knob-layout_20260912/index.md](./tracks/knob-layout_20260912/index.md)*
+
+  **La pantalla y la mano vuelven a decir lo mismo.** Desde el 2026-09-05 llevan
+  órdenes distintos a propósito, y la correspondencia sólo existe en la tabla de
+  `preset/README.md`: no se deduce mirando el iPad. Con el Note Repeater dentro
+  (2026-09-07) la fila física además intercala familias —Shape en los knobs 1–4,
+  Groove en los 5–9, Shape otra vez en los 10–12—, así que recorrer una fila
+  cruza de card tres veces.
+
+  **La regla nueva es una fila de knobs por card.** Arriba, el card Shape entero:
+  el ritmo y los cuatro del Note Repeater, en el orden de sus dos líneas. Abajo,
+  el card Groove en el orden del dominio, que revierte el intercambio de Delay y
+  Probability.
+
+  **El Cycle en edición se va al knob 16**, a la esquina. Es lo que la nota del
+  2026-09-05 quería —que no parezca el décimo parámetro— y que estando pegado a
+  ellos sólo conseguía a medias. Los knobs 14 y 15 quedan libres, reservados para
+  v2.
+
+  **El archivo del controlador no cambia:** `Torax.beatsteppro` declara dieciséis
+  encoders contiguos desde el CC 70 en `Relative #2`, y sigue siendo cierto. Es
+  un cambio de `ControlMapping` y de documentación.
+
+  **Los mapeos de MIDI Learn no se migran.** Un proyecto guardado con el orden
+  anterior se restaura tal cual; cambia el default de fábrica.
+
+  **Sin medición de jitter**, por la suspensión del 2026-09-02 y porque no
+  desplaza ningún instante.
+
+  **Lo que encontró la verificación en dispositivo, y es lo que hay que
+  recordar de esta rebanada:** el bloque de CC **no sigue al orden físico de los
+  encoders**. `Torax.beatsteppro` asigna los controlId 32–39 —la fila de
+  arriba— a los **CC 78–85**, y los 40–47 —la de abajo— a los **70–77**. Toda
+  la planificación supuso lo contrario, que el encoder N manda el CC 69+N, y la
+  primera pasada dejó el knob del Cycle en la esquina que no era.
+
+  Nada estaba roto cuando falló: el mapeo hacía lo que decía y los 984 tests
+  pasaban. El error vivía en la traducción entre el número de CC y el knob que
+  se toca con el dedo, que es lo único que ningún test del repositorio puede
+  ver. Está registrado con los cinco pasos fallidos en
+  [`device-verification.md`](./tracks/knob-layout_20260912/device-verification.md).
+
+  **Cobertura `MIDI` 91,90%.** `Engine` 945 tests y `Persistence` 64, en verde.
+
+---
+
 ## Archivados
 
 - [x] **Track: MVP rebanada 6 — Groove temporal: Timing y Delay** — swing y Delay suenan; jitter recto máx 0,151 ms · σ 0,009–0,013 ms. **Cerrado con deuda: fase *Review Fixes* abierta**

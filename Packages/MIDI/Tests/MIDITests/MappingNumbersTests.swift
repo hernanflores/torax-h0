@@ -56,7 +56,24 @@ final class MappingNumbersTests: XCTestCase {
         XCTAssertEqual(ControlMapping(numbers), .beatStepPro)
     }
 
-    func testAnAssignmentCannotReuseTheEditingCycleController() {
+    /// **El número sale del mapeo, no está escrito.** Decía 82 y el 2026-09-12
+    /// el knob del Cycle se fue al 85: un test que escribe el número habría
+    /// pasado a comprobar un CC cualquiera sin avisar.
+    func testAnAssignmentCannotReuseTheEditingCycleController() throws {
+        let cycleKnob = try XCTUnwrap(ControlMapping.beatStepPro.editingCycleController)
+        let mapping = ControlMapping(
+            assignments: [.steps: cycleKnob.number],
+            padBlock: ControlMapping.defaultPadBlock,
+            knobBlock: ControlMapping.defaultKnobBlock,
+            stepButtonBlock: ControlMapping.defaultStepButtonBlock
+        )
+
+        XCTAssertTrue(mapping.hasConflict)
+    }
+
+    /// Y el CC 82 ya no es ese knob, así que un parámetro ahí no choca: es el
+    /// hueco por el que Delay entra en la Fase 2.
+    func testTheEightyTwoIsFreeForAParameter() {
         let mapping = ControlMapping(
             assignments: [.steps: 82],
             padBlock: ControlMapping.defaultPadBlock,
@@ -64,7 +81,7 @@ final class MappingNumbersTests: XCTestCase {
             stepButtonBlock: ControlMapping.defaultStepButtonBlock
         )
 
-        XCTAssertTrue(mapping.hasConflict)
+        XCTAssertFalse(mapping.hasConflict)
     }
 
     /// Lo que se aprende es lo que se guarda: el caso entero, de aprender a

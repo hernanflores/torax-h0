@@ -80,12 +80,16 @@ final class ControlMappingTests: XCTestCase {
 /// Tests del mapeo ampliado a los nueve parámetros.
 ///
 /// Los cinco CC de Groove entran en el mismo bloque contiguo que los de Shape:
-/// 70–78, ninguno con significado asignado en la especificación MIDI.
+/// 70–85, ninguno con significado asignado en la especificación MIDI.
 ///
 /// > **Nota del 2026-09-05.** Esto añadía que «los de propósito general llegan
 /// > hasta el 79, así que los nueve caben sin salir del rango». Se quita por lo
 /// > mismo que en `ControlMapping`: la regla es no pisar nada asignado, y el 79
-/// > no era una frontera. El knob del Cycle se fue al 82.
+/// > no era una frontera.
+///
+/// > **Nota del 2026-09-12.** Groove pasa a los CC 70–74, que son los cinco
+/// > primeros de la fila de abajo del controlador. Shape se lleva la de arriba,
+/// > que es el 78–85.
 final class GrooveControlMappingTests: XCTestCase {
 
     func testEveryTrackParameterHasAController() {
@@ -108,7 +112,7 @@ final class GrooveControlMappingTests: XCTestCase {
 
     func testTheGrooveControllersResolveBack() {
         let expected: [Int: TrackParameter] = [
-            74: .velocity, 75: .sustain, 76: .delay, 77: .timing, 78: .probability,
+            70: .velocity, 71: .sustain, 72: .probability, 73: .timing, 74: .delay,
         ]
 
         for (number, parameter) in expected {
@@ -118,10 +122,14 @@ final class GrooveControlMappingTests: XCTestCase {
         }
     }
 
-    /// Los cuatro de Shape no se movieron de sitio: el mapeo se amplió, no se
-    /// rehízo.
-    func testTheShapeControllersDidNotMove() {
-        let expected: [Int: TrackParameter] = [70: .steps, 71: .pulses, 72: .rotate, 73: .division]
+    /// Los cuatro del ritmo abren la fila de arriba, que son los CC 78 a 81.
+    ///
+    /// > **Estaban en el 70 al 73 hasta el 2026-09-12**, y este test se llamaba
+    /// > `…DidNotMove`. Se movieron: el bloque de CC empieza en la fila de abajo
+    /// > del controlador, así que dar la fila de arriba al card Shape es darle
+    /// > los CC 78-85.
+    func testTheShapeControllersOpenTheTopRow() {
+        let expected: [Int: TrackParameter] = [78: .steps, 79: .pulses, 80: .rotate, 81: .division]
 
         for (number, parameter) in expected {
             XCTAssertEqual(
