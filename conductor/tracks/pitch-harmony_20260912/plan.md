@@ -224,7 +224,12 @@ test de no regresión.
   - [ ] Evaluación de oído con pools de 2, 3 y 4 pitches en major, minor y
         pentatonic, con giros lentos y rápidos y cambios de sentido. Registrar
         casos abruptos o estancados en `device-verification.md`.
-- [ ] Task: Cobertura y suite completa
+- [x] Task: Cobertura y suite completa
+  - [x] `Engine` 1052 tests, 98,77%. `MIDI` 996 tests, 92,41% de líneas; fallan
+        solo `VirtualLoopbackTests` (flake de CoreMIDI conocido) y
+        `TransportTests.testStopNoteOffIsStampedAheadOfAnythingAlreadyScheduled`,
+        que falla igual en `main` (`49ecd02`). `Persistence` 64 tests, 97,60%.
+        App compila para iPadOS y simulador.
 - [ ] Task: Pull Request a `main`
 - [ ] Task: Actualizar el registro y cerrar el track
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
