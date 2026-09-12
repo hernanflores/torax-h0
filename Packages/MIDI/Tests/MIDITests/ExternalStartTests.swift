@@ -18,13 +18,13 @@ final class ExternalStartTests: XCTestCase {
 
     private final class Recorder: @unchecked Sendable {
         private let lock = NSLock()
-        private var messages: [MIDIMessage] = []
+        private var entries: [(message: MIDIMessage, hostTime: UInt64)] = []
 
         func record(_ message: MIDIMessage, _ hostTime: UInt64) {
-            lock.withLock { messages.append(message) }
+            lock.withLock { entries.append((message, hostTime)) }
         }
 
-        var all: [MIDIMessage] { lock.withLock { messages } }
+        var all: [(message: MIDIMessage, hostTime: UInt64)] { lock.withLock { entries } }
     }
 
     private func makeTransport(_ recorder: Recorder) -> Transport {
@@ -123,5 +123,50 @@ final class ExternalStartTests: XCTestCase {
 
         transport.stop()
         XCTAssertFalse(transport.isPlaying)
+    }
+
+    /// Un segundo Start corta la pasada vigente y abre la nueva en un único
+    /// instante futuro. Stop y el apagado se envían primero para que el esclavo
+    /// no procese la nueva pasada antes de cerrar la anterior.
+    func testRepeatedStartSharesOneOrderedTransitionTimestamp() throws {
+        let recorder = Recorder()
+        let transport = makeTransport(recorder)
+
+        transport.receive(.start, atHostTime: HostClock.now())
+        waitUntil { recorder.all.contains { $0.message == .timingClock } }
+
+        let pulsesBeforeRestart = recorder.all.filter { $0.message == .timingClock }.count
+        let receivedAt = HostClock.now()
+        transport.receive(.start, atHostTime: receivedAt)
+        waitUntil {
+            recorder.all.filter { $0.message == .timingClock }.count > pulsesBeforeRestart
+        }
+
+        let transition = recorder.all
+        let starts = transition.enumerated().filter { $0.element.message == .start }
+        let stop = try XCTUnwrap(
+            transition.enumerated().first { $0.element.message == .stop })
+        let silencing = transition.enumerated().filter { entry in
+            guard entry.element.hostTime == stop.element.hostTime,
+                case .controlChange(_, let controller, _) = entry.element.message
+            else { return false }
+            return controller == MIDIController.allNotesOff
+        }
+
+        XCTAssertEqual(starts.count, 2)
+        XCTAssertFalse(silencing.isEmpty)
+        let replacement = try XCTUnwrap(starts.last)
+        let lastSilence = try XCTUnwrap(silencing.last)
+        XCTAssertLessThan(stop.offset, silencing[0].offset)
+        XCTAssertLessThan(lastSilence.offset, replacement.offset)
+        XCTAssertTrue(silencing.allSatisfy { $0.offset < replacement.offset })
+        XCTAssertEqual(stop.element.hostTime, replacement.element.hostTime)
+        XCTAssertGreaterThan(replacement.element.hostTime, receivedAt)
+        XCTAssertGreaterThan(
+            recorder.all.filter { $0.message == .timingClock }.count,
+            pulsesBeforeRestart,
+            "la nueva pasada no siguió emitiendo clock")
+
+        transport.stop()
     }
 }

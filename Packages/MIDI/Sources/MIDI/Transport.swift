@@ -441,8 +441,14 @@ public final class Transport: @unchecked Sendable {
             //
             // Un Start sobre un transporte que ya suena lo reinicia desde el
             // paso 0, que es lo que hace el Start de cualquier secuenciador.
-            if isPlaying { stop() }
-            startPlaying(atHostTime: hostTime)
+            if isPlaying, let transitionAt = stopPlaying(notBefore: hostTime) {
+                // Stop, apagado y Start comparten el corte. Enviar los dos
+                // primeros antes de arrancar garantiza también el orden cuando
+                // CoreMIDI agrupa mensajes con el mismo timestamp.
+                startPlaying(atHostTime: transitionAt)
+            } else {
+                startPlaying(atHostTime: hostTime)
+            }
             return true
 
         case .stop:
@@ -635,8 +641,20 @@ public final class Transport: @unchecked Sendable {
         accumulatedCorrectionNanoseconds = 0
         lastTickNanoseconds.value = 0
         publishInternalTempo()
-        gridOriginNanoseconds = Int64(
-            HostClock.nanoseconds(fromHostTicks: origin ?? HostClock.now()))
+        let startHostTime = origin ?? HostClock.now()
+        gridOriginNanoseconds = Int64(HostClock.nanoseconds(fromHostTicks: startHostTime))
+
+        // **El maestro anuncia su arranque antes de su primer pulso** (FR4 de
+        // `midi-clock-master_20260911`). Se sella en el instante del arranque, y
+        // el hilo cuenta sus ticks desde ahí o desde más tarde —el presupuesto de
+        // adelanto solo puede empujar el origen hacia el futuro—, así que el
+        // Start no puede llegar detrás del primer tick. Un esclavo que recibe
+        // clock antes del Start lo descarta, y se pierde la primera negra.
+        //
+        // **Sale también con reloj externo, y es deliberado** (FR8): lo que se
+        // anuncia es que *esta* app arranca, disparada por quien sea. La app dice
+        // lo que hace, no lo que le dicen.
+        send(.start, startHostTime)
 
         // Los dieciséis con los que se arranca, leídos una sola vez: el
         // scheduler construye con ellos **una rejilla por Track**, cada una con
@@ -654,6 +672,14 @@ public final class Transport: @unchecked Sendable {
             pattern: starting,
             mutes: mutes,
             clock: clockHandoff,
+            // **El pulso de clock sale por el mismo camino que las notas**: el
+            // hilo lo sella y esto solo lo envía. Un tick de System Real-Time no
+            // lleva canal ni datos, así que no hay nada que convertir.
+            //
+            // Realtime: llamado desde el hilo del scheduler.
+            clockPulseHandler: { [send] hostTime in
+                send(.timingClock, hostTime)
+            },
             repetitionHandler: {
                 [emitter, send] _, source, _, pitch, velocity, gateNanoseconds, hostTime in
                 // **Las repeticiones no vuelven a calcular nada.** Su velocity
@@ -716,7 +742,7 @@ public final class Transport: @unchecked Sendable {
             )
         }
         scheduler = thread
-        thread.start(atHostTime: origin)
+        thread.start(atHostTime: startHostTime)
 
         // **El último paso del arranque**, y a propósito: quien lea el contador
         // desde el hilo principal tiene que encontrarse un transporte que ya
@@ -757,16 +783,24 @@ public final class Transport: @unchecked Sendable {
     ///
     /// **Por qué no va sellado en «ahora».** CoreMIDI emite en orden de
     /// timestamp, así que un note-off a 0 saldría *antes* que cualquier note-on
-    /// que el hilo moribundo ya hubiera programado con timestamp futuro — es
-    /// decir, antes de la nota que este mensaje existe para apagar. Sellarlo una
-    /// ventana por delante lo pone detrás de todo lo ya entregado, porque nada
-    /// puede estar programado más allá del look-ahead.
+    /// que el hilo ya hubiera programado con timestamp futuro. La parada espera
+    /// la ventana en curso y usa el horizonte final que devuelve el scheduler;
+    /// así queda detrás incluso cuando un maestro lento estira el look-ahead.
     ///
-    /// El retraso es el de la ventana, unos milisegundos: por debajo de lo que
+    /// El retraso es de unos milisegundos y conserva el orden de todo lo que ya
+    /// salió del scheduler.
     /// Stops playback and silences active notes.
     /// - Sends an All Notes Off message and note-off messages for pitches in the last published track.
     /// - Does nothing when playback is already stopped.
     public func stop() {
+        _ = stopPlaying()
+    }
+
+    /// Detiene y devuelve el instante compartido por Stop y el apagado.
+    ///
+    /// El valor permite que un Start repetido nazca exactamente en el mismo
+    /// corte, después de haber enviado primero la parada y el silencio.
+    private func stopPlaying(notBefore requestedHostTime: UInt64? = nil) -> UInt64? {
         gridOriginNanoseconds = 0
 
         // **Stop se lleva lo pendiente** (FR10).
@@ -781,8 +815,10 @@ public final class Transport: @unchecked Sendable {
             handoff.adoptArmedPattern()
         }
 
-        guard let scheduler else { return }
-        scheduler.stop()
+        guard let scheduler else { return nil }
+        let afterHorizon = scheduler.stop(drainingPendingEvents: true) &+ 1
+        let futureHostTime = HostClock.now() &+ 1
+        let transitionAt = max(max(afterHorizon, futureHostTime), requestedHostTime ?? 0)
         self.scheduler = nil
 
         // **Después de la guarda**, que es lo que hace que parar lo ya parado no
@@ -793,7 +829,12 @@ public final class Transport: @unchecked Sendable {
         // de silenciar un Track al mutearlo: el procedimiento —`all notes off`
         // por canal y después el barrido de alturas— es el mismo, y está escrito
         // una sola vez en `silence(tracks:atHostTime:)`.
-        silence(tracks: Set(0..<Pattern.trackCount), atHostTime: silenceHostTime)
+        // **Un solo instante para los dos** (FR5 de `midi-clock-master_20260911`).
+        // El hilo ya vació la última ventana y devuelve su horizonte sellado;
+        // un tick más deja Stop y el apagado detrás de todas sus notas y clocks.
+        send(.stop, transitionAt)
+        silence(tracks: Set(0..<Pattern.trackCount), atHostTime: transitionAt)
+        return transitionAt
     }
 
     /// Cuándo sellar un apagado: una ventana por delante.

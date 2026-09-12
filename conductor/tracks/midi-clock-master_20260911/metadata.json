@@ -1,0 +1,15 @@
+{
+  "id": "midi-clock-master_20260911",
+  "title": "Torax H-0 como maestro de MIDI clock",
+  "type": "Feature",
+  "status": "complete",
+  "created": "2026-09-11",
+  "updated": "2026-09-11",
+  "verified_on_device": "2026-09-11",
+  "phases": 6,
+  "requires_device": true,
+  "depends_on": ["external-clock_20260903"],
+  "follows_pattern_of": "external-clock_20260903",
+  "jitter_measurement": "no se hace, por la suspensión del 2026-09-02; los ticks no desplazan ningún instante de nota, y se sustituye por una escucha larga en dispositivo (NFR4)",
+  "branch": "feat/midi-clock-master"
+}
