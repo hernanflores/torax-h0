@@ -132,7 +132,7 @@ test de no regresión.
   - [x] Implementación (Green): `ProjectRecord`.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 5: KNOBS, MIDI LEARN Y PRESET
+## FASE 5: KNOBS, MIDI LEARN Y PRESET [checkpoint: 9e11301]
 
 - [x] Task: CC 75 y 76 en `ControlMapping` (FR14) — 6dd6f2f, 2705df3
   - [x] Tests (Red): knob 14 mueve Pitch y knob 15 mueve Harmony en el Track
@@ -153,7 +153,7 @@ test de no regresión.
 - [x] Task: Tabla del preset — 6dd6f2f, 2705df3
   - [x] Actualizar `preset/README.md`. Confirmar que `Torax.beatsteppro` no cambia
         (sin diff contra `main`).
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) — manual diferida a la FASE 8
 
 ## FASE 6: TEMP Y CTRL ALL
 
@@ -191,7 +191,22 @@ test de no regresión.
 
 ## FASE 8: DISPOSITIVO Y CIERRE
 
+> **Enmienda del 2026-09-12 — las verificaciones manuales se juntan aquí.** El
+> usuario no tiene el iPad disponible por el momento. Desde la FASE 5 los
+> checkpoints cierran con las pruebas automáticas y la verificación en
+> dispositivo de cada fase se hace en esta, de una vez. Las de las FASES 3 y 4
+> se confirmaron sin probar en dispositivo, así que también entran.
+
 - [ ] Task: Verificación en iPad con BeatStep Pro (AC 13)
+  - [ ] FASE 3 — Pitch: knob 14 transpone en grados (`Pitch +1`, negativos),
+        conserva el valor al cambiar Scale, los pads muestran el pool base, y
+        sobrevive a relanzar.
+  - [ ] FASE 4 — Harmony: knob 15 da D3 E3 G3 → D3 F3 G3 → D3 F3 A3 y un clic
+        inverso C3 F3 A3; Pitch conserva la forma; pad y Scale limpian Harmony;
+        relanzar conserva estado y cursor.
+  - [ ] FASE 5 — MIDI Learn: proyecto antiguo recibe 14 y 15; Pitch aprendido en
+        otro knob sobrevive; Steps en el 14 deja Pitch sin control y así sigue
+        al relanzar; el botón de fábrica restaura.
   - [ ] Knobs 14 y 15 mueven Pitch y Harmony. Evaluación de oído con pools de 2,
         3 y 4 pitches en major, minor y pentatonic, con giros lentos y rápidos y
         cambios de sentido. Registrar casos abruptos o estancados en
