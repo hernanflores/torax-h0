@@ -115,17 +115,26 @@ por la escucha larga de la Fase 6.
 
 ## FASE 5: EL PULSO SIGUE AL MAESTRO, Y AL TEMPO QUE CAMBIA
 
-- [ ] Task: Tests de tempo en vuelo (rojo)
-  - [ ] Cambiar el tempo interno con el transporte corriendo cambia la separación
+- [x] Task: Tests de tempo en vuelo — `f9c3f85`
+  - [x] Cambiar el tempo interno con el transporte corriendo cambia la separación
         de los ticks siguientes sin reiniciar el índice ni saltar de fase (FR10).
-  - [ ] Cambiar de Bank con el transporte corriendo lleva el tempo del Bank al
-        pulso, en el compás y no antes.
-  - [ ] Con `External`, las correcciones de fase que `ClockHandoff` acumula
-        desplazan también los ticks: en una pasada larga simulada, el pulso
-        emitido no se separa del recibido.
-- [ ] Task: Cerrar lo que los tests descubran
-  - [ ] Un commit por hallazgo, con su caso en rojo primero.
-- [ ] Task: Phase Verification & Checkpoint
+  - [x] Cambiar de Bank con el transporte corriendo lleva el tempo del Bank al
+        pulso.
+  - [x] Con `External`, el tempo del maestro llega al pulso en vuelo (FR7) y las
+        correcciones de fase que `ClockHandoff` acumula lo desplazan.
+  - [x] Añadido sobre el plan: el pulso **nunca retrocede** al cambiar de tempo,
+        que es el fallo que dejaría un tick repetido en el esclavo.
+- [x] Task: Cerrar lo que los tests descubran — **sin cambios de producción**
+  - [x] Los cinco casos pasaron contra el código de las fases 2–4: el mecanismo
+        del tempo ya llegaba al pulso porque los dos usan el mismo `TempoMap`.
+  - [x] **El único hallazgo fue del test, y queda escrito porque costó una vuelta
+        de diagnóstico**: medía los intervalos con `dropFirst(before)`, y el
+        salto de una corrección de fase vive en el hueco entre el último pulso
+        sellado con el origen viejo y el primero con el nuevo — justo el que ese
+        `dropFirst` se saltaba. Se discriminó publicando a la vez un tempo
+        distinto: el espaciado sí cambiaba, así que el hilo leía el handoff y lo
+        sospechoso era la medición. Corregido en el mismo commit.
+- [~] Task: Phase Verification & Checkpoint
 
 ## FASE 6: COBERTURA, DISPOSITIVO Y CIERRE
 
