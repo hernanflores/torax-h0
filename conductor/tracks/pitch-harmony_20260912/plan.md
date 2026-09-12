@@ -32,10 +32,10 @@ test de no regresión.
         Harmony**: se limpia al editar el pool o cambiar Scale o Root.
   - [x] Fijar vocabulario: pitch del pool, no *voice*. Pitch y Harmony sin
         traducir.
-- [ ] Task: Sacar Harmony de «Fuera de v1» en `product.md`
-  - [ ] Nota fechada en *MVP Scope* e *Interaction Model*: Pitch y Harmony
+- [x] Task: Sacar Harmony de «Fuera de v1» en `product.md` — e1298c8
+  - [x] Nota fechada en *MVP Scope* e *Interaction Model*: Pitch y Harmony
         transforman el pool que suena, y los pads siguen editando el pool base.
-  - [ ] Anotar las limitaciones conocidas: Harmony sin histéresis bajo Ctrl All,
+  - [x] Anotar las limitaciones conocidas: Harmony sin histéresis bajo Ctrl All,
         y Ctrl All frente a Temp.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
