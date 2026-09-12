@@ -84,12 +84,12 @@ suspendida desde el 2026-09-02.
 
 ## FASE 4: Cobertura, dispositivo y cierre
 
-- [ ] Task: Suite completa verde y cobertura de `MIDI` ≥80% (NFR3)
-- [ ] Task: Verificación en dispositivo
-  - [ ] BeatStep Pro contra el iPad, recorrer los dieciséis knobs
-  - [ ] Cada knob mueve lo que la pantalla enseña en su misma posición de card
-  - [ ] Los knobs 14 y 15 no hacen nada; el 16 mueve el Cycle en edición
-  - [ ] Temp y Ctrl All sobre un knob de cada fila
-  - [ ] Escribir `device-verification.md`
-- [ ] Task: Pull Request a `main`
+- [x] Task: Suite completa verde y cobertura de `MIDI` ≥80% (NFR3) — 91,90%
+- [x] Task: Verificación en dispositivo
+  - [x] BeatStep Pro contra el iPad, recorrer los dieciséis knobs
+  - [x] Cada knob mueve lo que la pantalla enseña en su misma posición de card
+  - [x] Los knobs 14 y 15 no hacen nada; el 16 mueve el Cycle en edición
+  - [x] Temp y Ctrl All sobre un knob de cada fila
+  - [x] Escribir `device-verification.md`
+- [~] Task: Pull Request a `main`
 - [ ] Task: Phase Verification & Checkpoint
