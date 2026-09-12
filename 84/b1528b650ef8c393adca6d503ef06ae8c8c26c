@@ -1,3 +1,5 @@
 Task: Harmony bajo Temp — un paso por Cycle (FASE 6, FR17)
 Cambios: ParameterOverlay no iguala Harmony: cada clic da un paso en cada Cycle activo desde su propio estado (con histéresis); captura el estado de Harmony por Cycle antes del primer paso que mueve algo; soltar lo devuelve. Un giro bloqueado en todos no captura nada.
 Tests: HarmonyUnderTempTests. Engine 1051 verdes; MIDI sin fallos nuevos (VirtualLoopbackTests flake, TransportTests falla en main).
+
+Phase Verification FASE 6: Engine 1051 verdes (98,77%; CtrlAllOffset 96,4%, ParameterOverlay 96,3%); MIDI 994, 92,41% líneas, solo VirtualLoopbackTests (flake) y TransportTests (falla en main); xcodebuild iPadOS ok. Verificación manual DIFERIDA a la FASE 8.
