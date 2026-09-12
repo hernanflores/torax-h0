@@ -2,3 +2,5 @@ Task: Altura ↔ grado en TonalFrame (FASE 2, FR2, FR3)
 Cambios: TonalFrame.degree(of:) y pitch(atDegree:), derivados de la máscara rotada, sin asignaciones. 8 tests nuevos, incluida ida y vuelta en 8 escalas × 12 Roots.
 Archivos: Packages/Engine/Sources/Engine/Tonal.swift, Packages/Engine/Tests/EngineTests/TonalFrameDegreeTests.swift
 Por qué: el grado es la unidad de Pitch y Harmony; el cero se ancla a la octava MIDI −1 para evitar divisiones con signo. Engine 953 tests, cobertura 98,71%.
+
+Phase Verification FASE 2: swift test --package-path Packages/Engine --enable-code-coverage (953 tests, 0 failures; Engine 98,71%). Manual: filtro TonalFrameDegreeTests y revisión del cero de grados. Usuario confirmó: go.
