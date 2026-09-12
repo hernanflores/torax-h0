@@ -51,7 +51,7 @@ test de no regresión.
         `pitchClassMask`, sin escribir intervalos en un segundo sitio.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 3: PITCH
+## FASE 3: PITCH [checkpoint: c583c4e]
 
 - [x] Task: `pitch` dentro del `Cycle` y el pool que suena (FR1, FR2, FR4, FR7, NFR1) — 1985664
   - [x] Tests (Red): AC 1 (C4 E4 G4 con +1 dan D4 F4 A4, con −1 dan B3 D4 F4).
@@ -86,7 +86,7 @@ test de no regresión.
         intacto y el pool que suena en la escala nueva.
   - [x] Implementación (Green): no hizo falta — `setFrame` ya construye con
         `with(...)`. El test queda como regresión.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 4: HARMONY — EL PASO
 
