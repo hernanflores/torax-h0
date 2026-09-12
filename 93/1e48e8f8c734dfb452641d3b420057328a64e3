@@ -28,3 +28,24 @@ Verificación
 
 Ficheros creados
 - Packages/MIDI/Sources/MIDI/ClockPulseScheduler.swift
+
+--- Phase Verification & Checkpoint — FASE 2: EL GENERADOR DE PULSO ---
+
+Tests automáticos (partición de CI, como manda workflow.md):
+  swift test --package-path Packages/MIDI --filter 'VirtualLoopbackTests|JitterHarnessTests|CoreMIDIOutputTests|CoreMIDIInputTests'
+    -> Executed 21 tests, with 1 test skipped and 0 failures
+  swift test --package-path Packages/MIDI --skip VirtualLoopbackTests --skip JitterHarnessTests --skip CoreMIDIOutputTests --skip CoreMIDIInputTests
+    -> Executed 940 tests, with 0 failures  (923 antes de la fase + 17 nuevos)
+  Sin aparición del flake clientCreationFailed(-50) en esta pasada.
+
+Verificación manual: la fase no cambia nada visible. ClockPulseScheduler existe y
+todavía no lo llama nadie —el pulso empieza a salir en la Fase 3— así que lo que
+se revisa es el contrato:
+  1. El tipo: 24 pulsos por negra como constante del protocolo, advance con
+     límite superior exclusivo y marca de agua que solo avanza, rebase anclando
+     en el tick aún no entregado.
+  2. Las dos decisiones escritas en el código: multiplicar desde el ancla en vez
+     de acumular, y por qué el ancla es nextTick.
+  3. Los tests, incluido el de 600 negras sin deriva.
+
+Confirmación del usuario: «ok» (2026-09-11).
