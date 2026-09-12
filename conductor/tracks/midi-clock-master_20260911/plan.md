@@ -61,7 +61,7 @@ por la escucha larga de la Fase 6.
         criterio que `LookAheadScheduler.rebase(to:)`.
 - [x] Task: Phase Verification & Checkpoint
 
-## FASE 3: EL PULSO SALE POR EL HILO DEL SCHEDULER
+## FASE 3: EL PULSO SALE POR EL HILO DEL SCHEDULER [checkpoint: b6ddffb]
 
 - [x] Task: Tests de emisión de ticks desde `SchedulerThread` (rojo) — `df7155b`
   - [x] Con un recolector de prueba, el bucle entrega pulsos con timestamps
@@ -79,13 +79,13 @@ por la escucha larga de la Fase 6.
         mediría el desplazamiento que `DelayBudgetDivisionTests` ya cubre, no
         nada propio del clock. Lo que sí queda fijado es que ningún pulso se
         selle en el pasado.
-- [~] Task: Emitir el pulso en el bucle de `SchedulerThread`
-  - [ ] El generador se lee y avanza **una vez por ventana**, junto al snapshot y
+- [x] Task: Emitir el pulso en el bucle de `SchedulerThread` — `b6ddffb`
+  - [x] El generador se lee y avanza **una vez por ventana**, junto al snapshot y
         al `ClockHandoff`.
-  - [ ] El instante se convierte con `tempoMap.wallNanoseconds(forGridNanoseconds:)`,
+  - [x] El instante se convierte con `tempoMap.wallNanoseconds(forGridNanoseconds:)`,
         como los Steps.
-  - [ ] Sin asignaciones, sin locks y sin logging (NFR1).
-- [ ] Task: Phase Verification & Checkpoint
+  - [x] Sin asignaciones, sin locks y sin logging (NFR1).
+- [x] Task: Phase Verification & Checkpoint
 
 ## FASE 4: START Y STOP
 
