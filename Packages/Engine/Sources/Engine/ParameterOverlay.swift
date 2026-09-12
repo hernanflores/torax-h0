@@ -153,7 +153,7 @@ public struct ParameterOverlay: Equatable, Sendable {
         for (parameter, byCycle) in bases {
             for (index, value) in byCycle {
                 guard let cycle = restored.cycle(at: index) else { continue }
-                restored = restored.replacing(cycle.setting(parameter, to: value), at: index)
+                restored = restored.replacing(cycle.restoring(parameter, to: value), at: index)
             }
         }
         return restored
@@ -209,5 +209,26 @@ extension Cycle {
     /// deltas no se podría, porque cada Cycle parte de un valor distinto.
     public func setting(_ parameter: TrackParameter, to value: Int) -> Cycle {
         applying(value - self.value(of: parameter), to: parameter)
+    }
+}
+
+extension Cycle {
+
+    /// El mismo Cycle con ese parámetro **devuelto** al valor que tenía antes de
+    /// un Temp o un Ctrl All.
+    ///
+    /// **Para casi todos es `setting(_:to:)`**: el valor capturado cabía cuando
+    /// se capturó, y el freno de cada parámetro no depende de nada que el hold
+    /// pueda mover.
+    ///
+    /// **Pitch es la excepción, y se devuelve literal** (`pitch-harmony_20260912`).
+    /// Su freno depende del pool y de Harmony, y Harmony sí puede moverse durante
+    /// el hold. Frenar al restaurar dejaría Pitch en un valor que nadie puso; el
+    /// pool que suena ya acota al borde de MIDI lo que no quepa.
+    func restoring(_ parameter: TrackParameter, to value: Int) -> Cycle {
+        switch parameter {
+        case .pitch: with(pitchOffset: PitchOffset(value) ?? pitchOffset)
+        default: setting(parameter, to: value)
+        }
     }
 }

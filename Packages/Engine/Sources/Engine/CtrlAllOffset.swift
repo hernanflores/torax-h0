@@ -259,7 +259,7 @@ public struct CtrlAllOffset: Equatable, Sendable {
                     let cycle = track.cycle(at: position.cycle)
                 else { continue }
                 restored = restored.replacing(
-                    track.replacing(cycle.setting(parameter, to: value), at: position.cycle),
+                    track.replacing(cycle.restoring(parameter, to: value), at: position.cycle),
                     at: position.track)
             }
         }
