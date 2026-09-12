@@ -491,11 +491,20 @@ public struct ControlNumbersRecord: Codable, Equatable, Sendable {
     public let knobBlock: Int
     public let stepButtonBlock: Int
 
+    /// Las claves de los parámetros que conocía la app al escribir, desde el
+    /// 2026-09-12 (`pitch-harmony_20260912`, FR15).
+    ///
+    /// **Opcional, y su ausencia significa algo**: el fichero es de antes de la
+    /// lista, así que no conocía Pitch ni Harmony. Ver
+    /// `ControlNumbers.knownParameters`.
+    public let parameters: [String]?
+
     public init(assignments: [String: Int], padBlock: Int, knobBlock: Int, stepButtonBlock: Int) {
         self.assignments = assignments
         self.padBlock = padBlock
         self.knobBlock = knobBlock
         self.stepButtonBlock = stepButtonBlock
+        parameters = TrackParameter.allCases.map(Self.key(for:))
     }
 
     public init(_ numbers: ControlNumbers) {
@@ -504,6 +513,9 @@ public struct ControlNumbersRecord: Codable, Equatable, Sendable {
         padBlock = numbers.padBlock
         knobBlock = numbers.knobBlock
         stepButtonBlock = numbers.stepButtonBlock
+        // En el orden del dominio, para que el fichero no baile entre guardados.
+        parameters = TrackParameter.allCases.filter(numbers.knownParameters.contains)
+            .map(Self.key(for:))
     }
 
     /// Los números que describe.
@@ -522,9 +534,15 @@ public struct ControlNumbersRecord: Codable, Equatable, Sendable {
             assignments: table,
             padBlock: padBlock,
             knobBlock: knobBlock,
-            stepButtonBlock: stepButtonBlock
+            stepButtonBlock: stepButtonBlock,
+            knownParameters: parameters.map { Set($0.compactMap(Self.parameter(for:))) }
+                ?? Self.knownBeforeTheList
         )
     }
+
+    /// Lo que conocía una app anterior a la lista: todo menos Pitch y Harmony,
+    /// que entraron con ella.
+    static let knownBeforeTheList = Set(TrackParameter.allCases).subtracting([.pitch, .harmony])
 
     /// La clave con la que cada parámetro se escribe en disco.
     ///
