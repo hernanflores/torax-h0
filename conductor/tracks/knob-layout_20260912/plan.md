@@ -26,7 +26,7 @@ suspendida desde el 2026-09-02.
   - [ ] Correr y confirmar que fallan
 - [x] Task: Mover `editingCycleKnobOffset` de 12 a 15 `57ef412`
   - [ ] Confirmar verde
-- [~] Task: Temp y Ctrl All acotan los trece knobs de parámetro y excluyen el 85
+- [x] Task: Temp y Ctrl All acotan los trece knobs de parámetro y excluyen el 85 `38015b7`
   - [ ] Revisar `TempModifierInputTests`, `CtrlAllModifierInputTests` y
         `EditingCycleTouchPathTests`
   - [ ] Corregir las referencias a «knob 10», al CC 79 y al CC 82 que queden en
