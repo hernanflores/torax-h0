@@ -1,0 +1,5 @@
+Task: Un paso de Harmony (FASE 4, FR8–FR12, NFR2)
+Cambios: Cycle.harmonyMoved(by:) — |delta| pasos; cada paso prueba desde el cursor en orden circular, mueve el primero que queda en 0–127 (con Pitch) y estrictamente entre vecinos, y deja el cursor detrás. Todo bloqueado no cambia nada. Menos de dos pitches: no-op. Cursor fuera del pool envuelve.
+Tests: ejemplos AC 4 y AC 5 del PRD literales, choque, cruce, borde MIDI con Pitch, bloqueo arriba/abajo, delta n = n pasos, propiedades con SeededRandom sobre 8 escalas × 3 Roots × 200 clics (≤1 cambio, en marco, ordenado, determinista).
+Nombre: harmonyMoved(by:) y no harmony(movedBy:) porque choca con la propiedad harmony.
+Archivos: Sources/Engine/Harmony.swift, Tests/EngineTests/HarmonyStepTests.swift
