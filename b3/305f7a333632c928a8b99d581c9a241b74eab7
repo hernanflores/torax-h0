@@ -1,0 +1,4 @@
+Task: Pitch bajo Temp y Ctrl All (FASE 6, FR16, FR17, AC 12)
+Cambios: Cycle.restoring(_:to:) — Pitch se devuelve literal al soltar; el resto sigue con setting(_:to:). Temp y Ctrl All lo usan en restored(into:). La igualación de Temp y el desplazamiento de Ctrl All funcionaban ya por la vía genérica (value(of:), setting, displacementRange ±28).
+Por qué: el freno de Pitch depende del pool y de Harmony, que puede moverse durante el hold; frenar al restaurar dejaría un valor que nadie puso.
+Tests: PitchUnderTempAndCtrlAllTests. Engine 1041 verdes.
