@@ -1248,7 +1248,7 @@ en cualquier momento.
 
 ---
 
-- [~] **Track: Reordenar los knobs del preset del BeatStep Pro** — *planificado el 2026-09-12*
+- [x] **Track: Reordenar los knobs del preset del BeatStep Pro** — *entregado y verificado en iPad el 2026-09-12*; **sin medición de jitter**. [PR #57](https://github.com/hernanflores/torax-h0/pull/57)
   *Link: [conductor/tracks/knob-layout_20260912/index.md](./tracks/knob-layout_20260912/index.md)*
 
   **La pantalla y la mano vuelven a decir lo mismo.** Desde el 2026-09-05 llevan
@@ -1277,6 +1277,21 @@ en cualquier momento.
 
   **Sin medición de jitter**, por la suspensión del 2026-09-02 y porque no
   desplaza ningún instante.
+
+  **Lo que encontró la verificación en dispositivo, y es lo que hay que
+  recordar de esta rebanada:** el bloque de CC **no sigue al orden físico de los
+  encoders**. `Torax.beatsteppro` asigna los controlId 32–39 —la fila de
+  arriba— a los **CC 78–85**, y los 40–47 —la de abajo— a los **70–77**. Toda
+  la planificación supuso lo contrario, que el encoder N manda el CC 69+N, y la
+  primera pasada dejó el knob del Cycle en la esquina que no era.
+
+  Nada estaba roto cuando falló: el mapeo hacía lo que decía y los 984 tests
+  pasaban. El error vivía en la traducción entre el número de CC y el knob que
+  se toca con el dedo, que es lo único que ningún test del repositorio puede
+  ver. Está registrado con los cinco pasos fallidos en
+  [`device-verification.md`](./tracks/knob-layout_20260912/device-verification.md).
+
+  **Cobertura `MIDI` 91,90%.** `Engine` 945 tests y `Persistence` 64, en verde.
 
 ---
 

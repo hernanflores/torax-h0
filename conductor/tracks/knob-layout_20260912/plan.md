@@ -82,7 +82,7 @@ suspendida desde el 2026-09-02.
 - [x] Task: `PresetFileTests` verde sin relajar ninguna aserción (NFR1) `3eeb7a5`
 - [x] Task: Phase Verification & Checkpoint `3eeb7a5`
 
-## FASE 4: Cobertura, dispositivo y cierre
+## FASE 4: Cobertura, dispositivo y cierre [checkpoint: 811ebdb]
 
 - [x] Task: Suite completa verde y cobertura de `MIDI` ≥80% (NFR3) — 91,90%
 - [x] Task: Verificación en dispositivo
@@ -92,4 +92,4 @@ suspendida desde el 2026-09-02.
   - [x] Temp y Ctrl All sobre un knob de cada fila
   - [x] Escribir `device-verification.md`
 - [x] Task: Pull Request a `main` — [PR #57](https://github.com/hernanflores/torax-h0/pull/57)
-- [ ] Task: Phase Verification & Checkpoint
+- [x] Task: Phase Verification & Checkpoint `811ebdb`
