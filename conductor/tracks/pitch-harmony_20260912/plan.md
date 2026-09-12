@@ -39,7 +39,7 @@ test de no regresión.
         y Ctrl All frente a Temp.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 2: LOS GRADOS — MATEMÁTICA PURA EN `Engine`
+## FASE 2: LOS GRADOS — MATEMÁTICA PURA EN `Engine` [checkpoint: fd87d17]
 
 - [x] Task: Altura ↔ grado en `TonalFrame` (FR2, FR3) — fd87d17
   - [x] Tests (Red): en Do mayor, C4 es un grado y B3 el anterior. Grado +1 desde
@@ -49,7 +49,7 @@ test de no regresión.
   - [x] Tests (Red): pentatonic y hirajoshi (5 grados) cruzan la octava bien.
   - [x] Implementación (Green): conversión sin asignaciones, derivada de
         `pitchClassMask`, sin escribir intervalos en un segundo sitio.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 3: PITCH
 
