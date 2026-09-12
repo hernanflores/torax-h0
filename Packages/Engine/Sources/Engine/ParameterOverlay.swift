@@ -191,6 +191,7 @@ extension Cycle {
         case .probability: groove.probability.percent
         case .timing: groove.timing.percent
         case .delay: groove.delay.percent
+        case .pitch: pitchOffset.degrees
         }
     }
 

@@ -46,6 +46,13 @@ public enum TrackParameter: Hashable, Sendable, CaseIterable {
     // Groove, en el tiempo — cuándo ocurre respecto a la rejilla.
     case timing
     case delay
+
+    // Tonal — qué alturas suenan del pool.
+    //
+    // **El primer parámetro de knob de la familia** (`pitch-harmony_20260912`).
+    // Transpone el pool entero en grados de la escala; el pool base lo siguen
+    // editando los pads.
+    case pitch
 }
 
 /// A qué familia funcional pertenece un parámetro.
@@ -105,6 +112,7 @@ extension TrackParameter {
         case .steps, .pulses, .rotate, .division: .shape
         case .repeats, .repeatTime, .ramp, .pace: .shape
         case .velocity, .sustain, .probability, .timing, .delay: .groove
+        case .pitch: .tonal
         }
     }
 }
@@ -123,6 +131,7 @@ extension TrackParameter {
         case .repeats, .repeatTime, .ramp, .pace: true
         case .steps, .pulses, .rotate, .division: false
         case .velocity, .sustain, .probability, .timing, .delay: false
+        case .pitch: false
         }
     }
 }
@@ -165,6 +174,7 @@ extension TrackParameter: CustomStringConvertible {
         case .probability: Probability.validRange
         case .timing: Timing.validRange
         case .delay: Delay.validRange
+        case .pitch: PitchOffset.validRange
         }
     }
 
@@ -183,6 +193,7 @@ extension TrackParameter: CustomStringConvertible {
         case .probability: "Probability"
         case .timing: "Timing"
         case .delay: "Delay"
+        case .pitch: "Pitch"
         }
     }
 }
@@ -283,6 +294,11 @@ extension Cycle {
                     timing: groove.timing,
                     delay: groove.delay.advanced(by: delta)
                 ))
+
+        // El freno depende del pool y del marco, así que lo decide quien los
+        // conoce: `pitchOffset(movedBy:)`.
+        case .pitch:
+            return with(pitchOffset: pitchOffset(movedBy: delta))
         }
     }
 
@@ -341,6 +357,11 @@ extension TrackParameter {
         // único parámetro que puede ser negativo, y adelantar y atrasar no se
         // distinguen por el contexto.
         case .delay: return "\(groove.delay.percent)%"
+        // Con signo explícito, como Ramp y Pace, pero sin `%`: son grados, no un
+        // porcentaje de nada.
+        case .pitch:
+            let degrees = track.pitchOffset.degrees
+            return degrees > 0 ? "+\(degrees)" : "\(degrees)"
         }
     }
 

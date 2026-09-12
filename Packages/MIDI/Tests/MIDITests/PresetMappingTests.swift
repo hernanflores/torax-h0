@@ -69,6 +69,8 @@ final class PresetMappingTests: XCTestCase {
             82: .repeats, 83: .repeatTime, 84: .ramp, 85: .pace,
             // La de abajo, que son los CC 70-77: el card Groove.
             70: .velocity, 71: .sustain, 72: .probability, 73: .timing, 74: .delay,
+            // Tonal cierra la fila de abajo (`pitch-harmony_20260912`).
+            75: .pitch,
         ]
         for (number, parameter) in expected {
             XCTAssertEqual(mapping.controller(for: parameter)?.number, number, "\(parameter)")
@@ -110,13 +112,20 @@ final class PresetMappingTests: XCTestCase {
             XCTAssertEqual(parameter.family, .shape, "CC \(number) es \(parameter)")
         }
 
-        let groove = bottomRow.compactMap {
+        // **Desde el 2026-09-12 la fila de abajo termina en Tonal**
+        // (`pitch-harmony_20260912`): los cinco de Groove y, detrás, en los
+        // knobs que quedaban libres, los de Tonal. La regla de una fila por card
+        // se cumple a medias y es una decisión, no un descuido: no hay una
+        // tercera fila.
+        let bottom = bottomRow.compactMap {
             mapping.parameter(for: MIDIController($0)!)
         }
-        XCTAssertEqual(groove.count, 5, "la fila de abajo no lleva los cinco de Groove")
-        for parameter in groove {
-            XCTAssertEqual(parameter.family, .groove, "\(parameter) no es de Groove")
-        }
+        XCTAssertEqual(
+            bottom.filter { $0.family == .groove }.count, 5,
+            "la fila de abajo no lleva los cinco de Groove")
+        XCTAssertEqual(
+            bottom.map(\.family), [.groove, .groove, .groove, .groove, .groove, .tonal],
+            "Tonal no va detrás de Groove")
     }
 
     /// Y dentro de cada fila, el orden es el de la pantalla.
@@ -203,8 +212,9 @@ final class PresetMappingTests: XCTestCase {
         }
     }
 
-    func testTwoKnobsCarryNoParameter() throws {
-        XCTAssertEqual(freeKnobs, [75, 76])
+    /// **Uno desde el 2026-09-12**: Pitch ocupa el 75 y el 76 espera a Harmony.
+    func testOneKnobCarriesNoParameter() throws {
+        XCTAssertEqual(freeKnobs, [76])
         for number in freeKnobs {
             let controller = try XCTUnwrap(MIDIController(number))
             XCTAssertNil(mapping.parameter(for: controller), "CC \(number)")
@@ -242,13 +252,19 @@ final class PresetMappingTests: XCTestCase {
         XCTAssertEqual(mapping.editingCycleController?.number, 77)
     }
 
-    /// **Los dos knobs libres son el 14 y el 15, CC 75 y 76.** Están entre Delay
-    /// y la esquina, que es el hueco que separa al Cycle de los parámetros.
-    func testTheFreeKnobsSitBetweenGrooveAndTheCorner() throws {
-        for number in [75, 76] {
-            let controller = try XCTUnwrap(MIDIController(number))
-            XCTAssertNil(mapping.parameter(for: controller), "CC \(number)")
-            XCTAssertNotEqual(mapping.editingCycleController, controller, "CC \(number)")
+    /// **Los knobs 14 y 15, CC 75 y 76, son de Tonal.** Estaban libres entre
+    /// Delay y la esquina desde `knob-layout_20260912`; Pitch ocupa el 75
+    /// (`pitch-harmony_20260912`) y el 76 sigue libre hasta que entre Harmony.
+    /// Ninguno es el knob del Cycle.
+    func testTheKnobsBetweenGrooveAndTheCornerAreTonal() throws {
+        let seventyFive = try XCTUnwrap(MIDIController(75))
+        XCTAssertEqual(mapping.parameter(for: seventyFive), .pitch)
+
+        let seventySix = try XCTUnwrap(MIDIController(76))
+        XCTAssertNil(mapping.parameter(for: seventySix))
+
+        for controller in [seventyFive, seventySix] {
+            XCTAssertNotEqual(mapping.editingCycleController, controller)
         }
     }
 

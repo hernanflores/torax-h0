@@ -161,7 +161,7 @@ final class PitchOffsetInCycleTests: XCTestCase {
         XCTAssertEqual(cycle.with(channel: Channel(3)!).pitchOffset, PitchOffset(2))
         XCTAssertEqual(cycle.with(padOctaveShift: 1).pitchOffset, PitchOffset(2))
         XCTAssertEqual(cycle.with(groove: .default).pitchOffset, PitchOffset(2))
-        for parameter in TrackParameter.allCases {
+        for parameter in TrackParameter.allCases where parameter != .pitch {
             XCTAssertEqual(
                 cycle.applying(1, to: parameter).pitchOffset, PitchOffset(2), "\(parameter)")
         }

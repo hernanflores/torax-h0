@@ -78,3 +78,52 @@ extension PitchPool {
         return transposed
     }
 }
+
+extension Cycle {
+
+    /// El offset que deja un giro de Pitch de `delta` clics, **frenado**.
+    ///
+    /// Dos frenos, y los dos atómicos (FR5, FR6): el rango de ±28 y que ninguna
+    /// altura del pool que suena salga de 0–127. El giro se aplica hasta el
+    /// último valor en el que caben todas, nunca a medias ni acotando nota a
+    /// nota — así los intervalos se conservan siempre.
+    ///
+    /// **Desde fuera de los límites solo se puede volver.** Un cambio de Scale
+    /// que conserva Pitch puede dejar el offset donde ya no cabe. Girar hacia
+    /// fuera no hace nada; girar hacia dentro lleva directamente al último valor
+    /// que cabe, que es el primer clic que cambia lo que suena.
+    ///
+    /// Con el pool vacío solo frena el rango.
+    func pitchOffset(movedBy delta: Int) -> PitchOffset {
+        let current = pitchOffset.degrees
+        var limits = PitchOffset.validRange
+        if let fit = pool.pitchOffsetLimits(in: frame) {
+            limits = max(limits.lowerBound, fit.lowerBound)...min(limits.upperBound, fit.upperBound)
+        }
+
+        let target = min(max(current + delta, limits.lowerBound), limits.upperBound)
+        guard delta > 0 ? target > current : target < current else { return pitchOffset }
+        return PitchOffset(unchecked: target)
+    }
+}
+
+extension PitchPool {
+
+    /// Entre qué offsets caben todas las alturas del pool en 0–127, o `nil` con
+    /// el pool vacío.
+    ///
+    /// Una altura fuera del marco cuenta desde la más cercana, igual que en
+    /// `transposed(by:in:)`.
+    func pitchOffsetLimits(in frame: TonalFrame) -> ClosedRange<Int>? {
+        guard !isEmpty,
+            let lowest = frame.degree(
+                of: frame.nearest(to: Pitch(unchecked: Pitch.validRange.lowerBound))),
+            let highest = frame.degree(
+                of: frame.nearest(to: Pitch(unchecked: Pitch.validRange.upperBound))),
+            let first = pitch(at: 0), let last = pitch(at: count - 1),
+            let bottom = frame.degree(of: frame.nearest(to: first)),
+            let top = frame.degree(of: frame.nearest(to: last))
+        else { return nil }
+        return (lowest - bottom)...(highest - top)
+    }
+}

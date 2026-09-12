@@ -60,7 +60,7 @@ la segunda línea del card: una capa sobre el ritmo, no el ritmo.
 | 11 | 72 | Probability |
 | 12 | 73 | Timing |
 | 13 | 74 | Delay |
-| 14 | 75 | **Sin asignar.** Se ignora en silencio |
+| 14 | 75 | Pitch |
 | 15 | 76 | **Sin asignar.** Se ignora en silencio |
 | 16 | 77 | **Cycle en edición** del Track seleccionado |
 
