@@ -1,0 +1,32 @@
+Task: Nota fechada en tech-stack.md — el pulso sale por el look-ahead (Fase 1, midi-clock-master_20260911)
+
+Qué cambia
+- tech-stack.md gana la enmienda del 2026-09-11, «el clock también sale, y sale
+  por el look-ahead»: el instante del tick n es origen de rejilla + n × (negra /
+  24) en tiempo de rejilla, convertido con el mismo TempoMap que las notas, y
+  entregado sellado hacia el futuro por MIDISendEventList.
+- MIDIMessage.universalPacketWord decía «Nada del producto los emite —la app no
+  es maestro de clock—». Deja de ser cierto y se corrige ahí mismo, no solo en la
+  documentación: el comentario es lo que lee quien toque el empaquetado.
+
+El porqué
+- La alternativa —reenviar el tick entrante al vuelo— queda descartada por
+  escrito por la misma razón que la enmienda del 2026-09-03 la descartó para la
+  entrada: devuelve el jitter al planificador del sistema operativo. Generando,
+  el pulso hereda la propiedad que hace bueno el timing del proyecto y cae donde
+  caen las notas, porque lo calcula la misma aritmética.
+- Queda escrito dónde vive el generador y por qué no en Engine: 24 pulsos por
+  negra es una constante del protocolo MIDI, no del motor generativo.
+- Queda escrito el coste en el hilo de tiempo real, para que no haya que
+  recalcularlo al revisar: ~1,4 ticks por ventana de 20 ms a 174 BPM, con avance
+  de índice entero.
+- Y la limitación que introduce: con reloj externo el pulso se regenera desde la
+  estimación, así que un cambio brusco del maestro tarda hasta una ventana más
+  una negra en llegar a los esclavos.
+
+Ficheros modificados
+- conductor/tech-stack.md
+- Packages/MIDI/Sources/MIDI/MIDIMessage.swift
+
+Verificación
+- swift build --package-path Packages/MIDI: Build complete.
