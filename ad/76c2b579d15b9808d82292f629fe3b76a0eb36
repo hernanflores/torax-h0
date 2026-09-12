@@ -1,3 +1,5 @@
 Task: Rejilla scale y pads (FASE 7, FR21)
 Cambios: PitchPoolGrid sigue iluminando el pool base y gana una línea 'Pitch +2 · Harmony …' escrita por FamilyReadout. Tests de MIDI: con Pitch activo un pad quita su altura base, y lo que suena sigue al pool editado. Pasaron a la primera (el comportamiento vino con togglingPitch en la FASE 4): quedan como regresión.
 Archivos: App/ScaleScreen.swift, Packages/MIDI/Tests/MIDITests/PadsEditTheBasePoolTests.swift. xcodebuild exit 0.
+
+Phase Verification FASE 7: Engine 1052 verdes; MIDI 996 (solo VirtualLoopbackTests flake y TransportTests, que falla en main); xcodebuild iPadOS y simulador ok; captura en simulador del card Tonal. Verificación manual DIFERIDA a la FASE 8.
