@@ -33,26 +33,51 @@ public struct ControlMapping: Equatable, Sendable {
     /// > en el 78 deja de ser cierto. **La pantalla conserva el orden del
     /// > dominio** —`Velocity · Sustain · Probability · Timing · Delay`—: el
     /// > orden de lectura es del dominio y el de los knobs es de la mano, y desde
-    /// > esta fecha son dos cosas distintas. Quien busque la correspondencia
-    /// > tiene la tabla en `preset/README.md`, que es donde debía estar.
+    /// > esta fecha son dos cosas distintas. **Revertida el 2026-09-12**: vuelven
+    /// > a ser el mismo orden.
+    ///
+    /// > **Nota del 2026-09-12 — una fila de knobs por card de la pantalla.**
+    /// > `knob-layout_20260912`.
+    /// >
+    /// > La fila de arriba es el card Shape entero —los cuatro del ritmo y los
+    /// > cuatro del Note Repeater, en el orden de sus dos líneas— y la de abajo
+    /// > es el card Groove, en el orden del dominio. Quien mira la pantalla sabe
+    /// > dónde está el knob sin consultar ninguna tabla, que es lo que se perdió
+    /// > el 2026-09-05 y lo que el Note Repeater empeoró al intercalar familias
+    /// > en la misma fila.
+    /// >
+    /// > **Los CC de la fila de arriba son los 78–85, y los de la de abajo los
+    /// > 70–77.** Es contraintuitivo y es lo que manda el aparato:
+    /// > `Torax.beatsteppro` asigna los controlId 32–39 —la fila de arriba— al
+    /// > bloque alto, y los 40–47 —la de abajo— al bajo. **Se descubrió
+    /// > verificando en dispositivo**, después de que esta misma rebanada
+    /// > colocara el knob del Cycle en la esquina equivocada dando por hecho que
+    /// > el encoder N manda el CC 69+N. El archivo del controlador nunca dijo
+    /// > eso; decía que hay dieciséis encoders en el bloque, que es otra cosa.
+    /// >
+    /// > Por eso el bloque ya no tiene huecos: los ocho de Shape ocupan el 78 al
+    /// > 85 seguidos, sin saltar ninguno. El hueco vive ahora en la fila de
+    /// > abajo, entre Delay y el knob del Cycle.
     public static let beatStepPro = ControlMapping(assignments: [
-        .steps: 70,
-        .pulses: 71,
-        .rotate: 72,
-        .division: 73,
-        .velocity: 74,
-        .sustain: 75,
-        .delay: 76,
-        .timing: 77,
-        .probability: 78,
-        // Los cuatro del Note Repeater, desde el 2026-09-07. El 79 lo dejó libre
-        // a propósito `ctrl-all_20260905` al mover el knob del Cycle al 82; el
-        // 80, el 81 y el 83 no pisan nada con significado asignado en la
-        // especificación MIDI. El 82 se salta porque es el knob del Cycle.
-        .repeats: 79,
-        .repeatTime: 80,
-        .ramp: 81,
-        .pace: 83,
+        // La fila de arriba del controlador, CC 78-85: el card Shape.
+        .steps: 78,
+        .pulses: 79,
+        .rotate: 80,
+        .division: 81,
+        // Los cuatro del Note Repeater cierran la fila, detrás de los cuatro del
+        // ritmo: es la segunda línea del card, que existe porque el Repeater es
+        // una capa sobre el ritmo y no el ritmo (FR15).
+        .repeats: 82,
+        .repeatTime: 83,
+        .ramp: 84,
+        .pace: 85,
+        // La fila de abajo, CC 70-77: el card Groove, en el orden del dominio.
+        // Los CC 75 y 76 quedan libres y el 77 es el knob del Cycle en edición.
+        .velocity: 70,
+        .sustain: 71,
+        .probability: 72,
+        .timing: 73,
+        .delay: 74,
     ])
 
     /// CC por defecto del primer knob; los dieciséis van seguidos desde ahí.
@@ -141,14 +166,19 @@ public struct ControlMapping: Equatable, Sendable {
     }
 
     /// Posición del knob del Cycle en edición dentro del bloque, contando desde
-    /// cero: el decimosexto.
+    /// cero: el octavo, que es el CC 77.
+    ///
+    /// **Es el knob 16 del controlador, no el 8.** El desplazamiento es dentro
+    /// del bloque de CC, y el bloque empieza en la fila de abajo: el CC 77 cierra
+    /// esa fila, que es la esquina inferior derecha. Ver la nota del 2026-09-12
+    /// en `beatStepPro`.
     ///
     /// **Es un dato del mapeo y no un desplazamiento escondido en el código.**
     /// Hasta el 2026-09-05 el CC se calculaba como `knobBlock.number + 9` dentro
     /// de la propiedad de abajo, y eso hacía que mover un knob fuera un cambio de
     /// aritmética en vez de un cambio de tabla — que es exactamente lo que un
     /// mapeo existe para evitar.
-    public static let editingCycleKnobOffset = 15
+    public static let editingCycleKnobOffset = 7
 
     /// CC del knob que mueve el Cycle en edición: el último del bloque.
     ///
@@ -157,17 +187,18 @@ public struct ControlMapping: Equatable, Sendable {
     /// ellos se está apuntando, que es una operación de otro orden. Meterlo en
     /// la tabla obligaría a inventarle un caso al enum que el modelo no tiene.
     ///
-    /// > **Nota del 2026-09-12 — se fue al knob 16, CC 85.** Estaba en el 13
+    /// > **Nota del 2026-09-12 — se fue al knob 16, CC 77.** Estaba en el 13
     /// > desde el 2026-09-05, pegado a los parámetros, y la nota de aquel día
     /// > decía que separarlo «dice con la mano lo que el modelo ya decía». Lo
     /// > decía a medias: el knob de al lado sigue siendo el knob de al lado, y
     /// > con los cuatro del Note Repeater dentro la fila ya no tenía frontera
     /// > visible donde acababan los parámetros.
     /// >
-    /// > En la esquina del bloque lo separan **dos knobs libres**, que es un
-    /// > hueco que la mano nota sin mirar, y el CC 82 queda para Delay — que es
-    /// > lo que el reordenamiento de `knob-layout_20260912` necesitaba: la fila
-    /// > de abajo entera para el card Groove.
+    /// > En la esquina lo separan **dos knobs libres** —los CC 75 y 76—, que es
+    /// > un hueco que la mano nota sin mirar.
+    /// >
+    /// > **Estuvo un rato en el CC 85 y era la esquina equivocada**: el 85 cierra
+    /// > la fila de *arriba*. Lo encontró la verificación en dispositivo.
     ///
     /// > **Nota del 2026-09-05 — se movió del knob 10 al 13.** Estaba en el 79,
     /// > pegado a los nueve parámetros, y este comentario decía que «el sitio

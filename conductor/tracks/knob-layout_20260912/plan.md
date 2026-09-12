@@ -49,7 +49,7 @@ suspendida desde el 2026-09-02.
 > dieciséis knobs a la vez y cualquier orden parcial deja un CC significando dos
 > cosas, que es lo que `hasConflict` rechaza. Una sola tabla, sustituida entera.
 
-- [ ] Task: Tests rojos del bloque entero
+- [x] Task: Tests rojos del bloque entero
   - [ ] En `PresetMappingTests`: la tabla de los trece parámetros con sus CC
         nuevos —78 Steps, 79 Pulses, 80 Rotate, 81 Division, 82 Repeats, 83 Time,
         84 Ramp, 85 Pace, 70 Velocity, 71 Sustain, 72 Probability, 73 Timing,
@@ -59,7 +59,7 @@ suspendida desde el 2026-09-02.
   - [ ] En `ControlMappingTests`: los CC de Shape y de Groove, que hoy afirman la
         tabla vieja
   - [ ] Correr y confirmar que fallan
-- [ ] Task: Sustituir `assignments` y `editingCycleKnobOffset` (de 15 a 7)
+- [x] Task: Sustituir `assignments` y `editingCycleKnobOffset` (de 15 a 7)
   - [ ] Confirmar verde
 - [ ] Task: Phase Verification & Checkpoint (ver `workflow.md`)
 

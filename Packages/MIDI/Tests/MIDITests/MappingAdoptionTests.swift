@@ -137,7 +137,11 @@ final class MappingAdoptionTests: XCTestCase {
 
         input.adopt(mapping: .beatStepPro)
 
-        XCTAssertTrue(input.receive(knob(MIDIController(70)!, by: 1)))
+        // **El knob se pregunta al preset.** Estaba escrito como el CC 70, que
+        // era Steps hasta el 2026-09-12 y ahora es Velocity: el test habría
+        // pasado a comprobar otro parámetro sin avisar.
+        let stepsKnob = ControlMapping.beatStepPro.controller(for: .steps)!
+        XCTAssertTrue(input.receive(knob(stepsKnob, by: 1)))
         XCTAssertEqual(input.track.shape.steps.count, 9)
     }
 
@@ -166,7 +170,7 @@ final class MappingAdoptionTests: XCTestCase {
 
         input.adopt(mapping: .init(assignments: [:], knobBlock: MIDIController(20)!))
 
-        XCTAssertEqual(input.mapping.editingCycleController, MIDIController(35)!)
+        XCTAssertEqual(input.mapping.editingCycleController, MIDIController(27)!)
     }
 
     // MARK: -

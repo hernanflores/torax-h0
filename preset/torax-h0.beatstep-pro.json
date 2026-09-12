@@ -1,7 +1,7 @@
 {
   "name": "Torax H-0",
   "device": "Arturia BeatStep Pro",
-  "version": 5,
+  "version": 6,
   "updated": "2026-09-12",
   "channel": "cualquiera; la app no filtra por canal",
   "encoders": {
@@ -16,95 +16,107 @@
     "assigned": [
       {
         "knob": 1,
-        "cc": 70,
+        "cc": 78,
         "parameter": "Steps"
       },
       {
         "knob": 2,
-        "cc": 71,
+        "cc": 79,
         "parameter": "Pulses"
       },
       {
         "knob": 3,
-        "cc": 72,
+        "cc": 80,
         "parameter": "Rotate"
       },
       {
         "knob": 4,
-        "cc": 73,
+        "cc": 81,
         "parameter": "Division"
       },
       {
         "knob": 5,
-        "cc": 74,
-        "parameter": "Velocity"
+        "cc": 82,
+        "parameter": "Repeats",
+        "note": "Abre la segunda linea del card Shape, la del Note Repeater."
       },
       {
         "knob": 6,
-        "cc": 75,
-        "parameter": "Sustain"
-      },
-      {
-        "knob": 7,
-        "cc": 76,
-        "parameter": "Delay",
-        "note": "Estaba en el CC 78 hasta el 2026-09-05."
-      },
-      {
-        "knob": 8,
-        "cc": 77,
-        "parameter": "Timing"
-      },
-      {
-        "knob": 9,
-        "cc": 78,
-        "parameter": "Probability",
-        "note": "Estaba en el CC 76 hasta el 2026-09-05."
-      },
-      {
-        "knob": 10,
-        "cc": 79,
-        "parameter": "Repeats",
-        "note": "Entra el 2026-09-07 con el Note Repeater (note-repeater_20260906). El CC 79 lo dejo libre a proposito ctrl-all_20260905."
-      },
-      {
-        "knob": 11,
-        "cc": 80,
+        "cc": 83,
         "parameter": "Time",
         "note": "Separacion entre repeticiones, como valor de nota. El caso del enum se llama repeatTime por desambiguacion de Swift; el usuario lee Time."
       },
       {
-        "knob": 12,
-        "cc": 81,
+        "knob": 7,
+        "cc": 84,
         "parameter": "Ramp",
         "note": "Curva de velocity a traves de las repeticiones. Es knob propio y no secundario de CTRL: el BeatStep Pro no tiene CTRL."
       },
       {
-        "knob": 14,
-        "cc": 83,
+        "knob": 8,
+        "cc": 85,
         "parameter": "Pace",
-        "note": "Curva de espaciado a lo largo de la tirada. Salta el knob 13, que es el Cycle en edicion."
+        "note": "Curva de espaciado a lo largo de la tirada. Cierra la fila de arriba."
+      },
+      {
+        "knob": 9,
+        "cc": 70,
+        "parameter": "Velocity"
+      },
+      {
+        "knob": 10,
+        "cc": 71,
+        "parameter": "Sustain"
+      },
+      {
+        "knob": 11,
+        "cc": 72,
+        "parameter": "Probability"
+      },
+      {
+        "knob": 12,
+        "cc": 73,
+        "parameter": "Timing"
+      },
+      {
+        "knob": 13,
+        "cc": 74,
+        "parameter": "Delay",
+        "note": "El cruce con Probability del 2026-09-05 se deshizo el 2026-09-12: Groove vuelve al orden del dominio, que es el de la pantalla."
       },
       {
         "knob": 16,
-        "cc": 85,
+        "cc": 77,
         "parameter": "Cycle en edicion",
-        "note": "Mueve el cursor de edicion del Track seleccionado (cycles_20260901). Cuantos Cycles estan activos se ajusta en pantalla. Estuvo en el knob 10 (CC 79) hasta el 2026-09-05 y en el 13 (CC 82) hasta el 2026-09-12: se va a la esquina del bloque, separado de los parametros por dos knobs libres, porque estar al lado de ellos seguia pareciendo uno mas."
+        "note": "Mueve el cursor de edicion del Track seleccionado (cycles_20260901). Cuantos Cycles estan activos se ajusta en pantalla. Esquina inferior derecha, separado de los parametros por los dos knobs libres."
       }
     ],
     "free": [
       {
-        "knob": 13,
-        "cc": 82,
+        "knob": 14,
+        "cc": 75,
         "parameter": null
       },
       {
         "knob": 15,
-        "cc": 84,
+        "cc": 76,
         "parameter": null
       }
     ],
-    "note": "El orden de los CC dejo de seguir al de TrackParameter el 2026-09-05, cuando Delay y Probability se intercambiaron. La pantalla conserva el orden del dominio (Velocity, Sustain, Probability, Timing, Delay): el orden de lectura es del dominio y el de los knobs es de la mano. Los numeros no pisan CC con significado asignado en la especificacion MIDI; el 79 no era una frontera, y por eso el knob del Cycle pudo irse al 82. El 2026-09-07 entran los cuatro del Note Repeater en los CC 79, 80, 81 y 83, y quedan libres solo el 84 y el 85."
+    "note": "Una fila de knobs por card de la pantalla desde el 2026-09-12 (knob-layout_20260912): arriba el card Shape entero -el ritmo y los cuatro del Note Repeater, en el orden de sus dos lineas- y abajo el card Groove en el orden del dominio. Quien mira la pantalla sabe donde esta el knob sin consultar esta tabla. Ojo con los CC: la fila de arriba es el 78-85 y la de abajo el 70-77, que es lo que manda el controlador y no lo que sugiere la numeracion de los knobs.",
+    "rows": {
+      "note": "El bloque 70-85 no sigue al orden fisico de los encoders. Torax.beatsteppro asigna los controlId 32-39 -la fila de arriba- a los CC 78-85, y los 40-47 -la de abajo- a los CC 70-77. Verificado en dispositivo el 2026-09-12.",
+      "top": {
+        "knobs": "1-8",
+        "cc": "78-85",
+        "card": "Shape"
+      },
+      "bottom": {
+        "knobs": "9-16",
+        "cc": "70-77",
+        "card": "Groove, y el Cycle en edicion en la esquina"
+      }
+    }
   },
   "pads": {
     "block": {
