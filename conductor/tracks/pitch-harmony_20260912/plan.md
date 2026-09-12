@@ -118,11 +118,11 @@ test de no regresión.
   - [x] Refinamiento en curso: CC 76 de fábrica y su fila en `preset/`
         adelantados desde la FASE 5, como con Pitch. Decidido: `displacementRange`
         `nil` y `value(of:)` 0 — Harmony no tiene posición; la FASE 6 lo trata.
-- [ ] Task: Harmony se limpia (FR13, AC 9)
-  - [ ] Tests (Red): insertar o quitar un pitch con pad limpia offsets y cursor y
+- [x] Task: Harmony se limpia (FR13, AC 9) — 30d7aa1
+  - [x] Tests (Red): insertar o quitar un pitch con pad limpia offsets y cursor y
         conserva `pitch`. Cambiar Scale o Root igual. Mover el registro de pads
         (`padOctaveShift`) **no** limpia.
-  - [ ] Implementación (Green): operaciones de dominio en `Cycle` para editar el
+  - [x] Implementación (Green): operaciones de dominio en `Cycle` para editar el
         pool y reencuadrar, que limpian Harmony. `ControlInput` las usa en lugar
         de `with(pool:)` y `with(frame:)` sueltos. `with(...)` sigue sin limpiar,
         porque copia, persistencia y restauración lo necesitan literal.
