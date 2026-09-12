@@ -214,16 +214,6 @@ test de no regresión.
   - [ ] FASE 5 — MIDI Learn: proyecto antiguo recibe 14 y 15; Pitch aprendido en
         otro knob sobrevive; Steps en el 14 deja Pitch sin control y así sigue
         al relanzar; el botón de fábrica restaura.
-  - [ ] Knobs 14 y 15 mueven Pitch y Harmony. Evaluación de oído con pools de 2,
-        3 y 4 pitches en major, minor y pentatonic, con giros lentos y rápidos y
-        cambios de sentido. Registrar casos abruptos o estancados en
-        `device-verification.md`.
-  - [x] Temp y Ctrl All con Pitch y Harmony. Guardar, recargar y comprobar que
-        suena igual.
-- [ ] Task: Cobertura y suite completa
-- [ ] Task: Pull Request a `main`
-- [ ] Task: Actualizar el registro y cerrar el track
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
   - [ ] FASE 6 — Temp y Ctrl All: con [step 13] Pitch se iguala en los Cycles y
         vuelve al soltar; Harmony da un paso por Cycle y vuelve al soltar. Con
         [step 14] Pitch desplaza los doce Tracks y Harmony se recalcula desde la
@@ -231,3 +221,10 @@ test de no regresión.
   - [ ] FASE 7 — Pantalla: el card Tonal muestra `pitch` y `harmony` con lo que
         suena; la pantalla `scale` ilumina el pool base y su línea dice
         `Pitch ±n · Harmony …`; el valor grande anuncia los dos giros.
+  - [ ] Evaluación de oído con pools de 2, 3 y 4 pitches en major, minor y
+        pentatonic, con giros lentos y rápidos y cambios de sentido. Registrar
+        casos abruptos o estancados en `device-verification.md`.
+- [ ] Task: Cobertura y suite completa
+- [ ] Task: Pull Request a `main`
+- [ ] Task: Actualizar el registro y cerrar el track
+- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
