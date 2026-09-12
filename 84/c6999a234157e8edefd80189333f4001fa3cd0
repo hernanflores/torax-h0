@@ -26,3 +26,22 @@ Verificación
 
 Ficheros modificados
 - Packages/MIDI/Sources/MIDI/Transport.swift
+
+--- Phase Verification & Checkpoint — FASE 4: START Y STOP ---
+
+Tests automáticos (partición de CI):
+  Parte 1 -> Executed 21 tests, with 1 test skipped and 0 failures
+  Parte 2 -> Executed 954 tests, with 0 failures  (946 antes de la fase + 8 nuevos)
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS'
+    -> ** BUILD SUCCEEDED **
+  Sin aparición del flake clientCreationFailed(-50) en esta pasada.
+
+Verificación manual: es la primera fase en la que la app emite de verdad. La
+verificación guiada en dispositivo es la Fase 6; aquí se revisan las tres
+decisiones del código:
+  1. start sellado en el instante de arranque, por delante del primer tick.
+  2. stop y el apagado compartiendo un solo instante.
+  3. start también con reloj externo, porque lo que se anuncia es que esta app
+     arranca.
+
+Confirmación del usuario: «sigamos» (2026-09-11).
