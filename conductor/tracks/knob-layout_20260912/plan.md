@@ -17,14 +17,14 @@ suspendida desde el 2026-09-02.
 
 ## FASE 1: El Cycle en edición al knob 16
 
-- [x] Task: Tests rojos del knob del Cycle
+- [x] Task: Tests rojos del knob del Cycle `57ef412`
   - [ ] En `ControlMappingTests`: `editingCycleController` devuelve el CC 85
   - [ ] En `MappingNumbersTests`: `hasConflict` con un parámetro en 85, y sin
         conflicto con uno en 82
   - [ ] En `EditingCycleInputTests`: el CC 85 mueve el cursor de edición y el 82
         mueve Delay
   - [ ] Correr y confirmar que fallan
-- [x] Task: Mover `editingCycleKnobOffset` de 12 a 15
+- [x] Task: Mover `editingCycleKnobOffset` de 12 a 15 `57ef412`
   - [ ] Confirmar verde
 - [ ] Task: Temp y Ctrl All acotan los trece knobs de parámetro y excluyen el 85
   - [ ] Revisar `TempModifierInputTests`, `CtrlAllModifierInputTests` y
