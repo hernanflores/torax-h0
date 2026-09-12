@@ -204,24 +204,24 @@ test de no regresión.
 > dispositivo de cada fase se hace en esta, de una vez. Las de las FASES 3 y 4
 > se confirmaron sin probar en dispositivo, así que también entran.
 
-- [ ] Task: Verificación en iPad con BeatStep Pro (AC 13)
-  - [ ] FASE 3 — Pitch: knob 14 transpone en grados (`Pitch +1`, negativos),
+- [x] Task: Verificación en iPad con BeatStep Pro (AC 13) — confirmada por el usuario, ver `device-verification.md`
+  - [x] FASE 3 — Pitch: knob 14 transpone en grados (`Pitch +1`, negativos),
         conserva el valor al cambiar Scale, los pads muestran el pool base, y
         sobrevive a relanzar.
-  - [ ] FASE 4 — Harmony: knob 15 da D3 E3 G3 → D3 F3 G3 → D3 F3 A3 y un clic
+  - [x] FASE 4 — Harmony: knob 15 da D3 E3 G3 → D3 F3 G3 → D3 F3 A3 y un clic
         inverso C3 F3 A3; Pitch conserva la forma; pad y Scale limpian Harmony;
         relanzar conserva estado y cursor.
-  - [ ] FASE 5 — MIDI Learn: proyecto antiguo recibe 14 y 15; Pitch aprendido en
+  - [x] FASE 5 — MIDI Learn: proyecto antiguo recibe 14 y 15; Pitch aprendido en
         otro knob sobrevive; Steps en el 14 deja Pitch sin control y así sigue
         al relanzar; el botón de fábrica restaura.
-  - [ ] FASE 6 — Temp y Ctrl All: con [step 13] Pitch se iguala en los Cycles y
+  - [x] FASE 6 — Temp y Ctrl All: con [step 13] Pitch se iguala en los Cycles y
         vuelve al soltar; Harmony da un paso por Cycle y vuelve al soltar. Con
         [step 14] Pitch desplaza los doce Tracks y Harmony se recalcula desde la
         base (un clic arriba y uno abajo vuelven); soltar devuelve todo.
-  - [ ] FASE 7 — Pantalla: el card Tonal muestra `pitch` y `harmony` con lo que
+  - [x] FASE 7 — Pantalla: el card Tonal muestra `pitch` y `harmony` con lo que
         suena; la pantalla `scale` ilumina el pool base y su línea dice
         `Pitch ±n · Harmony …`; el valor grande anuncia los dos giros.
-  - [ ] Evaluación de oído con pools de 2, 3 y 4 pitches en major, minor y
+  - [x] Evaluación de oído con pools de 2, 3 y 4 pitches en major, minor y
         pentatonic, con giros lentos y rápidos y cambios de sentido. Registrar
         casos abruptos o estancados en `device-verification.md`.
 - [x] Task: Cobertura y suite completa
