@@ -134,18 +134,21 @@ test de no regresión.
 
 ## FASE 5: KNOBS, MIDI LEARN Y PRESET
 
-- [ ] Task: CC 75 y 76 en `ControlMapping` (FR14)
-  - [ ] Tests (Red): knob 14 mueve Pitch y knob 15 mueve Harmony en el Track
+- [x] Task: CC 75 y 76 en `ControlMapping` (FR14) — 6dd6f2f, 2705df3
+  - [x] Tests (Red): knob 14 mueve Pitch y knob 15 mueve Harmony en el Track
         seleccionado. Ningún otro CC cambia de dueño. El knob del Cycle sigue en
         CC 77.
-  - [ ] Implementación (Green): asignaciones de fábrica.
-- [ ] Task: MIDI Learn y proyectos guardados (FR15)
+  - [x] Implementación (Green): asignaciones de fábrica. Adelantada a la FASE 3
+        (Pitch) y la FASE 4 (Harmony); la cubren `PresetMappingTests`,
+        `ControlInputTests` y `SelectedTrackEditingTests`.
+- [~] Task: MIDI Learn y proyectos guardados (FR15)
   - [ ] Tests (Red): Pitch y Harmony se aprenden. Un `ControlNumbers` guardado
         sin ellos se completa con 75 y 76 solo si están libres; si uno está
         ocupado, ese parámetro queda sin control y nada aprendido se pisa.
   - [ ] Implementación (Green).
-- [ ] Task: Tabla del preset
-  - [ ] Actualizar `preset/README.md`. Confirmar que `Torax.beatsteppro` no cambia.
+- [x] Task: Tabla del preset — 6dd6f2f, 2705df3
+  - [x] Actualizar `preset/README.md`. Confirmar que `Torax.beatsteppro` no cambia
+        (sin diff contra `main`).
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 6: TEMP Y CTRL ALL
