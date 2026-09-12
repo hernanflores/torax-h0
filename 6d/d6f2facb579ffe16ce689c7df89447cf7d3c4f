@@ -1,0 +1,5 @@
+Task: TrackParameter.pitch (FASE 3, FR4, FR5, FR6, FR19)
+Cambios: case .pitch en familia Tonal; freno atómico por rango ±28 y por 0–127 (Cycle.pitchOffset(movedBy:), PitchPool.pitchOffsetLimits); valor '+2'/'0'/'-1'; value(of:)/setting para Temp y Ctrl All; clave 'pitch' en ControlNumbers; ParameterChange anuncia Pitch.
+Refinamiento en curso: CC 75 de fábrica, fila en preset/README.md y en torax-h0.beatstep-pro.json adelantados desde la FASE 5, porque un caso nuevo de TrackParameter rompe los tests del preset.
+Tests actualizados: TrackParameterTests (Tonal ya tiene knob), PresetMappingTests (CC 75 ocupado, 76 libre).
+Engine 975 tests verdes. MIDI: fallos solo en VirtualLoopbackTests (flake CoreMIDI conocido) y TransportTests.testStopNoteOffIsStampedAheadOfAnythingAlreadyScheduled, que también falla en main 49ecd02.
