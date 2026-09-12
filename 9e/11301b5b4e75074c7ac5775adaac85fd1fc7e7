@@ -3,3 +3,5 @@ Cambios: ControlNumbers.knownParameters (por defecto todos); ControlNumbersRecor
 Por qué la lista: sin ella no se distingue un parámetro que el usuario dejó sin control a propósito de uno que la app que guardó no tenía; completar el primero desharía una decisión del usuario.
 Tests: KnownParametersRecordTests (Engine), TonalLearnCompletionTests (MIDI).
 Engine 1035 verdes; MIDI 994, solo VirtualLoopbackTests (flake) y TransportTests (falla en main); Persistence 64 verdes.
+
+Phase Verification FASE 5: Engine 1035 verdes (98,90%); MIDI 994, 92,41% líneas, solo VirtualLoopbackTests (flake) y TransportTests (falla en main); Persistence 64 verdes; xcodebuild iPadOS ok. Verificación manual DIFERIDA a la FASE 8 por decisión del usuario (sin iPad por el momento).
