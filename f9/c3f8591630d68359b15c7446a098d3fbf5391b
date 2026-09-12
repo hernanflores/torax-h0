@@ -1,0 +1,37 @@
+Task: Tests de tempo en vuelo (Fase 5, midi-clock-master_20260911)
+
+Qué añade
+- Packages/MIDI/Tests/MIDITests/ClockMasterTempoTests.swift, 5 casos sobre el
+  pulso cuando el tempo cambia con el transporte corriendo: el knob, el Bank, el
+  maestro externo y las correcciones de fase.
+- Un caso más en ClockPulseEmissionTests, a nivel de hilo, para la corrección de
+  fase.
+
+Qué fija
+- Bajar el tempo a la mitad con el knob separa el doble los pulsos siguientes sin
+  reiniciar la cuenta (FR10), y los ya sellados conservan el espaciado viejo —que
+  es lo que significa sellar hacia el futuro, no un fallo—.
+- El pulso nunca retrocede al cambiar de tempo (FR3): la marca de agua solo
+  avanza, así que el esclavo no recibe un tick repetido.
+- Cambiar de Bank lleva su tempo al pulso: una sola regla en el producto.
+- Con External, el tempo del maestro llega al pulso en vuelo (FR7).
+- Las correcciones de fase del maestro también desplazan el pulso emitido. Sin
+  eso, el clock que sale se separaría poco a poco del que entra aunque el tempo
+  coincidiera.
+
+Lo que costó una vuelta de diagnóstico, anotado para no repetirlo
+- El caso de la corrección falló y NO era del código de producción: el test medía
+  los intervalos con dropFirst(before), y el salto vive en el hueco entre el
+  último pulso sellado con el origen viejo y el primero con el nuevo — justo el
+  intervalo que ese dropFirst se saltaba. Se discriminó publicando a la vez un
+  tempo distinto: el espaciado sí cambiaba, así que el hilo leía el handoff y lo
+  único sospechoso era la medición. Ahora se mide desde before - 2.
+
+Verificación
+- swift test --package-path Packages/MIDI --filter 'ClockPulseEmissionTests|ClockMasterTempoTests'
+  -> Executed 12 tests, with 0 failures.
+- Suite completa: 21 + 960 tests, 0 fallos.
+
+Ficheros
+- Packages/MIDI/Tests/MIDITests/ClockMasterTempoTests.swift (nuevo)
+- Packages/MIDI/Tests/MIDITests/ClockPulseEmissionTests.swift (modificado)
