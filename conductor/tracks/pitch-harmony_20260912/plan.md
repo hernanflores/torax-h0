@@ -63,15 +63,18 @@ test de no regresión.
         similares).
   - [x] Implementación (Green): campo en `Cycle`, pool que suena derivado en
         `init`, `with(pitch:)`.
-- [ ] Task: `TrackParameter.pitch` (FR4, FR5, FR6, FR19)
-  - [ ] Tests (Red): rango −28…+28, freno en extremos. Freno atómico si algún
+- [x] Task: `TrackParameter.pitch` (FR4, FR5, FR6, FR19) — 6dd6f2f
+  - [x] Tests (Red): rango −28…+28, freno en extremos. Freno atómico si algún
         pitch saldría de 0–127. Con pool vacío se mueve libre dentro del rango.
-  - [ ] Tests (Red): familia `.tonal`, `description` «Pitch», valor `+2`, `0`,
+  - [x] Tests (Red): familia `.tonal`, `description` «Pitch», valor `+2`, `0`,
         `-1`. `displacementRange` −28…28. `value(of:)` y `setting(_:to:)`.
-  - [ ] Tests (Red): actualizar `ParameterFamilyTests`, que hoy fija que ningún
+  - [x] Tests (Red): actualizar `ParameterFamilyTests`, que hoy fija que ningún
         parámetro es Tonal.
-  - [ ] Implementación (Green): casos en `applying(_:to:)`, `value(of:)`,
+  - [x] Implementación (Green): casos en `applying(_:to:)`, `value(of:)`,
         `value(in:)`, `displacementRange`.
+  - [x] Refinamiento en curso: `ParameterChange` anuncia Pitch, y el CC 75 de
+        fábrica con su fila en `preset/` se adelantan desde la FASE 5 — un caso
+        nuevo de `TrackParameter` rompe los tests del preset si no.
 - [ ] Task: Pitch sobrevive al disco (FR22, FR23)
   - [ ] Tests (Red): ida y vuelta de `CycleRecord` con `pitch`. Un JSON anterior
         sin el campo decodifica con 0. La lista de claves de
