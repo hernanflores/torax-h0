@@ -96,18 +96,18 @@ test de no regresión.
   - [x] Tests (Red): el pool que suena suma los offsets. AC 11 con estado limpio.
   - [x] Implementación (Green): valor `Harmony` inline (en el idioma de
         `PitchPool`, huecos en un entero), campo en `Cycle`.
-- [ ] Task: Un paso de Harmony (FR8–FR12, NFR2)
-  - [ ] Tests (Red): AC 4 literal (D4 E4 G4 → D4 F4 G4 → D4 F4 A4 → C4 F4 A4).
-  - [ ] Tests (Red): AC 5 combinado con Pitch (D4 G4 B4, y C4 F4 A4 con Pitch 0).
-  - [ ] Tests (Red): candidato que choca o cruza con su vecino se salta y prueba
+- [x] Task: Un paso de Harmony (FR8–FR12, NFR2) — 2a3f34e
+  - [x] Tests (Red): AC 4 literal (D4 E4 G4 → D4 F4 G4 → D4 F4 A4 → C4 F4 A4).
+  - [x] Tests (Red): AC 5 combinado con Pitch (D4 G4 B4, y C4 F4 A4 con Pitch 0).
+  - [x] Tests (Red): candidato que choca o cruza con su vecino se salta y prueba
         el siguiente. Borde MIDI con Pitch aplicado. Todos bloqueados: Cycle
         idéntico (AC 8).
-  - [ ] Tests (Red): pool de 0 y 1 no hace nada ni avanza el cursor. Delta *n*
+  - [x] Tests (Red): pool de 0 y 1 no hace nada ni avanza el cursor. Delta *n*
         igual a *n* pasos de 1.
-  - [ ] Tests (Red) de propiedades (AC 3, AC 6): un paso cambia como mucho un
+  - [x] Tests (Red) de propiedades (AC 3, AC 6): un paso cambia como mucho un
         pitch que suena; toda altura en el marco y en 0–127; mismo estado y
         mismos deltas dan misma salida.
-  - [ ] Implementación (Green): paso en `Engine`, sin UI ni MIDI.
+  - [x] Implementación (Green): paso en `Engine`, sin UI ni MIDI.
 - [ ] Task: `TrackParameter.harmony` (FR8, FR20)
   - [ ] Tests (Red): familia `.tonal`, `description` «Harmony». El valor escrito
         es el pool que suena (`D4 F4 A4`), y con pool vacío `empty`.
