@@ -155,7 +155,7 @@ test de no regresión.
         (sin diff contra `main`).
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) — manual diferida a la FASE 8
 
-## FASE 6: TEMP Y CTRL ALL
+## FASE 6: TEMP Y CTRL ALL [checkpoint: 84b1528]
 
 - [x] Task: Pitch bajo Temp y Ctrl All (FR16, FR17) — b3305f7
   - [x] Tests (Red): Temp iguala Pitch en los Cycles activos y restaura al
@@ -177,7 +177,7 @@ test de no regresión.
         Cursores de reproducción intactos.
   - [x] Implementación (Green): captura del estado de Harmony en
         `ParameterOverlay`.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md) — manual diferida a la FASE 8
 
 ## FASE 7: LA PANTALLA
 
@@ -219,3 +219,7 @@ test de no regresión.
 - [ ] Task: Pull Request a `main`
 - [ ] Task: Actualizar el registro y cerrar el track
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+  - [ ] FASE 6 — Temp y Ctrl All: con [step 13] Pitch se iguala en los Cycles y
+        vuelve al soltar; Harmony da un paso por Cycle y vuelve al soltar. Con
+        [step 14] Pitch desplaza los doce Tracks y Harmony se recalcula desde la
+        base (un clic arriba y uno abajo vuelven); soltar devuelve todo.
