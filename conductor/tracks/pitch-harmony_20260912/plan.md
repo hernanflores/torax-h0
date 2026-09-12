@@ -126,10 +126,10 @@ test de no regresión.
         pool y reencuadrar, que limpian Harmony. `ControlInput` las usa en lugar
         de `with(pool:)` y `with(frame:)` sueltos. `with(...)` sigue sin limpiar,
         porque copia, persistencia y restauración lo necesitan literal.
-- [ ] Task: Harmony sobrevive al disco (FR22, FR23)
-  - [ ] Tests (Red): ida y vuelta de offsets y cursor. JSON anterior decodifica
+- [x] Task: Harmony sobrevive al disco (FR22, FR23) — 76cff77
+  - [x] Tests (Red): ida y vuelta de offsets y cursor. JSON anterior decodifica
         limpio. Guardar y cargar reproduce la salida sin rehacer giros (AC 10).
-  - [ ] Implementación (Green): `ProjectRecord`.
+  - [x] Implementación (Green): `ProjectRecord`.
 - [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: KNOBS, MIDI LEARN Y PRESET
