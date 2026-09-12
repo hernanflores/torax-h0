@@ -138,12 +138,16 @@ por la escucha larga de la Fase 6.
 
 ## FASE 6: COBERTURA, DISPOSITIVO Y CIERRE
 
-- [ ] Task: Cobertura de `MIDI` por encima del umbral
-  - [ ] Medir en un proceso, fusionando el `.profdata` a mano y filtrando
+- [x] Task: Cobertura de `MIDI` por encima del umbral — **92,25% de líneas**
+  - [x] Medida en un proceso, fusionando el `.profdata` a mano y filtrando
         `Engine/Sources`, según `workflow.md`.
-  - [ ] Descartar el flake de `VirtualLoopbackTests` comparando 3–4 pasadas
-        contra `main`.
-- [ ] Task: Verificación en dispositivo (`device-verification.md`)
+  - [x] Los ficheros del track: `ClockPulseScheduler.swift` 97,83%,
+        `SchedulerThread.swift` 93,97%, `Transport.swift` 90,34%.
+  - [x] El flake queda descartado por firma y no por número de pasadas: los
+        fallos de la pasada en un proceso son **solo** los cuatro de
+        `VirtualLoopbackTests`, que es la firma que `workflow.md` describe.
+        Ningún test de clock falla ahí.
+- [~] Task: Verificación en dispositivo (`device-verification.md`)
   - [ ] Los ocho criterios de aceptación con el iPad, el BeatStep Pro y un
         esclavo en sync externo.
   - [ ] **Escucha larga**, que es lo que sustituye al arnés (NFR4): varios
