@@ -22,7 +22,7 @@ test de no regresión.
 
 **Ninguna fase mide jitter** (NFR4): no se desplaza ningún instante.
 
-## FASE 1: LA DESVIACIÓN QUEDA ESCRITA
+## FASE 1: LA DESVIACIÓN QUEDA ESCRITA [checkpoint: e1298c8]
 
 - [x] Task: Anotar Pitch y Harmony en la Pre Spec — 9ada5fd
   - [x] Nota fechada en `Pre Spec Torax H-0.md`, sección *Tonal*: Pitch transpone
@@ -37,7 +37,7 @@ test de no regresión.
         transforman el pool que suena, y los pads siguen editando el pool base.
   - [x] Anotar las limitaciones conocidas: Harmony sin histéresis bajo Ctrl All,
         y Ctrl All frente a Temp.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 2: LOS GRADOS — MATEMÁTICA PURA EN `Engine`
 
