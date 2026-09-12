@@ -28,14 +28,14 @@ por la escucha larga de la Fase 6.
         Position y Program Change—.
   - [x] Dejar escrito que emite **también con `External`**, regenerando el pulso,
         y por qué: un solo generador para los dos modos.
-- [~] Task: Nota fechada en `tech-stack.md` — el pulso sale por el look-ahead
-  - [ ] El clock de salida se sella hacia el futuro como las notas, con el mismo
+- [x] Task: Nota fechada en `tech-stack.md` — el pulso sale por el look-ahead — `d8acc52`
+  - [x] El clock de salida se sella hacia el futuro como las notas, con el mismo
         `TempoMap`. La alternativa —reenviar el tick entrante al vuelo— queda
         descartada por escrito, por la misma razón que ya se descartó para la
         entrada.
-  - [ ] Corregir la frase de `MIDIMessage`: los tres mensajes de System Real-Time
+  - [x] Corregir la frase de `MIDIMessage`: los tres mensajes de System Real-Time
         pasan a emitirse.
-- [ ] Task: Phase Verification & Checkpoint (Refer to `workflow.md`)
+- [~] Task: Phase Verification & Checkpoint (Refer to `workflow.md`)
 
 ## FASE 2: EL GENERADOR DE PULSO
 
