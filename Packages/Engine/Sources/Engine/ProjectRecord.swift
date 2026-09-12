@@ -107,6 +107,14 @@ public struct CycleRecord: Codable, Equatable, Sendable {
     public let waveform: String?
     public let accent: Int?
 
+    /// Pitch, desde el 2026-09-12 (`pitch-harmony_20260912`).
+    ///
+    /// **Opcional por la misma razón que las de arriba**: un fichero anterior la
+    /// decodifica como `nil` y se lee sin transponer. **Se escribe siempre**, y se
+    /// guarda el offset y no el pool que suena, que se deriva al construir el
+    /// Cycle: guardar los dos sería tener dos fuentes de lo mismo.
+    public let pitchOffset: Int?
+
     public init(_ cycle: Cycle) {
         steps = cycle.shape.steps.count
         pulses = cycle.shape.pulses.count
@@ -129,6 +137,7 @@ public struct CycleRecord: Codable, Equatable, Sendable {
         pace = cycle.noteRepeater.pace.percent
         waveform = Self.key(for: cycle.modulation.waveform)
         accent = cycle.modulation.accent.percent
+        pitchOffset = cycle.pitchOffset.degrees
     }
 
     /// El Cycle que describe.
@@ -188,7 +197,9 @@ public struct CycleRecord: Codable, Equatable, Sendable {
             frame: TonalFrame(scale: Self.scale(for: scale), root: Root(root) ?? .c),
             noteRepeater: repeater,
             modulation: modulation,
-            padOctaveShift: padOctaveShift
+            padOctaveShift: padOctaveShift,
+            // Fuera de ±28 cae en el neutro, como el resto de las claves.
+            pitchOffset: pitchOffset.flatMap(PitchOffset.init) ?? .zero
         )
     }
 
