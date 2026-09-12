@@ -88,7 +88,7 @@ test de no regresión.
         `with(...)`. El test queda como regresión.
 - [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
-## FASE 4: HARMONY — EL PASO
+## FASE 4: HARMONY — EL PASO [checkpoint: 76cff77]
 
 - [x] Task: Estado de Harmony en el `Cycle` (FR1, NFR1) — 0a1d879
   - [x] Tests (Red): 8 offsets con signo y cursor, inline. `_isPOD(Cycle.self)`.
@@ -130,7 +130,7 @@ test de no regresión.
   - [x] Tests (Red): ida y vuelta de offsets y cursor. JSON anterior decodifica
         limpio. Guardar y cargar reproduce la salida sin rehacer giros (AC 10).
   - [x] Implementación (Green): `ProjectRecord`.
-- [ ] Task: Phase Verification & Checkpoint (Refer to workflow.md)
+- [x] Task: Phase Verification & Checkpoint (Refer to workflow.md)
 
 ## FASE 5: KNOBS, MIDI LEARN Y PRESET
 
