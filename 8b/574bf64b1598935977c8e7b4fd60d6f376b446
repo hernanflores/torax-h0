@@ -26,3 +26,24 @@ Ficheros modificados
 - conductor/tracks/midi-clock-master_20260911/{device-verification,index,plan}.md
 - conductor/tracks/midi-clock-master_20260911/metadata.json
 - conductor/tracks.md
+
+--- Phase Verification & Checkpoint — FASE 6: COBERTURA, DISPOSITIVO Y CIERRE ---
+
+Tests automáticos:
+  Partición de CI -> 21 + 960 tests, 0 fallos.
+  Un proceso con cobertura -> 981 tests, 7 fallos, todos de las 4 pruebas de
+  VirtualLoopbackTests: la firma exacta del flake conocido. Ningún test de clock
+  falla ahí.
+  Cobertura de MIDI: 92,25% de líneas (umbral >=80%), medida en un proceso con el
+  .profdata fusionado a mano y filtrando Engine/Sources.
+  xcodebuild build -scheme ToraxH0 -destination 'generic/platform=iOS' -> BUILD SUCCEEDED.
+
+Verificación manual: los ocho bloques del guion en iPad con un esclavo en sync
+externo —Play y Stop arrastrando al esclavo, el tempo seguido al girarlo, el
+cambio de Bank llevando el suyo, cero mensajes con el transporte parado, los tres
+aparatos alineados con el BeatStep mandando, la escucha larga y la carga con
+Repeats 8—. Detalle en device-verification.md.
+
+Confirmación del usuario: «todo ok» (2026-09-11).
+
+Cierre: PR #56.
