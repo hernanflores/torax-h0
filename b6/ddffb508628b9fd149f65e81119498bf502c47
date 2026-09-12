@@ -1,0 +1,31 @@
+Task: Emitir el pulso en el bucle de SchedulerThread (Fase 3, midi-clock-master_20260911)
+
+Qué cambia
+- SchedulerThread gana ClockPulseHandler —un cierre que recibe solo el instante,
+  porque un mensaje de System Real-Time no lleva canal ni datos— y lo acepta como
+  clockPulseHandler en los dos inicializadores.
+- El bucle crea un ClockPulseScheduler con el tempo de la configuración y, una
+  vez por ventana, entrega los ticks que caben en el mismo horizonte que los
+  Steps.
+
+Las dos decisiones que quedan escritas en el código
+- El pulso se convierte a tiempo de reloj con el mismo tempoMap que los Steps,
+  desde budgetNanoseconds + offset. Es literalmente la misma expresión, en la
+  misma función: por eso seguir a un maestro externo estira el pulso de salida
+  sin que haya nada que sincronizar entre los dos caminos, y por eso el
+  presupuesto de adelanto de Delay los desplaza igual.
+- Sin handler no se genera un solo pulso. Es lo que protege a la vía del arnés de
+  medición, que mide la rejilla y no el producto: no puede ponerse a hacer de
+  maestro por su cuenta. JitterHarness no lo pasa.
+
+Tiempo real (NFR1)
+- advance(toHorizon:) devuelve un Range<Int>, así que no hay array que construir;
+  el bucle recorre dos enteros. Sin asignaciones, sin locks, sin await.
+
+Verificación
+- swift test --package-path Packages/MIDI --filter ClockPulseEmissionTests
+  -> Executed 6 tests, with 0 failures.
+- Suite completa: 21 + 946 tests, 0 fallos.
+
+Ficheros modificados
+- Packages/MIDI/Sources/MIDI/SchedulerThread.swift
