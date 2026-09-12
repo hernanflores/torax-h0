@@ -1,0 +1,15 @@
+Fase 4: Cobertura, dispositivo y cierre
+
+Verificación de fase, 2026-09-12.
+
+Comandos: swift test en Packages/MIDI (984 tests, cobertura de líneas 91,90%),
+Packages/Engine (945) y Packages/Persistence (64).
+
+Rojos ajenos al track, los dos documentados en el PR: el flake de
+VirtualLoopbackTests (issue #44) y
+TransportTests.testStopNoteOffIsStampedAheadOfAnythingAlreadyScheduled, que
+falla igual en main sin estos cambios.
+
+Verificación manual: lectura del PR #57 y de device-verification.md.
+
+Confirmación del usuario: «ok».
