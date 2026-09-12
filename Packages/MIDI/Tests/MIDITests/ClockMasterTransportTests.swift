@@ -151,14 +151,30 @@ final class ClockMasterTransportTests: XCTestCase {
     func testNoPulsesKeepComingAfterStop() {
         let recorder = Recorder()
         let transport = makeTransport(recorder)
+        transport.clockSource = .external
 
         transport.play()
+        // 60 BPM frente a los 300 BPM de referencia: el horizonte sellado en
+        // tiempo de host queda mucho más lejos que el look-ahead nominal.
+        transport.clockHandoff.publish(
+            quarterNoteNanoseconds: 1_000_000_000,
+            accumulatedCorrectionNanoseconds: 0)
         waitUntil { recorder.instants(of: .timingClock).count >= 8 }
         transport.stop()
 
-        // El hilo puede tardar hasta media ventana en ver la bandera, así que se
-        // le da margen antes de tomar la referencia.
-        usleep(60_000)
+        let stopped = recorder.all
+        guard let stopIndex = stopped.firstIndex(where: { $0.message == .stop }) else {
+            return XCTFail("falta el Stop")
+        }
+        let pulsesAfterStop = stopped[(stopIndex + 1)...].filter {
+            $0.message == .timingClock
+        }
+        XCTAssertTrue(pulsesAfterStop.isEmpty, "se encoló clock después del Stop")
+
+        if let lastPulse = stopped[..<stopIndex].last(where: { $0.message == .timingClock }) {
+            XCTAssertLessThan(lastPulse.hostTime, stopped[stopIndex].hostTime)
+        }
+
         let settled = recorder.instants(of: .timingClock).count
         usleep(200_000)
 

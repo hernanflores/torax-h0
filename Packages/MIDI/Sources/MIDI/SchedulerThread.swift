@@ -125,6 +125,7 @@ public final class SchedulerThread: @unchecked Sendable {
     private let playhead: PlayheadClock?
     private let cyclePlaybackClock: CyclePlaybackClock?
     private let running = AtomicFlag(false)
+    private let sealedHostTime = AtomicCounter()
     private var thread: Thread?
 
     /// - Parameters:
@@ -200,12 +201,18 @@ public final class SchedulerThread: @unchecked Sendable {
     /// Sin él, el origen es el instante en que arranca el bucle, como siempre.
     public func start(atHostTime origin: UInt64? = nil) {
         guard !running.value else { return }
+        let startHostTime = origin ?? HostClock.now()
+        sealedHostTime.value =
+            startHostTime
+            &+ HostClock.hostTicks(
+                fromNanoseconds: UInt64(max(0, configuration.lookAheadNanoseconds)))
         running.value = true
 
         let thread = Thread {
             [
                 configuration, material, pattern, handoff, playhead, cyclePlaybackClock,
                 mutes, clock, clockPulseHandler, handler, repetitionHandler, running,
+                sealedHostTime,
             ] in
             SchedulerThread.run(
                 configuration: configuration,
@@ -220,7 +227,8 @@ public final class SchedulerThread: @unchecked Sendable {
                 handler: handler,
                 repetitionHandler: repetitionHandler,
                 running: running,
-                origin: origin
+                sealedHostTime: sealedHostTime,
+                origin: startHostTime
             )
         }
         thread.name = "com.toraxh0.scheduler"
@@ -247,20 +255,27 @@ public final class SchedulerThread: @unchecked Sendable {
 
     /// Para el bucle.
     ///
-    /// **El reloj del playhead se limpia aquí y no al salir del bucle.** `stop()`
-    /// baja la bandera y vuelve sin esperar al hilo, que puede tardar hasta
-    /// media ventana en verla (ese retraso es el defecto `scheduler-lifecycle`,
-    /// abierto y sin integrar). Limpiarlo desde el hilo moribundo tendría dos
-    /// consecuencias, y ninguna es aceptable: el playhead seguiría moviéndose
-    /// unos milisegundos después de pulsar Stop, y un Play inmediato podría ver
-    /// su origen recién publicado **borrado por el hilo anterior al morir**.
+    /// **El reloj del playhead se limpia aquí y no al salir del bucle.** Así el
+    /// playhead deja de moverse en cuanto se pide la parada y un Play inmediato
+    /// no puede ver su origen recién publicado borrado por el hilo anterior.
     ///
-    /// Escribirlo desde aquí no compite con nadie: el hilo del scheduler solo
-    /// toca el origen una vez, al arrancar, y este es el hilo de control.
-    public func stop() {
+    /// La puerta del transporte puede pedir que acabe la ventana en curso antes
+    /// de volver. Esa espera vacía todos los callbacks —incluido el clock— y
+    /// permite entregar el último instante sellado de verdad. El valor por
+    /// defecto conserva la parada no bloqueante que usan los arneses de timing.
+    ///
+    /// - Parameter drainingPendingEvents: Si debe esperar a que el hilo termine.
+    /// - Returns: El mayor host time sellado hasta que termina la parada pedida.
+    @discardableResult
+    public func stop(drainingPendingEvents: Bool = false) -> UInt64 {
         running.value = false
         playhead?.stop()
+
+        if drainingPendingEvents, let thread, thread !== Thread.current {
+            while !thread.isFinished { usleep(100) }
+        }
         thread = nil
+        return sealedHostTime.value
     }
 
     /// Bucle del scheduler.
@@ -287,7 +302,8 @@ public final class SchedulerThread: @unchecked Sendable {
         handler: StepHandler,
         repetitionHandler: RepetitionHandler?,
         running: AtomicFlag,
-        origin: UInt64? = nil
+        sealedHostTime: AtomicCounter,
+        origin: UInt64
     ) {
         // Con Pattern se recorren los dieciséis; sin él, la vía del arnés. Las
         // dos construyen el mismo scheduler.
@@ -297,7 +313,7 @@ public final class SchedulerThread: @unchecked Sendable {
                     tempo: configuration.timeline.tempo, pattern: $0,
                     playbackClock: cyclePlaybackClock, mutes: mutes)
             } ?? PatternScheduler(timeline: configuration.timeline, material: material)
-        let startHostTicks = origin ?? HostClock.now()
+        let startHostTicks = origin
         let sleepNanoseconds = UInt32(max(1_000, configuration.lookAheadNanoseconds / 2))
 
         // **El origen de la rejilla no es el instante de Play, sino
@@ -334,10 +350,21 @@ public final class SchedulerThread: @unchecked Sendable {
         // `tempoMap`: por eso seguir a un maestro externo estira también el pulso
         // que sale, sin nada que sincronizar entre los dos.
         var pulses = ClockPulseScheduler(tempo: configuration.timeline.tempo)
+        var finalSealedHostTime = sealedHostTime.value
 
         while running.value {
-            let wallNanoseconds = Int64(
-                HostClock.nanoseconds(fromHostTicks: HostClock.now() &- startHostTicks))
+            let now = HostClock.now()
+            let wallNanoseconds: Int64
+            if now >= startHostTicks {
+                wallNanoseconds = Int64(
+                    HostClock.nanoseconds(fromHostTicks: now &- startHostTicks))
+            } else {
+                // Un Start repetido puede anclar la nueva pasada al corte
+                // futuro de la anterior. Medir ese tramo como negativo evita
+                // que la resta envolvente parezca una cantidad enorme.
+                wallNanoseconds = -Int64(
+                    HostClock.nanoseconds(fromHostTicks: startHostTicks &- now))
+            }
 
             // El reloj externo se lee **una vez por ventana**, como el snapshot:
             // dos notas de la misma ventana no pueden caer sobre dos tempos
@@ -369,6 +396,18 @@ public final class SchedulerThread: @unchecked Sendable {
                 tempoMap.gridNanoseconds(atWallNanoseconds: wallNanoseconds) - budgetNanoseconds
             let horizon = elapsedNanoseconds + configuration.lookAheadNanoseconds
 
+            // El horizonte se publica en tiempo de host y nunca retrocede. Stop
+            // espera a que termine esta vuelta, así que al volver conoce tanto
+            // este límite como cualquier evento que se hubiera sellado más
+            // lejos por Groove.
+            let wallHorizon = tempoMap.wallNanoseconds(
+                forGridNanoseconds: budgetNanoseconds + horizon)
+            finalSealedHostTime = max(
+                finalSealedHostTime,
+                startHostTicks
+                    &+ HostClock.hostTicks(
+                        fromNanoseconds: UInt64(max(0, wallHorizon))))
+
             // **Los pulsos van con el mismo horizonte que los Steps**, así que
             // el clock y las notas de una misma ventana salen sellados contra la
             // misma cuenta. Sin handler no se genera ninguno: es la vía del
@@ -381,10 +420,12 @@ public final class SchedulerThread: @unchecked Sendable {
                     let wallNanoseconds = tempoMap.wallNanoseconds(
                         forGridNanoseconds: budgetNanoseconds
                             + pulses.nanosecondOffset(forTick: tick))
-                    clockPulseHandler(
+                    let hostTime =
                         startHostTicks
                             &+ HostClock.hostTicks(
-                                fromNanoseconds: UInt64(max(0, wallNanoseconds))))
+                                fromNanoseconds: UInt64(max(0, wallNanoseconds)))
+                    finalSealedHostTime = max(finalSealedHostTime, hostTime)
+                    clockPulseHandler(hostTime)
                 }
             }
 
@@ -410,6 +451,7 @@ public final class SchedulerThread: @unchecked Sendable {
                         startHostTicks
                         &+ HostClock.hostTicks(
                             fromNanoseconds: UInt64(max(0, wallStart)))
+                    finalSealedHostTime = max(finalSealedHostTime, hostTime)
                     repetitionHandler(
                         track, source, step, pitch, velocity,
                         wallGate, hostTime)
@@ -439,10 +481,15 @@ public final class SchedulerThread: @unchecked Sendable {
                                 0,
                                 tempoMap.wallNanoseconds(
                                     forGridNanoseconds: budgetNanoseconds + offset))))
+                finalSealedHostTime = max(finalSealedHostTime, hostTime)
                 handler(track, source, step, pitch, groove, hostTime)
             }
 
+            sealedHostTime.value = finalSealedHostTime
+
             usleep(sleepNanoseconds / 1_000)
         }
+
+        sealedHostTime.value = finalSealedHostTime
     }
 }
