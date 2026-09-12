@@ -1,0 +1,30 @@
+Task: Implementar ClockPulseScheduler en Packages/MIDI (Fase 2, midi-clock-master_20260911)
+
+Qué añade
+- Packages/MIDI/Sources/MIDI/ClockPulseScheduler.swift: el LookAheadScheduler del
+  pulso. Marca de agua por índice de tick, advance(toHorizon:) que devuelve un
+  Range<Int> con límite superior exclusivo, y rebase(to: Tempo) que ancla la
+  rejilla nueva en el tick aún no entregado.
+
+El porqué de las dos decisiones que no son obvias
+- El offset se multiplica desde el ancla y nunca se acumula. Un tick dura
+  20,83 ms a 120 BPM, así que sumar la duración tick a tick arrastraría el
+  redondeo hasta separar el pulso del maestro sin que ninguna ventana lo notara.
+  Multiplicando, el error queda acotado a un redondeo por ancla — la misma
+  disciplina que MusicalTimeline sigue con los Steps.
+- El ancla del rebase es nextTick y no el tick que suena. Ese tick todavía no
+  cabía en ninguna ventana, así que su instante está por delante del horizonte ya
+  servido: anclar ahí hace imposible que un cambio de tempo produzca un pulso
+  para un instante que ya pasó. Es el criterio de LookAheadScheduler.rebase(to:).
+
+Tiempo real (NFR1)
+- Valor trivial, verificado con _isPOD en los tests. Sin asignaciones, sin locks
+  y sin await; firstTick(atOrAfter:) estima dividiendo y corrige por uno, así que
+  el coste es constante aunque el horizonte salte varias negras.
+
+Verificación
+- swift test --package-path Packages/MIDI --filter ClockPulseSchedulerTests
+  -> Executed 17 tests, with 0 failures.
+
+Ficheros creados
+- Packages/MIDI/Sources/MIDI/ClockPulseScheduler.swift
