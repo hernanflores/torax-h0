@@ -243,6 +243,23 @@ public struct Cycle: Equatable, Sendable {
     /// de pads; esto es solo dónde se dejó.
     public let padOctaveShift: Int
 
+    /// Cuántos grados de la escala transpone Pitch el pool.
+    ///
+    /// **Vive en `Cycle` por la misma razón que el Groove**: es de cada Cycle, y
+    /// un desarrollo A/B puede transponer solo el B (`pitch-harmony_20260912`,
+    /// FR1). Cuesta un byte.
+    public let pitchOffset: PitchOffset
+
+    /// Lo que suena: el pool transpuesto por Pitch.
+    ///
+    /// **Se deriva al construir el Cycle, no al emitir.** Es lo único del pool
+    /// que lee el hilo del scheduler, y así sigue leyendo un `PitchPool` inline
+    /// sin aritmética de grados (NFR1). El pool base, `pool`, es el que editan
+    /// y muestran los pads.
+    ///
+    /// Con `pitchOffset` en cero es `pool` byte a byte.
+    public let soundingPool: PitchPool
+
     public init(
         shape: Shape,
         pool: PitchPool = PitchPool(),
@@ -251,7 +268,8 @@ public struct Cycle: Equatable, Sendable {
         frame: TonalFrame = TonalFrame(scale: .minor, root: .c),
         noteRepeater: NoteRepeater = .default,
         modulation: Modulation = .default,
-        padOctaveShift: Int = 0
+        padOctaveShift: Int = 0,
+        pitchOffset: PitchOffset = .zero
     ) {
         self.shape = shape
         self.pool = pool
@@ -261,6 +279,8 @@ public struct Cycle: Equatable, Sendable {
         self.noteRepeater = noteRepeater
         self.modulation = modulation
         self.padOctaveShift = padOctaveShift
+        self.pitchOffset = pitchOffset
+        self.soundingPool = pool.transposed(by: pitchOffset, in: frame)
     }
 
     /// El mismo Cycle con lo que se le cambie, y **todo lo demás intacto**.
@@ -285,7 +305,8 @@ public struct Cycle: Equatable, Sendable {
         frame: TonalFrame? = nil,
         noteRepeater: NoteRepeater? = nil,
         modulation: Modulation? = nil,
-        padOctaveShift: Int? = nil
+        padOctaveShift: Int? = nil,
+        pitchOffset: PitchOffset? = nil
     ) -> Cycle {
         Cycle(
             shape: shape ?? self.shape,
@@ -295,7 +316,8 @@ public struct Cycle: Equatable, Sendable {
             frame: frame ?? self.frame,
             noteRepeater: noteRepeater ?? self.noteRepeater,
             modulation: modulation ?? self.modulation,
-            padOctaveShift: padOctaveShift ?? self.padOctaveShift
+            padOctaveShift: padOctaveShift ?? self.padOctaveShift,
+            pitchOffset: pitchOffset ?? self.pitchOffset
         )
     }
 
@@ -314,7 +336,7 @@ public struct Cycle: Equatable, Sendable {
         shape.triggers(atStep: index)
     }
 
-    /// La altura que le toca a este Step, recorriendo el pool.
+    /// La altura que le toca a este Step, recorriendo el pool que suena.
     ///
     /// Devuelve `nil` con el pool vacío: el Cycle dispara y no tiene material
     /// que emitir. Es un estado válido, no un fallo.
@@ -322,7 +344,7 @@ public struct Cycle: Equatable, Sendable {
     /// Realtime: llamado desde el hilo del scheduler.
     /// Sin asignaciones, sin locks, sin await.
     public func pitch(atStep index: Int, traversal: PoolTraversal = .ascending) -> Pitch? {
-        traversal.pitch(from: pool, atPulse: shape.pulseOrdinal(atStep: index))
+        traversal.pitch(from: soundingPool, atPulse: shape.pulseOrdinal(atStep: index))
     }
 }
 
