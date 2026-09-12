@@ -63,7 +63,7 @@ suspendida desde el 2026-09-02.
   - [ ] Confirmar verde
 - [x] Task: Phase Verification & Checkpoint (ver `workflow.md`) `6a32c08`
 
-## FASE 3: Preset y documentación
+## FASE 3: Preset y documentación [checkpoint: 3eeb7a5]
 
 - [x] Task: Actualizar `preset/torax-h0.beatstep-pro.json` `6a32c08` — adelantada
       a la Fase 2 para no dejar `PresetFileTests` roja entre fases
@@ -80,7 +80,7 @@ suspendida desde el 2026-09-02.
 - [x] Task: Corregir `Pre Spec Torax H-0.md` donde nombra los CC del Note
       Repeater `3eeb7a5`
 - [x] Task: `PresetFileTests` verde sin relajar ninguna aserción (NFR1) `3eeb7a5`
-- [ ] Task: Phase Verification & Checkpoint
+- [x] Task: Phase Verification & Checkpoint `3eeb7a5`
 
 ## FASE 4: Cobertura, dispositivo y cierre
 
