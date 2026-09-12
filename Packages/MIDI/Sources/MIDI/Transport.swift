@@ -635,8 +635,20 @@ public final class Transport: @unchecked Sendable {
         accumulatedCorrectionNanoseconds = 0
         lastTickNanoseconds.value = 0
         publishInternalTempo()
-        gridOriginNanoseconds = Int64(
-            HostClock.nanoseconds(fromHostTicks: origin ?? HostClock.now()))
+        let startHostTime = origin ?? HostClock.now()
+        gridOriginNanoseconds = Int64(HostClock.nanoseconds(fromHostTicks: startHostTime))
+
+        // **El maestro anuncia su arranque antes de su primer pulso** (FR4 de
+        // `midi-clock-master_20260911`). Se sella en el instante del arranque, y
+        // el hilo cuenta sus ticks desde ahí o desde más tarde —el presupuesto de
+        // adelanto solo puede empujar el origen hacia el futuro—, así que el
+        // Start no puede llegar detrás del primer tick. Un esclavo que recibe
+        // clock antes del Start lo descarta, y se pierde la primera negra.
+        //
+        // **Sale también con reloj externo, y es deliberado** (FR8): lo que se
+        // anuncia es que *esta* app arranca, disparada por quien sea. La app dice
+        // lo que hace, no lo que le dicen.
+        send(.start, startHostTime)
 
         // Los dieciséis con los que se arranca, leídos una sola vez: el
         // scheduler construye con ellos **una rejilla por Track**, cada una con
@@ -654,6 +666,14 @@ public final class Transport: @unchecked Sendable {
             pattern: starting,
             mutes: mutes,
             clock: clockHandoff,
+            // **El pulso de clock sale por el mismo camino que las notas**: el
+            // hilo lo sella y esto solo lo envía. Un tick de System Real-Time no
+            // lleva canal ni datos, así que no hay nada que convertir.
+            //
+            // Realtime: llamado desde el hilo del scheduler.
+            clockPulseHandler: { [send] hostTime in
+                send(.timingClock, hostTime)
+            },
             repetitionHandler: {
                 [emitter, send] _, source, _, pitch, velocity, gateNanoseconds, hostTime in
                 // **Las repeticiones no vuelven a calcular nada.** Su velocity
@@ -793,7 +813,14 @@ public final class Transport: @unchecked Sendable {
         // de silenciar un Track al mutearlo: el procedimiento —`all notes off`
         // por canal y después el barrido de alturas— es el mismo, y está escrito
         // una sola vez en `silence(tracks:atHostTime:)`.
-        silence(tracks: Set(0..<Pattern.trackCount), atHostTime: silenceHostTime)
+        // **Un solo instante para los dos** (FR5 de `midi-clock-master_20260911`).
+        // `silenceHostTime` se calcula cada vez que se lee, y el esclavo tiene
+        // que parar cuando para la música, no un puñado de microsegundos antes o
+        // después. Sellarlo en «ahora» lo pondría por delante de los note-on ya
+        // programados: el esclavo pararía mientras la app todavía suena.
+        let silenceAt = silenceHostTime
+        send(.stop, silenceAt)
+        silence(tracks: Set(0..<Pattern.trackCount), atHostTime: silenceAt)
     }
 
     /// Cuándo sellar un apagado: una ventana por delante.
