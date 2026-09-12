@@ -39,6 +39,8 @@ struct ScaleScreen: View {
             PitchPoolGrid(
                 surface: model.surface,
                 pool: model.track.pool,
+                transformation: FamilyReadout(track: model.track, family: .tonal)
+                    .secondaryDetail ?? "",
                 onPress: { model.pressPad(at: $0) }
             )
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -204,7 +206,16 @@ struct RootPicker: View {
 struct PitchPoolGrid: View {
 
     let surface: PadSurface
+
+    /// **El pool base**: lo que los pads meten y sacan, y lo que se ilumina
+    /// (`pitch-harmony_20260912`, FR21).
     let pool: PitchPool
+
+    /// Pitch y Harmony con lo que suena, ya escrito por `Engine`
+    /// (`Pitch +2 · Harmony E4 G4`). La rejilla enseña el material; esta línea,
+    /// qué se hace con él.
+    let transformation: String
+
     let onPress: (Int) -> Void
 
     var body: some View {
@@ -260,6 +271,12 @@ struct PitchPoolGrid: View {
             Text(display: count)
                 .font(Typography.caption)
                 .foregroundStyle(pool.count >= PitchPool.capacity ? Palette.tonal : Palette.muted)
+
+            Text(display: transformation)
+                .font(Typography.caption)
+                .foregroundStyle(Palette.mutedBright)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
