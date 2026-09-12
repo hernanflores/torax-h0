@@ -1,0 +1,18 @@
+Task: Corregir la Pre Spec y los comentarios que nombran knobs
+
+Fase 3 del track knob-layout_20260912.
+
+Pre Spec Torax H-0.md: la nota del Note Repeater decia knobs 10, 11, 12 y 14 -CC
+79, 80, 81 y 83-. Se le añade una corrección fechada del 2026-09-12: knobs 5 a
+8, CC 82 a 85. La linea original se conserva porque registra el estado al entrar
+la rebanada.
+
+App/TransportModel.swift: una nota historica decia «solo se movia con el knob
+13». El numero ha cambiado tres veces y la nota no trata de el.
+
+Las tres tareas restantes de esta fase -JSON, README y la nota de
+ControlMapping- se adelantaron al commit 6a32c08: PresetFileTests compara el
+preset del repositorio con el mapeo, asi que dejarlas para despues habria dejado
+esa suite roja entre dos fases.
+
+Verificacion: swift test --filter PresetFileTests, 6 tests, 0 fallos.
