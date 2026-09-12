@@ -1,0 +1,4 @@
+Task: Pitch sobrevive al disco (FASE 3, FR22, FR23)
+Cambios: clave opcional pitchOffset en CycleRecord, escrita siempre; fuera de ±28 o ausente se lee como 0. No se guarda el pool que suena. schemaVersion sigue en 1.
+Archivos: Sources/Engine/ProjectRecord.swift, Tests/EngineTests/PitchOffsetRecordTests.swift, Tests/EngineTests/RecordRoundTripTests.swift
+Tests: Engine 983 verdes; Persistence 64 verdes (tras swift package clean por objetos viejos).
