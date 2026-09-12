@@ -128,7 +128,42 @@ final class FrameChangeTests: XCTestCase {
         XCTAssertTrue(input.receive(pad(4)), "pero sí grado 5")
     }
 
+    // MARK: - Pitch se conserva
+
+    /// **Cambiar Scale o Root conserva Pitch** (`pitch-harmony_20260912`, FR13).
+    /// El offset son grados, así que «+2» sigue significando dos grados arriba
+    /// en la escala nueva, y lo que suena queda dentro de ella.
+    func testChangingTheFrameKeepsPitchAndSoundsInTheNewScale() throws {
+        let input = makeInput(scale: .major, root: 0)
+        for index in [0, 2, 4] { input.receive(pad(index)) }
+        XCTAssertTrue(input.receive(knob(.pitch, by: 2)))
+        XCTAssertEqual(input.track.pitchOffset, PitchOffset(2))
+
+        let aMinor = TonalFrame(scale: .minor, root: Root(9)!)
+        input.setFrame(aMinor)
+
+        XCTAssertEqual(input.track.pitchOffset, PitchOffset(2), "se perdió Pitch")
+        let sounding = input.track.soundingPool
+        XCTAssertEqual(sounding.count, input.track.pool.count)
+        for index in 0..<sounding.count {
+            let pitch = try XCTUnwrap(sounding.pitch(at: index))
+            let base = try XCTUnwrap(input.track.pool.pitch(at: index))
+            XCTAssertTrue(aMinor.allows(pitch), "\(pitch) no está en La menor")
+            XCTAssertEqual(
+                try XCTUnwrap(aMinor.degree(of: pitch)) - (try XCTUnwrap(aMinor.degree(of: base))),
+                2)
+        }
+    }
+
     // MARK: - Helpers
+
+    private func knob(_ parameter: TrackParameter, by delta: Int) -> MIDIMessage {
+        .controlChange(
+            channel: MIDIChannel(1)!,
+            controller: ControlMapping.beatStepPro.controller(for: parameter)!,
+            value: delta >= 0 ? UInt8(delta) : UInt8(128 + delta)
+        )
+    }
 
     private func makeInput(scale: Scale, root: Int) -> ControlInput {
         ControlInput(
