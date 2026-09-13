@@ -403,7 +403,14 @@ struct TonalCard: View {
     let frame: TonalFrame
 
     /// Las alturas del pool, ya nombradas.
+    ///
+    /// **Es el pool base**, el que editan los pads (`pitch-harmony_20260912`,
+    /// FR21). Lo que suena lo dice la fila de `parameters`.
     let pool: [String]
+
+    /// Pitch y Harmony con su valor, ya escritos por `Engine`: `+2` y el pool
+    /// que suena (FR19, FR20).
+    let parameters: [(label: String, value: String)]
 
     let isActive: Bool
 
@@ -432,6 +439,18 @@ struct TonalCard: View {
                     }
                     poolGrid
                 }
+            }
+
+            // **Una línea aparte para lo que transforma el pool**, como la del
+            // Note Repeater en Shape: la de arriba es el material y ésta, qué se
+            // hace con él.
+            HStack(alignment: .center, spacing: 12) {
+                ForEach(parameters, id: \.label) { entry in
+                    labelled(entry.label, entry.value)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+                Spacer(minLength: 0)
             }
         }
         .padding(8)

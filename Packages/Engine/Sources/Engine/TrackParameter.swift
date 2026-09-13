@@ -46,6 +46,17 @@ public enum TrackParameter: Hashable, Sendable, CaseIterable {
     // Groove, en el tiempo — cuándo ocurre respecto a la rejilla.
     case timing
     case delay
+
+    // Tonal — qué alturas suenan del pool.
+    //
+    // **El primer parámetro de knob de la familia** (`pitch-harmony_20260912`).
+    // Transpone el pool entero en grados de la escala; el pool base lo siguen
+    // editando los pads.
+    case pitch
+
+    // **Mueve un pitch del pool por clic**, en round robin y con histéresis.
+    // No tiene posición absoluta: es estado, no un número (ver `Harmony`).
+    case harmony
 }
 
 /// A qué familia funcional pertenece un parámetro.
@@ -105,6 +116,7 @@ extension TrackParameter {
         case .steps, .pulses, .rotate, .division: .shape
         case .repeats, .repeatTime, .ramp, .pace: .shape
         case .velocity, .sustain, .probability, .timing, .delay: .groove
+        case .pitch, .harmony: .tonal
         }
     }
 }
@@ -123,6 +135,7 @@ extension TrackParameter {
         case .repeats, .repeatTime, .ramp, .pace: true
         case .steps, .pulses, .rotate, .division: false
         case .velocity, .sustain, .probability, .timing, .delay: false
+        case .pitch, .harmony: false
         }
     }
 }
@@ -165,6 +178,10 @@ extension TrackParameter: CustomStringConvertible {
         case .probability: Probability.validRange
         case .timing: Timing.validRange
         case .delay: Delay.validRange
+        case .pitch: PitchOffset.validRange
+        // Como Rotate, y por otra razón: Harmony no tiene extremos porque no
+        // tiene posición. Lo que frena un giro es el pool, paso a paso.
+        case .harmony: nil
         }
     }
 
@@ -183,6 +200,8 @@ extension TrackParameter: CustomStringConvertible {
         case .probability: "Probability"
         case .timing: "Timing"
         case .delay: "Delay"
+        case .pitch: "Pitch"
+        case .harmony: "Harmony"
         }
     }
 }
@@ -283,6 +302,15 @@ extension Cycle {
                     timing: groove.timing,
                     delay: groove.delay.advanced(by: delta)
                 ))
+
+        // El freno depende del pool y del marco, así que lo decide quien los
+        // conoce: `pitchOffset(movedBy:)`.
+        case .pitch:
+            return with(pitchOffset: pitchOffset(movedBy: delta))
+
+        // Cada clic es un paso, y un paso bloqueado no cambia nada.
+        case .harmony:
+            return with(harmony: harmonyMoved(by: delta))
         }
     }
 
@@ -341,6 +369,19 @@ extension TrackParameter {
         // único parámetro que puede ser negativo, y adelantar y atrasar no se
         // distinguen por el contexto.
         case .delay: return "\(groove.delay.percent)%"
+        // Con signo explícito, como Ramp y Pace, pero sin `%`: son grados, no un
+        // porcentaje de nada.
+        case .pitch:
+            let degrees = track.pitchOffset.degrees
+            return degrees > 0 ? "+\(degrees)" : "\(degrees)"
+        // **Lo que suena, con octava.** Harmony no tiene número con sentido: dos
+        // historias con el mismo neto suenan distinto, así que se enseña el
+        // resultado. El pool vacío se dice igual que en el resto de la app.
+        case .harmony:
+            let sounding = track.soundingPool
+            guard !sounding.isEmpty else { return sounding.countDescription }
+            return (0..<sounding.count).compactMap { sounding.pitch(at: $0)?.description }
+                .joined(separator: " ")
         }
     }
 

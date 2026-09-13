@@ -107,6 +107,23 @@ public struct CycleRecord: Codable, Equatable, Sendable {
     public let waveform: String?
     public let accent: Int?
 
+    /// Pitch, desde el 2026-09-12 (`pitch-harmony_20260912`).
+    ///
+    /// **Opcional por la misma razón que las de arriba**: un fichero anterior la
+    /// decodifica como `nil` y se lee sin transponer. **Se escribe siempre**, y se
+    /// guarda el offset y no el pool que suena, que se deriva al construir el
+    /// Cycle: guardar los dos sería tener dos fuentes de lo mismo.
+    public let pitchOffset: Int?
+
+    /// Harmony, desde el 2026-09-12 (`pitch-harmony_20260912`).
+    ///
+    /// **El estado y no el knob**: Harmony depende del camino, y lo único que
+    /// reproduce lo que sonaba son los offsets y el cursor. **Un offset por pitch
+    /// del pool, en el orden de `pool`**, para que el fichero se lea en paralelo.
+    /// Opcionales al leer y escritos siempre, como las de arriba.
+    public let harmonyOffsets: [Int]?
+    public let harmonyCursor: Int?
+
     public init(_ cycle: Cycle) {
         steps = cycle.shape.steps.count
         pulses = cycle.shape.pulses.count
@@ -129,6 +146,9 @@ public struct CycleRecord: Codable, Equatable, Sendable {
         pace = cycle.noteRepeater.pace.percent
         waveform = Self.key(for: cycle.modulation.waveform)
         accent = cycle.modulation.accent.percent
+        pitchOffset = cycle.pitchOffset.degrees
+        harmonyOffsets = (0..<cycle.pool.count).map { cycle.harmony.offset(at: $0) }
+        harmonyCursor = cycle.harmony.cursor
     }
 
     /// El Cycle que describe.
@@ -188,8 +208,31 @@ public struct CycleRecord: Codable, Equatable, Sendable {
             frame: TonalFrame(scale: Self.scale(for: scale), root: Root(root) ?? .c),
             noteRepeater: repeater,
             modulation: modulation,
-            padOctaveShift: padOctaveShift
+            padOctaveShift: padOctaveShift,
+            // Fuera de ±28 cae en el neutro, como el resto de las claves.
+            pitchOffset: pitchOffset.flatMap(PitchOffset.init) ?? .zero,
+            harmony: Self.harmony(
+                offsets: harmonyOffsets, cursor: harmonyCursor, count: pitches.count)
         )
+    }
+
+    /// El estado de Harmony que describen los offsets y el cursor guardados.
+    ///
+    /// **Un offset imposible o un cursor fuera del pool limpian Harmony entero.**
+    /// Medio estado sonaría a notas que nadie eligió; el limpio es lo que el
+    /// fichero puede prometer. Offsets de más se ignoran y de menos cuentan como
+    /// 0. Sin las claves —un fichero anterior— también es el limpio.
+    static func harmony(offsets: [Int]?, cursor: Int?, count: Int) -> Harmony {
+        guard let offsets, let cursor else { return .clean }
+        guard (0..<PitchPool.capacity).contains(cursor),
+            offsets.allSatisfy({ (-127...127).contains($0) })
+        else { return .clean }
+
+        var harmony = Harmony.clean.with(cursor: cursor)
+        for (index, offset) in offsets.prefix(min(count, PitchPool.capacity)).enumerated() {
+            harmony = harmony.with(offset: offset, at: index)
+        }
+        return harmony
     }
 
     /// La clave con la que cada escala se escribe en disco.
@@ -448,11 +491,20 @@ public struct ControlNumbersRecord: Codable, Equatable, Sendable {
     public let knobBlock: Int
     public let stepButtonBlock: Int
 
+    /// Las claves de los parámetros que conocía la app al escribir, desde el
+    /// 2026-09-12 (`pitch-harmony_20260912`, FR15).
+    ///
+    /// **Opcional, y su ausencia significa algo**: el fichero es de antes de la
+    /// lista, así que no conocía Pitch ni Harmony. Ver
+    /// `ControlNumbers.knownParameters`.
+    public let parameters: [String]?
+
     public init(assignments: [String: Int], padBlock: Int, knobBlock: Int, stepButtonBlock: Int) {
         self.assignments = assignments
         self.padBlock = padBlock
         self.knobBlock = knobBlock
         self.stepButtonBlock = stepButtonBlock
+        parameters = TrackParameter.allCases.map(Self.key(for:))
     }
 
     public init(_ numbers: ControlNumbers) {
@@ -461,6 +513,9 @@ public struct ControlNumbersRecord: Codable, Equatable, Sendable {
         padBlock = numbers.padBlock
         knobBlock = numbers.knobBlock
         stepButtonBlock = numbers.stepButtonBlock
+        // En el orden del dominio, para que el fichero no baile entre guardados.
+        parameters = TrackParameter.allCases.filter(numbers.knownParameters.contains)
+            .map(Self.key(for:))
     }
 
     /// Los números que describe.
@@ -479,9 +534,15 @@ public struct ControlNumbersRecord: Codable, Equatable, Sendable {
             assignments: table,
             padBlock: padBlock,
             knobBlock: knobBlock,
-            stepButtonBlock: stepButtonBlock
+            stepButtonBlock: stepButtonBlock,
+            knownParameters: parameters.map { Set($0.compactMap(Self.parameter(for:))) }
+                ?? Self.knownBeforeTheList
         )
     }
+
+    /// Lo que conocía una app anterior a la lista: todo menos Pitch y Harmony,
+    /// que entraron con ella.
+    static let knownBeforeTheList = Set(TrackParameter.allCases).subtracting([.pitch, .harmony])
 
     /// La clave con la que cada parámetro se escribe en disco.
     ///
@@ -504,6 +565,8 @@ public struct ControlNumbersRecord: Codable, Equatable, Sendable {
         case .probability: "probability"
         case .timing: "timing"
         case .delay: "delay"
+        case .pitch: "pitch"
+        case .harmony: "harmony"
         }
     }
 

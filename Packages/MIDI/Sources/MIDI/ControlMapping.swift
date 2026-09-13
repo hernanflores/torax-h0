@@ -72,12 +72,16 @@ public struct ControlMapping: Equatable, Sendable {
         .ramp: 84,
         .pace: 85,
         // La fila de abajo, CC 70-77: el card Groove, en el orden del dominio.
-        // Los CC 75 y 76 quedan libres y el 77 es el knob del Cycle en edición.
+        // El 77 es el knob del Cycle en edición.
         .velocity: 70,
         .sustain: 71,
         .probability: 72,
         .timing: 73,
         .delay: 74,
+        // Tonal cierra la fila detrás de Groove, en los dos knobs que
+        // `knob-layout_20260912` dejó libres (`pitch-harmony_20260912`, FR14).
+        .pitch: 75,
+        .harmony: 76,
     ])
 
     /// CC por defecto del primer knob; los dieciséis van seguidos desde ahí.
@@ -333,7 +337,28 @@ public struct ControlMapping: Equatable, Sendable {
             stepButtonBlock: MIDIController(numbers.stepButtonBlock)
                 ?? Self.defaultStepButtonBlock
         )
-        self = restored.hasConflict ? .beatStepPro : restored
+        guard !restored.hasConflict else {
+            self = .beatStepPro
+            return
+        }
+
+        // **Lo que el fichero no conocía recibe su número de fábrica, si está
+        // libre** (`pitch-harmony_20260912`, FR15). Un proyecto guardado antes de
+        // Pitch y Harmony no puede dejarlos mudos; lo aprendido no se pisa, y un
+        // parámetro que el usuario dejó sin control a propósito —conocido y sin
+        // entrada— sigue así. Completar tampoco puede crear un conflicto.
+        var completed = restored
+        for parameter in TrackParameter.allCases
+        where !numbers.knownParameters.contains(parameter)
+            && completed.controller(for: parameter) == nil
+        {
+            guard let factory = Self.beatStepPro.controller(for: parameter),
+                completed.parameter(for: factory) == nil
+            else { continue }
+            let candidate = completed.assigning(factory, to: parameter)
+            if !candidate.hasConflict { completed = candidate }
+        }
+        self = completed
     }
 
     /// Si algún control significaría dos cosas.

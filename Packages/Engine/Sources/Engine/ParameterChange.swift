@@ -97,8 +97,15 @@ public struct ParameterChange: Equatable, Sendable {
             moved = .timing
         } else if previousGroove.delay != groove.delay {
             moved = .delay
+        } else if previous.pitchOffset != current.pitchOffset {
+            moved = .pitch
+        } else if previous.harmony != current.harmony, previous.pool == current.pool {
+            // Solo si el pool es el mismo: editar el pool limpia Harmony, y eso
+            // no es un giro.
+            moved = .harmony
         } else {
-            // Cambió algo que no es un parámetro ajustable: el pool.
+            // Cambió algo que no es un parámetro ajustable: el pool, o lo que
+            // suena porque cambió el pool.
             return nil
         }
 

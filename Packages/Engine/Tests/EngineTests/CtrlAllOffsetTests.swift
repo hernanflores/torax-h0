@@ -514,7 +514,8 @@ final class CtrlAllOffsetLimitTests: XCTestCase {
     /// parámetro, este test obliga a decidir si envuelve o se acota.
     func testEveryParameterEitherHasARangeOrWraps() {
         for parameter in TrackParameter.allCases {
-            if parameter == .rotate {
+            // Harmony tampoco tiene extremos: no tiene posición (`pitch-harmony_20260912`).
+            if parameter == .rotate || parameter == .harmony {
                 XCTAssertNil(parameter.displacementRange)
             } else {
                 XCTAssertNotNil(parameter.displacementRange, "\(parameter) no declara extremos")

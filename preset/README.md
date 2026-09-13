@@ -60,8 +60,8 @@ la segunda línea del card: una capa sobre el ritmo, no el ritmo.
 | 11 | 72 | Probability |
 | 12 | 73 | Timing |
 | 13 | 74 | Delay |
-| 14 | 75 | **Sin asignar.** Se ignora en silencio |
-| 15 | 76 | **Sin asignar.** Se ignora en silencio |
+| 14 | 75 | Pitch |
+| 15 | 76 | Harmony |
 | 16 | 77 | **Cycle en edición** del Track seleccionado |
 
 Groove va en el orden del dominio, que es el que la pantalla enseña.
@@ -69,11 +69,14 @@ Groove va en el orden del dominio, que es el que la pantalla enseña.
 El knob 16 mueve el cursor de edición del Track seleccionado. **Cuántos Cycles
 están activos no se toca aquí**, sino en la pantalla — la nota del 2026-09-02 en
 la Pre Spec explica por qué el gesto de CTRL se partió en dos. Está en la esquina
-y con dos knobs libres de por medio a propósito: no es un parámetro más, mueve
-*a cuál* de ellos se apunta.
+a propósito: no es un parámetro más, mueve *a cuál* de ellos se apunta.
 
-Los libres están declarados a propósito, no olvidados: su sitio es de v2
-—Accent, Voicing, Range—. Girarlos no hace nada y no es un error.
+> **Nota del 2026-09-12 — los knobs 14 y 15 son de Tonal.** Estaban libres desde
+> `knob-layout_20260912`; los ocupan **Pitch** (CC 75) y **Harmony** (CC 76),
+> track `pitch-harmony_20260912`. Tonal cierra la fila de abajo detrás de Groove:
+> la regla de una fila por card se cumple a medias, porque no hay tercera fila.
+> Ya no quedan knobs libres; el hueco que separaba al Cycle de los parámetros
+> desaparece, y lo que lo distingue es la esquina.
 
 > **Nota del 2026-09-12 — una fila de knobs por card, y los CC no eran los que
 > parecían.** Track `knob-layout_20260912`.

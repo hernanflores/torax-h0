@@ -39,9 +39,18 @@ public struct ParameterOverlay: Equatable, Sendable {
     /// «¿qué tenía este parámetro en este Cycle?», y no al revés.
     private var bases: [TrackParameter: [Int: Int]]
 
+    /// El estado de Harmony capturado de cada Cycle, desde el 2026-09-12
+    /// (`pitch-harmony_20260912`, FR17).
+    ///
+    /// **Aparte porque no es un número**: lo que devuelve lo que sonaba son los
+    /// offsets y el cursor. `bases[.harmony]` sigue existiendo para que Harmony
+    /// cuente como capturado.
+    private var harmonyBases: [Int: Harmony]
+
     /// El estado de reposo: nada superpuesto.
     public init() {
         bases = [:]
+        harmonyBases = [:]
     }
 
     /// Si no hay nada superpuesto.
@@ -90,6 +99,11 @@ public struct ParameterOverlay: Equatable, Sendable {
 
         var updated = self
         updated.bases[parameter] = captured
+        if parameter == .harmony {
+            for index in 0..<track.activeCount {
+                updated.harmonyBases[index] = track.cycle(at: index)?.harmony
+            }
+        }
         return updated
     }
 
@@ -123,6 +137,10 @@ public struct ParameterOverlay: Equatable, Sendable {
     public mutating func apply(_ delta: Int, to parameter: TrackParameter, in track: Track)
         -> Track
     {
+        // **Harmony no se iguala**: cada Cycle da el paso desde su propio estado,
+        // porque sus pools pueden ser distintos (FR17).
+        if parameter == .harmony { return stepHarmony(delta, in: track) }
+
         let target = track.editingCycle.applying(delta, to: parameter).value(of: parameter)
         guard target != track.editingCycle.value(of: parameter) else { return track }
 
@@ -153,10 +171,30 @@ public struct ParameterOverlay: Equatable, Sendable {
         for (parameter, byCycle) in bases {
             for (index, value) in byCycle {
                 guard let cycle = restored.cycle(at: index) else { continue }
-                restored = restored.replacing(cycle.setting(parameter, to: value), at: index)
+                let returned =
+                    parameter == .harmony
+                    ? cycle.with(harmony: harmonyBases[index] ?? cycle.harmony)
+                    : cycle.restoring(parameter, to: value)
+                restored = restored.replacing(returned, at: index)
             }
         }
         return restored
+    }
+
+    /// Un paso de Harmony en cada Cycle activo, cada uno desde su estado.
+    ///
+    /// Captura antes del primer paso que mueva algo, igual que `apply`: un giro
+    /// bloqueado en todos los Cycles no deja rastro.
+    private mutating func stepHarmony(_ delta: Int, in track: Track) -> Track {
+        var stepped = track
+        for index in 0..<track.activeCount {
+            guard let cycle = track.cycle(at: index) else { continue }
+            stepped = stepped.replacing(cycle.applying(delta, to: .harmony), at: index)
+        }
+        guard stepped != track else { return track }
+
+        self = capturing(.harmony, from: track)
+        return stepped
     }
 }
 
@@ -191,6 +229,9 @@ extension Cycle {
         case .probability: groove.probability.percent
         case .timing: groove.timing.percent
         case .delay: groove.delay.percent
+        case .pitch: pitchOffset.degrees
+        // Sin posición: Harmony es estado. Temp y Ctrl All lo tratan aparte.
+        case .harmony: 0
         }
     }
 
@@ -206,5 +247,26 @@ extension Cycle {
     /// deltas no se podría, porque cada Cycle parte de un valor distinto.
     public func setting(_ parameter: TrackParameter, to value: Int) -> Cycle {
         applying(value - self.value(of: parameter), to: parameter)
+    }
+}
+
+extension Cycle {
+
+    /// El mismo Cycle con ese parámetro **devuelto** al valor que tenía antes de
+    /// un Temp o un Ctrl All.
+    ///
+    /// **Para casi todos es `setting(_:to:)`**: el valor capturado cabía cuando
+    /// se capturó, y el freno de cada parámetro no depende de nada que el hold
+    /// pueda mover.
+    ///
+    /// **Pitch es la excepción, y se devuelve literal** (`pitch-harmony_20260912`).
+    /// Su freno depende del pool y de Harmony, y Harmony sí puede moverse durante
+    /// el hold. Frenar al restaurar dejaría Pitch en un valor que nadie puso; el
+    /// pool que suena ya acota al borde de MIDI lo que no quepa.
+    func restoring(_ parameter: TrackParameter, to value: Int) -> Cycle {
+        switch parameter {
+        case .pitch: with(pitchOffset: PitchOffset(value) ?? pitchOffset)
+        default: setting(parameter, to: value)
+        }
     }
 }

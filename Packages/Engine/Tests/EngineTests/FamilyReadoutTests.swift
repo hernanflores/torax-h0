@@ -76,11 +76,13 @@ final class FamilyReadoutTests: XCTestCase {
             readout.secondaryDetail, "Repeats 4 · Time 1/48 · Ramp -30% · Pace +60%")
     }
 
-    /// **Las otras dos familias no tienen segunda línea**, y es `nil` y no una
-    /// cadena vacía: la vista pregunta si la hay.
-    func testOnlyShapeHasASecondLine() {
+    /// **Groove no tiene segunda línea**, y es `nil` y no una cadena vacía: la
+    /// vista pregunta si la hay.
+    ///
+    /// > **Tonal la tiene desde el 2026-09-12** (`pitch-harmony_20260912`):
+    /// > Pitch y Harmony, ver `testTonalHasPitchAndHarmonyOnItsSecondLine`.
+    func testGrooveHasNoSecondLine() {
         XCTAssertNil(FamilyReadout(track: track, family: .groove).secondaryDetail)
-        XCTAssertNil(FamilyReadout(track: track, family: .tonal).secondaryDetail)
     }
 
     /// Los ocho de Shape aparecen entre la lectura grande y las dos líneas: **no
@@ -96,6 +98,28 @@ final class FamilyReadoutTests: XCTestCase {
     }
 
     // MARK: - Tonal
+
+    /// **Pitch y Harmony, en la segunda línea** (FR19, FR20). Pitch con su signo;
+    /// Harmony con lo que suena, porque no tiene número. Se escriben con la misma
+    /// regla que su valor transitorio.
+    func testTonalHasPitchAndHarmonyOnItsSecondLine() {
+        let triad = Cycle(
+            shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!),
+            pool: PitchPool().inserting(Pitch(60)!).inserting(Pitch(64)!).inserting(Pitch(67)!),
+            frame: TonalFrame(scale: .major, root: .c),
+            pitchOffset: PitchOffset(1)!
+        ).applying(1, to: .harmony)
+
+        XCTAssertEqual(
+            FamilyReadout(track: triad, family: .tonal).secondaryDetail,
+            "Pitch +1 · Harmony E4 F4 A4")
+        XCTAssertEqual(
+            FamilyReadout(
+                track: Cycle(shape: Shape(steps: Steps(16)!, pulses: Pulses(5)!)), family: .tonal
+            )
+            .secondaryDetail,
+            "Pitch 0 · Harmony empty")
+    }
 
     /// **TONAL no tiene parámetros de knob detrás** (FR4), así que su lectura en
     /// reposo es el marco tonal y el pool: Scale, Root y cuántas alturas hay.

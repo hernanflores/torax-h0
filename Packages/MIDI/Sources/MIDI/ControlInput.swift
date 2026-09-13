@@ -708,11 +708,13 @@ public final class ControlInput: @unchecked Sendable {
 
         guard let pitch = surface.pitch(at: index) else { return false }
 
-        let adjusted = track.pool.toggling(pitch)
+        // `togglingPitch` y no `with(pool:)`: editar el pool limpia Harmony
+        // (`pitch-harmony_20260912`, FR13).
+        let adjusted = track.togglingPitch(pitch)
         // El pool lleno rechaza la novena: no cambió nada que publicar.
-        guard adjusted != track.pool else { return false }
+        guard adjusted != track else { return false }
 
-        pattern = pattern.replacing(track.with(pool: adjusted), at: selectedTrackIndex)
+        pattern = pattern.replacing(adjusted, at: selectedTrackIndex)
         publish(pattern)
         return true
     }
@@ -1061,7 +1063,9 @@ public final class ControlInput: @unchecked Sendable {
         guard !isTouchFrozen else { return false }
         // El marco es del Track seleccionado, y el registro de sus pads se
         // conserva: cambiar de escala no mueve a nadie de octava.
-        let reframed = track.with(pool: track.pool.reframed(to: frame)).with(frame: frame)
+        // `reframed(to:)` limpia Harmony si el marco cambia
+        // (`pitch-harmony_20260912`, FR13); Pitch se conserva.
+        let reframed = track.reframed(to: frame)
         guard reframed != track else { return false }
 
         pattern = pattern.replacing(reframed, at: selectedTrackIndex)

@@ -85,24 +85,25 @@
         "note": "El cruce con Probability del 2026-09-05 se deshizo el 2026-09-12: Groove vuelve al orden del dominio, que es el de la pantalla."
       },
       {
+        "knob": 14,
+        "cc": 75,
+        "parameter": "Pitch",
+        "note": "Transpone el pool en grados de la escala (pitch-harmony_20260912). Tonal cierra la fila de abajo detras de Groove, en los dos knobs que knob-layout_20260912 dejo libres."
+      },
+      {
+        "knob": 15,
+        "cc": 76,
+        "parameter": "Harmony",
+        "note": "Mueve un pitch del pool por clic, en round robin y con histeresis (pitch-harmony_20260912)."
+      },
+      {
         "knob": 16,
         "cc": 77,
         "parameter": "Cycle en edicion",
         "note": "Mueve el cursor de edicion del Track seleccionado (cycles_20260901). Cuantos Cycles estan activos se ajusta en pantalla. Esquina inferior derecha, separado de los parametros por los dos knobs libres."
       }
     ],
-    "free": [
-      {
-        "knob": 14,
-        "cc": 75,
-        "parameter": null
-      },
-      {
-        "knob": 15,
-        "cc": 76,
-        "parameter": null
-      }
-    ],
+    "free": [],
     "note": "Una fila de knobs por card de la pantalla desde el 2026-09-12 (knob-layout_20260912): arriba el card Shape entero -el ritmo y los cuatro del Note Repeater, en el orden de sus dos lineas- y abajo el card Groove en el orden del dominio. Quien mira la pantalla sabe donde esta el knob sin consultar esta tabla. Ojo con los CC: la fila de arriba es el 78-85 y la de abajo el 70-77, que es lo que manda el controlador y no lo que sugiere la numeracion de los knobs.",
     "rows": {
       "note": "El bloque 70-85 no sigue al orden fisico de los encoders. Torax.beatsteppro asigna los controlId 32-39 -la fila de arriba- a los CC 78-85, y los 40-47 -la de abajo- a los CC 70-77. Verificado en dispositivo el 2026-09-12.",

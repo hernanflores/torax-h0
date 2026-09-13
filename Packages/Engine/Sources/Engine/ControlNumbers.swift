@@ -31,15 +31,25 @@ public struct ControlNumbers: Equatable, Sendable {
     /// Número del primer step button; los dieciséis van seguidos desde él.
     public let stepButtonBlock: Int
 
+    /// Los parámetros que existían cuando se escribieron estos números.
+    ///
+    /// **Separa dos silencios que `assignments` guarda igual** (`pitch-harmony_20260912`,
+    /// FR15): un parámetro que el usuario dejó sin control, que es un estado válido
+    /// y se respeta, y uno que la app que guardó ni siquiera tenía, que al abrir
+    /// recibe su número de fábrica si está libre. Por defecto, todos los de esta app.
+    public let knownParameters: Set<TrackParameter>
+
     public init(
         assignments: [TrackParameter: Int],
         padBlock: Int,
         knobBlock: Int,
-        stepButtonBlock: Int
+        stepButtonBlock: Int,
+        knownParameters: Set<TrackParameter> = Set(TrackParameter.allCases)
     ) {
         self.assignments = assignments
         self.padBlock = padBlock
         self.knobBlock = knobBlock
         self.stepButtonBlock = stepButtonBlock
+        self.knownParameters = knownParameters
     }
 }
